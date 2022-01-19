@@ -1,3 +1,3 @@
 fn main() {
-    println!("Hello, world!");
+    dbg!(chess::board::Board::start());
 }
