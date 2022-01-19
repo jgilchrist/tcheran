@@ -1,8 +1,65 @@
+use crate::square::Square;
+
+#[derive(Clone, Copy)]
 pub struct Bitboard(u64);
 
 impl Bitboard {
     pub const fn new(squares: u64) -> Bitboard {
         Bitboard(squares)
+    }
+
+    pub fn has_square(&self, square: &Square) -> bool {
+        !(*self & Bitboard::from_square(square)).is_empty()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.0 == 0
+    }
+
+    pub fn from_square(square: &Square) -> Bitboard {
+        use crate::square::File::*;
+        use crate::square::Rank::*;
+
+        let file_idx = match &square.0 {
+            A => 0,
+            B => 1,
+            C => 2,
+            D => 3,
+            E => 4,
+            F => 5,
+            G => 6,
+            H => 7,
+        };
+
+        let rank_idx = match &square.1 {
+            R1 => 0,
+            R2 => 1,
+            R3 => 2,
+            R4 => 3,
+            R5 => 4,
+            R6 => 5,
+            R7 => 6,
+            R8 => 7,
+        };
+
+        let square_idx = rank_idx * 8 + file_idx;
+        Bitboard(1 << square_idx)
+    }
+}
+
+impl std::ops::BitAnd for Bitboard {
+    type Output = Bitboard;
+
+    fn bitand(self, rhs: Self) -> Self::Output {
+        Bitboard(self.0 & rhs.0)
+    }
+}
+
+impl std::ops::BitOr for Bitboard {
+    type Output = Bitboard;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Bitboard(self.0 | rhs.0)
     }
 }
 
