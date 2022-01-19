@@ -1,3 +1,5 @@
+pub mod bitboard;
+
 enum Player {
     White,
     Black,
