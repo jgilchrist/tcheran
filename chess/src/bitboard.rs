@@ -14,10 +14,10 @@ impl std::fmt::Debug for Bitboard {
             (0..8)
                 .rev()
                 .into_iter()
-                .map(|y| {
+                .map(|rank| {
                     (0..8)
                         .into_iter()
-                        .map(|x| match self.0 & (1 << (y * 8 + x)) {
+                        .map(|file| match self.0 & (1 << (rank * 8 + file)) {
                             0 => ".",
                             _ => "*",
                         })
@@ -38,10 +38,10 @@ impl std::fmt::Display for Bitboard {
             (0..8)
                 .rev()
                 .into_iter()
-                .map(|y| {
+                .map(|rank| {
                     (0..8)
                         .into_iter()
-                        .map(|x| match self.0 & (1 << (y * 8 + x)) {
+                        .map(|file| match self.0 & (1 << (rank * 8 + file)) {
                             0 => ".",
                             _ => "*",
                         })
