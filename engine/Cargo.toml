@@ -1,0 +1,15 @@
+[package]
+name = "engine"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+chess = { path = "../chess" }
+
+[lib]
+name = "engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "engine"
+path = "src/main.rs"
