@@ -1,0 +1,16 @@
+[package]
+name = "engine"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+chess = { path = "../chess" }
+git-version = "0.3.8"
+
+[lib]
+name = "engine"
+path = "src/lib.rs"
+
+[[bin]]
+name = "engine"
+path = "src/main.rs"
