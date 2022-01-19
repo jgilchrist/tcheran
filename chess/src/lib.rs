@@ -2,6 +2,7 @@
 
 pub mod bitboard;
 pub mod board;
+pub mod consts;
 pub mod square;
 
 enum Player {
