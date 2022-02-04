@@ -102,21 +102,16 @@ impl std::fmt::Debug for Board {
                         .map(|file| {
                             match self.piece_at(&Square::from_idx(file, rank)) {
                                 Some((player, piece)) => {
-                                    let piece_char = match piece {
-                                        Piece::Pawn => "p",
-                                        Piece::Knight => "n",
-                                        Piece::Bishop => "b",
-                                        Piece::Rook => "r",
-                                        Piece::Queen => "q",
-                                        Piece::King => "k",
-                                    };
-
-                                    match player {
-                                        Player::White => piece_char.to_string(),
-                                        Player::Black => piece_char.to_uppercase(),
+                                    match piece {
+                                        Piece::Pawn => match player { Player::White => "♟", Player::Black => "♙" },
+                                        Piece::Knight => match player { Player::White => "♞", Player::Black => "♘" },
+                                        Piece::Bishop => match player { Player::White => "♝", Player::Black => "♗" },
+                                        Piece::Rook => match player { Player::White => "♜", Player::Black => "♖" },
+                                        Piece::Queen => match player { Player::White => "♛", Player::Black => "♕" },
+                                        Piece::King => match player { Player::White => "♚", Player::Black => "♔" },
                                     }
                                 },
-                                None => ".".to_string()
+                                None => "."
                             }
                         })
                         .collect::<Vec<_>>()
