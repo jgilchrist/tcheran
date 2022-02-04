@@ -27,6 +27,36 @@ impl File {
     }
 }
 
+impl std::fmt::Debug for File {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::A => write!(f, "A"),
+            Self::B => write!(f, "B"),
+            Self::C => write!(f, "C"),
+            Self::D => write!(f, "D"),
+            Self::E => write!(f, "E"),
+            Self::F => write!(f, "F"),
+            Self::G => write!(f, "G"),
+            Self::H => write!(f, "H"),
+        }
+    }
+}
+
+impl std::fmt::Display for File {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::A => write!(f, "A"),
+            Self::B => write!(f, "B"),
+            Self::C => write!(f, "C"),
+            Self::D => write!(f, "D"),
+            Self::E => write!(f, "E"),
+            Self::F => write!(f, "F"),
+            Self::G => write!(f, "G"),
+            Self::H => write!(f, "H"),
+        }
+    }
+}
+
 pub enum Rank {
     R1,
     R2,
@@ -56,10 +86,47 @@ impl Rank {
     }
 }
 
+impl std::fmt::Debug for Rank {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::R1 => write!(f, "1"),
+            Self::R2 => write!(f, "2"),
+            Self::R3 => write!(f, "3"),
+            Self::R4 => write!(f, "4"),
+            Self::R5 => write!(f, "5"),
+            Self::R6 => write!(f, "6"),
+            Self::R7 => write!(f, "7"),
+            Self::R8 => write!(f, "8"),
+        }
+    }
+}
+
+impl std::fmt::Display for Rank {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::R1 => write!(f, "1"),
+            Self::R2 => write!(f, "2"),
+            Self::R3 => write!(f, "3"),
+            Self::R4 => write!(f, "4"),
+            Self::R5 => write!(f, "5"),
+            Self::R6 => write!(f, "6"),
+            Self::R7 => write!(f, "7"),
+            Self::R8 => write!(f, "8"),
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct Square(pub File, pub Rank);
 
 impl Square {
     pub fn from_idx(file_idx: u8, rank_idx: u8) -> Square {
         Square(File::from_idx(file_idx), Rank::from_idx(rank_idx))
+    }
+}
+
+impl std::fmt::Display for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}{}", self.0, self.1)
     }
 }
