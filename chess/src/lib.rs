@@ -4,6 +4,7 @@
 pub mod bitboard;
 pub mod board;
 pub mod consts;
+pub mod r#move;
 pub mod square;
 
 pub enum Player {

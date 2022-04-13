@@ -1,3 +1,5 @@
+use chess::r#move::Move;
+
 #[derive(Debug)]
 pub(super) struct InfoScore {
     cp: f32,
@@ -28,8 +30,8 @@ pub(super) enum UciResponse {
     UciOk,
     ReadyOk,
     BestMove {
-        r#move: String,
-        ponder: Option<String>,
+        r#move: Move,
+        ponder: Option<Move>,
     },
     // TODO
     CopyProtection,
@@ -46,11 +48,11 @@ pub(super) enum UciResponse {
         // TODO
         time: (),
         nodes: u32,
-        pv: Vec<String>,
+        pv: Vec<Move>,
         // TODO
         multipv: (),
         score: InfoScore,
-        currmove: String,
+        currmove: Move,
         currmovenumber: u32,
         // TODO
         hashfull: (),
@@ -59,10 +61,8 @@ pub(super) enum UciResponse {
         // TODO
         cpuload: (),
         string: Option<String>,
-        // TODO
-        refutation: (),
-        // TODO
-        currline: (),
+        refutation: Option<(Move, Option<Move>)>,
+        currline: Option<Vec<Move>>,
     },
     Option {
         name: String,
@@ -84,7 +84,7 @@ impl UciResponse {
             UciResponse::UciOk => "uciok".to_string(),
             UciResponse::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
-            UciResponse::BestMove { r#move, ponder } => format!("bestmove {}", r#move),
+            UciResponse::BestMove { r#move, ponder } => format!("bestmove {}", r#move.notation()),
             UciResponse::CopyProtection => todo!(),
             UciResponse::Registration => todo!(),
             UciResponse::Info {
