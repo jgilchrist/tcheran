@@ -1,3 +1,6 @@
+#![allow(dead_code)]
+#![allow(unused_variables)]
+
 pub mod uci;
 
 pub fn engine_version() -> &'static str {
