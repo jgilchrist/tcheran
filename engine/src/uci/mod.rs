@@ -1,9 +1,9 @@
 use anyhow::Result;
-use chess::{r#move::Move, square::{File, Rank}};
+use chess::board::Board;
 use std::io::{BufRead, Write};
 
 use self::{
-    commands::UciCommand,
+    commands::{GoCmdArguments, UciCommand},
     responses::{IdParam, UciResponse},
 };
 
@@ -17,6 +17,7 @@ pub mod responses;
 
 struct UciState {
     debug: bool,
+    board: Board,
 }
 
 #[derive(Debug, PartialEq)]
@@ -56,13 +57,22 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
             send_response(&UciResponse::UciOk);
         }
-        UciCommand::Debug { on } => state.debug = *on,
+        UciCommand::Debug(on) => state.debug = *on,
         UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
         UciCommand::SetOption { name, value } => {}
         UciCommand::Register { later, name, code } => {}
-        UciCommand::UciNewGame => {}
-        UciCommand::Position { position, moves } => {}
-        UciCommand::Go {
+        UciCommand::UciNewGame => {
+            state.board = Board::start();
+        }
+        UciCommand::Position { position, moves } => {
+            match position {
+                // TODO: Play moves on the board
+                commands::Position::StartPos => state.board = Board::start(),
+                // TODO: Get board from FEN
+                commands::Position::Fen(_) => state.board = Board::start(),
+            }
+        }
+        UciCommand::Go(GoCmdArguments {
             searchmoves,
             ponder,
             wtime,
@@ -75,20 +85,22 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             mate,
             movetime,
             infinite,
-        } => send_response(&UciResponse::BestMove {
-            r#move: Move::new(
-                chess::square::Square(File::E, Rank::R7),
-                chess::square::Square(File::E, Rank::R5),
-            ),
-            ponder: None,
-        }),
-        UciCommand::Stop => send_response(&UciResponse::BestMove {
-            r#move: Move::new(
-                chess::square::Square(File::E, Rank::R7),
-                chess::square::Square(File::E, Rank::R5),
-            ),
-            ponder: None,
-        }),
+        }) => {
+            let best_move = crate::run(&state.board);
+
+            send_response(&UciResponse::BestMove {
+                r#move: best_move,
+                ponder: None,
+            });
+        }
+        UciCommand::Stop => {
+            let best_move = crate::run(&state.board);
+
+            send_response(&UciResponse::BestMove {
+                r#move: best_move,
+                ponder: None,
+            });
+        }
         UciCommand::PonderHit => {}
         UciCommand::Quit => return Ok(ExecuteResult::Exit),
     }
@@ -100,7 +112,10 @@ pub fn uci() -> Result<()> {
     println!("Welcome!");
     println!("In UCI mode.");
 
-    let mut state = UciState { debug: false };
+    let mut state = UciState {
+        debug: false,
+        board: Board::start(),
+    };
 
     let stdin = std::io::stdin();
 
