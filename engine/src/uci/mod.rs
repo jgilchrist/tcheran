@@ -13,6 +13,8 @@ pub mod responses;
 
 /// Implementation of the Universal Chess Interface (UCI) protocol
 
+// TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
+
 struct UciState {
     debug: bool,
 }
@@ -25,7 +27,7 @@ enum ExecuteResult {
 
 const LOG_PATH: &str = "/tmp/chess_engine";
 
-// TODO: It's not ideal to open a handle to the file every time we want to write a line
+// FIXME: It's not ideal to open a handle to the file every time we want to write a line
 fn log(s: &str) {
     let mut f = std::fs::OpenOptions::new()
         .write(true)

@@ -50,15 +50,15 @@ pub(super) fn parse(input: &str) -> Result<UciCommand> {
         return Ok(UciCommand::Go {
             searchmoves: vec![],
             ponder: false,
-            wtime: (),
-            btime: (),
-            winc: (),
-            binc: (),
-            movestogo: (),
+            wtime: 0,
+            btime: 0,
+            winc: 0,
+            binc: 0,
+            movestogo: 0,
             depth: 1,
             nodes: 1,
             mate: 1,
-            movetime: (),
+            movetime: 0,
             infinite: false,
         });
     }
