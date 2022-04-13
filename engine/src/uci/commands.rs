@@ -30,19 +30,15 @@ pub(super) enum UciCommand {
     Go {
         searchmoves: Vec<Move>,
         ponder: bool,
-        // TODO
-        wtime: (),
-        btime: (),
-        // TODO
-        winc: (),
-        binc: (),
-        // TODO
-        movestogo: (),
+        wtime: u32,
+        btime: u32,
+        winc: u32,
+        binc: u32,
+        movestogo: u32,
         depth: u32,
         nodes: u32,
         mate: u32,
-        // TODO
-        movetime: (),
+        movetime: u32,
         infinite: bool,
     },
     Stop,

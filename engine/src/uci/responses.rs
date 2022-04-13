@@ -2,10 +2,10 @@ use chess::r#move::Move;
 
 #[derive(Debug)]
 pub(super) struct InfoScore {
-    cp: f32,
+    cp: i32,
     mate: u32,
-    lowerbound: f32,
-    upperbound: f32,
+    lowerbound: i32,
+    upperbound: i32,
 }
 
 #[derive(Debug)]
@@ -23,7 +23,20 @@ pub(super) enum IdParam {
     Author(&'static str),
 }
 
-// TODO: Tighten up these types. BestMove.move can be Move, for example
+#[derive(Debug)]
+pub(super) enum CopyProtectionStatus {
+    Checking,
+    Ok,
+    Error,
+}
+
+#[derive(Debug)]
+pub(super) enum RegistrationStatus {
+    Checking,
+    Ok,
+    Error,
+}
+
 #[derive(Debug)]
 pub(super) enum UciResponse {
     Id(IdParam),
@@ -33,33 +46,27 @@ pub(super) enum UciResponse {
         r#move: Move,
         ponder: Option<Move>,
     },
-    // TODO
-    CopyProtection,
-    // TODO
-    Registration,
+    CopyProtection(CopyProtectionStatus),
+    Registration(RegistrationStatus),
     // TODO: Make this enum variant reflect actual info messages that would be sent
     // Typically certain info messages are sent together, e.g.:
     // info depth 1 seldepth 0
     // info nps 15937
     // info score cp 20  depth 3 nodes 423 time 15 pv f1c4 g8f6 b1c3
     Info {
-        depth: u32,
-        seldepth: u32,
-        // TODO
-        time: (),
-        nodes: u32,
-        pv: Vec<Move>,
-        // TODO
-        multipv: (),
-        score: InfoScore,
-        currmove: Move,
-        currmovenumber: u32,
-        // TODO
-        hashfull: (),
-        nps: u32,
-        tbhits: u32,
-        // TODO
-        cpuload: (),
+        depth: Option<u32>,
+        seldepth: Option<u32>,
+        time: Option<u32>,
+        nodes: Option<u32>,
+        pv: Option<Vec<Move>>,
+        multipv: Option<u32>,
+        score: Option<InfoScore>,
+        currmove: Option<Move>,
+        currmovenumber: Option<u32>,
+        hashfull: Option<u32>,
+        nps: Option<u32>,
+        tbhits: Option<u32>,
+        cpuload: Option<u32>,
         string: Option<String>,
         refutation: Option<(Move, Option<Move>)>,
         currline: Option<Vec<Move>>,
@@ -85,8 +92,8 @@ impl UciResponse {
             UciResponse::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
             UciResponse::BestMove { r#move, ponder } => format!("bestmove {}", r#move.notation()),
-            UciResponse::CopyProtection => todo!(),
-            UciResponse::Registration => todo!(),
+            UciResponse::CopyProtection(status) => todo!(),
+            UciResponse::Registration(status) => todo!(),
             UciResponse::Info {
                 depth,
                 seldepth,
