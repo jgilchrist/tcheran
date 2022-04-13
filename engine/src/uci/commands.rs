@@ -1,10 +1,11 @@
+use chess::r#move::Move;
+
 #[derive(Debug)]
 pub(super) enum Position {
     Fen(String),
     StartPos,
 }
 
-// TODO: Tighten up these types. Position.moves can be Vec<Move> for example.
 #[derive(Debug)]
 pub(super) enum UciCommand {
     Uci,
@@ -24,10 +25,10 @@ pub(super) enum UciCommand {
     UciNewGame,
     Position {
         position: Position,
-        moves: Vec<String>,
+        moves: Vec<Move>,
     },
     Go {
-        searchmoves: Vec<String>,
+        searchmoves: Vec<Move>,
         ponder: bool,
         // TODO
         wtime: (),

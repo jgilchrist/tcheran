@@ -1,4 +1,5 @@
 use anyhow::Result;
+use chess::{r#move::Move, square::{File, Rank}};
 use std::io::{BufRead, Write};
 
 use self::{
@@ -73,11 +74,17 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             movetime,
             infinite,
         } => send_response(&UciResponse::BestMove {
-            r#move: "e7e5".to_string(),
+            r#move: Move::new(
+                chess::square::Square(File::E, Rank::R7),
+                chess::square::Square(File::E, Rank::R5),
+            ),
             ponder: None,
         }),
         UciCommand::Stop => send_response(&UciResponse::BestMove {
-            r#move: "e7e5".to_string(),
+            r#move: Move::new(
+                chess::square::Square(File::E, Rank::R7),
+                chess::square::Square(File::E, Rank::R5),
+            ),
             ponder: None,
         }),
         UciCommand::PonderHit => {}
