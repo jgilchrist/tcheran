@@ -1,5 +1,8 @@
 use std::io::BufRead;
 
+pub mod commands;
+pub mod responses;
+
 /// Implementation of the Universal Chess Interface (UCI) protocol
 
 pub fn uci() {
