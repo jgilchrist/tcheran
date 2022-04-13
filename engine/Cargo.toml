@@ -4,8 +4,10 @@ version = "0.0.0"
 edition = "2021"
 
 [dependencies]
-chess = { path = "../chess" }
 git-version = "0.3.8"
+
+chess = { path = "../chess" }
+clap = { version = "3.1.8", features = ["derive"] }
 
 [lib]
 name = "engine"
