@@ -4,10 +4,17 @@ use crate::{
     Piece, Player,
 };
 
+pub struct CastleRights {
+    king_side: bool,
+    queen_side: bool,
+}
+
 pub struct Board {
     pub player: Player,
     pub white_pieces: PlayerPieces,
     pub black_pieces: PlayerPieces,
+    pub white_castle_rights: CastleRights,
+    pub black_castle_rights: CastleRights,
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
@@ -40,6 +47,14 @@ impl Board {
                 rooks: bitboard::known::INIT_BLACK_ROOKS,
                 queen: bitboard::known::INIT_BLACK_QUEEN,
                 king: bitboard::known::INIT_BLACK_KING,
+            },
+            white_castle_rights: CastleRights {
+                king_side: true,
+                queen_side: true,
+            },
+            black_castle_rights: CastleRights {
+                king_side: true,
+                queen_side: true,
             },
         }
     }
