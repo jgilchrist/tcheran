@@ -6,7 +6,7 @@ use crate::RunMode;
 #[clap()]
 struct Cli {
     #[clap(subcommand)]
-    command: Commands
+    command: Commands,
 }
 
 #[derive(Subcommand)]
@@ -21,12 +21,8 @@ enum Commands {
 pub fn parse_cli() -> RunMode {
     let args: Cli = Cli::parse();
 
-    return match &args.command {
-        Commands::Uci {} => {
-            RunMode::Uci
-        },
-        Commands::PrintBoard {} => {
-            RunMode::PrintBoard
-        }
+    match &args.command {
+        Commands::Uci {} => RunMode::Uci,
+        Commands::PrintBoard {} => RunMode::PrintBoard,
     }
 }

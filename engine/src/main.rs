@@ -18,11 +18,7 @@ fn main() {
     let run_mode = cli::parse_cli();
 
     match run_mode {
-        RunMode::Uci => {
-            uci::uci()
-        },
-        RunMode::PrintBoard => {
-            print_board()
-        },
+        RunMode::Uci => uci::uci(),
+        RunMode::PrintBoard => print_board(),
     }
 }
