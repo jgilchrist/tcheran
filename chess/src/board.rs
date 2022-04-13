@@ -5,20 +5,20 @@ use crate::{
 };
 
 pub struct Board {
-    player: Player,
-    white_pieces: PlayerPieces,
-    black_pieces: PlayerPieces,
+    pub player: Player,
+    pub white_pieces: PlayerPieces,
+    pub black_pieces: PlayerPieces,
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
-struct PlayerPieces {
-    pawns: Bitboard,
-    knights: Bitboard,
-    bishops: Bitboard,
-    rooks: Bitboard,
-    queen: Bitboard,
-    king: Bitboard,
+pub struct PlayerPieces {
+    pub pawns: Bitboard,
+    pub knights: Bitboard,
+    pub bishops: Bitboard,
+    pub rooks: Bitboard,
+    pub queen: Bitboard,
+    pub king: Bitboard,
 }
 
 impl Board {
