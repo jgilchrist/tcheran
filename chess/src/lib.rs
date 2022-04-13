@@ -6,12 +6,12 @@ pub mod board;
 pub mod consts;
 pub mod square;
 
-enum Player {
+pub enum Player {
     White,
     Black,
 }
 
-enum Piece {
+pub enum Piece {
     Pawn,
     Knight,
     Bishop,
