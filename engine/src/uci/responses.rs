@@ -1,11 +1,13 @@
-pub struct InfoScore {
+#[derive(Debug)]
+pub(super) struct InfoScore {
     cp: f32,
     mate: u32,
     lowerbound: f32,
     upperbound: f32,
 }
 
-pub enum OptionType {
+#[derive(Debug)]
+pub(super) enum OptionType {
     Check,
     Spin,
     Combo,
@@ -13,16 +15,21 @@ pub enum OptionType {
     String,
 }
 
+#[derive(Debug)]
+pub(super) enum IdParam {
+    Name(String),
+    Author(&'static str),
+}
+
 // TODO: Tighten up these types. BestMove.move can be Move, for example
-pub enum UciResponse {
-    Id {
-        name: String,
-        author: String,
-    },
+#[derive(Debug)]
+pub(super) enum UciResponse {
+    Id(IdParam),
     UciOk,
     ReadyOk,
     BestMove {
         r#move: String,
+        ponder: Option<String>,
     },
     // TODO
     CopyProtection,
@@ -65,4 +72,47 @@ pub enum UciResponse {
         max: String,
         var: String,
     },
+}
+
+impl UciResponse {
+    pub(super) fn as_string(&self) -> String {
+        match self {
+            UciResponse::Id(i) => match i {
+                IdParam::Name(name) => format!("id name {}", name),
+                IdParam::Author(author) => format!("id author {}", author),
+            },
+            UciResponse::UciOk => "uciok".to_string(),
+            UciResponse::ReadyOk => "readyok".to_string(),
+            // TODO: Account for 'ponder'
+            UciResponse::BestMove { r#move, ponder } => format!("bestmove {}", r#move),
+            UciResponse::CopyProtection => todo!(),
+            UciResponse::Registration => todo!(),
+            UciResponse::Info {
+                depth,
+                seldepth,
+                time,
+                nodes,
+                pv,
+                multipv,
+                score,
+                currmove,
+                currmovenumber,
+                hashfull,
+                nps,
+                tbhits,
+                cpuload,
+                string,
+                refutation,
+                currline,
+            } => todo!(),
+            UciResponse::Option {
+                name,
+                r#type,
+                default,
+                min,
+                max,
+                var,
+            } => todo!(),
+        }
+    }
 }
