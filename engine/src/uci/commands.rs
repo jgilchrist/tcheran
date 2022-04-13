@@ -1,10 +1,12 @@
-enum Position {
+#[derive(Debug)]
+pub(super) enum Position {
     Fen(String),
     StartPos,
 }
 
 // TODO: Tighten up these types. Position.moves can be Vec<Move> for example.
-enum UciCommand {
+#[derive(Debug)]
+pub(super) enum UciCommand {
     Uci,
     Debug {
         on: bool,
