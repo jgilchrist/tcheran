@@ -7,6 +7,7 @@ edition = "2021"
 anyhow = "1.0.56"
 chess = { path = "../chess" }
 clap = { version = "3.1.8", features = ["derive"] }
+nom = "7.1.1"
 
 [lib]
 name = "engine"
