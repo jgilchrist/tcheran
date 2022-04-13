@@ -99,20 +99,34 @@ impl std::fmt::Debug for Board {
                 .map(|rank| {
                     (0..8)
                         .into_iter()
-                        .map(|file| {
-                            match self.piece_at(&Square::from_idx(file, rank)) {
-                                Some((player, piece)) => {
-                                    match piece {
-                                        Piece::Pawn => match player { Player::White => "♟", Player::Black => "♙" },
-                                        Piece::Knight => match player { Player::White => "♞", Player::Black => "♘" },
-                                        Piece::Bishop => match player { Player::White => "♝", Player::Black => "♗" },
-                                        Piece::Rook => match player { Player::White => "♜", Player::Black => "♖" },
-                                        Piece::Queen => match player { Player::White => "♛", Player::Black => "♕" },
-                                        Piece::King => match player { Player::White => "♚", Player::Black => "♔" },
-                                    }
+                        .map(|file| match self.piece_at(&Square::from_idx(file, rank)) {
+                            Some((player, piece)) => match piece {
+                                Piece::Pawn => match player {
+                                    Player::White => "♟",
+                                    Player::Black => "♙",
                                 },
-                                None => "."
-                            }
+                                Piece::Knight => match player {
+                                    Player::White => "♞",
+                                    Player::Black => "♘",
+                                },
+                                Piece::Bishop => match player {
+                                    Player::White => "♝",
+                                    Player::Black => "♗",
+                                },
+                                Piece::Rook => match player {
+                                    Player::White => "♜",
+                                    Player::Black => "♖",
+                                },
+                                Piece::Queen => match player {
+                                    Player::White => "♛",
+                                    Player::Black => "♕",
+                                },
+                                Piece::King => match player {
+                                    Player::White => "♚",
+                                    Player::Black => "♔",
+                                },
+                            },
+                            None => ".",
                         })
                         .collect::<Vec<_>>()
                         .join(" ")
