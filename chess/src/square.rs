@@ -1,3 +1,4 @@
+#[derive(PartialEq, Eq)]
 pub enum File {
     A,
     B,
@@ -52,6 +53,7 @@ impl std::fmt::Display for File {
     }
 }
 
+#[derive(PartialEq, Eq)]
 pub enum Rank {
     R1,
     R2,
@@ -106,7 +108,7 @@ impl std::fmt::Display for Rank {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Eq)]
 pub struct Square(pub File, pub Rank);
 
 impl Square {
