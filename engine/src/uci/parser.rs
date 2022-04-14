@@ -364,4 +364,44 @@ mod tests {
     fn parse_go_infinite() {
         assert!(parse("go infinite").is_ok());
     }
+
+    #[test]
+    fn test_uci() {
+        let ml = parse("uci").unwrap();
+        assert_eq!(ml, UciCommand::Uci);
+    }
+
+    #[test]
+    fn test_debug_on() {
+        let ml = parse("debug    on").unwrap();
+        assert_eq!(ml, UciCommand::Debug(true));
+    }
+
+    #[test]
+    fn test_debug_off() {
+        let ml = parse("debug off").unwrap();
+        assert_eq!(ml, UciCommand::Debug(false));
+    }
+
+    #[test]
+    fn test_debugon() {
+                    parse("debugon").expect_err("Should not parse 'debugon'");
+                                                                                    }
+
+    #[test]
+    fn test_debug_wrong_param() {
+        let ml = parse("debug abc");
+        assert_eq!(ml.is_err(), true);
+    }
+
+    #[test]
+    fn test_debug_cutoff() {
+                         parse("debug    ontario").expect_err("Should not parse");
+                                                                                        }
+
+    #[test]
+    fn test_isready() {
+        let ml = parse(" \tisready  ").unwrap();
+        assert_eq!(ml, UciCommand::IsReady);
+    }
 }
