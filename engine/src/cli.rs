@@ -6,7 +6,7 @@ use crate::RunMode;
 #[clap()]
 struct Cli {
     #[clap(subcommand)]
-    command: Commands,
+    command: Option<Commands>,
 }
 
 #[derive(Subcommand)]
@@ -22,7 +22,10 @@ pub fn parse_cli() -> RunMode {
     let args: Cli = Cli::parse();
 
     match &args.command {
-        Commands::Uci {} => RunMode::Uci,
-        Commands::PrintBoard {} => RunMode::PrintBoard,
+        Some(cmd) => match cmd {
+            Commands::Uci {} => RunMode::Uci,
+            Commands::PrintBoard {} => RunMode::PrintBoard,
+        },
+        None => RunMode::default(),
     }
 }
