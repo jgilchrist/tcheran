@@ -16,6 +16,35 @@ impl Bitboard {
         self.0 == 0
     }
 
+    pub fn lsb(&self) -> Bitboard {
+        Bitboard((1_u64).wrapping_shl(self.0.trailing_zeros()))
+    }
+
+    pub fn pop_lsb(&self) -> (Bitboard, Bitboard) {
+        let lsb = self.lsb();
+        let popped = Bitboard(self.0 & (self.0 - 1));
+        (lsb, popped)
+    }
+
+    pub fn count(&self) -> u8 {
+        self.0.count_ones() as u8
+    }
+
+    pub fn squares(&self) -> Vec<Square> {
+        let mut bits: Vec<Square> = vec![];
+        let mut bitboard = Bitboard(self.0);
+
+        loop {
+            if bitboard.is_empty() {
+                return bits;
+            }
+
+            let (next_square, next_bitboard) = bitboard.pop_lsb();
+            bitboard = next_bitboard;
+            bits.push(next_square.to_square());
+        }
+    }
+
     pub fn from_square(square: &Square) -> Bitboard {
         use crate::square::File::*;
         use crate::square::Rank::*;
@@ -44,6 +73,11 @@ impl Bitboard {
 
         let square_idx = rank_idx * 8 + file_idx;
         Bitboard(1 << square_idx)
+    }
+
+    pub fn to_square(&self) -> Square {
+        assert!(self.count() == 1);
+        Square::from_idx(self.0.trailing_zeros() as u8)
     }
 
     pub fn north(&self) -> Bitboard {

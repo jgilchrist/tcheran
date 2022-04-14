@@ -116,7 +116,13 @@ impl Square {
         Square(file, rank)
     }
 
-    pub fn from_idx(file_idx: u8, rank_idx: u8) -> Square {
+    pub fn from_idx(idx: u8) -> Square {
+        let file_idx = idx / 8;
+        let rank_idx = idx % 8;
+        Square(File::from_idx(file_idx), Rank::from_idx(rank_idx))
+    }
+
+    pub fn from_idxs(file_idx: u8, rank_idx: u8) -> Square {
         Square(File::from_idx(file_idx), Rank::from_idx(rank_idx))
     }
 
