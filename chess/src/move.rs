@@ -1,6 +1,6 @@
 use crate::square::Square;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct Move {
     src: Square,
     dst: Square,
@@ -13,5 +13,17 @@ impl Move {
 
     pub fn notation(&self) -> String {
         format!("{}{}", self.src.notation(), self.dst.notation())
+    }
+}
+
+impl std::fmt::Debug for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.notation())
+    }
+}
+
+impl std::fmt::Display for Move {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.notation())
     }
 }

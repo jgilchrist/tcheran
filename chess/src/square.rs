@@ -108,16 +108,26 @@ impl std::fmt::Display for Rank {
     }
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(PartialEq, Eq)]
 pub struct Square(pub File, pub Rank);
 
 impl Square {
+    pub fn new(file: File, rank: Rank) -> Self {
+        Square(file, rank)
+    }
+
     pub fn from_idx(file_idx: u8, rank_idx: u8) -> Square {
         Square(File::from_idx(file_idx), Rank::from_idx(rank_idx))
     }
 
     pub fn notation(&self) -> String {
         format!("{}{}", self.0, self.1)
+    }
+}
+
+impl std::fmt::Debug for Square {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.notation())
     }
 }
 
