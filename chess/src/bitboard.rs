@@ -45,6 +45,44 @@ impl Bitboard {
         let square_idx = rank_idx * 8 + file_idx;
         Bitboard(1 << square_idx)
     }
+
+    pub fn north(&self) -> Bitboard {
+        Bitboard(self.0 << 8)
+    }
+
+    pub fn south(&self) -> Bitboard {
+        Bitboard(self.0 >> 8)
+    }
+
+    pub fn east(&self) -> Bitboard {
+        // If we go east and land on A, we wrapped around.
+        Bitboard((self.0 << 1) & known::NOT_A_FILE.0)
+    }
+
+    pub fn north_east(&self) -> Bitboard {
+        // If we go east and land on A, we wrapped around.
+        Bitboard((self.0 << 9) & known::NOT_A_FILE.0)
+    }
+
+    pub fn south_east(&self) -> Bitboard {
+        // If we go east and land on A, we wrapped around.
+        Bitboard((self.0 >> 7) & known::NOT_A_FILE.0)
+    }
+
+    pub fn west(&self) -> Bitboard {
+        // If we go west and land on H, we wrapped around.
+        Bitboard((self.0 >> 1) & known::NOT_H_FILE.0)
+    }
+
+    pub fn south_west(&self) -> Bitboard {
+        // If we go west and land on H, we wrapped around.
+        Bitboard((self.0 >> 9) & known::NOT_H_FILE.0)
+    }
+
+    pub fn north_west(&self) -> Bitboard {
+        // If we go west and land on H, we wrapped around.
+        Bitboard((self.0 << 7) & known::NOT_H_FILE.0)
+    }
 }
 
 impl std::ops::BitAnd for Bitboard {
@@ -151,6 +189,9 @@ pub mod known {
     pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(1 << 56 | 1 << 63);
     pub const INIT_BLACK_QUEEN: Bitboard = Bitboard::new(1 << 59);
     pub const INIT_BLACK_KING: Bitboard = Bitboard::new(1 << 60);
+
+    pub const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFEFEFEFEFEFEFE); // ~0x0101010101010101
+    pub const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F7F7F7F7F7F7F); // ~0x8080808080808080
 }
 
 #[cfg(test)]
