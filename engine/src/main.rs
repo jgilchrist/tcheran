@@ -11,6 +11,12 @@ pub enum RunMode {
     PrintBoard,
 }
 
+impl Default for RunMode {
+    fn default() -> Self {
+        RunMode::Uci
+    }
+}
+
 fn print_board() {
     dbg!(chess::board::Board::start());
 }
