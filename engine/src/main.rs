@@ -35,7 +35,7 @@ fn main() -> Result<()> {
         RunMode::PrintBoard => {
             print_board();
             Ok(())
-        },
+        }
         RunMode::Devel => {
             devel();
             Ok(())

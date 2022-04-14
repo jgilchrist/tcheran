@@ -114,7 +114,7 @@ impl std::fmt::Debug for Board {
                 .map(|rank| {
                     (0..8)
                         .into_iter()
-                        .map(|file| match self.piece_at(&Square::from_idx(file, rank)) {
+                        .map(|file| match self.piece_at(&Square::from_idxs(file, rank)) {
                             Some((player, piece)) => match piece {
                                 Piece::Pawn => match player {
                                     Player::White => "♟",
