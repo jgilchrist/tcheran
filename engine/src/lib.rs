@@ -1,11 +1,7 @@
 #![allow(dead_code)]
 #![allow(unused_variables)]
 
-use chess::{
-    board::Board,
-    r#move::Move,
-    square::{File, Rank},
-};
+use chess::{board::Board, r#move::Move, square::Square};
 
 pub mod uci;
 
@@ -28,8 +24,5 @@ pub fn engine_version() -> &'static str {
 }
 
 fn run(board: &Board) -> Move {
-    Move::new(
-        chess::square::Square(File::E, Rank::R7),
-        chess::square::Square(File::E, Rank::R5),
-    )
+    Move::new(Square::E7, Square::E5)
 }
