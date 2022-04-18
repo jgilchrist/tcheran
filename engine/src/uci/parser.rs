@@ -6,11 +6,12 @@ use chess::{
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{space0, space1, one_of},
-    combinator::{eof, map, opt, value},
+    character::complete::{one_of, space0, space1},
+    combinator::{eof, map, opt, value, success},
+    error::ParseError,
     multi::{fold_many0, separated_list1},
     sequence::{pair, preceded, tuple},
-    IResult, InputTakeAtPosition,
+    IResult, InputTakeAtPosition, Parser,
 };
 
 use super::commands::{GoCmdArguments, Position, UciCommand};
@@ -64,7 +65,7 @@ fn uci_rank(input: &str) -> IResult<&str, Rank> {
 }
 
 fn uci_square(input: &str) -> IResult<&str, Square> {
-    map(tuple((uci_file, uci_rank)), |(file, rank)| {
+    map(pair(uci_file, uci_rank), |(file, rank)| {
         Square::new(file, rank)
     })(input)
 }
@@ -75,18 +76,31 @@ fn uci_move(input: &str) -> IResult<&str, Move> {
     })(input)
 }
 
+fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
+    separated_list1(space1, uci_move)(input)
+}
+
+fn command_with_argument<'a, F: 'a, G: 'a, OInner, O, E: ParseError<&'a str>>(
+    cmd: &'static str,
+    argument_combinator: F,
+    map_argument_fn: G,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    F: Parser<&'a str, OInner, E>,
+    G: FnMut(OInner) -> O,
+{
+    map(
+        preceded(pair(tag(cmd), space1), argument_combinator),
+        map_argument_fn,
+    )
+}
+
 fn cmd_uci(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::Uci, pair(tag("uci"), eof))(input)
 }
 
 fn cmd_debug(input: &str) -> IResult<&str, UciCommand> {
-    map(
-        preceded(
-            pair(tag("debug"), space1),
-            boolean
-        ),
-        |on| UciCommand::Debug(on),
-    )(input)
+    command_with_argument("debug", boolean, |on| UciCommand::Debug(on))(input)
 }
 
 fn cmd_isready(input: &str) -> IResult<&str, UciCommand> {
@@ -128,24 +142,12 @@ fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
     fn position_arg(input: &str) -> IResult<&str, Position> {
         alt((
             value(Position::StartPos, tag("startpos")),
-            map(
-                preceded(
-                    pair(tag("fen"), space1),
-                    non_space
-                ),
-                |fen| Position::Fen(fen.to_string()),
-            ),
+            command_with_argument("fen", non_space, |fen| Position::Fen(fen.to_string())),
         ))(input)
     }
 
     fn moves_arg(input: &str) -> IResult<&str, Vec<Move>> {
-        map(
-            preceded(
-                pair(tag("moves"), space1),
-                separated_list1(space1, uci_move),
-            ),
-            |moves| moves,
-        )(input)
+        command_with_argument("moves", uci_moves, |moves| moves)(input)
     }
 
     let (input, _) = tag("position")(input)?;
@@ -182,134 +184,62 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
         preceded(
             space1,
             alt((
-                // searchmoves
-                map(
-                    preceded(
-                        pair(tag("searchmoves"), space1),
-                        separated_list1(space1, uci_move),
-                    ),
-                    |searchmoves| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.searchmoves = Some(searchmoves);
-                        })
-                    },
-                ),
-                // ponder
-                map(tag("ponder"), |_| {
+                command_with_argument("searchmoves", uci_moves, |searchmoves| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.searchmoves = Some(searchmoves);
+                    })
+                }),
+                command_with_argument("ponder", success(()), |_| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.ponder = true;
                     })
                 }),
-                // wtime
-                map(
-                    preceded(
-                        pair(tag("wtime"), space1),
-                        nom::character::complete::i32,
-                    ),
-                    |wtime| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.wtime = Some(wtime);
-                        })
-                    },
-                ),
-                // btime
-                map(
-                    preceded(
-                        pair(tag("btime"), space1),
-                        nom::character::complete::i32,
-                    ),
-                    |btime| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.btime = Some(btime);
-                        })
-                    },
-                ),
-                // wint
-                map(
-                    preceded(
-                        pair(tag("winc"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |winc| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.winc = Some(winc);
-                        })
-                    },
-                ),
-                // binc
-                map(
-                    preceded(
-                        pair(tag("binc"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |binc| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.binc = Some(binc);
-                        })
-                    },
-                ),
-                // movestogo
-                map(
-                    preceded(
-                        pair(tag("movestogo"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |movestogo| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.movestogo = Some(movestogo);
-                        })
-                    },
-                ),
-                // depth
-                map(
-                    preceded(
-                        pair(tag("depth"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |depth| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.depth = Some(depth);
-                        })
-                    },
-                ),
-                // nodes
-                map(
-                    preceded(
-                        pair(tag("nodes"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |nodes| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.nodes = Some(nodes);
-                        })
-                    },
-                ),
-                // mate
-                map(
-                    preceded(
-                        pair(tag("mate"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |mate| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.mate = Some(mate);
-                        })
-                    },
-                ),
-                // movetime
-                map(
-                    preceded(
-                        pair(tag("movetime"), space1),
-                        nom::character::complete::u32,
-                    ),
-                    |movetime| {
-                        GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                            acc.movetime = Some(movetime);
-                        })
-                    },
-                ),
-                // infinite
-                map(tag("infinite"), |_| {
+                command_with_argument("wtime", nom::character::complete::i32, |wtime| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.wtime = Some(wtime);
+                    })
+                }),
+                command_with_argument("btime", nom::character::complete::i32, |btime| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.btime = Some(btime);
+                    })
+                }),
+                command_with_argument("winc", nom::character::complete::u32, |winc| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.winc = Some(winc);
+                    })
+                }),
+                command_with_argument("binc", nom::character::complete::u32, |binc| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.binc = Some(binc);
+                    })
+                }),
+                command_with_argument("movestogo", nom::character::complete::u32, |movestogo| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.movestogo = Some(movestogo);
+                    })
+                }),
+                command_with_argument("depth", nom::character::complete::u32, |depth| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.depth = Some(depth);
+                    })
+                }),
+                command_with_argument("nodes", nom::character::complete::u32, |nodes| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.nodes = Some(nodes);
+                    })
+                }),
+                command_with_argument("mate", nom::character::complete::u32, |mate| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.mate = Some(mate);
+                    })
+                }),
+                command_with_argument("movetime", nom::character::complete::u32, |movetime| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.movetime = Some(movetime);
+                    })
+                }),
+                command_with_argument("infinite", success(()), |_| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.infinite = true;
                     })
