@@ -1,3 +1,5 @@
+use std::ops::BitAndAssign;
+
 use crate::direction::Direction;
 use crate::square::Square;
 
@@ -143,11 +145,23 @@ impl std::ops::BitAnd for Bitboard {
     }
 }
 
+impl BitAndAssign for Bitboard {
+    fn bitand_assign(&mut self, rhs: Self) {
+        self.0 = self.0 & rhs.0
+    }
+}
+
 impl std::ops::BitOr for Bitboard {
     type Output = Bitboard;
 
     fn bitor(self, rhs: Self) -> Self::Output {
         Bitboard(self.0 | rhs.0)
+    }
+}
+
+impl std::ops::BitOrAssign for Bitboard {
+    fn bitor_assign(&mut self, rhs: Self) {
+        self.0 = self.0 | rhs.0
     }
 }
 

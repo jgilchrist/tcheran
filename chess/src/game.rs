@@ -2,11 +2,13 @@ use crate::{
     bitboard::Bitboard,
     board::Board,
     direction::Direction,
+    fen,
     movegen::generate_moves,
     moves::Move,
     player::Player,
     square::{self, Rank, Square},
 };
+use anyhow::Result;
 
 // TODO: Flesh out this error type
 #[derive(Debug)]
@@ -75,6 +77,10 @@ impl Game {
             black_castle_rights: CastleRights::default(),
             en_passant_target: None,
         }
+    }
+
+    pub fn from_fen(fen: &str) -> Result<Game> {
+        fen::parse(fen)
     }
 
     pub fn pseudo_legal_moves(&self) -> Vec<Move> {
