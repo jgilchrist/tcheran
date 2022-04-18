@@ -6,10 +6,10 @@ use chess::{
 use nom::{
     branch::alt,
     bytes::complete::tag,
-    character::complete::{multispace0, multispace1, one_of},
-    combinator::{eof, map, opt},
+    character::complete::{space0, space1, one_of},
+    combinator::{eof, map, opt, value},
     multi::{fold_many0, separated_list1},
-    sequence::{pair, preceded, separated_pair, tuple},
+    sequence::{pair, preceded, tuple},
     IResult, InputTakeAtPosition,
 };
 
@@ -22,7 +22,7 @@ fn non_space(input: &str) -> IResult<&str, &str> {
 }
 
 fn boolean(input: &str) -> IResult<&str, bool> {
-    alt((map(tag("on"), |_| true), map(tag("off"), |_| false)))(input)
+    alt((value(true, tag("on")), value(false, tag("off"))))(input)
 }
 
 fn uci_file(input: &str) -> IResult<&str, File> {
@@ -76,18 +76,21 @@ fn uci_move(input: &str) -> IResult<&str, Move> {
 }
 
 fn cmd_uci(input: &str) -> IResult<&str, UciCommand> {
-    map(pair(tag("uci"), eof), |_| UciCommand::Uci)(input)
+    value(UciCommand::Uci, pair(tag("uci"), eof))(input)
 }
 
 fn cmd_debug(input: &str) -> IResult<&str, UciCommand> {
     map(
-        separated_pair(tag("debug"), multispace1, boolean),
-        |(_, on)| UciCommand::Debug(on),
+        preceded(
+            pair(tag("debug"), space1),
+            boolean
+        ),
+        |on| UciCommand::Debug(on),
     )(input)
 }
 
 fn cmd_isready(input: &str) -> IResult<&str, UciCommand> {
-    map(tag("isready"), |_| UciCommand::IsReady)(input)
+    value(UciCommand::IsReady, tag("isready"))(input)
 }
 
 fn cmd_setoption(input: &str) -> IResult<&str, UciCommand> {
@@ -118,37 +121,39 @@ fn cmd_register(input: &str) -> IResult<&str, UciCommand> {
 }
 
 fn cmd_ucinewgame(input: &str) -> IResult<&str, UciCommand> {
-    map(tag("ucinewgame"), |_| UciCommand::UciNewGame)(input)
+    value(UciCommand::UciNewGame, tag("ucinewgame"))(input)
 }
 
 fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
     fn position_arg(input: &str) -> IResult<&str, Position> {
         alt((
-            map(tag("startpos"), |_| Position::StartPos),
+            value(Position::StartPos, tag("startpos")),
             map(
-                separated_pair(tag("fen"), multispace1, non_space),
-                |(_, fen)| Position::Fen(fen.to_string()),
+                preceded(
+                    pair(tag("fen"), space1),
+                    non_space
+                ),
+                |fen| Position::Fen(fen.to_string()),
             ),
         ))(input)
     }
 
     fn moves_arg(input: &str) -> IResult<&str, Vec<Move>> {
         map(
-            separated_pair(
-                tag("moves"),
-                multispace1,
-                separated_list1(multispace1, uci_move),
+            preceded(
+                pair(tag("moves"), space1),
+                separated_list1(space1, uci_move),
             ),
-            |(_, moves)| moves,
+            |moves| moves,
         )(input)
     }
 
     let (input, _) = tag("position")(input)?;
 
-    let (input, _) = multispace1(input)?;
+    let (input, _) = space1(input)?;
     let (input, pos) = position_arg(input)?;
 
-    let (input, _) = opt(multispace1)(input)?;
+    let (input, _) = opt(space1)(input)?;
     let (input, moves) = opt(moves_arg)(input)?;
 
     Ok((
@@ -175,16 +180,15 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
     // the relevant field in GoCmdArguments.
     let (input, args) = fold_many0(
         preceded(
-            multispace1,
+            space1,
             alt((
                 // searchmoves
                 map(
-                    separated_pair(
-                        tag("searchmoves"),
-                        multispace1,
-                        separated_list1(multispace1, uci_move),
+                    preceded(
+                        pair(tag("searchmoves"), space1),
+                        separated_list1(space1, uci_move),
                     ),
-                    |(_, searchmoves)| {
+                    |searchmoves| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.searchmoves = Some(searchmoves);
                         })
@@ -198,8 +202,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 }),
                 // wtime
                 map(
-                    separated_pair(tag("wtime"), multispace1, nom::character::complete::i32),
-                    |(_, wtime)| {
+                    preceded(
+                        pair(tag("wtime"), space1),
+                        nom::character::complete::i32,
+                    ),
+                    |wtime| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.wtime = Some(wtime);
                         })
@@ -207,8 +214,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // btime
                 map(
-                    separated_pair(tag("btime"), multispace1, nom::character::complete::i32),
-                    |(_, btime)| {
+                    preceded(
+                        pair(tag("btime"), space1),
+                        nom::character::complete::i32,
+                    ),
+                    |btime| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.btime = Some(btime);
                         })
@@ -216,8 +226,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // wint
                 map(
-                    separated_pair(tag("winc"), multispace1, nom::character::complete::u32),
-                    |(_, winc)| {
+                    preceded(
+                        pair(tag("winc"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |winc| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.winc = Some(winc);
                         })
@@ -225,8 +238,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // binc
                 map(
-                    separated_pair(tag("binc"), multispace1, nom::character::complete::u32),
-                    |(_, binc)| {
+                    preceded(
+                        pair(tag("binc"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |binc| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.binc = Some(binc);
                         })
@@ -234,8 +250,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // movestogo
                 map(
-                    separated_pair(tag("movestogo"), multispace1, nom::character::complete::u32),
-                    |(_, movestogo)| {
+                    preceded(
+                        pair(tag("movestogo"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |movestogo| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.movestogo = Some(movestogo);
                         })
@@ -243,8 +262,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // depth
                 map(
-                    separated_pair(tag("depth"), multispace1, nom::character::complete::u32),
-                    |(_, depth)| {
+                    preceded(
+                        pair(tag("depth"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |depth| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.depth = Some(depth);
                         })
@@ -252,8 +274,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // nodes
                 map(
-                    separated_pair(tag("nodes"), multispace1, nom::character::complete::u32),
-                    |(_, nodes)| {
+                    preceded(
+                        pair(tag("nodes"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |nodes| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.nodes = Some(nodes);
                         })
@@ -261,8 +286,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // mate
                 map(
-                    separated_pair(tag("mate"), multispace1, nom::character::complete::u32),
-                    |(_, mate)| {
+                    preceded(
+                        pair(tag("mate"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |mate| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.mate = Some(mate);
                         })
@@ -270,8 +298,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                 ),
                 // movetime
                 map(
-                    separated_pair(tag("movetime"), multispace1, nom::character::complete::u32),
-                    |(_, movetime)| {
+                    preceded(
+                        pair(tag("movetime"), space1),
+                        nom::character::complete::u32,
+                    ),
+                    |movetime| {
                         GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                             acc.movetime = Some(movetime);
                         })
@@ -309,19 +340,19 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
 }
 
 fn cmd_stop(input: &str) -> IResult<&str, UciCommand> {
-    map(tag("stop"), |_| UciCommand::Stop)(input)
+    value(UciCommand::Stop, tag("stop"))(input)
 }
 
 fn cmd_ponderhit(input: &str) -> IResult<&str, UciCommand> {
-    map(tag("ponderhit"), |_| UciCommand::PonderHit)(input)
+    value(UciCommand::PonderHit, tag("ponderhit"))(input)
 }
 
 fn cmd_quit(input: &str) -> IResult<&str, UciCommand> {
-    map(tag("quit"), |_| UciCommand::Quit)(input)
+    value(UciCommand::Quit, tag("quit"))(input)
 }
 
 pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = multispace0(input)?;
+    let (input, _) = space0(input)?;
 
     let (input, cmd) = alt((
         cmd_uci,
@@ -337,7 +368,7 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
         cmd_quit,
     ))(input)?;
 
-    let (input, _) = multispace0(input)?;
+    let (input, _) = space0(input)?;
     let (input, _) = eof(input)?;
 
     Ok((input, cmd))
