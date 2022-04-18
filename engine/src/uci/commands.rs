@@ -1,12 +1,12 @@
 use chess::r#move::Move;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(super) enum Position {
     Fen(String),
     StartPos,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(super) struct GoCmdArguments {
     pub searchmoves: Option<Vec<Move>>,
     pub ponder: bool,
@@ -22,7 +22,7 @@ pub(super) struct GoCmdArguments {
     pub infinite: bool,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub(super) enum UciCommand {
     Uci,
     Debug(bool),
