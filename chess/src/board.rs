@@ -53,6 +53,63 @@ impl Board {
         }
     }
 
+    pub fn from_array(pieces: [Option<Piece>; 64]) -> Board {
+        let mut white_pawns_bitboard = Bitboard::empty();
+        let mut white_knights_bitboard = Bitboard::empty();
+        let mut white_bishops_bitboard = Bitboard::empty();
+        let mut white_rooks_bitboard = Bitboard::empty();
+        let mut white_queen_bitboard = Bitboard::empty();
+        let mut white_king_bitboard = Bitboard::empty();
+
+        let mut black_pawns_bitboard = Bitboard::empty();
+        let mut black_knights_bitboard = Bitboard::empty();
+        let mut black_bishops_bitboard = Bitboard::empty();
+        let mut black_rooks_bitboard = Bitboard::empty();
+        let mut black_queen_bitboard = Bitboard::empty();
+        let mut black_king_bitboard = Bitboard::empty();
+
+        for (i, maybe_piece) in pieces.iter().enumerate() {
+            if let Some(p) = maybe_piece {
+                let bitboard = Bitboard::new(1 << i);
+
+                match *p {
+                    Piece::WHITE_PAWN => white_pawns_bitboard |= bitboard,
+                    Piece::WHITE_KNIGHT => white_knights_bitboard |= bitboard,
+                    Piece::WHITE_BISHOP => white_bishops_bitboard |= bitboard,
+                    Piece::WHITE_ROOK => white_rooks_bitboard |= bitboard,
+                    Piece::WHITE_QUEEN => white_queen_bitboard |= bitboard,
+                    Piece::WHITE_KING => white_king_bitboard |= bitboard,
+
+                    Piece::BLACK_PAWN => black_pawns_bitboard |= bitboard,
+                    Piece::BLACK_KNIGHT => black_knights_bitboard |= bitboard,
+                    Piece::BLACK_BISHOP => black_bishops_bitboard |= bitboard,
+                    Piece::BLACK_ROOK => black_rooks_bitboard |= bitboard,
+                    Piece::BLACK_QUEEN => black_queen_bitboard |= bitboard,
+                    Piece::BLACK_KING => black_king_bitboard |= bitboard,
+                }
+            }
+        }
+
+        Board {
+            white_pieces: PlayerPieces {
+                pawns: white_pawns_bitboard,
+                knights: white_knights_bitboard,
+                bishops: white_bishops_bitboard,
+                rooks: white_rooks_bitboard,
+                queen: white_queen_bitboard,
+                king: white_king_bitboard,
+            },
+            black_pieces: PlayerPieces {
+                pawns: black_pawns_bitboard,
+                knights: black_knights_bitboard,
+                bishops: black_bishops_bitboard,
+                rooks: black_rooks_bitboard,
+                queen: black_queen_bitboard,
+                king: black_king_bitboard,
+            },
+        }
+    }
+
     fn player_pieces(&self, player: &Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
@@ -137,7 +194,8 @@ impl Board {
                     };
 
                 // Place that piece on the board
-                new_bitboard = new_bitboard & remove_promoted_pawn_mask | add_promoted_piece_mask;
+                new_bitboard &= remove_promoted_pawn_mask;
+                new_bitboard |= add_promoted_piece_mask;
             }
 
             // PERF: Here, we figure out if the move was en-passant. It may be more performant to
@@ -160,7 +218,7 @@ impl Board {
                     let capture_square = mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
 
                     let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
-                    new_bitboard = new_bitboard & remove_captured_pawn_mask;
+                    new_bitboard &= remove_captured_pawn_mask;
                 }
             }
 
@@ -212,7 +270,8 @@ impl Board {
                     });
 
                     if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {
-                        new_bitboard = new_bitboard & rook_remove_mask | rook_add_mask;
+                        new_bitboard &= rook_remove_mask;
+                        new_bitboard |= rook_add_mask;
                     }
                 }
             }
