@@ -1,24 +1,19 @@
 use crate::{
     bitboard::{self, Bitboard},
+    piece::{self, Piece, PieceKind},
+    player::Player,
+    r#move::Move,
     square::Square,
-    Piece, Player,
 };
 
-pub struct CastleRights {
-    king_side: bool,
-    queen_side: bool,
-}
-
 pub struct Board {
-    pub player: Player,
-    pub white_pieces: PlayerPieces,
-    pub black_pieces: PlayerPieces,
-    pub white_castle_rights: CastleRights,
-    pub black_castle_rights: CastleRights,
+    white_pieces: PlayerPieces,
+    black_pieces: PlayerPieces,
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
+#[derive(Debug)]
 pub struct PlayerPieces {
     pub pawns: Bitboard,
     pub knights: Bitboard,
@@ -31,7 +26,6 @@ pub struct PlayerPieces {
 impl Board {
     pub fn start() -> Board {
         Board {
-            player: Player::White,
             white_pieces: PlayerPieces {
                 pawns: bitboard::known::INIT_WHITE_PAWNS,
                 knights: bitboard::known::INIT_WHITE_KNIGHTS,
@@ -48,19 +42,7 @@ impl Board {
                 queen: bitboard::known::INIT_BLACK_QUEEN,
                 king: bitboard::known::INIT_BLACK_KING,
             },
-            white_castle_rights: CastleRights {
-                king_side: true,
-                queen_side: true,
-            },
-            black_castle_rights: CastleRights {
-                king_side: true,
-                queen_side: true,
-            },
         }
-    }
-
-    fn current_player_pieces(&self) -> &PlayerPieces {
-        self.player_pieces(&self.player)
     }
 
     fn player_pieces(&self, player: &Player) -> &PlayerPieces {
@@ -70,36 +52,102 @@ impl Board {
         }
     }
 
-    fn player_piece_at(&self, player: &Player, square: &Square) -> Option<Piece> {
+    pub fn player_piece_at(&self, player: &Player, square: &Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
         if player_pieces.pawns.has_square(square) {
-            Some(Piece::Pawn)
+            Some(PieceKind::Pawn)
         } else if player_pieces.knights.has_square(square) {
-            Some(Piece::Knight)
+            Some(PieceKind::Knight)
         } else if player_pieces.bishops.has_square(square) {
-            Some(Piece::Bishop)
+            Some(PieceKind::Bishop)
         } else if player_pieces.rooks.has_square(square) {
-            Some(Piece::Rook)
+            Some(PieceKind::Rook)
         } else if player_pieces.queen.has_square(square) {
-            Some(Piece::Queen)
+            Some(PieceKind::Queen)
         } else if player_pieces.king.has_square(square) {
-            Some(Piece::King)
+            Some(PieceKind::King)
         } else {
             None
         }
     }
 
-    fn piece_at(&self, square: &Square) -> Option<(Player, Piece)> {
-        if let Some(white_piece) = self.player_piece_at(&Player::White, square) {
-            return Some((Player::White, white_piece));
+    pub fn piece_at(&self, square: &Square) -> Option<Piece> {
+        if let Some(white_piece_kind) = self.player_piece_at(&Player::White, square) {
+            return Some(Piece::white(white_piece_kind));
         }
 
-        if let Some(black_piece) = self.player_piece_at(&Player::Black, square) {
-            return Some((Player::Black, black_piece));
+        if let Some(black_piece_kind) = self.player_piece_at(&Player::Black, square) {
+            return Some(Piece::black(black_piece_kind));
         }
 
         None
+    }
+
+    // Does not consider move legality. Just concerned with the implementation details
+    // of removing a piece from one square and putting it on another one (and dealing with
+    // any interesting consequences (e.g. en-passant/castling))
+    //
+    // PERF: There's likely many more efficient ways to do this.
+    // A good target for optimisation once things are working.
+    //
+    // TODO: Return info about the move (was it a capture?)
+    #[allow(clippy::result_unit_err)]
+    pub fn make_move(&self, r#move: &Move) -> Result<(Board, ()), ()> {
+        let piece_to_move = self.piece_at(&r#move.src).ok_or(())?;
+
+        let remove_src_mask = Bitboard::except_square(&r#move.src);
+
+        let add_piece_to_dst_mask = |piece: &Piece| {
+            if *piece == piece_to_move {
+                Bitboard::from_square(&r#move.dst)
+            } else {
+                Bitboard::empty()
+            }
+        };
+
+        let remove_captured_piece_from_dst_mask = |piece: &Piece| {
+            if *piece != piece_to_move {
+                Bitboard::except_square(&r#move.dst)
+            } else {
+                Bitboard::full()
+            }
+        };
+
+        let mask_bitboard = |bitboard: Bitboard, piece: &Piece| {
+            bitboard
+                // Remove the piece that is being moved from its bitboard
+                // Currently unconditional as it's the same as removing from every bitboard
+                & remove_src_mask
+                // Add the piece that is being moved to the destination square
+                | add_piece_to_dst_mask(piece)
+                // Remove any piece currently occupying the destination square
+                & remove_captured_piece_from_dst_mask(piece)
+        };
+
+        let new_board = Board {
+            white_pieces: PlayerPieces {
+                pawns: mask_bitboard(self.white_pieces.pawns, &piece::known::WHITE_PAWN),
+                knights: mask_bitboard(self.white_pieces.knights, &piece::known::WHITE_KNIGHT),
+                bishops: mask_bitboard(self.white_pieces.bishops, &piece::known::WHITE_BISHOP),
+                rooks: mask_bitboard(self.white_pieces.rooks, &piece::known::WHITE_ROOK),
+                queen: mask_bitboard(self.white_pieces.queen, &piece::known::WHITE_QUEEN),
+                king: mask_bitboard(self.white_pieces.king, &piece::known::WHITE_KING),
+            },
+            black_pieces: PlayerPieces {
+                pawns: mask_bitboard(self.black_pieces.pawns, &piece::known::BLACK_PAWN),
+                knights: mask_bitboard(self.black_pieces.knights, &piece::known::BLACK_KNIGHT),
+                bishops: mask_bitboard(self.black_pieces.bishops, &piece::known::BLACK_BISHOP),
+                rooks: mask_bitboard(self.black_pieces.rooks, &piece::known::BLACK_ROOK),
+                queen: mask_bitboard(self.black_pieces.queen, &piece::known::BLACK_QUEEN),
+                king: mask_bitboard(self.black_pieces.king, &piece::known::BLACK_KING),
+            },
+        };
+
+        // TODO: Castling
+        // TODO: En-passant
+
+        Ok((new_board, ()))
     }
 }
 
@@ -115,28 +163,28 @@ impl std::fmt::Debug for Board {
                     (0..8)
                         .into_iter()
                         .map(|file| match self.piece_at(&Square::from_idxs(file, rank)) {
-                            Some((player, piece)) => match piece {
-                                Piece::Pawn => match player {
+                            Some(Piece { player, kind }) => match kind {
+                                PieceKind::Pawn => match player {
                                     Player::White => "♟",
                                     Player::Black => "♙",
                                 },
-                                Piece::Knight => match player {
+                                PieceKind::Knight => match player {
                                     Player::White => "♞",
                                     Player::Black => "♘",
                                 },
-                                Piece::Bishop => match player {
+                                PieceKind::Bishop => match player {
                                     Player::White => "♝",
                                     Player::Black => "♗",
                                 },
-                                Piece::Rook => match player {
+                                PieceKind::Rook => match player {
                                     Player::White => "♜",
                                     Player::Black => "♖",
                                 },
-                                Piece::Queen => match player {
+                                PieceKind::Queen => match player {
                                     Player::White => "♛",
                                     Player::Black => "♕",
                                 },
-                                Piece::King => match player {
+                                PieceKind::King => match player {
                                     Player::White => "♚",
                                     Player::Black => "♔",
                                 },

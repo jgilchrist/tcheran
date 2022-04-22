@@ -7,7 +7,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{one_of, space0, space1},
-    combinator::{eof, map, opt, value, success},
+    combinator::{eof, map, opt, success, value},
     error::ParseError,
     multi::{fold_many0, separated_list1},
     sequence::{pair, preceded, tuple},
@@ -100,7 +100,7 @@ fn cmd_uci(input: &str) -> IResult<&str, UciCommand> {
 }
 
 fn cmd_debug(input: &str) -> IResult<&str, UciCommand> {
-    command_with_argument("debug", boolean, |on| UciCommand::Debug(on))(input)
+    command_with_argument("debug", boolean, UciCommand::Debug)(input)
 }
 
 fn cmd_isready(input: &str) -> IResult<&str, UciCommand> {
