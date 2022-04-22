@@ -4,21 +4,8 @@
 pub mod bitboard;
 pub mod board;
 pub mod consts;
+pub mod game;
 pub mod r#move;
+pub mod piece;
+pub mod player;
 pub mod square;
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Player {
-    White,
-    Black,
-}
-
-#[derive(Debug, PartialEq, Eq)]
-pub enum Piece {
-    Pawn,
-    Knight,
-    Bishop,
-    Rook,
-    Queen,
-    King,
-}

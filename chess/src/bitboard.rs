@@ -8,12 +8,24 @@ impl Bitboard {
         Bitboard(squares)
     }
 
+    pub const fn empty() -> Bitboard {
+        Bitboard(0)
+    }
+
+    pub const fn full() -> Bitboard {
+        Bitboard(u64::MAX)
+    }
+
     pub fn has_square(&self, square: &Square) -> bool {
         !(*self & Bitboard::from_square(square)).is_empty()
     }
 
     pub fn is_empty(&self) -> bool {
         self.0 == 0
+    }
+
+    pub fn invert(&self) -> Bitboard {
+        Bitboard(!self.0)
     }
 
     pub fn lsb(&self) -> Bitboard {
@@ -73,6 +85,10 @@ impl Bitboard {
 
         let square_idx = rank_idx * 8 + file_idx;
         Bitboard(1 << square_idx)
+    }
+
+    pub fn except_square(square: &Square) -> Bitboard {
+        Bitboard::from_square(square).invert()
     }
 
     pub fn to_square(&self) -> Square {
