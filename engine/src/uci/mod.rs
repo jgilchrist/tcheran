@@ -15,6 +15,7 @@ pub mod responses;
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
+#[derive(Debug)]
 struct UciState {
     debug: bool,
     board: Board,
@@ -66,8 +67,18 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }
         UciCommand::Position { position, moves } => {
             match position {
-                // TODO: Play moves on the board
-                commands::Position::StartPos => state.board = Board::start(),
+                commands::Position::StartPos => {
+                    let mut board = Board::start();
+
+                    for r#move in moves {
+                        // TODO: Error handling for invalid moves
+                        let (new_board, _) = board.make_move(r#move).unwrap();
+                        board = new_board;
+                    }
+
+                    state.board = board;
+                    log(&format!("{:?}", state.board));
+                },
                 // TODO: Get board from FEN
                 commands::Position::Fen(_) => state.board = Board::start(),
             }
