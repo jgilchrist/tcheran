@@ -86,7 +86,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             movetime: _,
             infinite: _,
         }) => {
-            let best_move = crate::run(&state.game.board);
+            let best_move = crate::run(&state.game);
 
             send_response(&UciResponse::BestMove {
                 r#move: best_move,
@@ -94,7 +94,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             });
         }
         UciCommand::Stop => {
-            let best_move = crate::run(&state.game.board);
+            let best_move = crate::run(&state.game);
 
             send_response(&UciResponse::BestMove {
                 r#move: best_move,

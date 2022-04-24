@@ -9,6 +9,7 @@ git-version = "0.3.8"
 chess = { path = "../chess" }
 clap = { version = "3.1.8", features = ["derive"] }
 nom = "7.1.1"
+rand = "0.8.5"
 
 [lib]
 name = "engine"

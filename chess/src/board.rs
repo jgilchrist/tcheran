@@ -6,21 +6,28 @@ use crate::{
     square::Square,
 };
 
+#[derive(Clone, Copy)]
 pub struct Board {
-    white_pieces: PlayerPieces,
-    black_pieces: PlayerPieces,
+    pub(crate) white_pieces: PlayerPieces,
+    pub(crate) black_pieces: PlayerPieces,
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
-#[derive(Debug)]
-pub struct PlayerPieces {
+#[derive(Clone, Copy)]
+pub(crate) struct PlayerPieces {
     pub pawns: Bitboard,
     pub knights: Bitboard,
     pub bishops: Bitboard,
     pub rooks: Bitboard,
     pub queen: Bitboard,
     pub king: Bitboard,
+}
+
+impl PlayerPieces {
+    pub fn all(&self) -> Bitboard {
+        self.pawns | self.knights | self.bishops | self.rooks | self.queen | self.king
+    }
 }
 
 impl Board {

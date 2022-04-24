@@ -1,4 +1,5 @@
-use chess::{board::Board, r#move::Move, square::Square};
+use chess::{game::Game, movegen::generate_moves, r#move::Move};
+use rand::prelude::SliceRandom;
 
 pub mod uci;
 
@@ -20,6 +21,7 @@ pub fn engine_version() -> &'static str {
     version
 }
 
-fn run(_board: &Board) -> Move {
-    Move::new(Square::E7, Square::E5)
+fn run(game: &Game) -> Move {
+    let moves = generate_moves(game);
+    *moves.choose(&mut rand::thread_rng()).unwrap()
 }
