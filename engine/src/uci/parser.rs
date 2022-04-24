@@ -1,5 +1,6 @@
 use anyhow::{bail, Result};
 use chess::{
+    piece::PromotionPieceKind,
     r#move::Move,
     square::{File, Rank, Square},
 };
@@ -70,10 +71,29 @@ fn uci_square(input: &str) -> IResult<&str, Square> {
     })(input)
 }
 
+fn uci_promotion(input: &str) -> IResult<&str, PromotionPieceKind> {
+    let (input, rank) = one_of("nbrq")(input)?;
+
+    Ok((
+        input,
+        match rank {
+            'n' => PromotionPieceKind::Knight,
+            'b' => PromotionPieceKind::Bishop,
+            'r' => PromotionPieceKind::Rook,
+            'q' => PromotionPieceKind::Queen,
+            _ => unreachable!(),
+        },
+    ))
+}
+
 fn uci_move(input: &str) -> IResult<&str, Move> {
-    map(tuple((uci_square, uci_square)), |(from, to)| {
-        Move::new(from, to)
-    })(input)
+    map(
+        tuple((uci_square, uci_square, opt(uci_promotion))),
+        |(from, to, promotion)| match promotion {
+            None => Move::new(from, to),
+            Some(p) => Move::new_with_promotion(from, to, p),
+        },
+    )(input)
 }
 
 fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {

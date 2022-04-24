@@ -1,6 +1,6 @@
 use crate::player::Player;
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PieceKind {
     Pawn,
     Knight,
@@ -10,7 +10,28 @@ pub enum PieceKind {
     King,
 }
 
-#[derive(Debug, PartialEq, Eq)]
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
+pub enum PromotionPieceKind {
+    Knight,
+    Bishop,
+    Rook,
+    Queen,
+}
+
+impl PromotionPieceKind {
+    pub const ALL: &'static [Self; 4] = &[Self::Knight, Self::Bishop, Self::Rook, Self::Queen];
+
+    pub fn piece(&self) -> PieceKind {
+        match self {
+            PromotionPieceKind::Knight => PieceKind::Knight,
+            PromotionPieceKind::Bishop => PieceKind::Bishop,
+            PromotionPieceKind::Rook => PieceKind::Rook,
+            PromotionPieceKind::Queen => PieceKind::Queen,
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub struct Piece {
     pub kind: PieceKind,
     pub player: Player,
