@@ -7,12 +7,11 @@ use engine::uci;
 pub enum RunMode {
     Uci,
     PrintBoard,
-    Devel,
 }
 
 impl Default for RunMode {
     fn default() -> Self {
-        RunMode::Devel
+        RunMode::Uci
     }
 }
 
@@ -40,10 +39,6 @@ fn main() -> Result<()> {
         RunMode::Uci => uci::uci(),
         RunMode::PrintBoard => {
             print_board();
-            Ok(())
-        }
-        RunMode::Devel => {
-            devel();
             Ok(())
         }
     }
