@@ -97,6 +97,7 @@ impl Board {
         let piece_to_move = self.piece_at(&r#move.src).ok_or(())?;
 
         let remove_src_mask = Bitboard::except_square(&r#move.src);
+        let remove_from_dst_mask = Bitboard::except_square(&r#move.dst);
 
         let add_piece_to_dst_mask = |piece: &Piece| {
             if *piece == piece_to_move {
@@ -106,23 +107,15 @@ impl Board {
             }
         };
 
-        let remove_captured_piece_from_dst_mask = |piece: &Piece| {
-            if *piece != piece_to_move {
-                Bitboard::except_square(&r#move.dst)
-            } else {
-                Bitboard::full()
-            }
-        };
-
         let mask_bitboard = |bitboard: Bitboard, piece: &Piece| {
             bitboard
                 // Remove the piece that is being moved from its bitboard
                 // Currently unconditional as it's the same as removing from every bitboard
                 & remove_src_mask
+                // Remove any piece currently occupying the destination square
+                & remove_from_dst_mask
                 // Add the piece that is being moved to the destination square
                 | add_piece_to_dst_mask(piece)
-                // Remove any piece currently occupying the destination square
-                & remove_captured_piece_from_dst_mask(piece)
         };
 
         let new_board = Board {
