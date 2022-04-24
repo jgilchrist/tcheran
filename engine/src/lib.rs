@@ -20,6 +20,6 @@ pub fn engine_version() -> &'static str {
     version
 }
 
-fn run(board: &Board) -> Move {
+fn run(_board: &Board) -> Move {
     Move::new(Square::E7, Square::E5)
 }

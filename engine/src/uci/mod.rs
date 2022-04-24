@@ -9,6 +9,7 @@ use self::{
 
 pub mod commands;
 pub mod parser;
+#[allow(unused)]
 pub mod responses;
 
 /// Implementation of the Universal Chess Interface (UCI) protocol
@@ -46,8 +47,12 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }
         UciCommand::Debug(on) => state.debug = *on,
         UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
-        UciCommand::SetOption { name, value } => {}
-        UciCommand::Register { later, name, code } => {}
+        UciCommand::SetOption { name: _, value: _ } => {}
+        UciCommand::Register {
+            later: _,
+            name: _,
+            code: _,
+        } => {}
         UciCommand::UciNewGame => {
             state.game = Game::new();
         }
@@ -69,18 +74,18 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             }
         }
         UciCommand::Go(GoCmdArguments {
-            searchmoves,
-            ponder,
-            wtime,
-            btime,
-            winc,
-            binc,
-            movestogo,
-            depth,
-            nodes,
-            mate,
-            movetime,
-            infinite,
+            searchmoves: _,
+            ponder: _,
+            wtime: _,
+            btime: _,
+            winc: _,
+            binc: _,
+            movestogo: _,
+            depth: _,
+            nodes: _,
+            mate: _,
+            movetime: _,
+            infinite: _,
         }) => {
             let best_move = crate::run(&state.game.board);
 
