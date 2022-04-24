@@ -42,8 +42,8 @@ impl Bitboard {
         self.0.count_ones() as u8
     }
 
-    pub fn squares(&self) -> Vec<Square> {
-        let mut bits: Vec<Square> = vec![];
+    pub fn bits(&self) -> Vec<Bitboard> {
+        let mut bits: Vec<Bitboard> = vec![];
         let mut bitboard = Bitboard(self.0);
 
         loop {
@@ -51,10 +51,17 @@ impl Bitboard {
                 return bits;
             }
 
-            let (next_square, next_bitboard) = bitboard.pop_lsb();
+            let (next_bit, next_bitboard) = bitboard.pop_lsb();
             bitboard = next_bitboard;
-            bits.push(next_square.to_square());
+            bits.push(next_bit);
         }
+    }
+
+    pub fn squares(&self) -> Vec<Square> {
+        self.bits()
+            .iter()
+            .map(|b| b.to_square_definite())
+            .collect()
     }
 
     pub fn from_square(square: &Square) -> Bitboard {
@@ -91,9 +98,17 @@ impl Bitboard {
         Bitboard::from_square(square).invert()
     }
 
-    pub fn to_square(&self) -> Square {
-        assert!(self.count() == 1);
-        Square::from_idx(self.0.trailing_zeros() as u8)
+    pub fn to_square_definite(&self) -> Square {
+        self.to_square().expect("Expected single bit")
+    }
+
+    pub fn to_square(&self) -> Option<Square> {
+        assert!(self.count() == 0 || self.count() == 1);
+
+        match self.is_empty() {
+            true => None,
+            false => Some(Square::from_idx(self.0.trailing_zeros() as u8)),
+        }
     }
 
     pub fn north(&self) -> Bitboard {
