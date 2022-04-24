@@ -1,6 +1,3 @@
-#![allow(dead_code)]
-#![allow(unused_variables)]
-
 use chess::{board::Board, r#move::Move, square::Square};
 
 pub mod uci;
