@@ -1,6 +1,7 @@
 use anyhow::Result;
 use chess::board::Board;
-use std::io::{BufRead, Write};
+use chess::debug;
+use std::io::BufRead;
 
 use self::{
     commands::{GoCmdArguments, UciCommand},
@@ -27,25 +28,11 @@ enum ExecuteResult {
     Exit,
 }
 
-const LOG_PATH: &str = "/tmp/chess_engine";
-
-// FIXME: It's not ideal to open a handle to the file every time we want to write a line
-fn log(s: &str) {
-    let mut f = std::fs::OpenOptions::new()
-        .write(true)
-        .append(true)
-        .open(LOG_PATH)
-        .unwrap();
-
-    writeln!(f, "{}", s).unwrap();
-    f.flush().unwrap()
-}
-
 fn send_response(response: &UciResponse) {
     println!("{}", response.as_string());
 
-    log(&format!("\t\t{}", response.as_string()));
-    log(&format!("\t\t  {:?}", response));
+    debug::log(&format!("\t\t{}", response.as_string()));
+    debug::log(&format!("\t\t  {:?}", response));
 }
 
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
@@ -77,8 +64,8 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                     }
 
                     state.board = board;
-                    log(&format!("{:?}", state.board));
-                },
+                    debug::log(&format!("{:?}", state.board));
+                }
                 // TODO: Get board from FEN
                 commands::Position::Fen(_) => state.board = Board::start(),
             }
@@ -130,27 +117,27 @@ pub fn uci() -> Result<()> {
 
     let stdin = std::io::stdin();
 
-    log("\n\n============== Engine ============");
+    debug::log("\n\n============== Engine ============");
 
     for line in stdin.lock().lines() {
         let line = line?;
-        log(&line);
+        debug::log(&line);
         let command = parser::parse(&line);
 
         match command {
             Ok(ref c) => {
-                log(&format!("  {:?}", c));
+                debug::log(&format!("  {:?}", c));
 
                 let execute_result = execute(c, &mut state)?;
                 if execute_result == ExecuteResult::Exit {
                     break;
                 }
 
-                log("");
+                debug::log("");
             }
             Err(e) => {
                 eprintln!("{}", e);
-                log("? Unknown command\n");
+                debug::log("? Unknown command\n");
             }
         }
     }
