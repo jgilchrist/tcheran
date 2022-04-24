@@ -1,3 +1,4 @@
+use crate::direction::Direction;
 use crate::square::Square;
 
 #[derive(Clone, Copy)]
@@ -108,6 +109,19 @@ impl Bitboard {
         match self.is_empty() {
             true => None,
             false => Some(Square::from_idx(self.0.trailing_zeros() as u8)),
+        }
+    }
+
+    pub fn in_direction(&self, direction: Direction) -> Bitboard {
+        match direction {
+            Direction::North => self.north(),
+            Direction::NorthEast => self.north_east(),
+            Direction::East => self.east(),
+            Direction::SouthEast => self.south_east(),
+            Direction::South => self.south(),
+            Direction::SouthWest => self.south_west(),
+            Direction::West => self.west(),
+            Direction::NorthWest => self.north_west(),
         }
     }
 

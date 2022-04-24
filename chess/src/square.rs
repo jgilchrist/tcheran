@@ -1,3 +1,5 @@
+use crate::{bitboard::Bitboard, direction::Direction};
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum File {
     A,
@@ -108,6 +110,7 @@ impl std::fmt::Display for Rank {
     }
 }
 
+// TODO: Change internal representation to u8 (index)
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Square(pub File, pub Rank);
 
@@ -128,6 +131,52 @@ impl Square {
 
     pub fn notation(&self) -> String {
         format!("{}{}", self.0, self.1)
+    }
+
+    // PERF: Continuous conversions to and from bitboard may have a perf impact?
+    pub fn in_direction(&self, direction: &Direction) -> Option<Square> {
+        match direction {
+            Direction::North => self.north(),
+            Direction::NorthEast => self.north_east(),
+            Direction::East => self.east(),
+            Direction::SouthEast => self.south_east(),
+            Direction::South => self.south(),
+            Direction::SouthWest => self.south_west(),
+            Direction::West => self.west(),
+            Direction::NorthWest => self.north_west(),
+        }
+    }
+
+    pub fn north(&self) -> Option<Square> {
+        Bitboard::from_square(self).north().to_square()
+    }
+
+    pub fn south(&self) -> Option<Square> {
+        Bitboard::from_square(self).south().to_square()
+    }
+
+    pub fn east(&self) -> Option<Square> {
+        Bitboard::from_square(self).east().to_square()
+    }
+
+    pub fn north_east(&self) -> Option<Square> {
+        Bitboard::from_square(self).north_east().to_square()
+    }
+
+    pub fn south_east(&self) -> Option<Square> {
+        Bitboard::from_square(self).south_east().to_square()
+    }
+
+    pub fn west(&self) -> Option<Square> {
+        Bitboard::from_square(self).west().to_square()
+    }
+
+    pub fn south_west(&self) -> Option<Square> {
+        Bitboard::from_square(self).south_west().to_square()
+    }
+
+    pub fn north_west(&self) -> Option<Square> {
+        Bitboard::from_square(self).north_west().to_square()
     }
 
     // For convenience
