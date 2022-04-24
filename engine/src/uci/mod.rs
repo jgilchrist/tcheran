@@ -1,6 +1,5 @@
 use anyhow::Result;
-use chess::board::Board;
-use chess::debug;
+use chess::{debug, game::Game};
 use std::io::BufRead;
 
 use self::{
@@ -19,7 +18,7 @@ pub mod responses;
 #[derive(Debug)]
 struct UciState {
     debug: bool,
-    board: Board,
+    game: Game,
 }
 
 #[derive(Debug, PartialEq)]
@@ -50,24 +49,23 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         UciCommand::SetOption { name, value } => {}
         UciCommand::Register { later, name, code } => {}
         UciCommand::UciNewGame => {
-            state.board = Board::start();
+            state.game = Game::new();
         }
         UciCommand::Position { position, moves } => {
             match position {
                 commands::Position::StartPos => {
-                    let mut board = Board::start();
+                    let mut game = Game::new();
 
                     for r#move in moves {
                         // TODO: Error handling for invalid moves
-                        let (new_board, _) = board.make_move(r#move).unwrap();
-                        board = new_board;
+                        game = game.make_move(r#move).unwrap();
                     }
 
-                    state.board = board;
-                    debug::log(&format!("{:?}", state.board));
+                    state.game = game;
+                    debug::log(&format!("{:?}", state.game));
                 }
                 // TODO: Get board from FEN
-                commands::Position::Fen(_) => state.board = Board::start(),
+                commands::Position::Fen(_) => state.game = Game::new(),
             }
         }
         UciCommand::Go(GoCmdArguments {
@@ -84,7 +82,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             movetime,
             infinite,
         }) => {
-            let best_move = crate::run(&state.board);
+            let best_move = crate::run(&state.game.board);
 
             send_response(&UciResponse::BestMove {
                 r#move: best_move,
@@ -92,7 +90,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             });
         }
         UciCommand::Stop => {
-            let best_move = crate::run(&state.board);
+            let best_move = crate::run(&state.game.board);
 
             send_response(&UciResponse::BestMove {
                 r#move: best_move,
@@ -112,7 +110,7 @@ pub fn uci() -> Result<()> {
 
     let mut state = UciState {
         debug: false,
-        board: Board::start(),
+        game: Game::new(),
     };
 
     let stdin = std::io::stdin();
