@@ -59,10 +59,7 @@ impl Bitboard {
     }
 
     pub fn squares(&self) -> Vec<Square> {
-        self.bits()
-            .iter()
-            .map(|b| b.to_square_definite())
-            .collect()
+        self.bits().iter().map(|b| b.to_square_definite()).collect()
     }
 
     pub fn from_square(square: &Square) -> Bitboard {
