@@ -32,7 +32,6 @@ fn send_response(response: &UciResponse) {
     println!("{}", response.as_string());
 
     debug::log(&format!("\t\t{}", response.as_string()));
-    debug::log(&format!("\t\t  {:?}", response));
 }
 
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
@@ -129,8 +128,6 @@ pub fn uci() -> Result<()> {
 
         match command {
             Ok(ref c) => {
-                debug::log(&format!("  {:?}", c));
-
                 let execute_result = execute(c, &mut state)?;
                 if execute_result == ExecuteResult::Exit {
                     break;
