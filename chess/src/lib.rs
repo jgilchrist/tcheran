@@ -5,6 +5,7 @@ pub mod debug;
 pub mod direction;
 pub mod game;
 pub mod r#move;
+pub mod movegen;
 pub mod piece;
 pub mod player;
 pub mod square;
