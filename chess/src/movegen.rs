@@ -4,7 +4,7 @@ use crate::{
     game::Game,
     piece::PromotionPieceKind,
     player::Player,
-    r#move::Move,
+    moves::Move,
     square::{self, Square},
 };
 

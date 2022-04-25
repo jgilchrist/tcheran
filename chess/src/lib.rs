@@ -4,7 +4,7 @@ pub mod consts;
 pub mod debug;
 pub mod direction;
 pub mod game;
-pub mod r#move;
+pub mod moves;
 pub mod piece;
 pub mod player;
 pub mod square;

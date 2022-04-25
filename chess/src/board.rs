@@ -3,7 +3,7 @@ use crate::{
     direction::Direction,
     piece::{Piece, PieceKind},
     player::Player,
-    r#move::Move,
+    moves::Move,
     square::{self, Square},
 };
 
@@ -101,15 +101,15 @@ impl Board {
     //
     // TODO: Return info about the move (was it a capture?)
     #[allow(clippy::result_unit_err)]
-    pub fn make_move(&self, r#move: &Move) -> Result<(Board, ()), ()> {
-        let moved_piece = self.piece_at(&r#move.src).ok_or(())?;
+    pub fn make_move(&self, mv: &Move) -> Result<(Board, ()), ()> {
+        let moved_piece = self.piece_at(&mv.src).ok_or(())?;
 
-        let remove_src_mask = Bitboard::except_square(&r#move.src);
-        let remove_from_dst_mask = Bitboard::except_square(&r#move.dst);
+        let remove_src_mask = Bitboard::except_square(&mv.src);
+        let remove_from_dst_mask = Bitboard::except_square(&mv.dst);
 
         let add_piece_to_dst_mask = |piece: &Piece| {
             if *piece == moved_piece {
-                Bitboard::from_square(&r#move.dst)
+                Bitboard::from_square(&mv.dst)
             } else {
                 Bitboard::empty()
             }
@@ -125,13 +125,13 @@ impl Board {
                 // Add the piece that is being moved to the destination square
                 | add_piece_to_dst_mask(piece);
 
-            if let Some(promoted_to) = r#move.promotion {
+            if let Some(promoted_to) = mv.promotion {
                 // The promoted pawn has turned into another piece
-                let remove_promoted_pawn_mask = Bitboard::except_square(&r#move.dst);
+                let remove_promoted_pawn_mask = Bitboard::except_square(&mv.dst);
 
                 let add_promoted_piece_mask =
                     if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
-                        Bitboard::from_square(&r#move.dst)
+                        Bitboard::from_square(&mv.dst)
                     } else {
                         Bitboard::empty()
                     };
@@ -146,18 +146,18 @@ impl Board {
 
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
-            if moved_piece.kind == PieceKind::Pawn && r#move.is_diagonal() {
+            if moved_piece.kind == PieceKind::Pawn && mv.is_diagonal() {
                 let opponent_pieces = self.player_pieces(&moved_piece.player.other()).all();
 
                 // Definitely en-passant, as we made a capture but there was no piece on that square.
-                if !opponent_pieces.has_square(&r#move.dst) {
+                if !opponent_pieces.has_square(&mv.dst) {
                     // Get the square that we need to remove the pawn from.
                     let inverse_pawn_move_direction = match moved_piece.player {
                         Player::White => Direction::South,
                         Player::Black => Direction::North,
                     };
 
-                    let capture_square = r#move
+                    let capture_square = mv
                         .dst
                         .in_direction(&inverse_pawn_move_direction)
                         .unwrap();
@@ -177,7 +177,7 @@ impl Board {
             // just telling the board the start and end destination for the piece.
 
             // If we just moved a king from its start square, we may have castled.
-            if moved_piece.kind == PieceKind::King && r#move.src == *king_start_square {
+            if moved_piece.kind == PieceKind::King && mv.src == *king_start_square {
                 let kingside_square = match moved_piece.player {
                     Player::White => Square::G1,
                     Player::Black => Square::G8,
@@ -189,8 +189,8 @@ impl Board {
                 };
 
                 // We're castling!
-                if r#move.dst == kingside_square || r#move.dst == queenside_square {
-                    let is_kingside = r#move.dst == kingside_square;
+                if mv.dst == kingside_square || mv.dst == queenside_square {
+                    let is_kingside = mv.dst == kingside_square;
 
                     let rook_remove_mask = Bitboard::except_square(match is_kingside {
                         true => match moved_piece.player {

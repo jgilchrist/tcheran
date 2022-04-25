@@ -1,4 +1,4 @@
-use chess::{game::Game, r#move::Move};
+use chess::{game::Game, moves::Move};
 use rand::prelude::SliceRandom;
 
 pub mod uci;

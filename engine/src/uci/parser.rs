@@ -1,7 +1,7 @@
 use anyhow::{bail, Result};
 use chess::{
     piece::PromotionPieceKind,
-    r#move::Move,
+    moves::Move,
     square::{File, Rank, Square},
 };
 use nom::{

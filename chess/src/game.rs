@@ -4,7 +4,7 @@ use crate::{
     direction::Direction,
     movegen::generate_moves,
     player::Player,
-    r#move::Move,
+    moves::Move,
     square::{self, Rank, Square},
 };
 
@@ -115,13 +115,13 @@ impl Game {
     }
 
     #[allow(unused)]
-    pub fn make_move(&self, r#move: &Move) -> Result<Game, MoveError> {
-        let from = r#move.src;
-        let to = r#move.dst;
+    pub fn make_move(&self, mv: &Move) -> Result<Game, MoveError> {
+        let from = mv.src;
+        let to = mv.dst;
 
         let (board, move_info) = self
             .board
-            .make_move(r#move)
+            .make_move(mv)
             .map_err(|()| MoveError::InvalidMove)?;
 
         let piece_to_move = self
@@ -188,7 +188,7 @@ impl Game {
         };
 
         let white_castle_rights = if self.player == Player::White {
-            match (&r#move.src, self.white_castle_rights) {
+            match (&mv.src, self.white_castle_rights) {
                 (square::known::WHITE_KING_START, _) => CastleRights::none(),
                 (
                     square::known::WHITE_KINGSIDE_ROOK_START,
@@ -209,7 +209,7 @@ impl Game {
         };
 
         let black_castle_rights = if self.player == Player::Black {
-            match (&r#move.src, self.black_castle_rights) {
+            match (&mv.src, self.black_castle_rights) {
                 (square::known::BLACK_KING_START, _) => CastleRights::none(),
                 (
                     square::known::BLACK_KINGSIDE_ROOK_START,
