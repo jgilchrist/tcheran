@@ -122,6 +122,10 @@ fn perft_div(depth: u8, game: &Game) {
 }
 
 fn main() -> Result<()> {
+    std::panic::set_hook(Box::new(|info| {
+        chess::debug::log("crash", format!("{:?}", info))
+    }));
+
     let run_mode = cli::parse_cli();
 
     match run_mode {
