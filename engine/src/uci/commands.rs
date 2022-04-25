@@ -1,4 +1,4 @@
-use chess::r#move::Move;
+use chess::moves::Move;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub(super) enum Position {

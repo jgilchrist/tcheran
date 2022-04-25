@@ -65,9 +65,9 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                 commands::Position::StartPos => {
                     let mut game = Game::new();
 
-                    for r#move in moves {
+                    for mv in moves {
                         // TODO: Error handling for invalid moves
-                        game = game.make_move(r#move).unwrap();
+                        game = game.make_move(mv).unwrap();
                     }
 
                     state.game = game;
@@ -99,7 +99,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             debug::log(STATE_LOG, format_state_for_log(&new_game_state));
 
             send_response(&UciResponse::BestMove {
-                r#move: best_move,
+                mv: best_move,
                 ponder: None,
             });
         }
@@ -112,7 +112,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             debug::log(STATE_LOG, format_state_for_log(&new_game_state));
 
             send_response(&UciResponse::BestMove {
-                r#move: best_move,
+                mv: best_move,
                 ponder: None,
             });
         }

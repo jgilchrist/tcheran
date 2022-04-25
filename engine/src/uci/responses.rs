@@ -1,4 +1,4 @@
-use chess::r#move::Move;
+use chess::moves::Move;
 
 #[derive(Debug)]
 pub(super) struct InfoScore {
@@ -43,7 +43,7 @@ pub(super) enum UciResponse {
     UciOk,
     ReadyOk,
     BestMove {
-        r#move: Move,
+        mv: Move,
         ponder: Option<Move>,
     },
     CopyProtection(CopyProtectionStatus),
@@ -91,7 +91,7 @@ impl UciResponse {
             UciResponse::UciOk => "uciok".to_string(),
             UciResponse::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
-            UciResponse::BestMove { r#move, ponder } => format!("bestmove {}", r#move.notation()),
+            UciResponse::BestMove { mv, ponder } => format!("bestmove {}", mv.notation()),
             UciResponse::CopyProtection(status) => todo!(),
             UciResponse::Registration(status) => todo!(),
             UciResponse::Info {
