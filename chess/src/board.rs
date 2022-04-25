@@ -1,7 +1,7 @@
 use crate::{
     bitboard::{self, Bitboard},
     direction::Direction,
-    piece::{self, Piece, PieceKind},
+    piece::{Piece, PieceKind},
     player::Player,
     r#move::Move,
     square::Square,
@@ -161,8 +161,57 @@ impl Board {
                         .dst
                         .in_direction(&inverse_pawn_move_direction)
                         .unwrap();
+
                     let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
                     new_bitboard = new_bitboard & remove_captured_pawn_mask;
+                }
+            }
+
+            // PERF: Here, we figure out if the move was castling. It may be more performant to
+            // tell this function that the move was castling, but it loses the cleanliness of
+            // just telling the board the start and end destination for the piece.
+
+            // If we just moved a king more than one square, we castled.
+            if moved_piece.kind == PieceKind::King && r#move.distance() > 1 {
+                let kingside_square = match moved_piece.player {
+                    Player::White => Square::G1,
+                    Player::Black => Square::G8,
+                };
+
+                let queenside_square = match moved_piece.player {
+                    Player::White => Square::C1,
+                    Player::Black => Square::C8,
+                };
+
+                // We're castling!
+                if r#move.dst == kingside_square || r#move.dst == queenside_square {
+                    let is_kingside = r#move.dst == kingside_square;
+
+                    let rook_remove_mask = Bitboard::except_square(match is_kingside {
+                        true => match moved_piece.player {
+                            Player::White => &Square::H1,
+                            Player::Black => &Square::H8,
+                        },
+                        false => match moved_piece.player {
+                            Player::White => &Square::A1,
+                            Player::Black => &Square::A8,
+                        },
+                    });
+
+                    let rook_add_mask = Bitboard::from_square(match is_kingside {
+                        true => match moved_piece.player {
+                            Player::White => &Square::F1,
+                            Player::Black => &Square::F8,
+                        },
+                        false => match moved_piece.player {
+                            Player::White => &Square::D1,
+                            Player::Black => &Square::D8,
+                        },
+                    });
+
+                    if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {
+                        new_bitboard = new_bitboard & rook_remove_mask | rook_add_mask;
+                    }
                 }
             }
 
@@ -187,9 +236,6 @@ impl Board {
                 king: mask_bitboard(self.black_pieces.king, &Piece::BLACK_KING),
             },
         };
-
-        // TODO: Castling
-        // TODO: En-passant
 
         Ok((new_board, ()))
     }
