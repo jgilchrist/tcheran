@@ -58,7 +58,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         UciCommand::UciNewGame => {
             state.game = Game::new();
 
-            debug::log(STATE_LOG, format_state_for_log(&state.game));
+            debug::log(STATE_LOG, format!("{:?}", state.game.board));
         }
         UciCommand::Position { position, moves } => {
             match position {
@@ -71,7 +71,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                     }
 
                     state.game = game;
-                    debug::log(STATE_LOG, format_state_for_log(&state.game));
+                    debug::log(STATE_LOG, format!("{:?}", state.game.board));
                 }
                 // TODO: Get board from FEN
                 commands::Position::Fen(_) => state.game = Game::new(),
@@ -96,7 +96,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             debug::log(STATE_LOG, format!("{:?}", &best_move));
 
             let new_game_state = state.game.make_move(&best_move).unwrap();
-            debug::log(STATE_LOG, format_state_for_log(&new_game_state));
+            debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
 
             send_response(&UciResponse::BestMove {
                 mv: best_move,
@@ -109,7 +109,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             debug::log(STATE_LOG, format!("{:?}", &best_move));
 
             let new_game_state = state.game.make_move(&best_move).unwrap();
-            debug::log(STATE_LOG, format_state_for_log(&new_game_state));
+            debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
 
             send_response(&UciResponse::BestMove {
                 mv: best_move,
@@ -159,11 +159,4 @@ pub fn uci() -> Result<()> {
     }
 
     Ok(())
-}
-
-fn format_state_for_log(game: &Game) -> String {
-    format!(
-        "{:?}\nNext: {:?}\nEn passant target: {:?}\nWhite castle rights: {:?}\nBlack castle rights: {:?}",
-        game.board, game.player, game.en_passant_target, game.white_castle_rights, game.black_castle_rights
-    )
 }

@@ -1,6 +1,6 @@
-use chess::{game::Game, moves::Move};
-use rand::prelude::SliceRandom;
+use chess::{debug, game::Game, moves::Move};
 
+mod eval;
 pub mod uci;
 
 pub fn engine_version() -> &'static str {
@@ -22,8 +22,11 @@ pub fn engine_version() -> &'static str {
 }
 
 fn run(game: &Game) -> Move {
-    *game
-        .legal_moves()
-        .choose(&mut rand::thread_rng())
-        .unwrap()
+    let mut legal_moves = game.legal_moves();
+    legal_moves.sort_unstable_by_key(|m| eval::eval(&game.make_move(m).unwrap()));
+
+    let mv = *legal_moves.first().expect("Could not find a legal move");
+    let next_game = game.make_move(&mv).unwrap();
+    debug::log("eval", format!("{:?}", eval::eval(&next_game)));
+    mv
 }

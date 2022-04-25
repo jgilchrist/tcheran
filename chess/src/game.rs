@@ -3,8 +3,8 @@ use crate::{
     board::Board,
     direction::Direction,
     movegen::generate_moves,
-    player::Player,
     moves::Move,
+    player::Player,
     square::{self, Rank, Square},
 };
 
@@ -84,12 +84,7 @@ impl Game {
     pub fn legal_moves(&self) -> Vec<Move> {
         self.pseudo_legal_moves()
             .into_iter()
-            .filter(|m| {
-                !self
-                    .make_move(m)
-                    .unwrap()
-                    .king_in_check(&self.player)
-            })
+            .filter(|m| !self.make_move(m).unwrap().king_in_check(&self.player))
             .collect()
     }
 
