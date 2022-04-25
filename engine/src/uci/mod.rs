@@ -93,6 +93,8 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }) => {
             let best_move = crate::run(&state.game);
 
+            debug::log(STATE_LOG, format!("{:?}", &best_move));
+
             let new_game_state = state.game.make_move(&best_move).unwrap();
             debug::log(STATE_LOG, format_state_for_log(&new_game_state));
 
@@ -103,6 +105,8 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }
         UciCommand::Stop => {
             let best_move = crate::run(&state.game);
+
+            debug::log(STATE_LOG, format!("{:?}", &best_move));
 
             let new_game_state = state.game.make_move(&best_move).unwrap();
             debug::log(STATE_LOG, format_state_for_log(&new_game_state));
@@ -159,7 +163,7 @@ pub fn uci() -> Result<()> {
 
 fn format_state_for_log(game: &Game) -> String {
     format!(
-        "{:?}\nNext: {:?}\nEn passant target: {:?}",
-        game.board, game.player, game.en_passant_target
+        "{:?}\nNext: {:?}\nEn passant target: {:?}\nWhite castle rights: {:?}\nBlack castle rights: {:?}",
+        game.board, game.player, game.en_passant_target, game.white_castle_rights, game.black_castle_rights
     )
 }

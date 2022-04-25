@@ -5,6 +5,7 @@ use crate::{
     piece::PromotionPieceKind,
     player::Player,
     r#move::Move,
+    square::{self, Square},
 };
 
 struct Ctx {
@@ -18,11 +19,11 @@ pub fn generate_moves(game: &Game) -> Vec<Move> {
 
     let mut moves: Vec<Move> = vec![];
     moves.extend(generate_pawn_moves(game, &ctx));
-    // moves.extend(generate_knight_moves(game, &ctx));
-    // moves.extend(generate_bishop_moves(game, &ctx));
-    // moves.extend(generate_rook_moves(game, &ctx));
-    // moves.extend(generate_queen_moves(game, &ctx));
-    // moves.extend(generate_king_moves(game, &ctx));
+    moves.extend(generate_knight_moves(game, &ctx));
+    moves.extend(generate_bishop_moves(game, &ctx));
+    moves.extend(generate_rook_moves(game, &ctx));
+    moves.extend(generate_queen_moves(game, &ctx));
+    moves.extend(generate_king_moves(game, &ctx));
     moves
 }
 
@@ -332,7 +333,57 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
         }
     }
 
-    // TODO: Castling
+    let castle_rights_for_player = match game.player {
+        Player::White => game.white_castle_rights,
+        Player::Black => game.black_castle_rights,
+    };
+
+    let king_start_square = match game.player {
+        Player::White => square::known::WHITE_KING_START,
+        Player::Black => square::known::BLACK_KING_START,
+    };
+
+    if king == *king_start_square && castle_rights_for_player.can_castle() {
+        if castle_rights_for_player.king_side {
+            let kingside_required_empty_squares = match game.player {
+                Player::White => vec![Square::F1, Square::G1],
+                Player::Black => vec![Square::F8, Square::G8],
+            };
+
+            let path_to_castle_is_empty = kingside_required_empty_squares
+                .iter()
+                .all(|s| !ctx.all_pieces.has_square(s));
+
+            if path_to_castle_is_empty {
+                let kingside_dst_square = match game.player {
+                    Player::White => square::known::WHITE_KINGSIDE_CASTLE,
+                    Player::Black => square::known::BLACK_KINGSIDE_CASTLE,
+                };
+
+                moves.push(Move::new(king, *kingside_dst_square));
+            }
+        }
+
+        if castle_rights_for_player.queen_side {
+            let queenside_required_empty_squares = match game.player {
+                Player::White => vec![Square::B1, Square::C1, Square::D1],
+                Player::Black => vec![Square::B8, Square::C8, Square::D8],
+            };
+
+            let path_to_castle_is_empty = queenside_required_empty_squares
+                .iter()
+                .all(|s| !ctx.all_pieces.has_square(s));
+
+            if path_to_castle_is_empty {
+                let queenside_dst_square = match game.player {
+                    Player::White => square::known::WHITE_QUEENSIDE_CASTLE,
+                    Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
+                };
+
+                moves.push(Move::new(king, *queenside_dst_square));
+            }
+        }
+    }
 
     moves
 }

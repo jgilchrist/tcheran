@@ -29,6 +29,19 @@ impl File {
         }
     }
 
+    pub fn idx(&self) -> u8 {
+        match self {
+            File::A => 0,
+            File::B => 1,
+            File::C => 2,
+            File::D => 3,
+            File::E => 4,
+            File::F => 5,
+            File::G => 6,
+            File::H => 7,
+        }
+    }
+
     pub fn notation(&self) -> &str {
         match self {
             Self::A => "a",
@@ -81,6 +94,19 @@ impl Rank {
             6 => Rank::R7,
             7 => Rank::R8,
             _ => unreachable!(),
+        }
+    }
+
+    pub fn idx(&self) -> u8 {
+        match self {
+            Rank::R1 => 0,
+            Rank::R2 => 1,
+            Rank::R3 => 2,
+            Rank::R4 => 3,
+            Rank::R5 => 4,
+            Rank::R6 => 5,
+            Rank::R7 => 6,
+            Rank::R8 => 7,
         }
     }
 
@@ -453,6 +479,25 @@ impl Square {
         file: File::H,
         rank: Rank::R8,
     };
+}
+
+pub mod known {
+    use super::Square;
+
+    pub const WHITE_KING_START: &Square = &Square::E1;
+    pub const BLACK_KING_START: &Square = &Square::E8;
+
+    pub const WHITE_KINGSIDE_ROOK_START: &Square = &Square::H1;
+    pub const BLACK_KINGSIDE_ROOK_START: &Square = &Square::H8;
+
+    pub const WHITE_QUEENSIDE_ROOK_START: &Square = &Square::A1;
+    pub const BLACK_QUEENSIDE_ROOK_START: &Square = &Square::A8;
+
+    pub const WHITE_KINGSIDE_CASTLE: &Square = &Square::G1;
+    pub const BLACK_KINGSIDE_CASTLE: &Square = &Square::G8;
+
+    pub const WHITE_QUEENSIDE_CASTLE: &Square = &Square::C1;
+    pub const BLACK_QUEENSIDE_CASTLE: &Square = &Square::C8;
 }
 
 impl std::fmt::Debug for Square {

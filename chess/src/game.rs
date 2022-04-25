@@ -4,7 +4,7 @@ use crate::{
     direction::Direction,
     player::Player,
     r#move::Move,
-    square::{Rank, Square},
+    square::{self, Rank, Square},
 };
 
 // TODO: Flesh out this error type
@@ -16,8 +16,35 @@ pub enum MoveError {
 #[derive(Copy, Clone, Debug)]
 #[allow(unused)]
 pub struct CastleRights {
-    king_side: bool,
-    queen_side: bool,
+    pub king_side: bool,
+    pub queen_side: bool,
+}
+
+impl CastleRights {
+    pub fn can_castle(&self) -> bool {
+        self.king_side || self.queen_side
+    }
+
+    pub fn none() -> CastleRights {
+        CastleRights {
+            king_side: false,
+            queen_side: false,
+        }
+    }
+
+    pub fn without_kingside(&self) -> CastleRights {
+        CastleRights {
+            king_side: false,
+            queen_side: self.queen_side,
+        }
+    }
+
+    pub fn without_queenside(&self) -> CastleRights {
+        CastleRights {
+            king_side: self.king_side,
+            queen_side: false,
+        }
+    }
 }
 
 impl Default for CastleRights {
@@ -112,13 +139,63 @@ impl Game {
             None
         };
 
-        // TODO: Update castle rights
+        let king_start_square = match self.player {
+            Player::White => square::known::WHITE_KING_START,
+            Player::Black => square::known::BLACK_KING_START,
+        };
+
+        let kingside_rook_start_square = match self.player {
+            Player::White => square::known::WHITE_KING_START,
+            Player::Black => square::known::BLACK_KING_START,
+        };
+
+        let white_castle_rights = if self.player == Player::White {
+            match (&r#move.src, self.white_castle_rights) {
+                (square::known::WHITE_KING_START, _) => CastleRights::none(),
+                (
+                    square::known::WHITE_KINGSIDE_ROOK_START,
+                    rights @ CastleRights {
+                        king_side: true, ..
+                    },
+                ) => rights.without_kingside(),
+                (
+                    square::known::WHITE_QUEENSIDE_ROOK_START,
+                    rights @ CastleRights {
+                        queen_side: true, ..
+                    },
+                ) => rights.without_queenside(),
+                _ => self.white_castle_rights,
+            }
+        } else {
+            self.white_castle_rights
+        };
+
+        let black_castle_rights = if self.player == Player::Black {
+            match (&r#move.src, self.black_castle_rights) {
+                (square::known::BLACK_KING_START, _) => CastleRights::none(),
+                (
+                    square::known::BLACK_KINGSIDE_ROOK_START,
+                    rights @ CastleRights {
+                        king_side: true, ..
+                    },
+                ) => rights.without_kingside(),
+                (
+                    square::known::BLACK_QUEENSIDE_ROOK_START,
+                    rights @ CastleRights {
+                        queen_side: true, ..
+                    },
+                ) => rights.without_queenside(),
+                _ => self.black_castle_rights,
+            }
+        } else {
+            self.black_castle_rights
+        };
 
         Ok(Game {
             board,
             player: self.player.other(),
-            white_castle_rights: self.white_castle_rights,
-            black_castle_rights: self.black_castle_rights,
+            white_castle_rights,
+            black_castle_rights,
             en_passant_target,
         })
     }
