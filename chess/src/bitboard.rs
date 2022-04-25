@@ -66,7 +66,7 @@ impl Bitboard {
         use crate::square::File::*;
         use crate::square::Rank::*;
 
-        let file_idx = match &square.0 {
+        let file_idx = match &square.file {
             A => 0,
             B => 1,
             C => 2,
@@ -77,7 +77,7 @@ impl Bitboard {
             H => 7,
         };
 
-        let rank_idx = match &square.1 {
+        let rank_idx = match &square.rank {
             R1 => 0,
             R2 => 1,
             R3 => 2,
