@@ -4,7 +4,7 @@ use crate::{
     piece::{Piece, PieceKind},
     player::Player,
     r#move::Move,
-    square::Square,
+    square::{Square, self},
 };
 
 #[derive(Clone, Copy)]
@@ -167,12 +167,17 @@ impl Board {
                 }
             }
 
+            let king_start_square = match moved_piece.player {
+                Player::White => square::known::WHITE_KING_START,
+                Player::Black => square::known::BLACK_KING_START,
+            };
+
             // PERF: Here, we figure out if the move was castling. It may be more performant to
             // tell this function that the move was castling, but it loses the cleanliness of
             // just telling the board the start and end destination for the piece.
 
-            // If we just moved a king more than one square, we castled.
-            if moved_piece.kind == PieceKind::King && r#move.distance() > 1 {
+            // If we just moved a king from its start square, we may have castled.
+            if moved_piece.kind == PieceKind::King && r#move.src == *king_start_square {
                 let kingside_square = match moved_piece.player {
                     Player::White => Square::G1,
                     Player::Black => Square::G8,

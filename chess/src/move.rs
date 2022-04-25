@@ -28,11 +28,6 @@ impl Move {
         self.src.rank != self.dst.rank && self.src.file != self.dst.file
     }
 
-    pub fn distance(&self) -> u8 {
-        self.src.rank.idx().abs_diff(self.dst.rank.idx())
-            + self.src.file.idx().abs_diff(self.dst.rank.idx())
-    }
-
     pub fn notation(&self) -> String {
         format!(
             "{}{}{}",
