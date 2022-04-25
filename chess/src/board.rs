@@ -4,7 +4,7 @@ use crate::{
     piece::{Piece, PieceKind},
     player::Player,
     r#move::Move,
-    square::{Square, self},
+    square::{self, Square},
 };
 
 #[derive(Clone, Copy)]

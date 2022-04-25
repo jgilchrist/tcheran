@@ -2,6 +2,7 @@ use crate::{
     bitboard::Bitboard,
     board::Board,
     direction::Direction,
+    movegen::generate_moves,
     player::Player,
     r#move::Move,
     square::{self, Rank, Square},
@@ -74,6 +75,27 @@ impl Game {
             black_castle_rights: CastleRights::default(),
             en_passant_target: None,
         }
+    }
+
+    // FIXME: Should be able to be determined from `Board`, but movegen
+    // currently requires a full `Game`. Generating attacked pieces should
+    // be a more straightforward way to check this.
+    //
+    // PERF: There's likely more efficient ways to do this than generating
+    // all legal moves
+    pub fn king_in_check(&self, player: &Player) -> bool {
+        let king = match player {
+            Player::White => self.board.white_pieces.king,
+            Player::Black => self.board.black_pieces.king,
+        }
+        .to_square_definite();
+
+        let other_player_moves = generate_moves(&Game {
+            player: player.other(),
+            ..*self
+        });
+
+        other_player_moves.iter().any(|m| m.dst == king)
     }
 
     #[allow(unused)]
