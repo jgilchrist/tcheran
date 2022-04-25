@@ -1,4 +1,11 @@
-use crate::{board::Board, player::Player, r#move::Move};
+use crate::{
+    bitboard::Bitboard,
+    board::Board,
+    direction::Direction,
+    player::Player,
+    r#move::Move,
+    square::{Rank, Square},
+};
 
 // TODO: Flesh out this error type
 #[derive(Debug)]
@@ -28,6 +35,7 @@ pub struct Game {
     pub board: Board,
     pub white_castle_rights: CastleRights,
     pub black_castle_rights: CastleRights,
+    pub en_passant_target: Option<Square>,
 }
 
 impl Game {
@@ -37,6 +45,7 @@ impl Game {
             player: Player::White,
             white_castle_rights: CastleRights::default(),
             black_castle_rights: CastleRights::default(),
+            en_passant_target: None,
         }
     }
 
@@ -69,6 +78,40 @@ impl Game {
             None => Ok(None),
         }?;
 
+        let pawn_move_direction = match self.player {
+            Player::White => Direction::North,
+            Player::Black => Direction::South,
+        };
+
+        let back_rank = match self.player {
+            Player::White => Rank::R2,
+            Player::Black => Rank::R7,
+        };
+
+        let en_passant_target = if from.rank == back_rank
+            && to
+                == from
+                    .in_direction(&pawn_move_direction)
+                    .and_then(|s| s.in_direction(&pawn_move_direction))
+                    .unwrap()
+        {
+            let to_bb = Bitboard::from_square(&to);
+            let en_passant_attacker_squares = to_bb.west() | to_bb.east();
+            let enemy_pawns = match self.player {
+                Player::White => self.board.black_pieces.pawns,
+                Player::Black => self.board.white_pieces.pawns,
+            };
+            let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
+
+            if en_passant_can_happen {
+                Some(from.in_direction(&pawn_move_direction).unwrap())
+            } else {
+                None
+            }
+        } else {
+            None
+        };
+
         // TODO: Update castle rights
 
         Ok(Game {
@@ -76,6 +119,7 @@ impl Game {
             player: self.player.other(),
             white_castle_rights: self.white_castle_rights,
             black_castle_rights: self.black_castle_rights,
+            en_passant_target,
         })
     }
 }

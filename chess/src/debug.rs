@@ -1,4 +1,4 @@
-use std::{io::Write, path::Path, fs};
+use std::{fs, io::Write, path::Path};
 
 const LOG_DIR: &str = "/tmp/chess_engine";
 

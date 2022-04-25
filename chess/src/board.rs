@@ -1,5 +1,6 @@
 use crate::{
     bitboard::{self, Bitboard},
+    direction::Direction,
     piece::{self, Piece, PieceKind},
     player::Player,
     r#move::Move,
@@ -25,7 +26,7 @@ pub(crate) struct PlayerPieces {
 }
 
 impl PlayerPieces {
-    pub fn all(&self) -> Bitboard {
+    pub(crate) fn all(&self) -> Bitboard {
         self.pawns | self.knights | self.bishops | self.rooks | self.queen | self.king
     }
 }
@@ -101,13 +102,13 @@ impl Board {
     // TODO: Return info about the move (was it a capture?)
     #[allow(clippy::result_unit_err)]
     pub fn make_move(&self, r#move: &Move) -> Result<(Board, ()), ()> {
-        let piece_to_move = self.piece_at(&r#move.src).ok_or(())?;
+        let moved_piece = self.piece_at(&r#move.src).ok_or(())?;
 
         let remove_src_mask = Bitboard::except_square(&r#move.src);
         let remove_from_dst_mask = Bitboard::except_square(&r#move.dst);
 
         let add_piece_to_dst_mask = |piece: &Piece| {
-            if *piece == piece_to_move {
+            if *piece == moved_piece {
                 Bitboard::from_square(&r#move.dst)
             } else {
                 Bitboard::empty()
@@ -129,7 +130,7 @@ impl Board {
                 let remove_promoted_pawn_mask = Bitboard::except_square(&r#move.dst);
 
                 let add_promoted_piece_mask =
-                    if *piece == Piece::new(piece_to_move.player, promoted_to.piece()) {
+                    if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
                         Bitboard::from_square(&r#move.dst)
                     } else {
                         Bitboard::empty()
@@ -137,6 +138,32 @@ impl Board {
 
                 // Place that piece on the board
                 new_bitboard = new_bitboard & remove_promoted_pawn_mask | add_promoted_piece_mask;
+            }
+
+            // PERF: Here, we figure out if the move was en-passant. It may be more performant to
+            // tell this function that the move was en-passant, but it loses the cleanliness of
+            // just telling the board the start and end destination for the piece.
+
+            // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
+            // in which case we need to remove the captured pawn.
+            if moved_piece.kind == PieceKind::Pawn && r#move.is_diagonal() {
+                let opponent_pieces = self.player_pieces(&moved_piece.player.other()).all();
+
+                // Definitely en-passant, as we made a capture but there was no piece on that square.
+                if !opponent_pieces.has_square(&r#move.dst) {
+                    // Get the square that we need to remove the pawn from.
+                    let inverse_pawn_move_direction = match moved_piece.player {
+                        Player::White => Direction::South,
+                        Player::Black => Direction::North,
+                    };
+
+                    let capture_square = r#move
+                        .dst
+                        .in_direction(&inverse_pawn_move_direction)
+                        .unwrap();
+                    let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
+                    new_bitboard = new_bitboard & remove_captured_pawn_mask;
+                }
             }
 
             new_bitboard
