@@ -24,7 +24,8 @@ fn perft(depth: u8, game: &Game) -> usize {
         return game.legal_moves().len();
     }
 
-    game.legal_moves().iter()
+    game.legal_moves()
+        .iter()
         .map(|m| perft(depth - 1, &game.make_move(m).unwrap()))
         .sum()
 }

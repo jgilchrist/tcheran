@@ -2,9 +2,9 @@ use crate::{
     bitboard::{self, Bitboard},
     direction::Direction,
     game::Game,
+    moves::Move,
     piece::PromotionPieceKind,
     player::Player,
-    moves::Move,
     square::{self, Square},
 };
 

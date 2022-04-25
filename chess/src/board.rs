@@ -1,22 +1,22 @@
 use crate::{
     bitboard::{self, Bitboard},
     direction::Direction,
+    moves::Move,
     piece::{Piece, PieceKind},
     player::Player,
-    moves::Move,
     square::{self, Square},
 };
 
 #[derive(Clone, Copy)]
 pub struct Board {
-    pub(crate) white_pieces: PlayerPieces,
-    pub(crate) black_pieces: PlayerPieces,
+    pub white_pieces: PlayerPieces,
+    pub black_pieces: PlayerPieces,
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
 #[derive(Clone, Copy)]
-pub(crate) struct PlayerPieces {
+pub struct PlayerPieces {
     pub pawns: Bitboard,
     pub knights: Bitboard,
     pub bishops: Bitboard,
@@ -157,10 +157,7 @@ impl Board {
                         Player::Black => Direction::North,
                     };
 
-                    let capture_square = mv
-                        .dst
-                        .in_direction(&inverse_pawn_move_direction)
-                        .unwrap();
+                    let capture_square = mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
 
                     let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
                     new_bitboard = new_bitboard & remove_captured_pawn_mask;
