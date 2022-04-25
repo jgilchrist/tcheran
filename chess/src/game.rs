@@ -77,6 +77,22 @@ impl Game {
         }
     }
 
+    pub fn pseudo_legal_moves(&self) -> Vec<Move> {
+        generate_moves(self)
+    }
+
+    pub fn legal_moves(&self) -> Vec<Move> {
+        self.pseudo_legal_moves()
+            .into_iter()
+            .filter(|m| {
+                !self
+                    .make_move(m)
+                    .unwrap()
+                    .king_in_check(&self.player)
+            })
+            .collect()
+    }
+
     // FIXME: Should be able to be determined from `Board`, but movegen
     // currently requires a full `Game`. Generating attacked pieces should
     // be a more straightforward way to check this.
