@@ -153,7 +153,7 @@ impl Game {
             Player::Black => Rank::R7,
         };
 
-        let en_passant_target = if from.rank == back_rank
+        let en_passant_target = if from.rank() == back_rank
             && to
                 == from
                     .in_direction(&pawn_move_direction)

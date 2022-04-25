@@ -25,7 +25,7 @@ impl Move {
     }
 
     pub fn is_diagonal(&self) -> bool {
-        self.src.rank != self.dst.rank && self.src.file != self.dst.file
+        self.src.rank() != self.dst.rank() && self.src.file() != self.dst.file()
     }
 
     pub fn notation(&self) -> String {

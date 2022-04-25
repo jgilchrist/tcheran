@@ -63,33 +63,7 @@ impl Bitboard {
     }
 
     pub fn from_square(square: &Square) -> Bitboard {
-        use crate::square::File::*;
-        use crate::square::Rank::*;
-
-        let file_idx = match &square.file {
-            A => 0,
-            B => 1,
-            C => 2,
-            D => 3,
-            E => 4,
-            F => 5,
-            G => 6,
-            H => 7,
-        };
-
-        let rank_idx = match &square.rank {
-            R1 => 0,
-            R2 => 1,
-            R3 => 2,
-            R4 => 3,
-            R5 => 4,
-            R6 => 5,
-            R7 => 6,
-            R8 => 7,
-        };
-
-        let square_idx = rank_idx * 8 + file_idx;
-        Bitboard(1 << square_idx)
+        Bitboard(1 << square.idx())
     }
 
     pub fn except_square(square: &Square) -> Bitboard {
