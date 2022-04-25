@@ -18,11 +18,11 @@ pub fn generate_moves(game: &Game) -> Vec<Move> {
 
     let mut moves: Vec<Move> = vec![];
     moves.extend(generate_pawn_moves(game, &ctx));
-    moves.extend(generate_knight_moves(game, &ctx));
-    moves.extend(generate_bishop_moves(game, &ctx));
-    moves.extend(generate_rook_moves(game, &ctx));
-    moves.extend(generate_queen_moves(game, &ctx));
-    moves.extend(generate_king_moves(game, &ctx));
+    // moves.extend(generate_knight_moves(game, &ctx));
+    // moves.extend(generate_bishop_moves(game, &ctx));
+    // moves.extend(generate_rook_moves(game, &ctx));
+    // moves.extend(generate_queen_moves(game, &ctx));
+    // moves.extend(generate_king_moves(game, &ctx));
     moves
 }
 
@@ -92,7 +92,7 @@ fn generate_pawn_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
         let capture_left = forward_one.and_then(|s| s.west());
 
         if let Some(dst) = capture_left {
-            if ctx.their_pieces.has_square(&dst) {
+            if ctx.their_pieces.has_square(&dst) || game.en_passant_target == Some(dst) {
                 match will_promote {
                     false => moves.push(Move::new(start, dst)),
                     true => {
@@ -107,7 +107,7 @@ fn generate_pawn_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
         let capture_right = forward_one.and_then(|s| s.east());
 
         if let Some(dst) = capture_right {
-            if ctx.their_pieces.has_square(&dst) {
+            if ctx.their_pieces.has_square(&dst) || game.en_passant_target == Some(dst) {
                 match will_promote {
                     false => moves.push(Move::new(start, dst)),
                     true => {
@@ -118,8 +118,6 @@ fn generate_pawn_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
                 }
             }
         }
-
-        // TODO: En passant
     }
 
     for start in (pawns & back_rank).squares() {

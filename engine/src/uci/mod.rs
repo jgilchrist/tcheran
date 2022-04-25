@@ -155,5 +155,8 @@ pub fn uci() -> Result<()> {
 }
 
 fn format_state_for_log(game: &Game) -> String {
-    format!("{:?}\nNext: {:?}", game.board, game.player)
+    format!(
+        "{:?}\nNext: {:?}\nEn passant target: {:?}",
+        game.board, game.player, game.en_passant_target
+    )
 }
