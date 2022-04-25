@@ -16,6 +16,9 @@ pub mod responses;
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
+const UCI_LOG: &str = "uci";
+const STATE_LOG: &str = "game_state";
+
 #[derive(Debug)]
 struct UciState {
     debug: bool,
@@ -31,7 +34,7 @@ enum ExecuteResult {
 fn send_response(response: &UciResponse) {
     println!("{}", response.as_string());
 
-    debug::log(&format!("\t\t{}", response.as_string()));
+    debug::log(UCI_LOG, format!("\t\t{}", response.as_string()));
 }
 
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
@@ -54,6 +57,8 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         } => {}
         UciCommand::UciNewGame => {
             state.game = Game::new();
+
+            debug::log(STATE_LOG, format_state_for_log(&state.game));
         }
         UciCommand::Position { position, moves } => {
             match position {
@@ -66,7 +71,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                     }
 
                     state.game = game;
-                    debug::log(&format!("{:?}", state.game));
+                    debug::log(STATE_LOG, format_state_for_log(&state.game));
                 }
                 // TODO: Get board from FEN
                 commands::Position::Fen(_) => state.game = Game::new(),
@@ -88,6 +93,9 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }) => {
             let best_move = crate::run(&state.game);
 
+            let new_game_state = state.game.make_move(&best_move).unwrap();
+            debug::log(STATE_LOG, format_state_for_log(&new_game_state));
+
             send_response(&UciResponse::BestMove {
                 r#move: best_move,
                 ponder: None,
@@ -95,6 +103,9 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
         }
         UciCommand::Stop => {
             let best_move = crate::run(&state.game);
+
+            let new_game_state = state.game.make_move(&best_move).unwrap();
+            debug::log(STATE_LOG, format_state_for_log(&new_game_state));
 
             send_response(&UciResponse::BestMove {
                 r#move: best_move,
@@ -119,11 +130,12 @@ pub fn uci() -> Result<()> {
 
     let stdin = std::io::stdin();
 
-    debug::log("\n\n============== Engine ============");
+    debug::log(UCI_LOG, "\n\n============== Engine ============");
+    debug::log(STATE_LOG, "\n\n============== Engine ============");
 
     for line in stdin.lock().lines() {
         let line = line?;
-        debug::log(&line);
+        debug::log(UCI_LOG, &line);
         let command = parser::parse(&line);
 
         match command {
@@ -133,14 +145,18 @@ pub fn uci() -> Result<()> {
                     break;
                 }
 
-                debug::log("");
+                debug::log(UCI_LOG, "");
             }
             Err(e) => {
                 eprintln!("{}", e);
-                debug::log("? Unknown command\n");
+                debug::log(UCI_LOG, "? Unknown command\n");
             }
         }
     }
 
     Ok(())
+}
+
+fn format_state_for_log(game: &Game) -> String {
+    format!("{:?}\nNext: {:?}", game.board, game.player)
 }
