@@ -38,22 +38,6 @@ pub struct Piece {
 }
 
 impl Piece {
-    pub const fn new(player: Player, kind: PieceKind) -> Piece {
-        Piece { kind, player }
-    }
-
-    pub const fn white(kind: PieceKind) -> Piece {
-        Self::new(Player::White, kind)
-    }
-
-    pub const fn black(kind: PieceKind) -> Piece {
-        Self::new(Player::Black, kind)
-    }
-}
-
-pub mod known {
-    use super::{Piece, PieceKind};
-
     pub const WHITE_PAWN: Piece = Piece::white(PieceKind::Pawn);
     pub const WHITE_KNIGHT: Piece = Piece::white(PieceKind::Knight);
     pub const WHITE_BISHOP: Piece = Piece::white(PieceKind::Bishop);
@@ -67,4 +51,16 @@ pub mod known {
     pub const BLACK_ROOK: Piece = Piece::black(PieceKind::Rook);
     pub const BLACK_QUEEN: Piece = Piece::black(PieceKind::Queen);
     pub const BLACK_KING: Piece = Piece::black(PieceKind::King);
+
+    pub const fn new(player: Player, kind: PieceKind) -> Piece {
+        Piece { kind, player }
+    }
+
+    pub const fn white(kind: PieceKind) -> Piece {
+        Self::new(Player::White, kind)
+    }
+
+    pub const fn black(kind: PieceKind) -> Piece {
+        Self::new(Player::Black, kind)
+    }
 }

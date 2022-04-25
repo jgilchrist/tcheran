@@ -171,20 +171,20 @@ impl Board {
 
         let new_board = Board {
             white_pieces: PlayerPieces {
-                pawns: mask_bitboard(self.white_pieces.pawns, &piece::known::WHITE_PAWN),
-                knights: mask_bitboard(self.white_pieces.knights, &piece::known::WHITE_KNIGHT),
-                bishops: mask_bitboard(self.white_pieces.bishops, &piece::known::WHITE_BISHOP),
-                rooks: mask_bitboard(self.white_pieces.rooks, &piece::known::WHITE_ROOK),
-                queen: mask_bitboard(self.white_pieces.queen, &piece::known::WHITE_QUEEN),
-                king: mask_bitboard(self.white_pieces.king, &piece::known::WHITE_KING),
+                pawns: mask_bitboard(self.white_pieces.pawns, &Piece::WHITE_PAWN),
+                knights: mask_bitboard(self.white_pieces.knights, &Piece::WHITE_KNIGHT),
+                bishops: mask_bitboard(self.white_pieces.bishops, &Piece::WHITE_BISHOP),
+                rooks: mask_bitboard(self.white_pieces.rooks, &Piece::WHITE_ROOK),
+                queen: mask_bitboard(self.white_pieces.queen, &Piece::WHITE_QUEEN),
+                king: mask_bitboard(self.white_pieces.king, &Piece::WHITE_KING),
             },
             black_pieces: PlayerPieces {
-                pawns: mask_bitboard(self.black_pieces.pawns, &piece::known::BLACK_PAWN),
-                knights: mask_bitboard(self.black_pieces.knights, &piece::known::BLACK_KNIGHT),
-                bishops: mask_bitboard(self.black_pieces.bishops, &piece::known::BLACK_BISHOP),
-                rooks: mask_bitboard(self.black_pieces.rooks, &piece::known::BLACK_ROOK),
-                queen: mask_bitboard(self.black_pieces.queen, &piece::known::BLACK_QUEEN),
-                king: mask_bitboard(self.black_pieces.king, &piece::known::BLACK_KING),
+                pawns: mask_bitboard(self.black_pieces.pawns, &Piece::BLACK_PAWN),
+                knights: mask_bitboard(self.black_pieces.knights, &Piece::BLACK_KNIGHT),
+                bishops: mask_bitboard(self.black_pieces.bishops, &Piece::BLACK_BISHOP),
+                rooks: mask_bitboard(self.black_pieces.rooks, &Piece::BLACK_ROOK),
+                queen: mask_bitboard(self.black_pieces.queen, &Piece::BLACK_QUEEN),
+                king: mask_bitboard(self.black_pieces.king, &Piece::BLACK_KING),
             },
         };
 
