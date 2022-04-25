@@ -1,6 +1,7 @@
 mod cli;
 
 use anyhow::Result;
+use chess::game::Game;
 use engine::uci;
 
 pub enum RunMode {
@@ -16,6 +17,16 @@ impl Default for RunMode {
 
 fn print_board() {
     dbg!(chess::board::Board::start());
+}
+
+fn perft(depth: u8, game: &Game) -> usize {
+    if depth == 1 {
+        return game.legal_moves().len();
+    }
+
+    game.legal_moves().iter()
+        .map(|m| perft(depth - 1, &game.make_move(m).unwrap()))
+        .sum()
 }
 
 fn main() -> Result<()> {
