@@ -210,10 +210,7 @@ impl Game {
         {
             let to_bb = Bitboard::from_square(&to);
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = match self.player {
-                Player::White => self.board.black_pieces.pawns,
-                Player::Black => self.board.white_pieces.pawns,
-            };
+            let enemy_pawns = self.board.player_pieces(&self.player.other()).pawns;
             let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
 
             if en_passant_can_happen {

@@ -8,16 +8,8 @@ use crate::{
 pub fn generate_all_attacks(board: &Board, player: &Player) -> Bitboard {
     let mut attacks = Bitboard::empty();
 
-    let our_pieces = match player {
-        Player::White => board.white_pieces.all(),
-        Player::Black => board.black_pieces.all(),
-    };
-
-    let their_pieces = match player {
-        Player::White => board.black_pieces.all(),
-        Player::Black => board.white_pieces.all(),
-    };
-
+    let our_pieces = board.player_pieces(player).all();
+    let their_pieces = board.player_pieces(&player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
     for square in our_pieces.squares() {
