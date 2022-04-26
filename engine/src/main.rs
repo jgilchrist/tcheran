@@ -7,6 +7,8 @@ use engine::uci;
 pub enum RunMode {
     Uci,
     PrintBoard,
+    Perft(u8, Game),
+    PerftDiv(u8, Game),
 }
 
 impl Default for RunMode {
@@ -53,6 +55,14 @@ fn main() -> Result<()> {
         RunMode::Uci => uci::uci(),
         RunMode::PrintBoard => {
             print_board();
+            Ok(())
+        }
+        RunMode::Perft(depth, game) => {
+            println!("{}", perft(depth, &game));
+            Ok(())
+        }
+        RunMode::PerftDiv(depth, game) => {
+            perft_div(depth, &game);
             Ok(())
         }
     }
