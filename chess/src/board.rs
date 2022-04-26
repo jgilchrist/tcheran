@@ -245,7 +245,7 @@ impl Board {
             // just telling the board the start and end destination for the piece.
 
             // If we just moved a king from its start square, we may have castled.
-            if moved_piece.kind == PieceKind::King && mv.src == *king_start_square {
+            if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
                 let kingside_square = match moved_piece.player {
                     Player::White => Square::G1,
                     Player::Black => Square::G8,
