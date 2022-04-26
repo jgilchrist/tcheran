@@ -60,22 +60,19 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
 
             debug::log(STATE_LOG, format!("{:?}", state.game.board));
         }
+        // TODO: Error handling for invalid positions/moves
         UciCommand::Position { position, moves } => {
-            match position {
-                commands::Position::StartPos => {
-                    let mut game = Game::new();
+            let mut game = match position {
+                commands::Position::StartPos => Game::new(),
+                commands::Position::Fen(fen) => Game::from_fen(fen).unwrap(),
+            };
 
-                    for mv in moves {
-                        // TODO: Error handling for invalid moves
-                        game = game.make_move(mv).unwrap();
-                    }
-
-                    state.game = game;
-                    debug::log(STATE_LOG, format!("{:?}", state.game.board));
-                }
-                // TODO: Get board from FEN
-                commands::Position::Fen(_) => state.game = Game::new(),
+            for mv in moves {
+                game = game.make_move(mv).unwrap();
             }
+
+            state.game = game;
+            debug::log(STATE_LOG, format!("{:?}", state.game.board));
         }
         UciCommand::Go(GoCmdArguments {
             searchmoves: _,
