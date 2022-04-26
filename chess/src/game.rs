@@ -1,4 +1,5 @@
 use crate::{
+    attacks::generate_all_attacks,
     bitboard::Bitboard,
     board::Board,
     direction::Direction,
@@ -90,29 +91,71 @@ impl Game {
     pub fn legal_moves(&self) -> Vec<Move> {
         self.pseudo_legal_moves()
             .into_iter()
-            .filter(|m| !self.make_move(m).unwrap().king_in_check(&self.player))
+            .filter(|m| self.is_legal(m))
             .collect()
     }
 
-    // FIXME: Should be able to be determined from `Board`, but movegen
-    // currently requires a full `Game`. Generating attacked pieces should
-    // be a more straightforward way to check this.
-    //
-    // PERF: There's likely more efficient ways to do this than generating
-    // all legal moves
-    pub fn king_in_check(&self, player: &Player) -> bool {
-        let king = match player {
-            Player::White => self.board.white_pieces.king,
-            Player::Black => self.board.black_pieces.king,
+    fn is_legal(&self, mv: &Move) -> bool {
+        let enemy_attacks = generate_all_attacks(&self.board, &self.player.other());
+
+        let king_start_square = match self.player {
+            Player::White => square::known::WHITE_KING_START,
+            Player::Black => square::known::BLACK_KING_START,
+        };
+
+        let kingside_dst_square = match self.player {
+            Player::White => square::known::WHITE_KINGSIDE_CASTLE,
+            Player::Black => square::known::BLACK_KINGSIDE_CASTLE,
+        };
+
+        let queenside_dst_square = match self.player {
+            Player::White => square::known::WHITE_QUEENSIDE_CASTLE,
+            Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
+        };
+
+        if *mv == Move::new(*king_start_square, *kingside_dst_square)
+            || *mv == Move::new(*king_start_square, *queenside_dst_square)
+        {
+            // If the king is in check, it cannot castle
+            if enemy_attacks.has_square(king_start_square) {
+                return false;
+            }
+
+            // The king cannot castle if the intervening squares are under attack
+            if *mv == Move::new(*king_start_square, *kingside_dst_square) {
+                let kingside_required_not_attacked_squares = match self.player {
+                    Player::White => vec![Square::F1, Square::G1],
+                    Player::Black => vec![Square::F8, Square::G8],
+                };
+
+                if kingside_required_not_attacked_squares
+                    .iter()
+                    .any(|s| enemy_attacks.has_square(s))
+                {
+                    return false;
+                }
+            }
+
+            if *mv == Move::new(*king_start_square, *queenside_dst_square) {
+                let queenside_required_not_attacked_squares = match self.player {
+                    Player::White => vec![Square::C1, Square::D1],
+                    Player::Black => vec![Square::C8, Square::D8],
+                };
+
+                if queenside_required_not_attacked_squares
+                    .iter()
+                    .any(|s| enemy_attacks.has_square(s))
+                {
+                    return false;
+                }
+            }
         }
-        .to_square_definite();
 
-        let other_player_moves = generate_moves(&Game {
-            player: player.other(),
-            ..*self
-        });
-
-        other_player_moves.iter().any(|m| m.dst == king)
+        !self
+            .make_move(mv)
+            .unwrap()
+            .board
+            .king_in_check(&self.player)
     }
 
     #[allow(unused)]
