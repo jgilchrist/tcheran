@@ -249,7 +249,15 @@ impl Game {
                 _ => self.white_castle_rights,
             }
         } else {
-            self.white_castle_rights
+            match mv.dst {
+                square::known::WHITE_KINGSIDE_ROOK_START => {
+                    self.white_castle_rights.without_kingside()
+                }
+                square::known::WHITE_QUEENSIDE_ROOK_START => {
+                    self.white_castle_rights.without_queenside()
+                }
+                _ => self.white_castle_rights,
+            }
         };
 
         let black_castle_rights = if self.player == Player::Black {
@@ -270,7 +278,15 @@ impl Game {
                 _ => self.black_castle_rights,
             }
         } else {
-            self.black_castle_rights
+            match mv.dst {
+                square::known::BLACK_KINGSIDE_ROOK_START => {
+                    self.black_castle_rights.without_kingside()
+                }
+                square::known::BLACK_QUEENSIDE_ROOK_START => {
+                    self.black_castle_rights.without_queenside()
+                }
+                _ => self.black_castle_rights,
+            }
         };
 
         Ok(Game {
