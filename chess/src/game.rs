@@ -6,6 +6,7 @@ use crate::{
     fen,
     movegen::generate_moves,
     moves::Move,
+    piece::PieceKind,
     player::Player,
     square::{self, Rank, Square},
 };
@@ -197,7 +198,8 @@ impl Game {
             Player::Black => Rank::R7,
         };
 
-        let en_passant_target = if from.rank() == back_rank
+        let en_passant_target = if piece_to_move == PieceKind::Pawn
+            && from.rank() == back_rank
             && to
                 == from
                     .in_direction(&pawn_move_direction)
