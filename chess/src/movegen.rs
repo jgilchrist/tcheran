@@ -343,7 +343,7 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
         Player::Black => square::known::BLACK_KING_START,
     };
 
-    if king == *king_start_square && castle_rights_for_player.can_castle() {
+    if king == king_start_square && castle_rights_for_player.can_castle() {
         if castle_rights_for_player.king_side {
             let kingside_required_empty_squares = match game.player {
                 Player::White => vec![Square::F1, Square::G1],
@@ -360,7 +360,7 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
                     Player::Black => square::known::BLACK_KINGSIDE_CASTLE,
                 };
 
-                moves.push(Move::new(king, *kingside_dst_square));
+                moves.push(Move::new(king, kingside_dst_square));
             }
         }
 
@@ -380,7 +380,7 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
                     Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
                 };
 
-                moves.push(Move::new(king, *queenside_dst_square));
+                moves.push(Move::new(king, queenside_dst_square));
             }
         }
     }

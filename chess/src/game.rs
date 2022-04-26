@@ -113,16 +113,16 @@ impl Game {
             Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
         };
 
-        if *mv == Move::new(*king_start_square, *kingside_dst_square)
-            || *mv == Move::new(*king_start_square, *queenside_dst_square)
+        if *mv == Move::new(king_start_square, kingside_dst_square)
+            || *mv == Move::new(king_start_square, queenside_dst_square)
         {
             // If the king is in check, it cannot castle
-            if enemy_attacks.has_square(king_start_square) {
+            if enemy_attacks.has_square(&king_start_square) {
                 return false;
             }
 
             // The king cannot castle if the intervening squares are under attack
-            if *mv == Move::new(*king_start_square, *kingside_dst_square) {
+            if *mv == Move::new(king_start_square, kingside_dst_square) {
                 let kingside_required_not_attacked_squares = match self.player {
                     Player::White => vec![Square::F1, Square::G1],
                     Player::Black => vec![Square::F8, Square::G8],
@@ -136,7 +136,7 @@ impl Game {
                 }
             }
 
-            if *mv == Move::new(*king_start_square, *queenside_dst_square) {
+            if *mv == Move::new(king_start_square, queenside_dst_square) {
                 let queenside_required_not_attacked_squares = match self.player {
                     Player::White => vec![Square::C1, Square::D1],
                     Player::Black => vec![Square::C8, Square::D8],
@@ -232,7 +232,7 @@ impl Game {
         };
 
         let white_castle_rights = if self.player == Player::White {
-            match (&mv.src, self.white_castle_rights) {
+            match (mv.src, self.white_castle_rights) {
                 (square::known::WHITE_KING_START, _) => CastleRights::none(),
                 (
                     square::known::WHITE_KINGSIDE_ROOK_START,
@@ -253,7 +253,7 @@ impl Game {
         };
 
         let black_castle_rights = if self.player == Player::Black {
-            match (&mv.src, self.black_castle_rights) {
+            match (mv.src, self.black_castle_rights) {
                 (square::known::BLACK_KING_START, _) => CastleRights::none(),
                 (
                     square::known::BLACK_KINGSIDE_ROOK_START,

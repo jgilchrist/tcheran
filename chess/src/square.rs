@@ -292,20 +292,20 @@ impl Square {
 pub mod known {
     use super::Square;
 
-    pub const WHITE_KING_START: &Square = &Square::E1;
-    pub const BLACK_KING_START: &Square = &Square::E8;
+    pub const WHITE_KING_START: Square = Square::E1;
+    pub const BLACK_KING_START: Square = Square::E8;
 
-    pub const WHITE_KINGSIDE_ROOK_START: &Square = &Square::H1;
-    pub const BLACK_KINGSIDE_ROOK_START: &Square = &Square::H8;
+    pub const WHITE_KINGSIDE_ROOK_START: Square = Square::H1;
+    pub const BLACK_KINGSIDE_ROOK_START: Square = Square::H8;
 
-    pub const WHITE_QUEENSIDE_ROOK_START: &Square = &Square::A1;
-    pub const BLACK_QUEENSIDE_ROOK_START: &Square = &Square::A8;
+    pub const WHITE_QUEENSIDE_ROOK_START: Square = Square::A1;
+    pub const BLACK_QUEENSIDE_ROOK_START: Square = Square::A8;
 
-    pub const WHITE_KINGSIDE_CASTLE: &Square = &Square::G1;
-    pub const BLACK_KINGSIDE_CASTLE: &Square = &Square::G8;
+    pub const WHITE_KINGSIDE_CASTLE: Square = Square::G1;
+    pub const BLACK_KINGSIDE_CASTLE: Square = Square::G8;
 
-    pub const WHITE_QUEENSIDE_CASTLE: &Square = &Square::C1;
-    pub const BLACK_QUEENSIDE_CASTLE: &Square = &Square::C8;
+    pub const WHITE_QUEENSIDE_CASTLE: Square = Square::C1;
+    pub const BLACK_QUEENSIDE_CASTLE: Square = Square::C8;
 }
 
 impl std::fmt::Debug for Square {
