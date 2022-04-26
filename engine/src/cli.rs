@@ -1,5 +1,6 @@
 use chess::game::Game;
 use clap::{Parser, Subcommand};
+use engine::uci::parser;
 
 use crate::RunMode;
 
@@ -22,7 +23,11 @@ enum Commands {
     Perft { depth: u8, fen: String },
 
     /// Run a perft test for root moves
-    PerftDiv { depth: u8, fen: String },
+    PerftDiv {
+        depth: u8,
+        fen: String,
+        moves: String,
+    },
 }
 
 pub fn parse_cli() -> RunMode {
@@ -33,8 +38,17 @@ pub fn parse_cli() -> RunMode {
             Commands::Uci {} => RunMode::Uci,
             Commands::PrintBoard {} => RunMode::PrintBoard,
             Commands::Perft { depth, fen } => RunMode::Perft(*depth, Game::from_fen(fen).unwrap()),
-            Commands::PerftDiv { depth, fen } => {
-                RunMode::PerftDiv(*depth, Game::from_fen(fen).unwrap())
+            Commands::PerftDiv { depth, fen, moves } => {
+                let mut game = Game::from_fen(fen).unwrap();
+                let (_, moves) = nom::combinator::opt(parser::uci_moves)(moves).unwrap();
+
+                if let Some(moves) = moves {
+                    for mv in moves {
+                        game = game.make_move(&mv).unwrap();
+                    }
+                }
+
+                RunMode::PerftDiv(*depth, game)
             }
         },
         None => RunMode::default(),

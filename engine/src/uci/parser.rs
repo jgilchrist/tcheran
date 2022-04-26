@@ -96,7 +96,7 @@ fn uci_move(input: &str) -> IResult<&str, Move> {
     )(input)
 }
 
-fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
+pub fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
     separated_list1(space1, uci_move)(input)
 }
 
