@@ -1,4 +1,5 @@
 use crate::{
+    attacks::generate_all_attacks,
     bitboard::{self, Bitboard},
     direction::Direction,
     moves::Move,
@@ -147,6 +148,18 @@ impl Board {
         }
 
         None
+    }
+
+    pub fn king_in_check(&self, player: &Player) -> bool {
+        let enemy_attacks = generate_all_attacks(self, &player.other());
+
+        let king = match player {
+            Player::White => self.white_pieces.king,
+            Player::Black => self.black_pieces.king,
+        }
+        .to_square_definite();
+
+        enemy_attacks.has_square(&king)
     }
 
     // Does not consider move legality. Just concerned with the implementation details

@@ -9,5 +9,6 @@ pub mod piece;
 pub mod player;
 pub mod square;
 
+mod attacks;
 mod fen;
 mod movegen;
