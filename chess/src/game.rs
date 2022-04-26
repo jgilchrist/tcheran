@@ -98,6 +98,7 @@ impl Game {
 
     fn is_legal(&self, mv: &Move) -> bool {
         let enemy_attacks = generate_all_attacks(&self.board, &self.player.other());
+        let piece_to_move = self.board.player_piece_at(&self.player, &mv.src).unwrap();
 
         let king_start_square = match self.player {
             Player::White => square::known::WHITE_KING_START,
@@ -114,8 +115,9 @@ impl Game {
             Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
         };
 
-        if *mv == Move::new(king_start_square, kingside_dst_square)
-            || *mv == Move::new(king_start_square, queenside_dst_square)
+        if piece_to_move == PieceKind::King
+            && (*mv == Move::new(king_start_square, kingside_dst_square)
+                || *mv == Move::new(king_start_square, queenside_dst_square))
         {
             // If the king is in check, it cannot castle
             if enemy_attacks.has_square(&king_start_square) {
