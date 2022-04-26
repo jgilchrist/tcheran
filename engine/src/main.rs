@@ -34,14 +34,17 @@ fn perft(depth: u8, game: &Game) -> usize {
 
 fn perft_div(depth: u8, game: &Game) {
     let root_moves = game.legal_moves();
+    let mut all = 0;
 
     for mv in root_moves {
-        println!(
-            "{:?}: {}",
-            mv,
-            perft(depth - 1, &game.make_move(&mv).unwrap())
-        )
+        let number_for_mv = perft(depth - 1, &game.make_move(&mv).unwrap());
+
+        println!("{:?} {}", mv, number_for_mv);
+        all += number_for_mv
     }
+
+    println!();
+    println!("{}", all);
 }
 
 fn main() -> Result<()> {
