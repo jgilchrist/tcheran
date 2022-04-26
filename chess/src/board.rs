@@ -111,7 +111,7 @@ impl Board {
         }
     }
 
-    fn player_pieces(&self, player: &Player) -> &PlayerPieces {
+    pub fn player_pieces(&self, player: &Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
             Player::Black => &self.black_pieces,
@@ -153,11 +153,7 @@ impl Board {
     pub fn king_in_check(&self, player: &Player) -> bool {
         let enemy_attacks = generate_all_attacks(self, &player.other());
 
-        let king = match player {
-            Player::White => self.white_pieces.king,
-            Player::Black => self.black_pieces.king,
-        }
-        .to_square_definite();
+        let king = self.player_pieces(player).king.to_square_definite();
 
         enemy_attacks.has_square(&king)
     }
