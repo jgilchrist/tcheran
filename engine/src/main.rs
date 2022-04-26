@@ -20,14 +20,26 @@ fn print_board() {
 }
 
 fn perft(depth: u8, game: &Game) -> usize {
-    if depth == 1 {
-        return game.legal_moves().len();
+    if depth == 0 {
+        return 1;
     }
 
     game.legal_moves()
         .iter()
         .map(|m| perft(depth - 1, &game.make_move(m).unwrap()))
         .sum()
+}
+
+fn perft_div(depth: u8, game: &Game) {
+    let root_moves = game.legal_moves();
+
+    for mv in root_moves {
+        println!(
+            "{:?}: {}",
+            mv,
+            perft(depth - 1, &game.make_move(&mv).unwrap())
+        )
+    }
 }
 
 fn main() -> Result<()> {
