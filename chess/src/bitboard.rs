@@ -48,7 +48,7 @@ impl Bitboard {
     }
 
     pub fn has_square(&self, square: &Square) -> bool {
-        !(*self & Bitboard::from_square(square)).is_empty()
+        self.0 & Bitboard::from_square(square).0 != 0
     }
 
     pub fn is_empty(&self) -> bool {
