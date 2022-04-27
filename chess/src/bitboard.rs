@@ -47,18 +47,22 @@ impl Bitboard {
         Bitboard(u64::MAX)
     }
 
+    #[inline(always)]
     pub fn has_square(&self, square: &Square) -> bool {
         self.0 & Bitboard::from_square(square).0 != 0
     }
 
+    #[inline(always)]
     pub fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
+    #[inline(always)]
     pub fn invert(&self) -> Bitboard {
         Bitboard(!self.0)
     }
 
+    #[inline(always)]
     pub fn lsb(&self) -> Bitboard {
         Bitboard((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
@@ -96,6 +100,7 @@ impl Bitboard {
         self.to_square().expect("Expected single bit")
     }
 
+    #[inline(always)]
     pub fn to_square(&self) -> Option<Square> {
         match self.is_empty() {
             true => None,
