@@ -156,10 +156,12 @@ impl Square {
         self.0
     }
 
+    #[inline(always)]
     pub fn rank(&self) -> Rank {
         Rank::from_idx(self.0 / 8)
     }
 
+    #[inline(always)]
     pub fn file(&self) -> File {
         File::from_idx(self.0 % 8)
     }
