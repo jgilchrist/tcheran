@@ -134,56 +134,53 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     for start in knights.squares() {
         // Going clockwise, starting at 12
-        let nne = Some(start)
-            .and_then(|s| s.north())
-            .and_then(|s| s.north())
-            .and_then(|s| s.east());
+        if let Some(nne) = start.north().and_then(|s| s.north_east()) {
+            if !ctx.our_pieces.has_square(&nne) {
+                moves.push(Move::new(start, nne));
+            }
+        }
 
-        let een = Some(start)
-            .and_then(|s| s.east())
-            .and_then(|s| s.east())
-            .and_then(|s| s.north());
+        if let Some(een) = start.east().and_then(|s| s.north_east()) {
+            if !ctx.our_pieces.has_square(&een) {
+                moves.push(Move::new(start, een));
+            }
+        }
 
-        let ees = Some(start)
-            .and_then(|s| s.east())
-            .and_then(|s| s.east())
-            .and_then(|s| s.south());
+        if let Some(ees) = start.east().and_then(|s| s.south_east()) {
+            if !ctx.our_pieces.has_square(&ees) {
+                moves.push(Move::new(start, ees));
+            }
+        }
 
-        let sse = Some(start)
-            .and_then(|s| s.south())
-            .and_then(|s| s.south())
-            .and_then(|s| s.east());
+        if let Some(sse) = start.south().and_then(|s| s.south_east()) {
+            if !ctx.our_pieces.has_square(&sse) {
+                moves.push(Move::new(start, sse));
+            }
+        }
 
-        let ssw = Some(start)
-            .and_then(|s| s.south())
-            .and_then(|s| s.south())
-            .and_then(|s| s.west());
+        if let Some(ssw) = start.south().and_then(|s| s.south_west()) {
+            if !ctx.our_pieces.has_square(&ssw) {
+                moves.push(Move::new(start, ssw));
+            }
+        }
 
-        let wws = Some(start)
-            .and_then(|s| s.west())
-            .and_then(|s| s.west())
-            .and_then(|s| s.south());
+        if let Some(wws) = start.west().and_then(|s| s.south_west()) {
+            if !ctx.our_pieces.has_square(&wws) {
+                moves.push(Move::new(start, wws));
+            }
+        }
 
-        let wwn = Some(start)
-            .and_then(|s| s.west())
-            .and_then(|s| s.west())
-            .and_then(|s| s.north());
+        if let Some(wwn) = start.west().and_then(|s| s.north_west()) {
+            if !ctx.our_pieces.has_square(&wwn) {
+                moves.push(Move::new(start, wwn));
+            }
+        }
 
-        let nnw = Some(start)
-            .and_then(|s| s.north())
-            .and_then(|s| s.north())
-            .and_then(|s| s.west());
-
-        let maybe_destination_squares = vec![nne, een, ees, sse, ssw, wws, wwn, nnw];
-
-        let allowed_moves: Vec<Move> = maybe_destination_squares
-            .into_iter()
-            .flatten()
-            .filter(|s| !ctx.our_pieces.has_square(s))
-            .map(|s| Move::new(start, s))
-            .collect();
-
-        moves.extend(allowed_moves);
+        if let Some(nnw) = start.north().and_then(|s| s.north_west()) {
+            if !ctx.our_pieces.has_square(&nnw) {
+                moves.push(Move::new(start, nnw));
+            }
+        }
     }
 }
 
