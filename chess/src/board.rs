@@ -5,7 +5,10 @@ use crate::{
     moves::Move,
     piece::{Piece, PieceKind},
     player::Player,
-    square::{self, Square},
+    square::{
+        squares::{self, *},
+        Square,
+    },
 };
 
 #[derive(Clone, Copy)]
@@ -231,10 +234,7 @@ impl Board {
                 }
             }
 
-            let king_start_square = match moved_piece.player {
-                Player::White => square::known::WHITE_KING_START,
-                Player::Black => square::known::BLACK_KING_START,
-            };
+            let king_start_square = *squares::king_start(&moved_piece.player);
 
             // PERF: Here, we figure out if the move was castling. It may be more performant to
             // tell this function that the move was castling, but it loses the cleanliness of
@@ -242,39 +242,26 @@ impl Board {
 
             // If we just moved a king from its start square, we may have castled.
             if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
-                let kingside_square = match moved_piece.player {
-                    Player::White => Square::G1,
-                    Player::Black => Square::G8,
-                };
-
-                let queenside_square = match moved_piece.player {
-                    Player::White => Square::C1,
-                    Player::Black => Square::C8,
-                };
+                let kingside_square = *squares::kingside_castle_dest(&moved_piece.player);
+                let queenside_square = *squares::queenside_castle_dest(&moved_piece.player);
 
                 // We're castling!
                 if mv.dst == kingside_square || mv.dst == queenside_square {
                     let is_kingside = mv.dst == kingside_square;
 
                     let rook_remove_mask = Bitboard::except_square(match is_kingside {
-                        true => match moved_piece.player {
-                            Player::White => &Square::H1,
-                            Player::Black => &Square::H8,
-                        },
-                        false => match moved_piece.player {
-                            Player::White => &Square::A1,
-                            Player::Black => &Square::A8,
-                        },
+                        true => squares::kingside_rook_start(&moved_piece.player),
+                        false => squares::queenside_rook_start(&moved_piece.player),
                     });
 
-                    let rook_add_mask = Bitboard::from_square(match is_kingside {
+                    let rook_add_mask = Bitboard::from_square(&match is_kingside {
                         true => match moved_piece.player {
-                            Player::White => &Square::F1,
-                            Player::Black => &Square::F8,
+                            Player::White => F1,
+                            Player::Black => F8,
                         },
                         false => match moved_piece.player {
-                            Player::White => &Square::D1,
-                            Player::Black => &Square::D8,
+                            Player::White => D1,
+                            Player::Black => D8,
                         },
                     });
 

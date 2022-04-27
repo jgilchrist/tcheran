@@ -8,7 +8,10 @@ use crate::{
     moves::Move,
     piece::PieceKind,
     player::Player,
-    square::{self, Rank, Square},
+    square::{
+        squares::{self, *},
+        Rank, Square,
+    },
 };
 use anyhow::Result;
 
@@ -100,20 +103,9 @@ impl Game {
         let enemy_attacks = generate_all_attacks(&self.board, &self.player.other());
         let piece_to_move = self.board.player_piece_at(&self.player, &mv.src).unwrap();
 
-        let king_start_square = match self.player {
-            Player::White => square::known::WHITE_KING_START,
-            Player::Black => square::known::BLACK_KING_START,
-        };
-
-        let kingside_dst_square = match self.player {
-            Player::White => square::known::WHITE_KINGSIDE_CASTLE,
-            Player::Black => square::known::BLACK_KINGSIDE_CASTLE,
-        };
-
-        let queenside_dst_square = match self.player {
-            Player::White => square::known::WHITE_QUEENSIDE_CASTLE,
-            Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
-        };
+        let king_start_square = *squares::king_start(&self.player);
+        let kingside_dst_square = *squares::kingside_castle_dest(&self.player);
+        let queenside_dst_square = *squares::queenside_castle_dest(&self.player);
 
         if piece_to_move == PieceKind::King
             && (*mv == Move::new(king_start_square, kingside_dst_square)
@@ -127,8 +119,8 @@ impl Game {
             // The king cannot castle if the intervening squares are under attack
             if *mv == Move::new(king_start_square, kingside_dst_square) {
                 let kingside_required_not_attacked_squares = match self.player {
-                    Player::White => vec![Square::F1, Square::G1],
-                    Player::Black => vec![Square::F8, Square::G8],
+                    Player::White => vec![F1, G1],
+                    Player::Black => vec![F8, G8],
                 };
 
                 if kingside_required_not_attacked_squares
@@ -141,8 +133,8 @@ impl Game {
 
             if *mv == Move::new(king_start_square, queenside_dst_square) {
                 let queenside_required_not_attacked_squares = match self.player {
-                    Player::White => vec![Square::C1, Square::D1],
-                    Player::Black => vec![Square::C8, Square::D8],
+                    Player::White => vec![C1, D1],
+                    Player::Black => vec![C8, D8],
                 };
 
                 if queenside_required_not_attacked_squares
@@ -222,73 +214,32 @@ impl Game {
             None
         };
 
-        let king_start_square = match self.player {
-            Player::White => square::known::WHITE_KING_START,
-            Player::Black => square::known::BLACK_KING_START,
-        };
+        // FIXME: We update the castle rights when any piece moves off of/onto
+        // the appropriate squares. This makes for simpler code, but will end up
+        // copying CastleRights more than we need to.
+        let castle_rights = |player: &Player, castle_rights: &CastleRights| {
+            let our_king_start = *squares::king_start(player);
+            let our_kingside_rook = *squares::kingside_rook_start(player);
+            let our_queenside_rook = *squares::queenside_rook_start(player);
 
-        let kingside_rook_start_square = match self.player {
-            Player::White => square::known::WHITE_KING_START,
-            Player::Black => square::known::BLACK_KING_START,
-        };
-
-        let white_castle_rights = if self.player == Player::White {
-            match (mv.src, self.white_castle_rights) {
-                (square::known::WHITE_KING_START, _) => CastleRights::none(),
-                (
-                    square::known::WHITE_KINGSIDE_ROOK_START,
-                    rights @ CastleRights {
-                        king_side: true, ..
-                    },
-                ) => rights.without_kingside(),
-                (
-                    square::known::WHITE_QUEENSIDE_ROOK_START,
-                    rights @ CastleRights {
-                        queen_side: true, ..
-                    },
-                ) => rights.without_queenside(),
-                _ => self.white_castle_rights,
-            }
-        } else {
-            match mv.dst {
-                square::known::WHITE_KINGSIDE_ROOK_START => {
-                    self.white_castle_rights.without_kingside()
+            if self.player == *player {
+                match mv.src {
+                    s if s == our_king_start => CastleRights::none(),
+                    s if s == our_kingside_rook => castle_rights.without_kingside(),
+                    s if s == our_queenside_rook => castle_rights.without_queenside(),
+                    _ => *castle_rights,
                 }
-                square::known::WHITE_QUEENSIDE_ROOK_START => {
-                    self.white_castle_rights.without_queenside()
+            } else {
+                match mv.dst {
+                    s if s == our_kingside_rook => castle_rights.without_kingside(),
+                    s if s == our_queenside_rook => castle_rights.without_queenside(),
+                    _ => *castle_rights,
                 }
-                _ => self.white_castle_rights,
             }
         };
 
-        let black_castle_rights = if self.player == Player::Black {
-            match (mv.src, self.black_castle_rights) {
-                (square::known::BLACK_KING_START, _) => CastleRights::none(),
-                (
-                    square::known::BLACK_KINGSIDE_ROOK_START,
-                    rights @ CastleRights {
-                        king_side: true, ..
-                    },
-                ) => rights.without_kingside(),
-                (
-                    square::known::BLACK_QUEENSIDE_ROOK_START,
-                    rights @ CastleRights {
-                        queen_side: true, ..
-                    },
-                ) => rights.without_queenside(),
-                _ => self.black_castle_rights,
-            }
-        } else {
-            match mv.dst {
-                square::known::BLACK_KINGSIDE_ROOK_START => {
-                    self.black_castle_rights.without_kingside()
-                }
-                square::known::BLACK_QUEENSIDE_ROOK_START => {
-                    self.black_castle_rights.without_queenside()
-                }
-                _ => self.black_castle_rights,
-            }
-        };
+        let white_castle_rights = castle_rights(&Player::White, &self.white_castle_rights);
+        let black_castle_rights = castle_rights(&Player::Black, &self.black_castle_rights);
 
         Ok(Game {
             board,

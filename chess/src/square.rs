@@ -214,6 +214,12 @@ impl Square {
     pub fn north_west(&self) -> Option<Square> {
         Bitboard::from_square(self).north_west().to_square()
     }
+}
+
+pub mod squares {
+    use crate::player::Player;
+
+    use super::{File, Rank, Square};
 
     // For convenience
     pub const A1: Square = Square::new(File::A, Rank::R1);
@@ -287,25 +293,37 @@ impl Square {
     pub const H6: Square = Square::new(File::H, Rank::R6);
     pub const H7: Square = Square::new(File::H, Rank::R7);
     pub const H8: Square = Square::new(File::H, Rank::R8);
-}
 
-pub mod known {
-    use super::Square;
+    pub fn king_start(player: &Player) -> &Square {
+        player_square(player, &E1, &E8)
+    }
 
-    pub const WHITE_KING_START: Square = Square::E1;
-    pub const BLACK_KING_START: Square = Square::E8;
+    pub fn kingside_rook_start(player: &Player) -> &Square {
+        player_square(player, &H1, &H8)
+    }
 
-    pub const WHITE_KINGSIDE_ROOK_START: Square = Square::H1;
-    pub const BLACK_KINGSIDE_ROOK_START: Square = Square::H8;
+    pub fn queenside_rook_start(player: &Player) -> &Square {
+        player_square(player, &A1, &A8)
+    }
 
-    pub const WHITE_QUEENSIDE_ROOK_START: Square = Square::A1;
-    pub const BLACK_QUEENSIDE_ROOK_START: Square = Square::A8;
+    pub fn kingside_castle_dest(player: &Player) -> &Square {
+        player_square(player, &G1, &G8)
+    }
 
-    pub const WHITE_KINGSIDE_CASTLE: Square = Square::G1;
-    pub const BLACK_KINGSIDE_CASTLE: Square = Square::G8;
+    pub fn queenside_castle_dest(player: &Player) -> &Square {
+        player_square(player, &C1, &C8)
+    }
 
-    pub const WHITE_QUEENSIDE_CASTLE: Square = Square::C1;
-    pub const BLACK_QUEENSIDE_CASTLE: Square = Square::C8;
+    fn player_square<'a>(
+        player: &Player,
+        white_square: &'a Square,
+        black_square: &'a Square,
+    ) -> &'a Square {
+        match player {
+            Player::White => white_square,
+            Player::Black => black_square,
+        }
+    }
 }
 
 impl std::fmt::Debug for Square {

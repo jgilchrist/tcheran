@@ -5,7 +5,7 @@ use crate::{
     moves::Move,
     piece::PromotionPieceKind,
     player::Player,
-    square::{self, Square},
+    square::squares::{self, *},
 };
 
 struct Ctx {
@@ -315,16 +315,13 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
         Player::Black => game.black_castle_rights,
     };
 
-    let king_start_square = match game.player {
-        Player::White => square::known::WHITE_KING_START,
-        Player::Black => square::known::BLACK_KING_START,
-    };
+    let king_start_square = squares::king_start(&game.player);
 
-    if king == king_start_square && castle_rights_for_player.can_castle() {
+    if king == *king_start_square && castle_rights_for_player.can_castle() {
         if castle_rights_for_player.king_side {
             let kingside_required_empty_squares = match game.player {
-                Player::White => vec![Square::F1, Square::G1],
-                Player::Black => vec![Square::F8, Square::G8],
+                Player::White => vec![F1, G1],
+                Player::Black => vec![F8, G8],
             };
 
             let path_to_castle_is_empty = kingside_required_empty_squares
@@ -332,19 +329,17 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
                 .all(|s| !ctx.all_pieces.has_square(s));
 
             if path_to_castle_is_empty {
-                let kingside_dst_square = match game.player {
-                    Player::White => square::known::WHITE_KINGSIDE_CASTLE,
-                    Player::Black => square::known::BLACK_KINGSIDE_CASTLE,
-                };
-
-                moves.push(Move::new(king, kingside_dst_square));
+                moves.push(Move::new(
+                    king,
+                    *squares::kingside_castle_dest(&game.player),
+                ));
             }
         }
 
         if castle_rights_for_player.queen_side {
             let queenside_required_empty_squares = match game.player {
-                Player::White => vec![Square::B1, Square::C1, Square::D1],
-                Player::Black => vec![Square::B8, Square::C8, Square::D8],
+                Player::White => vec![B1, C1, D1],
+                Player::Black => vec![B8, C8, D8],
             };
 
             let path_to_castle_is_empty = queenside_required_empty_squares
@@ -352,12 +347,10 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
                 .all(|s| !ctx.all_pieces.has_square(s));
 
             if path_to_castle_is_empty {
-                let queenside_dst_square = match game.player {
-                    Player::White => square::known::WHITE_QUEENSIDE_CASTLE,
-                    Player::Black => square::known::BLACK_QUEENSIDE_CASTLE,
-                };
-
-                moves.push(Move::new(king, queenside_dst_square));
+                moves.push(Move::new(
+                    king,
+                    *squares::queenside_castle_dest(&game.player),
+                ));
             }
         }
     }
