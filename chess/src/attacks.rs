@@ -108,13 +108,14 @@ fn generate_knight_attacks(square: &Square) -> Bitboard {
         .and_then(|s| s.north())
         .and_then(|s| s.west());
 
-    let maybe_destination_squares = vec![nne, een, ees, sse, ssw, wws, wwn, nnw];
-
-    let attacked_squares: Vec<Square> = maybe_destination_squares.into_iter().flatten().collect();
-
-    for s in attacked_squares {
-        attacks |= Bitboard::from_square(&s);
-    }
+    if let Some(s) = nne { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = een { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = ees { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = sse { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = ssw { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = wws { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = wwn { attacks |= Bitboard::from_square(&s); }
+    if let Some(s) = nnw { attacks |= Bitboard::from_square(&s); }
 
     attacks
 }
