@@ -170,6 +170,7 @@ impl Square {
     }
 
     // PERF: Continuous conversions to and from bitboard may have a perf impact?
+    #[inline(always)]
     pub fn in_direction(&self, direction: &Direction) -> Option<Square> {
         match direction {
             Direction::North => self.north(),
@@ -183,34 +184,42 @@ impl Square {
         }
     }
 
+    #[inline(always)]
     pub fn north(&self) -> Option<Square> {
         Bitboard::from_square(self).north().to_square()
     }
 
+    #[inline(always)]
     pub fn south(&self) -> Option<Square> {
         Bitboard::from_square(self).south().to_square()
     }
 
+    #[inline(always)]
     pub fn east(&self) -> Option<Square> {
         Bitboard::from_square(self).east().to_square()
     }
 
+    #[inline(always)]
     pub fn north_east(&self) -> Option<Square> {
         Bitboard::from_square(self).north_east().to_square()
     }
 
+    #[inline(always)]
     pub fn south_east(&self) -> Option<Square> {
         Bitboard::from_square(self).south_east().to_square()
     }
 
+    #[inline(always)]
     pub fn west(&self) -> Option<Square> {
         Bitboard::from_square(self).west().to_square()
     }
 
+    #[inline(always)]
     pub fn south_west(&self) -> Option<Square> {
         Bitboard::from_square(self).south_west().to_square()
     }
 
+    #[inline(always)]
     pub fn north_west(&self) -> Option<Square> {
         Bitboard::from_square(self).north_west().to_square()
     }

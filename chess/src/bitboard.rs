@@ -64,14 +64,17 @@ impl Bitboard {
         self.bits().iter().map(|b| b.to_square_definite()).collect()
     }
 
+    #[inline(always)]
     pub fn from_square(square: &Square) -> Bitboard {
         Bitboard(1 << square.idx())
     }
 
+    #[inline(always)]
     pub fn except_square(square: &Square) -> Bitboard {
         Bitboard::from_square(square).invert()
     }
 
+    #[inline(always)]
     pub fn to_square_definite(&self) -> Square {
         self.to_square().expect("Expected single bit")
     }
@@ -85,6 +88,7 @@ impl Bitboard {
         }
     }
 
+    #[inline(always)]
     pub fn in_direction(&self, direction: Direction) -> Bitboard {
         match direction {
             Direction::North => self.north(),
@@ -98,39 +102,47 @@ impl Bitboard {
         }
     }
 
+    #[inline(always)]
     pub fn north(&self) -> Bitboard {
         Bitboard(self.0 << 8)
     }
 
+    #[inline(always)]
     pub fn south(&self) -> Bitboard {
         Bitboard(self.0 >> 8)
     }
 
+    #[inline(always)]
     pub fn east(&self) -> Bitboard {
         // If we go east and land on A, we wrapped around.
         Bitboard((self.0 << 1) & known::NOT_A_FILE.0)
     }
 
+    #[inline(always)]
     pub fn north_east(&self) -> Bitboard {
         // If we go east and land on A, we wrapped around.
         Bitboard((self.0 << 9) & known::NOT_A_FILE.0)
     }
 
+    #[inline(always)]
     pub fn south_east(&self) -> Bitboard {
         // If we go east and land on A, we wrapped around.
         Bitboard((self.0 >> 7) & known::NOT_A_FILE.0)
     }
 
+    #[inline(always)]
     pub fn west(&self) -> Bitboard {
         // If we go west and land on H, we wrapped around.
         Bitboard((self.0 >> 1) & known::NOT_H_FILE.0)
     }
 
+    #[inline(always)]
     pub fn south_west(&self) -> Bitboard {
         // If we go west and land on H, we wrapped around.
         Bitboard((self.0 >> 9) & known::NOT_H_FILE.0)
     }
 
+    #[inline(always)]
     pub fn north_west(&self) -> Bitboard {
         // If we go west and land on H, we wrapped around.
         Bitboard((self.0 << 7) & known::NOT_H_FILE.0)
