@@ -18,12 +18,12 @@ pub fn generate_moves(game: &Game) -> Vec<Move> {
     let ctx = get_ctx(game);
 
     let mut moves: Vec<Move> = vec![];
-    moves.extend(generate_pawn_moves(game, &ctx));
-    moves.extend(generate_knight_moves(game, &ctx));
-    moves.extend(generate_bishop_moves(game, &ctx));
-    moves.extend(generate_rook_moves(game, &ctx));
-    moves.extend(generate_queen_moves(game, &ctx));
-    moves.extend(generate_king_moves(game, &ctx));
+    generate_pawn_moves(&mut moves, game, &ctx);
+    generate_knight_moves(&mut moves, game, &ctx);
+    generate_bishop_moves(&mut moves, game, &ctx);
+    generate_rook_moves(&mut moves, game, &ctx);
+    generate_queen_moves(&mut moves, game, &ctx);
+    generate_king_moves(&mut moves, game, &ctx);
     moves
 }
 
@@ -39,9 +39,7 @@ fn get_ctx(game: &Game) -> Ctx {
     }
 }
 
-fn generate_pawn_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let pawns = game.board.player_pieces(&game.player).pawns;
 
     let pawn_move_direction = match game.player {
@@ -129,13 +127,9 @@ fn generate_pawn_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
             }
         }
     }
-
-    moves
 }
 
-fn generate_knight_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let knights = game.board.player_pieces(&game.player).knights;
 
     for start in knights.squares() {
@@ -191,13 +185,9 @@ fn generate_knight_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
 
         moves.extend(allowed_moves);
     }
-
-    moves
 }
 
-fn generate_bishop_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let bishops = game.board.player_pieces(&game.player).bishops;
 
     for bishop in bishops.squares() {
@@ -223,13 +213,9 @@ fn generate_bishop_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
             }
         }
     }
-
-    moves
 }
 
-fn generate_rook_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let rooks = game.board.player_pieces(&game.player).rooks;
 
     for rook in rooks.squares() {
@@ -255,13 +241,9 @@ fn generate_rook_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
             }
         }
     }
-
-    moves
 }
 
-fn generate_queen_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let queens = game.board.player_pieces(&game.player).queen;
 
     for queen in queens.squares() {
@@ -287,13 +269,9 @@ fn generate_queen_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
             }
         }
     }
-
-    moves
 }
 
-fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
-    let mut moves: Vec<Move> = vec![];
-
+fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let king = game
         .board
         .player_pieces(&game.player)
@@ -354,6 +332,4 @@ fn generate_king_moves(game: &Game, ctx: &Ctx) -> Vec<Move> {
             }
         }
     }
-
-    moves
 }
