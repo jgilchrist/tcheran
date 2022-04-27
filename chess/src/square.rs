@@ -154,12 +154,12 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn rank(&self) -> Rank {
+    fn rank(&self) -> Rank {
         Rank::from_idx((self.0.trailing_zeros() / 8) as u8)
     }
 
     #[inline(always)]
-    pub fn file(&self) -> File {
+    fn file(&self) -> File {
         File::from_idx((self.0.trailing_zeros() % 8) as u8)
     }
 

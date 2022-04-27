@@ -1,6 +1,6 @@
 use crate::{
     attacks::generate_all_attacks,
-    bitboard::Bitboard,
+    bitboard::self,
     board::Board,
     direction::Direction,
     fen,
@@ -10,7 +10,7 @@ use crate::{
     player::Player,
     square::{
         squares::{self, *},
-        Rank, Square,
+        Square,
     },
 };
 use anyhow::Result;
@@ -188,12 +188,12 @@ impl Game {
         };
 
         let back_rank = match self.player {
-            Player::White => Rank::R2,
-            Player::Black => Rank::R7,
+            Player::White => bitboard::known::RANK_2,
+            Player::Black => bitboard::known::RANK_7,
         };
 
         let en_passant_target = if piece_to_move == PieceKind::Pawn
-            && from.rank() == back_rank
+            && back_rank.has_square(&from)
             && to
                 == from
                     .in_direction(&pawn_move_direction)
