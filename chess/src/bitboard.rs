@@ -97,8 +97,6 @@ impl Bitboard {
     }
 
     pub fn to_square(&self) -> Option<Square> {
-        assert!(self.count() == 0 || self.count() == 1);
-
         match self.is_empty() {
             true => None,
             false => Some(Square::from_idx(self.0.trailing_zeros() as u8)),
