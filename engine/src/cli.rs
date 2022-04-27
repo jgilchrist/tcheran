@@ -20,7 +20,7 @@ enum Commands {
     PrintBoard {},
 
     /// Run a perft test
-    Perft { depth: u8, fen: String },
+    Perft { depth: u8, fen: Option<String> },
 
     /// Run a perft test for root moves
     PerftDiv {
@@ -37,7 +37,12 @@ pub fn parse_cli() -> RunMode {
         Some(cmd) => match cmd {
             Commands::Uci {} => RunMode::Uci,
             Commands::PrintBoard {} => RunMode::PrintBoard,
-            Commands::Perft { depth, fen } => RunMode::Perft(*depth, Game::from_fen(fen).unwrap()),
+            Commands::Perft { depth, fen } => {
+                let default_fen =
+                    "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string();
+                let fen = fen.as_ref().unwrap_or(&default_fen);
+                RunMode::Perft(*depth, Game::from_fen(fen).unwrap())
+            }
             Commands::PerftDiv { depth, fen, moves } => {
                 let mut game = Game::from_fen(fen).unwrap();
                 let (_, moves) = nom::combinator::opt(parser::uci_moves)(moves).unwrap();
