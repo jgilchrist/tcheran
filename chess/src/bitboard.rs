@@ -6,6 +6,34 @@ use crate::square::Square;
 #[derive(Clone, Copy)]
 pub struct Bitboard(u64);
 
+pub struct BitIterator(Bitboard);
+
+impl Iterator for BitIterator {
+    type Item = Bitboard;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0.is_empty() {
+            None
+        } else {
+            Some(self.0.pop_lsb_inplace())
+        }
+    }
+}
+
+pub struct SquareIterator(Bitboard);
+
+impl Iterator for SquareIterator {
+    type Item = Square;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.0.is_empty() {
+            None
+        } else {
+            Some(self.0.pop_lsb_inplace().to_square_definite())
+        }
+    }
+}
+
 impl Bitboard {
     pub const fn new(squares: u64) -> Bitboard {
         Bitboard(squares)
@@ -35,33 +63,22 @@ impl Bitboard {
         Bitboard((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
-    pub fn pop_lsb(&self) -> (Bitboard, Bitboard) {
+    fn pop_lsb_inplace(&mut self) -> Bitboard {
         let lsb = self.lsb();
-        let popped = Bitboard(self.0 & (self.0 - 1));
-        (lsb, popped)
+        self.0 &= self.0 - 1;
+        lsb
     }
 
     pub fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
-    pub fn bits(&self) -> Vec<Bitboard> {
-        let mut bits: Vec<Bitboard> = Vec::with_capacity(self.count() as usize);
-        let mut bitboard = Bitboard(self.0);
-
-        loop {
-            if bitboard.is_empty() {
-                return bits;
-            }
-
-            let (next_bit, next_bitboard) = bitboard.pop_lsb();
-            bitboard = next_bitboard;
-            bits.push(next_bit);
-        }
+    pub fn bits(&self) -> BitIterator {
+        BitIterator(self.clone())
     }
 
-    pub fn squares(&self) -> Vec<Square> {
-        self.bits().iter().map(|b| b.to_square_definite()).collect()
+    pub fn squares(&self) -> SquareIterator {
+        SquareIterator(self.clone())
     }
 
     #[inline(always)]
