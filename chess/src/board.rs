@@ -1,5 +1,5 @@
 use crate::{
-    attacks::generate_all_attacks,
+    attacks::{generate_all_attacks, self},
     bitboard::{self, Bitboard},
     direction::Direction,
     moves::Move,
@@ -220,21 +220,25 @@ impl Board {
             //
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
-            if moved_piece.kind == PieceKind::Pawn && mv.is_diagonal() {
-                let opponent_pieces = self.player_pieces(&moved_piece.player.other()).all();
+            if moved_piece.kind == PieceKind::Pawn {
+                let pawn_attacks = attacks::generate_pawn_attacks(&mv.src, &moved_piece.player);
 
-                // Definitely en-passant, as we made a capture but there was no piece on that square.
-                if !opponent_pieces.has_square(&mv.dst) {
-                    // Get the square that we need to remove the pawn from.
-                    let inverse_pawn_move_direction = match moved_piece.player {
-                        Player::White => Direction::South,
-                        Player::Black => Direction::North,
-                    };
+                if pawn_attacks.has_square(&mv.dst) {
+                    let opponent_pieces = self.player_pieces(&moved_piece.player.other()).all();
 
-                    let capture_square = mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
+                    // Definitely en-passant, as we made a capture but there was no piece on that square.
+                    if !opponent_pieces.has_square(&mv.dst) {
+                        // Get the square that we need to remove the pawn from.
+                        let inverse_pawn_move_direction = match moved_piece.player {
+                            Player::White => Direction::South,
+                            Player::Black => Direction::North,
+                        };
 
-                    let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
-                    new_bitboard &= remove_captured_pawn_mask;
+                        let capture_square = mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
+
+                        let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
+                        new_bitboard &= remove_captured_pawn_mask;
+                    }
                 }
             }
 

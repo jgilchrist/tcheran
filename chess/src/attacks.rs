@@ -38,7 +38,7 @@ fn generate_piece_attacks(
     }
 }
 
-fn generate_pawn_attacks(square: &Square, player: &Player) -> Bitboard {
+pub fn generate_pawn_attacks(square: &Square, player: &Player) -> Bitboard {
     let mut attacks = Bitboard::empty();
 
     let pawn_move_direction = match player {

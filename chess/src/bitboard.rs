@@ -74,7 +74,7 @@ impl Bitboard {
         lsb
     }
 
-    pub fn count(&self) -> u8 {
+    pub const fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
