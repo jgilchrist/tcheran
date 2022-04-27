@@ -22,8 +22,8 @@ fn print_board() {
 }
 
 fn perft(depth: u8, game: &Game) -> usize {
-    if depth == 0 {
-        return 1;
+    if depth == 1 {
+        return game.legal_moves().len();
     }
 
     game.legal_moves()
