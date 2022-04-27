@@ -11,3 +11,7 @@ instruments-time-perft-5:
 
 compare-perft n BIN1 BIN2:
 	hyperfine '{{BIN1}} perft {{n}}' '{{BIN2}} perft {{n}}'
+
+copy-bin name:
+	cargo build --release
+	cp target/release/engine bins/{{name}}
