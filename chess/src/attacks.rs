@@ -68,54 +68,37 @@ fn generate_knight_attacks(square: &Square) -> Bitboard {
     let mut attacks = Bitboard::empty();
 
     // Going clockwise, starting at 12
-    let nne = Some(square)
-        .and_then(|s| s.north())
-        .and_then(|s| s.north())
-        .and_then(|s| s.east());
+    if let Some(nne) = square.north().and_then(|s| s.north_east()) {
+        attacks |= Bitboard::from_square(&nne);
+    }
 
-    let een = Some(square)
-        .and_then(|s| s.east())
-        .and_then(|s| s.east())
-        .and_then(|s| s.north());
+    if let Some(een) = square.east().and_then(|s| s.north_east()) {
+        attacks |= Bitboard::from_square(&een);
+    }
 
-    let ees = Some(square)
-        .and_then(|s| s.east())
-        .and_then(|s| s.east())
-        .and_then(|s| s.south());
+    if let Some(ees) = square.east().and_then(|s| s.south_east()) {
+        attacks |= Bitboard::from_square(&ees);
+    }
 
-    let sse = Some(square)
-        .and_then(|s| s.south())
-        .and_then(|s| s.south())
-        .and_then(|s| s.east());
+    if let Some(sse) = square.south().and_then(|s| s.south_east()) {
+        attacks |= Bitboard::from_square(&sse);
+    }
 
-    let ssw = Some(square)
-        .and_then(|s| s.south())
-        .and_then(|s| s.south())
-        .and_then(|s| s.west());
+    if let Some(ssw) = square.south().and_then(|s| s.south_west()) {
+        attacks |= Bitboard::from_square(&ssw);
+    }
 
-    let wws = Some(square)
-        .and_then(|s| s.west())
-        .and_then(|s| s.west())
-        .and_then(|s| s.south());
+    if let Some(wws) = square.west().and_then(|s| s.south_west()) {
+        attacks |= Bitboard::from_square(&wws);
+    }
 
-    let wwn = Some(square)
-        .and_then(|s| s.west())
-        .and_then(|s| s.west())
-        .and_then(|s| s.north());
+    if let Some(wwn) = square.west().and_then(|s| s.north_west()) {
+        attacks |= Bitboard::from_square(&wwn);
+    }
 
-    let nnw = Some(square)
-        .and_then(|s| s.north())
-        .and_then(|s| s.north())
-        .and_then(|s| s.west());
-
-    if let Some(s) = nne { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = een { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = ees { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = sse { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = ssw { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = wws { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = wwn { attacks |= Bitboard::from_square(&s); }
-    if let Some(s) = nnw { attacks |= Bitboard::from_square(&s); }
+    if let Some(nnw) = square.north().and_then(|s| s.north_west()) {
+        attacks |= Bitboard::from_square(&nnw);
+    }
 
     attacks
 }
