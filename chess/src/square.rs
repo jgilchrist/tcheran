@@ -136,7 +136,6 @@ impl std::fmt::Display for Rank {
     }
 }
 
-// TODO: Change internal representation to u8 (index)
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Square(u8);
 
