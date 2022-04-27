@@ -108,6 +108,7 @@ impl Game {
         let queenside_dst_square = *squares::queenside_castle_dest(&self.player);
 
         if piece_to_move == PieceKind::King
+            // PERF: Don't create these moves on every single request
             && (*mv == Move::new(king_start_square, kingside_dst_square)
                 || *mv == Move::new(king_start_square, queenside_dst_square))
         {
@@ -119,6 +120,7 @@ impl Game {
             // The king cannot castle if the intervening squares are under attack
             if *mv == Move::new(king_start_square, kingside_dst_square) {
                 let kingside_required_not_attacked_squares = match self.player {
+                    // PERF: Don't allocate these vectors on every single call
                     Player::White => vec![F1, G1],
                     Player::Black => vec![F8, G8],
                 };
