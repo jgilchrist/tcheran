@@ -178,7 +178,7 @@ impl Board {
 
         let add_piece_to_dst_mask = |piece: &Piece| {
             if *piece == moved_piece {
-                Bitboard::from_square(&mv.dst)
+                mv.dst.bitboard()
             } else {
                 Bitboard::empty()
             }
@@ -200,7 +200,7 @@ impl Board {
 
                 let add_promoted_piece_mask =
                     if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
-                        Bitboard::from_square(&mv.dst)
+                        mv.dst.bitboard()
                     } else {
                         Bitboard::empty()
                     };
@@ -213,7 +213,11 @@ impl Board {
             // PERF: Here, we figure out if the move was en-passant. It may be more performant to
             // tell this function that the move was en-passant, but it loses the cleanliness of
             // just telling the board the start and end destination for the piece.
-
+            //
+            // PERF: We only need to check mv.is_diagonal() if we moved from the rank where
+            // en-passant can happen which is likely a much cheaper check (just bitwise and on the
+            // bitboard and square).
+            //
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
             if moved_piece.kind == PieceKind::Pawn && mv.is_diagonal() {
@@ -254,7 +258,7 @@ impl Board {
                         false => squares::queenside_rook_start(&moved_piece.player),
                     });
 
-                    let rook_add_mask = Bitboard::from_square(&match is_kingside {
+                    let rook_add_mask = match is_kingside {
                         true => match moved_piece.player {
                             Player::White => F1,
                             Player::Black => F8,
@@ -263,7 +267,7 @@ impl Board {
                             Player::White => D1,
                             Player::Black => D8,
                         },
-                    });
+                    }.bitboard();
 
                     if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {
                         new_bitboard &= rook_remove_mask;

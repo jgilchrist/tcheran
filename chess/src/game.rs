@@ -200,7 +200,7 @@ impl Game {
                     .and_then(|s| s.in_direction(&pawn_move_direction))
                     .unwrap()
         {
-            let to_bb = Bitboard::from_square(&to);
+            let to_bb = to.bitboard();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
             let enemy_pawns = self.board.player_pieces(&self.player.other()).pawns;
             let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();

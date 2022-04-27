@@ -58,7 +58,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     };
 
     for start in pawns.squares() {
-        let will_promote = !((Bitboard::from_square(&start) & will_promote_rank).is_empty());
+        let will_promote = !((start.bitboard() & will_promote_rank).is_empty());
 
         // Move forward by 1
         let forward_one = start.in_direction(&pawn_move_direction);

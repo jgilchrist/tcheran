@@ -3,8 +3,9 @@ use std::ops::BitAndAssign;
 use crate::direction::Direction;
 use crate::square::Square;
 
-#[derive(Clone, Copy)]
-pub struct Bitboard(u64);
+// TODO: Try removing Copy so that clones have to be explicit
+#[derive(Clone, Copy, PartialEq, Eq)]
+pub struct Bitboard(pub u64);
 
 pub struct BitIterator(Bitboard);
 
@@ -49,7 +50,7 @@ impl Bitboard {
 
     #[inline(always)]
     pub fn has_square(&self, square: &Square) -> bool {
-        self.0 & Bitboard::from_square(square).0 != 0
+        self.0 & square.0 != 0
     }
 
     #[inline(always)]
@@ -86,13 +87,8 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn from_square(square: &Square) -> Bitboard {
-        Bitboard(1 << square.idx())
-    }
-
-    #[inline(always)]
     pub fn except_square(square: &Square) -> Bitboard {
-        Bitboard::from_square(square).invert()
+        square.bitboard().invert()
     }
 
     #[inline(always)]
@@ -104,7 +100,7 @@ impl Bitboard {
     pub fn to_square(&self) -> Option<Square> {
         match self.is_empty() {
             true => None,
-            false => Some(Square::from_idx(self.0.trailing_zeros() as u8)),
+            false => Some(Square::from_bitboard(self)),
         }
     }
 
