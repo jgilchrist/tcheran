@@ -52,13 +52,13 @@ fn generate_pawn_attacks(square: &Square, player: &Player) -> Bitboard {
     let capture_left = forward_one.and_then(|s| s.west());
 
     if let Some(dst) = capture_left {
-        attacks |= Bitboard::from_square(&dst)
+        attacks |= dst.bitboard();
     }
 
     let capture_right = forward_one.and_then(|s| s.east());
 
     if let Some(dst) = capture_right {
-        attacks |= Bitboard::from_square(&dst)
+        attacks |= dst.bitboard();
     }
 
     attacks
@@ -69,35 +69,35 @@ fn generate_knight_attacks(square: &Square) -> Bitboard {
 
     // Going clockwise, starting at 12
     if let Some(nne) = square.north().and_then(|s| s.north_east()) {
-        attacks |= Bitboard::from_square(&nne);
+        attacks |= nne.bitboard();
     }
 
     if let Some(een) = square.east().and_then(|s| s.north_east()) {
-        attacks |= Bitboard::from_square(&een);
+        attacks |= een.bitboard();
     }
 
     if let Some(ees) = square.east().and_then(|s| s.south_east()) {
-        attacks |= Bitboard::from_square(&ees);
+        attacks |= ees.bitboard();
     }
 
     if let Some(sse) = square.south().and_then(|s| s.south_east()) {
-        attacks |= Bitboard::from_square(&sse);
+        attacks |= sse.bitboard();
     }
 
     if let Some(ssw) = square.south().and_then(|s| s.south_west()) {
-        attacks |= Bitboard::from_square(&ssw);
+        attacks |= ssw.bitboard();
     }
 
     if let Some(wws) = square.west().and_then(|s| s.south_west()) {
-        attacks |= Bitboard::from_square(&wws);
+        attacks |= wws.bitboard();
     }
 
     if let Some(wwn) = square.west().and_then(|s| s.north_west()) {
-        attacks |= Bitboard::from_square(&wwn);
+        attacks |= wwn.bitboard();
     }
 
     if let Some(nnw) = square.north().and_then(|s| s.north_west()) {
-        attacks |= Bitboard::from_square(&nnw);
+        attacks |= nnw.bitboard();
     }
 
     attacks
@@ -128,7 +128,7 @@ fn generate_sliding_attacks(
         // Until we're off the board
         while let Some(dst) = current_square.in_direction(direction) {
             current_square = dst;
-            attacks |= Bitboard::from_square(&dst);
+            attacks |= dst.bitboard();
 
             // Future squares blocked
             if pieces.has_square(&dst) {
@@ -145,7 +145,7 @@ fn generate_king_attacks(square: &Square) -> Bitboard {
 
     for direction in Direction::ALL {
         if let Some(dst) = square.in_direction(direction) {
-            attacks |= Bitboard::from_square(&dst)
+            attacks |= dst.bitboard();
         }
     }
 

@@ -137,40 +137,41 @@ impl std::fmt::Display for Rank {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Square(u8);
+pub struct Square(pub u64);
 
 impl Square {
     pub const fn new(file: File, rank: Rank) -> Self {
         Square::from_idxs(file.idx(), rank.idx())
     }
 
-    pub const fn from_idx(idx: u8) -> Square {
-        Square(idx)
+    pub const fn from_bitboard(bitboard: &Bitboard) -> Square {
+        debug_assert!(bitboard.count() == 1);
+        Square(bitboard.0)
     }
 
     pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Square {
-        Square(rank_idx * 8 + file_idx)
-    }
-
-    pub const fn idx(&self) -> u8 {
-        self.0
+        Square(1 << (rank_idx * 8 + file_idx))
     }
 
     #[inline(always)]
     pub fn rank(&self) -> Rank {
-        Rank::from_idx(self.0 / 8)
+        Rank::from_idx((self.0.trailing_zeros() / 8) as u8)
     }
 
     #[inline(always)]
     pub fn file(&self) -> File {
-        File::from_idx(self.0 % 8)
+        File::from_idx((self.0.trailing_zeros() % 8) as u8)
+    }
+
+    // TODO: Remove this
+    pub fn bitboard(&self) -> Bitboard {
+        Bitboard::new(self.0)
     }
 
     pub fn notation(&self) -> String {
         format!("{}{}", self.file(), self.rank())
     }
 
-    // PERF: Continuous conversions to and from bitboard may have a perf impact?
     #[inline(always)]
     pub fn in_direction(&self, direction: &Direction) -> Option<Square> {
         match direction {
@@ -187,42 +188,42 @@ impl Square {
 
     #[inline(always)]
     pub fn north(&self) -> Option<Square> {
-        Bitboard::from_square(self).north().to_square()
+        self.bitboard().north().to_square()
     }
 
     #[inline(always)]
     pub fn south(&self) -> Option<Square> {
-        Bitboard::from_square(self).south().to_square()
+        self.bitboard().south().to_square()
     }
 
     #[inline(always)]
     pub fn east(&self) -> Option<Square> {
-        Bitboard::from_square(self).east().to_square()
+        self.bitboard().east().to_square()
     }
 
     #[inline(always)]
     pub fn north_east(&self) -> Option<Square> {
-        Bitboard::from_square(self).north_east().to_square()
+        self.bitboard().north_east().to_square()
     }
 
     #[inline(always)]
     pub fn south_east(&self) -> Option<Square> {
-        Bitboard::from_square(self).south_east().to_square()
+        self.bitboard().south_east().to_square()
     }
 
     #[inline(always)]
     pub fn west(&self) -> Option<Square> {
-        Bitboard::from_square(self).west().to_square()
+        self.bitboard().west().to_square()
     }
 
     #[inline(always)]
     pub fn south_west(&self) -> Option<Square> {
-        Bitboard::from_square(self).south_west().to_square()
+        self.bitboard().south_west().to_square()
     }
 
     #[inline(always)]
     pub fn north_west(&self) -> Option<Square> {
-        Bitboard::from_square(self).north_west().to_square()
+        self.bitboard().north_west().to_square()
     }
 }
 
