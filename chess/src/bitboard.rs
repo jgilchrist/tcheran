@@ -46,7 +46,7 @@ impl Bitboard {
     }
 
     pub fn bits(&self) -> Vec<Bitboard> {
-        let mut bits: Vec<Bitboard> = vec![];
+        let mut bits: Vec<Bitboard> = Vec::with_capacity(self.count() as usize);
         let mut bitboard = Bitboard(self.0);
 
         loop {
