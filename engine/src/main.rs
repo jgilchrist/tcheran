@@ -1,12 +1,20 @@
 use anyhow::Result;
 use chess::game::Game;
+use engine::strategy::{self, KnownStrategy, Strategy};
 use engine::uci;
 
 mod cli {
     use super::RunMode;
     use chess::game::Game;
     use clap::{Parser, Subcommand};
-    use engine::uci::parser;
+    use engine::{strategy::KnownStrategy, uci::parser};
+
+    #[derive(clap::ValueEnum, Clone)]
+    enum Strategy {
+        Random,
+        TopEval,
+        OutOfProcess,
+    }
 
     #[derive(Parser)]
     #[clap()]
@@ -18,7 +26,13 @@ mod cli {
     #[derive(Subcommand)]
     enum Commands {
         /// Run the engine using the UCI protocol
-        Uci {},
+        Uci {
+            #[clap(value_enum)]
+            strategy: Strategy,
+        },
+
+        /// Run in out-of-process engine mode
+        OutOfProcess {},
 
         /// Run a perft test
         Perft { depth: u8, fen: Option<String> },
@@ -36,7 +50,16 @@ mod cli {
 
         match &args.command {
             Some(cmd) => match cmd {
-                Commands::Uci {} => RunMode::Uci,
+                Commands::Uci { strategy } => {
+                    let known_strategy = match strategy {
+                        Strategy::Random => KnownStrategy::Random,
+                        Strategy::TopEval => KnownStrategy::TopEval,
+                        Strategy::OutOfProcess => KnownStrategy::OutOfProcess,
+                    };
+
+                    RunMode::Uci(known_strategy.create())
+                }
+                Commands::OutOfProcess {} => RunMode::OutOfProcessEngine,
                 Commands::Perft { depth, fen } => {
                     let default_fen =
                         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string();
@@ -62,14 +85,15 @@ mod cli {
 }
 
 pub enum RunMode {
-    Uci,
+    Uci(Box<dyn Strategy>),
+    OutOfProcessEngine,
     Perft(u8, Game),
     PerftDiv(u8, Game),
 }
 
 impl Default for RunMode {
     fn default() -> Self {
-        RunMode::Uci
+        RunMode::Uci(KnownStrategy::OutOfProcess.create())
     }
 }
 
@@ -100,14 +124,13 @@ fn perft_div(depth: u8, game: &Game) {
 }
 
 fn main() -> Result<()> {
-    std::panic::set_hook(Box::new(|info| {
-        chess::debug::log("crash", format!("{:?}", info))
-    }));
-
     let run_mode = cli::parse_cli();
 
     match run_mode {
-        RunMode::Uci => uci::uci(),
+        RunMode::Uci(strategy) => uci::uci(strategy),
+        RunMode::OutOfProcessEngine => {
+            engine::strategy::run_out_of_process_engine(strategy::KnownStrategy::Main.create())
+        }
         RunMode::Perft(depth, game) => {
             println!("{}", perft(depth, &game));
             Ok(())

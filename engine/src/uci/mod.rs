@@ -1,6 +1,8 @@
 use anyhow::Result;
-use chess::{debug, game::Game};
+use chess::{debug, game::Game, moves::Move};
 use std::io::BufRead;
+
+use crate::strategy::Strategy;
 
 use self::{
     commands::{GoCmdArguments, UciCommand},
@@ -19,10 +21,35 @@ pub mod responses;
 const UCI_LOG: &str = "uci";
 const STATE_LOG: &str = "game_state";
 
-#[derive(Debug)]
-struct UciState {
+pub struct UciState {
+    strategy: Box<dyn Strategy>,
     debug: bool,
     game: Game,
+}
+
+impl UciState {
+    fn reset(&mut self) {
+        self.game = Game::new();
+    }
+
+    fn set_debug(&mut self, on: bool) {
+        self.debug = on;
+    }
+
+    fn set_game_state(&mut self, game: Game) {
+        self.game = game;
+        debug::log(STATE_LOG, format!("{:?}", self.game.board));
+    }
+
+    fn go(&mut self) -> Move {
+        let best_move = self.strategy.next_move(&self.game);
+        debug::log(STATE_LOG, format!("{:?}", &best_move));
+
+        let new_game_state = self.game.make_move(&best_move).unwrap();
+        debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
+
+        best_move
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -40,6 +67,7 @@ fn send_response(response: &UciResponse) {
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
     match cmd {
         UciCommand::Uci => {
+            state.reset();
             let version = crate::engine_version();
             send_response(&UciResponse::Id(IdParam::Name(format!(
                 "engine ({version})"
@@ -47,7 +75,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
             send_response(&UciResponse::UciOk);
         }
-        UciCommand::Debug(on) => state.debug = *on,
+        UciCommand::Debug(on) => state.set_debug(*on),
         UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
         UciCommand::SetOption { name: _, value: _ } => {}
         UciCommand::Register {
@@ -55,11 +83,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             name: _,
             code: _,
         } => {}
-        UciCommand::UciNewGame => {
-            state.game = Game::new();
-
-            debug::log(STATE_LOG, format!("{:?}", state.game.board));
-        }
+        UciCommand::UciNewGame => state.set_game_state(Game::new()),
         // TODO: Error handling for invalid positions/moves
         UciCommand::Position { position, moves } => {
             let mut game = match position {
@@ -71,8 +95,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                 game = game.make_move(mv).unwrap();
             }
 
-            state.game = game;
-            debug::log(STATE_LOG, format!("{:?}", state.game.board));
+            state.set_game_state(game)
         }
         UciCommand::Go(GoCmdArguments {
             searchmoves: _,
@@ -88,12 +111,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             movetime: _,
             infinite: _,
         }) => {
-            let best_move = crate::run(&state.game);
-
-            debug::log(STATE_LOG, format!("{:?}", &best_move));
-
-            let new_game_state = state.game.make_move(&best_move).unwrap();
-            debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
+            let best_move = state.go();
 
             send_response(&UciResponse::BestMove {
                 mv: best_move,
@@ -101,12 +119,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             });
         }
         UciCommand::Stop => {
-            let best_move = crate::run(&state.game);
-
-            debug::log(STATE_LOG, format!("{:?}", &best_move));
-
-            let new_game_state = state.game.make_move(&best_move).unwrap();
-            debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
+            let best_move = state.go();
 
             send_response(&UciResponse::BestMove {
                 mv: best_move,
@@ -120,11 +133,12 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
     Ok(ExecuteResult::KeepGoing)
 }
 
-pub fn uci() -> Result<()> {
+pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
     println!("Welcome!");
     println!("In UCI mode.");
 
     let mut state = UciState {
+        strategy,
         debug: false,
         game: Game::new(),
     };

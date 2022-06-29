@@ -1,7 +1,6 @@
-use chess::{debug, game::Game, moves::Move};
-
 mod eval;
 mod search;
+pub mod strategy;
 pub mod uci;
 
 pub fn engine_version() -> &'static str {
@@ -20,12 +19,4 @@ pub fn engine_version() -> &'static str {
 
     // Otherwise, if we got a version from Git, we can use it directly
     version
-}
-
-fn run(game: &Game) -> Move {
-    let best_move = search::search(game);
-
-    let next_game = game.make_move(&best_move).unwrap();
-    debug::log("eval", format!("{:?}", eval::eval(&next_game)));
-    best_move
 }

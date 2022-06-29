@@ -324,7 +324,16 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
     Ok((input, cmd))
 }
 
-pub(super) fn parse(input: &str) -> Result<UciCommand> {
+pub fn parse_move(input: &str) -> Result<Move> {
+    let result = uci_move(input);
+
+    match result {
+        Ok((_, mv)) => Ok(mv),
+        Err(e) => bail!("Unknown move: {} ({})", input, e),
+    }
+}
+
+pub fn parse(input: &str) -> Result<UciCommand> {
     let result = any_uci_command(input);
 
     match result {
