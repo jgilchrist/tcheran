@@ -1,6 +1,6 @@
 use crate::{
     attacks::generate_all_attacks,
-    bitboard::self,
+    bitboard,
     board::Board,
     direction::Direction,
     fen,

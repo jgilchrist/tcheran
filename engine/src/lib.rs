@@ -1,8 +1,8 @@
 use chess::{debug, game::Game, moves::Move};
 
 mod eval;
-pub mod uci;
 mod search;
+pub mod uci;
 
 fn run(game: &Game) -> Move {
     let best_move = search::search(game);
