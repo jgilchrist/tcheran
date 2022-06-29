@@ -20,9 +20,6 @@ mod cli {
         /// Run the engine using the UCI protocol
         Uci {},
 
-        /// Print the starting chessboard
-        PrintBoard {},
-
         /// Run a perft test
         Perft { depth: u8, fen: Option<String> },
 
@@ -40,7 +37,6 @@ mod cli {
         match &args.command {
             Some(cmd) => match cmd {
                 Commands::Uci {} => RunMode::Uci,
-                Commands::PrintBoard {} => RunMode::PrintBoard,
                 Commands::Perft { depth, fen } => {
                     let default_fen =
                         "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string();
@@ -67,7 +63,6 @@ mod cli {
 
 pub enum RunMode {
     Uci,
-    PrintBoard,
     Perft(u8, Game),
     PerftDiv(u8, Game),
 }
@@ -76,10 +71,6 @@ impl Default for RunMode {
     fn default() -> Self {
         RunMode::Uci
     }
-}
-
-fn print_board() {
-    dbg!(chess::board::Board::start());
 }
 
 fn perft(depth: u8, game: &Game) -> usize {
@@ -117,10 +108,6 @@ fn main() -> Result<()> {
 
     match run_mode {
         RunMode::Uci => uci::uci(),
-        RunMode::PrintBoard => {
-            print_board();
-            Ok(())
-        }
         RunMode::Perft(depth, game) => {
             println!("{}", perft(depth, &game));
             Ok(())
