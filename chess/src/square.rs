@@ -1,5 +1,16 @@
 use crate::{bitboard::Bitboard, direction::Direction};
 
+pub const FILES: [File; 8] = [
+    File::A,
+    File::B,
+    File::C,
+    File::D,
+    File::E,
+    File::F,
+    File::G,
+    File::H,
+];
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum File {
     A,
@@ -67,6 +78,17 @@ impl std::fmt::Display for File {
         write!(f, "{}", self.notation())
     }
 }
+
+pub const RANKS: [Rank; 8] = [
+    Rank::R1,
+    Rank::R2,
+    Rank::R3,
+    Rank::R4,
+    Rank::R5,
+    Rank::R6,
+    Rank::R7,
+    Rank::R8,
+];
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub enum Rank {

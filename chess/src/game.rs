@@ -88,6 +88,10 @@ impl Game {
         fen::parse(fen)
     }
 
+    pub fn to_fen(&self) -> String {
+        fen::write(&self)
+    }
+
     pub fn pseudo_legal_moves(&self) -> Vec<Move> {
         generate_moves(self)
     }
