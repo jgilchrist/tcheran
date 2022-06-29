@@ -3,9 +3,9 @@ use chess::game::Game;
 use engine::uci;
 
 mod cli {
+    use super::RunMode;
     use chess::game::Game;
     use clap::{Parser, Subcommand};
-    use super::RunMode;
     use engine::uci::parser;
 
     #[derive(Parser)]

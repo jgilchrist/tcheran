@@ -1,5 +1,5 @@
 use crate::{
-    attacks::{generate_all_attacks, self},
+    attacks::{self, generate_all_attacks},
     bitboard::{self, Bitboard},
     direction::Direction,
     moves::Move,
@@ -234,7 +234,8 @@ impl Board {
                             Player::Black => Direction::North,
                         };
 
-                        let capture_square = mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
+                        let capture_square =
+                            mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
 
                         let remove_captured_pawn_mask = Bitboard::except_square(&capture_square);
                         new_bitboard &= remove_captured_pawn_mask;
@@ -271,7 +272,8 @@ impl Board {
                             Player::White => D1,
                             Player::Black => D8,
                         },
-                    }.bitboard();
+                    }
+                    .bitboard();
 
                     if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {
                         new_bitboard &= rook_remove_mask;

@@ -1,8 +1,8 @@
 use chess::{debug, game::Game, moves::Move};
 
 mod eval;
-pub mod uci;
 mod search;
+pub mod uci;
 
 pub fn engine_version() -> &'static str {
     // If we can't determine the version from git tags, fall back to the version
