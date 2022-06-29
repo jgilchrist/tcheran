@@ -64,7 +64,7 @@ impl Default for CastleRights {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, Clone)]
 pub struct Game {
     pub player: Player,
     pub board: Board,
@@ -89,7 +89,7 @@ impl Game {
     }
 
     pub fn to_fen(&self) -> String {
-        fen::write(&self)
+        fen::write(self)
     }
 
     pub fn pseudo_legal_moves(&self) -> Vec<Move> {

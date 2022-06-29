@@ -70,7 +70,7 @@ fn format_board(board: Board) -> String {
                 .map(|f| board.piece_at(&Square::new(f, r)))
                 .collect::<Vec<_>>()
         })
-        .map(|rank| format_rank(rank))
+        .map(format_rank)
         .collect::<Vec<String>>()
         .join("/")
 }

@@ -1,13 +1,13 @@
 use chess::moves::Move;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(super) enum Position {
+pub enum Position {
     Fen(String),
     StartPos,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(super) struct GoCmdArguments {
+pub struct GoCmdArguments {
     pub searchmoves: Option<Vec<Move>>,
     pub ponder: bool,
     pub wtime: Option<i32>,
@@ -23,7 +23,7 @@ pub(super) struct GoCmdArguments {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
-pub(super) enum UciCommand {
+pub enum UciCommand {
     Uci,
     Debug(bool),
     IsReady,

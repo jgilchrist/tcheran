@@ -1,0 +1,19 @@
+syntax = "proto3";
+
+package out_of_process;
+
+message Empty {};
+
+service OutOfProcessEngine {
+    rpc Init (Empty) returns (Empty);
+    rpc Ping (Empty) returns (Empty);
+    rpc Go (GoRequest) returns (GoResponse);
+}
+
+message GoRequest {
+    string Fen = 1;
+}
+
+message GoResponse {
+    string Move = 1;
+}

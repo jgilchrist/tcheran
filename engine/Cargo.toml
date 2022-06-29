@@ -8,7 +8,13 @@ anyhow = "1.0.56"
 chess = { path = "../chess" }
 clap = { version = "3.1.8", features = ["derive"] }
 nom = "7.1.1"
+prost = "0.10"
 rand = "0.8.5"
+tokio = { version = "1.18.0", features = ["macros", "rt-multi-thread"] }
+tonic = "0.7"
+
+[build-dependencies]
+tonic-build = "0.7"
 
 [lib]
 name = "engine"

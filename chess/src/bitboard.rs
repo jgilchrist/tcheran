@@ -79,11 +79,11 @@ impl Bitboard {
     }
 
     pub fn bits(&self) -> BitIterator {
-        BitIterator(self.clone())
+        BitIterator(*self)
     }
 
     pub fn squares(&self) -> SquareIterator {
-        SquareIterator(self.clone())
+        SquareIterator(*self)
     }
 
     #[inline(always)]
