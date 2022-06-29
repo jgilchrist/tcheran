@@ -3,6 +3,9 @@ _default: list
 list:
 	@just --list
 
+build:
+	@cargo build --release
+
 time-perft-5:
 	cargo build --release && time ./target/release/engine perft 5
 
