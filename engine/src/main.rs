@@ -7,7 +7,7 @@ mod cli {
     use super::RunMode;
     use chess::game::Game;
     use clap::{Parser, Subcommand};
-    use engine::{strategy::KnownStrategy, uci::parser};
+    use engine::{strategy::KnownStrategy, uci};
 
     #[derive(clap::ValueEnum, Clone)]
     enum Strategy {
@@ -66,7 +66,7 @@ mod cli {
                 }
                 Commands::PerftDiv { depth, fen, moves } => {
                     let mut game = Game::from_fen(fen).unwrap();
-                    let (_, moves) = nom::combinator::opt(parser::uci_moves)(moves).unwrap();
+                    let (_, moves) = uci::parser::maybe_uci_moves(moves).unwrap();
 
                     if let Some(moves) = moves {
                         for mv in moves {
