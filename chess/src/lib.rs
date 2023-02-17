@@ -10,5 +10,5 @@ pub mod player;
 pub mod square;
 
 mod attacks;
-mod fen;
+pub mod fen;
 mod movegen;
