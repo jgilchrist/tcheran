@@ -200,10 +200,8 @@ impl std::fmt::Debug for Bitboard {
             "\n{}\n",
             (0..8)
                 .rev()
-                .into_iter()
                 .map(|rank| {
                     (0..8)
-                        .into_iter()
                         .map(|file| match self.0 & (1 << (rank * 8 + file)) {
                             0 => ".",
                             _ => "*",
@@ -224,10 +222,8 @@ impl std::fmt::Display for Bitboard {
             "{}",
             (0..8)
                 .rev()
-                .into_iter()
                 .map(|rank| {
                     (0..8)
-                        .into_iter()
                         .map(|file| match self.0 & (1 << (rank * 8 + file)) {
                             0 => ".",
                             _ => "*",
