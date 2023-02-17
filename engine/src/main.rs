@@ -61,10 +61,8 @@ mod cli {
                 }
                 Commands::OutOfProcess {} => RunMode::OutOfProcessEngine,
                 Commands::Perft { depth, fen } => {
-                    let default_fen =
-                        "rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1".to_string();
-                    let fen = fen.as_ref().unwrap_or(&default_fen);
-                    RunMode::Perft(*depth, Game::from_fen(fen).unwrap())
+                    let fen = fen.clone().unwrap_or_else(|| chess::fen::START_POS.to_string());
+                    RunMode::Perft(*depth, Game::from_fen(&fen).unwrap())
                 }
                 Commands::PerftDiv { depth, fen, moves } => {
                     let mut game = Game::from_fen(fen).unwrap();
