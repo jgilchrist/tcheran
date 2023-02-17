@@ -25,10 +25,10 @@ pub enum KnownStrategy {
 impl KnownStrategy {
     pub fn create(&self) -> Box<dyn Strategy + Send + Sync> {
         match self {
-            KnownStrategy::Main => Box::new(MainStrategy::default()),
-            KnownStrategy::Random => Box::new(RandomMoveStrategy::default()),
-            KnownStrategy::TopEval => Box::new(TopEvalStrategy::default()),
-            KnownStrategy::OutOfProcess => Box::new(OutOfProcessEngineStrategy::default()),
+            KnownStrategy::Main => Box::<MainStrategy>::default(),
+            KnownStrategy::Random => Box::<RandomMoveStrategy>::default(),
+            KnownStrategy::TopEval => Box::<TopEvalStrategy>::default(),
+            KnownStrategy::OutOfProcess => Box::<OutOfProcessEngineStrategy>::default(),
         }
     }
 }

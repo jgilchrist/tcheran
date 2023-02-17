@@ -315,10 +315,8 @@ impl std::fmt::Debug for Board {
             "\n{}\n",
             (0..8)
                 .rev()
-                .into_iter()
                 .map(|rank| {
                     (0..8)
-                        .into_iter()
                         .map(|file| match self.piece_at(&Square::from_idxs(file, rank)) {
                             Some(Piece { player, kind }) => match kind {
                                 PieceKind::Pawn => match player {
