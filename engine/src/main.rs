@@ -127,7 +127,10 @@ fn perft_div(depth: u8, game: &Game) {
 }
 
 fn main() -> Result<()> {
-    std::panic::set_hook(Box::new(|info| log(format!("{:?}", info))));
+    std::panic::set_hook(Box::new(|info| {
+        println!("{}", info);
+        log(format!("{:?}", info));
+    }));
 
     let run_mode = cli::parse_cli();
 
