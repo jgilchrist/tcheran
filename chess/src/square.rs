@@ -56,7 +56,7 @@ impl File {
     }
 
     #[must_use]
-    pub fn notation(&self) -> &str {
+    pub const fn notation(&self) -> &str {
         match self {
             Self::A => "a",
             Self::B => "b",
@@ -138,7 +138,7 @@ impl Rank {
     }
 
     #[must_use]
-    pub fn notation(&self) -> &str {
+    pub const fn notation(&self) -> &str {
         match self {
             Self::R1 => "1",
             Self::R2 => "2",
@@ -199,12 +199,12 @@ impl Square {
     }
 
     #[inline(always)]
-    fn rank(&self) -> Rank {
+    fn rank(self) -> Rank {
         Rank::from_idx(self.0.trailing_zeros() / 8)
     }
 
     #[inline(always)]
-    fn file(&self) -> File {
+    fn file(self) -> File {
         File::from_idx(self.0.trailing_zeros() % 8)
     }
 

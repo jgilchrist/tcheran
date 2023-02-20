@@ -64,13 +64,12 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
         if let Some(dst) = forward_one {
             if !ctx.all_pieces.contains(dst) {
-                match will_promote {
-                    false => moves.push(Move::new(start, dst)),
-                    true => {
-                        for promotion in PromotionPieceKind::ALL.iter() {
-                            moves.push(Move::new_with_promotion(start, dst, *promotion))
-                        }
+                if will_promote {
+                    for promotion in PromotionPieceKind::ALL.iter() {
+                        moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
+                } else {
+                    moves.push(Move::new(start, dst));
                 }
             }
         }
@@ -80,13 +79,12 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
         if let Some(dst) = capture_left {
             if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
-                match will_promote {
-                    false => moves.push(Move::new(start, dst)),
-                    true => {
-                        for promotion in PromotionPieceKind::ALL.iter() {
-                            moves.push(Move::new_with_promotion(start, dst, *promotion))
-                        }
+                if will_promote {
+                    for promotion in PromotionPieceKind::ALL.iter() {
+                        moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
+                } else {
+                    moves.push(Move::new(start, dst));
                 }
             }
         }
@@ -95,13 +93,12 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
         if let Some(dst) = capture_right {
             if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
-                match will_promote {
-                    false => moves.push(Move::new(start, dst)),
-                    true => {
-                        for promotion in PromotionPieceKind::ALL.iter() {
-                            moves.push(Move::new_with_promotion(start, dst, *promotion))
-                        }
+                if will_promote {
+                    for promotion in PromotionPieceKind::ALL.iter() {
+                        moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
+                } else {
+                    moves.push(Move::new(start, dst));
                 }
             }
         }

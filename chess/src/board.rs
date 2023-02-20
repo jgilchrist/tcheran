@@ -38,7 +38,7 @@ impl PlayerPieces {
 
 impl Board {
     #[must_use]
-    pub fn start() -> Self {
+    pub const fn start() -> Self {
         Self {
             white_pieces: PlayerPieces {
                 pawns: squares::INIT_WHITE_PAWNS,
@@ -118,7 +118,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_pieces(&self, player: Player) -> &PlayerPieces {
+    pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
             Player::Black => &self.black_pieces,
@@ -126,7 +126,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
+    pub const fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
         if player_pieces.pawns.contains(square) {
@@ -147,7 +147,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn piece_at(&self, square: Square) -> Option<Piece> {
+    pub const fn piece_at(&self, square: Square) -> Option<Piece> {
         if let Some(white_piece_kind) = self.player_piece_at(Player::White, square) {
             return Some(Piece::white(white_piece_kind));
         }
@@ -264,20 +264,22 @@ impl Board {
                 if mv.dst == kingside_square || mv.dst == queenside_square {
                     let is_kingside = mv.dst == kingside_square;
 
-                    let rook_remove_mask = Squares::all_except(match is_kingside {
-                        true => squares::kingside_rook_start(moved_piece.player),
-                        false => squares::queenside_rook_start(moved_piece.player),
+                    let rook_remove_mask = Squares::all_except(if is_kingside {
+                        squares::kingside_rook_start(moved_piece.player)
+                    } else {
+                        squares::queenside_rook_start(moved_piece.player)
                     });
 
-                    let rook_add_mask = match is_kingside {
-                        true => match moved_piece.player {
+                    let rook_add_mask = if is_kingside {
+                        match moved_piece.player {
                             Player::White => F1,
                             Player::Black => F8,
-                        },
-                        false => match moved_piece.player {
+                        }
+                    } else {
+                        match moved_piece.player {
                             Player::White => D1,
                             Player::Black => D8,
-                        },
+                        }
                     };
 
                     if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {

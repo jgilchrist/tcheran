@@ -22,7 +22,7 @@ impl PromotionPieceKind {
     pub const ALL: &'static [Self; 4] = &[Self::Knight, Self::Bishop, Self::Rook, Self::Queen];
 
     #[must_use]
-    pub fn piece(&self) -> PieceKind {
+    pub const fn piece(&self) -> PieceKind {
         match self {
             Self::Knight => PieceKind::Knight,
             Self::Bishop => PieceKind::Bishop,
