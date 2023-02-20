@@ -25,6 +25,7 @@ mod cli {
 
     #[derive(ValueEnum, Clone)]
     pub enum Strategy {
+        Main,
         Random,
         TopEval,
         OutOfProcess,
@@ -66,6 +67,7 @@ mod cli {
         match cmd {
             Commands::Uci { strategy } => {
                 let known_strategy = match strategy {
+                    Strategy::Main => KnownStrategy::Main,
                     Strategy::Random => KnownStrategy::Random,
                     Strategy::TopEval => KnownStrategy::TopEval,
                     Strategy::OutOfProcess => KnownStrategy::OutOfProcess,
@@ -134,6 +136,6 @@ fn main() -> Result<()> {
 
     let args = cli::parse_cli();
     cli::run(args.command.unwrap_or(cli::Commands::Uci {
-        strategy: cli::Strategy::Random,
+        strategy: cli::Strategy::Main,
     }))
 }
