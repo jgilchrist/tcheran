@@ -173,12 +173,6 @@ impl Square {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
-    #[must_use]
-    pub fn from_bitboard(bitboard: Bitboard) -> Self {
-        assert_eq!(bitboard.count(), 1);
-        Self(bitboard)
-    }
-
     fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
         match bitboard.count() {
             0 => None,
