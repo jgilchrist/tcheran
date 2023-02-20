@@ -18,7 +18,7 @@ mod cli {
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
     use engine::{
-        strategy::{self, KnownStrategy},
+        strategy::KnownStrategy,
         uci::{
             self,
             comms::{LocalComms, RemoteComms},
@@ -32,7 +32,6 @@ mod cli {
         Main,
         Random,
         TopEval,
-        OutOfProcess,
     }
 
     #[derive(Parser)]
@@ -51,9 +50,6 @@ mod cli {
             #[arg(long)]
             remote: bool,
         },
-
-        /// Run in out-of-process engine mode
-        OutOfProcess,
 
         /// Run a perft test
         Perft { depth: u8, fen: Option<String> },
@@ -77,7 +73,6 @@ mod cli {
                     Strategy::Main => KnownStrategy::Main,
                     Strategy::Random => KnownStrategy::Random,
                     Strategy::TopEval => KnownStrategy::TopEval,
-                    Strategy::OutOfProcess => KnownStrategy::OutOfProcess,
                 };
 
                 let strategy = known_strategy.create();
@@ -92,9 +87,6 @@ mod cli {
                     let mut comms = LocalComms {};
                     uci::uci(&mut comms, strategy)
                 }
-            }
-            Commands::OutOfProcess => {
-                engine::strategy::run_out_of_process_engine(strategy::KnownStrategy::Main.create())
             }
             Commands::Perft { depth, fen } => {
                 let game = fen.map_or_else(Game::default, |fen| Game::from_fen(&fen).unwrap());

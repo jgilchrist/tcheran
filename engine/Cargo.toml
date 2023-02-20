@@ -9,13 +9,7 @@ git-version = "0.3.8"
 chess = { path = "../chess" }
 clap = { version = "4.1.6", features = ["derive"] }
 nom = "7.1.1"
-prost = "0.11"
 rand = "0.8.5"
-tokio = { version = "1.18.0", features = ["macros", "rt-multi-thread"] }
-tonic = "0.8.3"
-
-[build-dependencies]
-tonic-build = "0.8.4"
 
 [lib]
 name = "engine"
