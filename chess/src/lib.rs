@@ -7,6 +7,7 @@ pub mod moves;
 pub mod piece;
 pub mod player;
 pub mod square;
+pub mod squares;
 
 mod attacks;
 pub mod fen;

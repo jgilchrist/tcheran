@@ -1,11 +1,9 @@
-use std::ops::BitAndAssign;
-
 use crate::direction::Direction;
 use crate::square::Square;
 
 // TODO: Try removing Copy so that clones have to be explicit
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Bitboard(pub u64);
+pub struct Bitboard(u64);
 
 pub struct BitIterator(Bitboard);
 
@@ -21,23 +19,9 @@ impl Iterator for BitIterator {
     }
 }
 
-pub struct SquareIterator(Bitboard);
-
-impl Iterator for SquareIterator {
-    type Item = Square;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.0.is_empty() {
-            None
-        } else {
-            Some(self.0.pop_lsb_inplace().to_square_definite())
-        }
-    }
-}
-
 impl Bitboard {
-    pub const fn new(squares: u64) -> Bitboard {
-        Bitboard(squares)
+    pub const fn new(bits: u64) -> Bitboard {
+        Bitboard(bits)
     }
 
     pub const fn empty() -> Bitboard {
@@ -50,7 +34,7 @@ impl Bitboard {
 
     #[inline(always)]
     pub fn has_square(&self, square: &Square) -> bool {
-        self.0 & square.0 != 0
+        self.0 & square.0 .0 != 0
     }
 
     #[inline(always)]
@@ -59,7 +43,7 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn invert(&self) -> Bitboard {
+    pub const fn invert(&self) -> Bitboard {
         Bitboard(!self.0)
     }
 
@@ -68,7 +52,7 @@ impl Bitboard {
         Bitboard((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
-    fn pop_lsb_inplace(&mut self) -> Bitboard {
+    pub fn pop_lsb_inplace(&mut self) -> Bitboard {
         let lsb = self.lsb();
         self.0 &= self.0 - 1;
         lsb
@@ -78,30 +62,12 @@ impl Bitboard {
         self.0.count_ones() as u8
     }
 
+    pub const fn trailing_zeros(&self) -> u8 {
+        self.0.trailing_zeros() as u8
+    }
+
     pub fn bits(&self) -> BitIterator {
         BitIterator(*self)
-    }
-
-    pub fn squares(&self) -> SquareIterator {
-        SquareIterator(*self)
-    }
-
-    #[inline(always)]
-    pub fn except_square(square: &Square) -> Bitboard {
-        square.bitboard().invert()
-    }
-
-    #[inline(always)]
-    pub fn to_square_definite(&self) -> Square {
-        self.to_square().expect("Expected single bit")
-    }
-
-    #[inline(always)]
-    pub fn to_square(&self) -> Option<Square> {
-        match self.is_empty() {
-            true => None,
-            false => Some(Square::from_bitboard(self)),
-        }
     }
 
     #[inline(always)]
@@ -173,7 +139,7 @@ impl std::ops::BitAnd for Bitboard {
     }
 }
 
-impl BitAndAssign for Bitboard {
+impl std::ops::BitAndAssign for Bitboard {
     fn bitand_assign(&mut self, rhs: Self) {
         self.0 = self.0 & rhs.0
     }
@@ -262,7 +228,6 @@ pub mod known {
     pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(0x0102040810204080);
     pub const LIGHT_SQUARES: Bitboard = Bitboard::new(0x55AA55AA55AA55AA);
     pub const DARK_SQUARES: Bitboard = Bitboard::new(0xAA55AA55AA55AA55);
-    pub const EMPTY: Bitboard = Bitboard::new(0);
 
     pub const INIT_WHITE_PAWNS: Bitboard = RANK_2;
     pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(1 << 1 | 1 << 6);
@@ -288,7 +253,7 @@ mod tests {
 
     #[test]
     fn test_empty_bitboard_display() {
-        let bitboard = Bitboard::new(0);
+        let bitboard = Bitboard::empty();
         let formatted_bitboard = format!("{}", bitboard);
 
         assert_eq!(
@@ -298,7 +263,7 @@ mod tests {
 
     #[test]
     fn test_full_bitboard_display() {
-        let bitboard = Bitboard::new(u64::MAX);
+        let bitboard = Bitboard::full();
         let formatted_bitboard = format!("{}", bitboard);
 
         assert_eq!(
