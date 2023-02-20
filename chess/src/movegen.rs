@@ -216,7 +216,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let rooks = game.board.player_pieces(&game.player).rooks;
 
     for rook in rooks.squares() {
-        for direction in Direction::NON_DIAGONAL {
+        for direction in Direction::CARDINAL {
             let mut current_square = rook;
 
             // Until we're off the board
