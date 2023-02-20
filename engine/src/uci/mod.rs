@@ -61,6 +61,9 @@ fn send_response(response: &UciResponse) {
     log(format!("\t\t{}", response.as_string()));
 }
 
+// Both of these clippy lints can be ignored as there is more to implement here.
+#[allow(clippy::unnecessary_wraps)]
+#[allow(clippy::match_same_arms)]
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
     match cmd {
         UciCommand::Uci => {
@@ -92,7 +95,7 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
                 game = game.make_move(mv).unwrap();
             }
 
-            state.set_game_state(game)
+            state.set_game_state(game);
         }
         UciCommand::Go(GoCmdArguments {
             searchmoves: _,
@@ -144,7 +147,8 @@ pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
 
     log("\n\n============== Engine ============");
 
-    for line in stdin.lock().lines() {
+    let stdin_lines = stdin.lock().lines();
+    for line in stdin_lines {
         let line = line?;
         log(&line);
         let command = parser::parse(&line);

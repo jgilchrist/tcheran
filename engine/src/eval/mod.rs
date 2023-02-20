@@ -6,6 +6,7 @@ const BISHOP_VALUE: u64 = 300;
 const ROOK_VALUE: u64 = 500;
 const QUEEN_VALUE: u64 = 800;
 
+#[allow(clippy::cast_possible_wrap)]
 pub fn eval(game: &Game) -> i64 {
     white_piece_value(game) as i64 - black_piece_value(game) as i64
 }

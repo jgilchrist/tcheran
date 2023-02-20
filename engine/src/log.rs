@@ -20,5 +20,5 @@ pub fn log<S: AsRef<str>>(s: S) {
         .unwrap();
 
     writeln!(f, "{}", s.as_ref()).unwrap();
-    f.flush().unwrap()
+    f.flush().unwrap();
 }
