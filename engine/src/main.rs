@@ -96,7 +96,7 @@ pub enum RunMode {
 
 impl Default for RunMode {
     fn default() -> Self {
-        RunMode::Uci(KnownStrategy::Main.create())
+        Self::Uci(KnownStrategy::Main.create())
     }
 }
 
@@ -118,18 +118,18 @@ fn perft_div(depth: u8, game: &Game) {
     for mv in root_moves {
         let number_for_mv = perft(depth - 1, &game.make_move(&mv).unwrap());
 
-        println!("{:?} {}", mv, number_for_mv);
+        println!("{mv:?} {number_for_mv}");
         all += number_for_mv
     }
 
     println!();
-    println!("{}", all);
+    println!("{all}");
 }
 
 fn main() -> Result<()> {
     std::panic::set_hook(Box::new(|info| {
-        println!("{}", info);
-        log(format!("{:?}", info));
+        println!("{info}");
+        log(format!("{info:?}"));
     }));
 
     let run_mode = cli::parse_cli();

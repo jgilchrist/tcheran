@@ -20,58 +20,69 @@ impl Iterator for BitIterator {
 }
 
 impl Bitboard {
-    pub const fn new(bits: u64) -> Bitboard {
-        Bitboard(bits)
+    #[must_use]
+    pub const fn new(bits: u64) -> Self {
+        Self(bits)
     }
 
-    pub const fn empty() -> Bitboard {
-        Bitboard(0)
+    #[must_use]
+    pub const fn empty() -> Self {
+        Self(0)
     }
 
-    pub const fn full() -> Bitboard {
-        Bitboard(u64::MAX)
+    #[must_use]
+    pub const fn full() -> Self {
+        Self(u64::MAX)
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn has_square(&self, square: &Square) -> bool {
         self.0 & square.0 .0 != 0
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
     #[inline(always)]
-    pub const fn invert(&self) -> Bitboard {
-        Bitboard(!self.0)
+    #[must_use]
+    pub const fn invert(&self) -> Self {
+        Self(!self.0)
     }
 
     #[inline(always)]
-    pub fn lsb(&self) -> Bitboard {
-        Bitboard((1_u64).wrapping_shl(self.0.trailing_zeros()))
+    #[must_use]
+    pub fn lsb(&self) -> Self {
+        Self((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
-    pub fn pop_lsb_inplace(&mut self) -> Bitboard {
+    pub fn pop_lsb_inplace(&mut self) -> Self {
         let lsb = self.lsb();
         self.0 &= self.0 - 1;
         lsb
     }
 
+    #[must_use]
     pub const fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
+    #[must_use]
     pub const fn trailing_zeros(&self) -> u8 {
         self.0.trailing_zeros() as u8
     }
 
+    #[must_use]
     pub fn bits(&self) -> BitIterator {
         BitIterator(*self)
     }
 
     #[inline(always)]
-    pub fn in_direction(&self, direction: Direction) -> Bitboard {
+    #[must_use]
+    pub fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -85,57 +96,65 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn north(&self) -> Bitboard {
-        Bitboard(self.0 << 8)
+    #[must_use]
+    pub fn north(&self) -> Self {
+        Self(self.0 << 8)
     }
 
     #[inline(always)]
-    pub fn south(&self) -> Bitboard {
-        Bitboard(self.0 >> 8)
+    #[must_use]
+    pub fn south(&self) -> Self {
+        Self(self.0 >> 8)
     }
 
     #[inline(always)]
-    pub fn east(&self) -> Bitboard {
+    #[must_use]
+    pub fn east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Bitboard((self.0 << 1) & known::NOT_A_FILE.0)
+        Self((self.0 << 1) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
-    pub fn north_east(&self) -> Bitboard {
+    #[must_use]
+    pub fn north_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Bitboard((self.0 << 9) & known::NOT_A_FILE.0)
+        Self((self.0 << 9) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
-    pub fn south_east(&self) -> Bitboard {
+    #[must_use]
+    pub fn south_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Bitboard((self.0 >> 7) & known::NOT_A_FILE.0)
+        Self((self.0 >> 7) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
-    pub fn west(&self) -> Bitboard {
+    #[must_use]
+    pub fn west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Bitboard((self.0 >> 1) & known::NOT_H_FILE.0)
+        Self((self.0 >> 1) & known::NOT_H_FILE.0)
     }
 
     #[inline(always)]
-    pub fn south_west(&self) -> Bitboard {
+    #[must_use]
+    pub fn south_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Bitboard((self.0 >> 9) & known::NOT_H_FILE.0)
+        Self((self.0 >> 9) & known::NOT_H_FILE.0)
     }
 
     #[inline(always)]
-    pub fn north_west(&self) -> Bitboard {
+    #[must_use]
+    pub fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Bitboard((self.0 << 7) & known::NOT_H_FILE.0)
+        Self((self.0 << 7) & known::NOT_H_FILE.0)
     }
 }
 
 impl std::ops::BitAnd for Bitboard {
-    type Output = Bitboard;
+    type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
-        Bitboard(self.0 & rhs.0)
+        Self(self.0 & rhs.0)
     }
 }
 
@@ -146,10 +165,10 @@ impl std::ops::BitAndAssign for Bitboard {
 }
 
 impl std::ops::BitOr for Bitboard {
-    type Output = Bitboard;
+    type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        Bitboard(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 }
 
@@ -206,28 +225,28 @@ impl std::fmt::Display for Bitboard {
 pub mod known {
     use super::Bitboard;
 
-    pub const A_FILE: Bitboard = Bitboard::new(0x0101010101010101);
-    pub const B_FILE: Bitboard = Bitboard::new(0x0202020202020202);
-    pub const C_FILE: Bitboard = Bitboard::new(0x0404040404040404);
-    pub const D_FILE: Bitboard = Bitboard::new(0x0808080808080808);
-    pub const E_FILE: Bitboard = Bitboard::new(0x1010101010101010);
-    pub const F_FILE: Bitboard = Bitboard::new(0x2020202020202020);
-    pub const G_FILE: Bitboard = Bitboard::new(0x4040404040404040);
-    pub const H_FILE: Bitboard = Bitboard::new(0x8080808080808080);
+    pub const A_FILE: Bitboard = Bitboard::new(0x0101_0101_0101_0101);
+    pub const B_FILE: Bitboard = Bitboard::new(0x0202_0202_0202_0202);
+    pub const C_FILE: Bitboard = Bitboard::new(0x0404_0404_0404_0404);
+    pub const D_FILE: Bitboard = Bitboard::new(0x0808_0808_0808_0808);
+    pub const E_FILE: Bitboard = Bitboard::new(0x1010_1010_1010_1010);
+    pub const F_FILE: Bitboard = Bitboard::new(0x2020_2020_2020_2020);
+    pub const G_FILE: Bitboard = Bitboard::new(0x4040_4040_4040_4040);
+    pub const H_FILE: Bitboard = Bitboard::new(0x8080_8080_8080_8080);
 
-    pub const RANK_1: Bitboard = Bitboard::new(0x00000000000000FF);
-    pub const RANK_2: Bitboard = Bitboard::new(0x000000000000FF00);
-    pub const RANK_3: Bitboard = Bitboard::new(0x0000000000FF0000);
-    pub const RANK_4: Bitboard = Bitboard::new(0x00000000FF000000);
-    pub const RANK_5: Bitboard = Bitboard::new(0x000000FF00000000);
-    pub const RANK_6: Bitboard = Bitboard::new(0x0000FF0000000000);
-    pub const RANK_7: Bitboard = Bitboard::new(0x00FF000000000000);
-    pub const RANK_8: Bitboard = Bitboard::new(0xFF00000000000000);
+    pub const RANK_1: Bitboard = Bitboard::new(0x0000_0000_0000_00FF);
+    pub const RANK_2: Bitboard = Bitboard::new(0x0000_0000_0000_FF00);
+    pub const RANK_3: Bitboard = Bitboard::new(0x0000_0000_00FF_0000);
+    pub const RANK_4: Bitboard = Bitboard::new(0x0000_0000_FF00_0000);
+    pub const RANK_5: Bitboard = Bitboard::new(0x0000_00FF_0000_0000);
+    pub const RANK_6: Bitboard = Bitboard::new(0x0000_FF00_0000_0000);
+    pub const RANK_7: Bitboard = Bitboard::new(0x00FF_0000_0000_0000);
+    pub const RANK_8: Bitboard = Bitboard::new(0xFF00_0000_0000_0000);
 
-    pub const UP_DIAGONAL: Bitboard = Bitboard::new(0x8040201008040201);
-    pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(0x0102040810204080);
-    pub const LIGHT_SQUARES: Bitboard = Bitboard::new(0x55AA55AA55AA55AA);
-    pub const DARK_SQUARES: Bitboard = Bitboard::new(0xAA55AA55AA55AA55);
+    pub const UP_DIAGONAL: Bitboard = Bitboard::new(0x8040_2010_0804_0201);
+    pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(0x0102_0408_1020_4080);
+    pub const LIGHT_SQUARES: Bitboard = Bitboard::new(0x55AA_55AA_55AA_55AA);
+    pub const DARK_SQUARES: Bitboard = Bitboard::new(0xAA55_AA55_AA55_AA55);
 
     pub const INIT_WHITE_PAWNS: Bitboard = RANK_2;
     pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(1 << 1 | 1 << 6);
@@ -243,8 +262,8 @@ pub mod known {
     pub const INIT_BLACK_QUEEN: Bitboard = Bitboard::new(1 << 59);
     pub const INIT_BLACK_KING: Bitboard = Bitboard::new(1 << 60);
 
-    pub const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFEFEFEFEFEFEFE); // ~0x0101010101010101
-    pub const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F7F7F7F7F7F7F); // ~0x8080808080808080
+    pub const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFE_FEFE_FEFE_FEFE); // ~0x0101010101010101
+    pub const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F_7F7F_7F7F_7F7F); // ~0x8080808080808080
 }
 
 #[cfg(test)]
@@ -254,7 +273,7 @@ mod tests {
     #[test]
     fn test_empty_bitboard_display() {
         let bitboard = Bitboard::empty();
-        let formatted_bitboard = format!("{}", bitboard);
+        let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(
             formatted_bitboard, ". . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . ."
@@ -264,7 +283,7 @@ mod tests {
     #[test]
     fn test_full_bitboard_display() {
         let bitboard = Bitboard::full();
-        let formatted_bitboard = format!("{}", bitboard);
+        let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(
             formatted_bitboard, "* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *"

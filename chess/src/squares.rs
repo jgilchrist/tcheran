@@ -29,34 +29,42 @@ impl Iterator for SquareIterator {
 }
 
 impl Squares {
+    #[must_use]
     pub const fn from_bitboard(bitboard: Bitboard) -> Self {
         Self(bitboard)
     }
 
+    #[must_use]
     pub const fn from_square(square: Square) -> Self {
         Self(square.0)
     }
 
+    #[must_use]
     pub const fn none() -> Self {
         Self(Bitboard::empty())
     }
 
+    #[must_use]
     pub const fn all() -> Self {
         Self(Bitboard::full())
     }
 
+    #[must_use]
     pub const fn all_except(square: &Square) -> Self {
         Self(square.0.invert())
     }
 
+    #[must_use]
     pub fn contains(&self, square: &Square) -> bool {
         self.0.has_square(square)
     }
 
+    #[must_use]
     pub fn is_empty(&self) -> bool {
         self.0.is_empty()
     }
 
+    #[must_use]
     pub fn count(&self) -> u8 {
         self.0.count()
     }
@@ -66,17 +74,20 @@ impl Squares {
         Square::from_bitboard(lsb)
     }
 
+    #[must_use]
     pub fn iter(&self) -> SquareIterator {
         SquareIterator(*self)
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn single(&self) -> Square {
         assert_eq!(self.count(), 1);
         Square::from_bitboard(self.0)
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
@@ -91,51 +102,59 @@ impl Squares {
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north(&self) -> Self {
         Self(self.0.north())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south(&self) -> Self {
         Self(self.0.south())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn east(&self) -> Self {
         Self(self.0.east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north_east(&self) -> Self {
         Self(self.0.north_east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south_east(&self) -> Self {
         Self(self.0.south_east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn west(&self) -> Self {
         Self(self.0.west())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south_west(&self) -> Self {
         Self(self.0.south_west())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north_west(&self) -> Self {
         Self(self.0.north_west())
     }
 }
 
 impl std::ops::BitAnd for Squares {
-    type Output = Squares;
+    type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
-        Squares(self.0 & rhs.0)
+        Self(self.0 & rhs.0)
     }
 }
 
@@ -146,10 +165,10 @@ impl std::ops::BitAndAssign for Squares {
 }
 
 impl std::ops::BitAnd<Square> for Squares {
-    type Output = Squares;
+    type Output = Self;
 
     fn bitand(self, rhs: Square) -> Self::Output {
-        Squares(self.0 & rhs.0)
+        Self(self.0 & rhs.0)
     }
 }
 
@@ -160,10 +179,10 @@ impl std::ops::BitAndAssign<Square> for Squares {
 }
 
 impl std::ops::BitOr for Squares {
-    type Output = Squares;
+    type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        Squares(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 }
 
@@ -174,10 +193,10 @@ impl std::ops::BitOrAssign for Squares {
 }
 
 impl std::ops::BitOr<Square> for Squares {
-    type Output = Squares;
+    type Output = Self;
 
     fn bitor(self, rhs: Square) -> Self::Output {
-        Squares(self.0 | rhs.0)
+        Self(self.0 | rhs.0)
     }
 }
 
@@ -264,6 +283,7 @@ pub mod all {
     pub const H8: Square = Square::from_file_and_rank(File::H, Rank::R8);
 }
 
+#[must_use]
 pub fn king_start(player: &Player) -> &Square {
     match player {
         Player::White => &E1,
@@ -271,6 +291,7 @@ pub fn king_start(player: &Player) -> &Square {
     }
 }
 
+#[must_use]
 pub fn kingside_rook_start(player: &Player) -> &Square {
     match player {
         Player::White => &H1,
@@ -278,6 +299,7 @@ pub fn kingside_rook_start(player: &Player) -> &Square {
     }
 }
 
+#[must_use]
 pub fn queenside_rook_start(player: &Player) -> &Square {
     match player {
         Player::White => &A1,
@@ -285,6 +307,7 @@ pub fn queenside_rook_start(player: &Player) -> &Square {
     }
 }
 
+#[must_use]
 pub fn kingside_castle_dest(player: &Player) -> &Square {
     match player {
         Player::White => &G1,
@@ -292,6 +315,7 @@ pub fn kingside_castle_dest(player: &Player) -> &Square {
     }
 }
 
+#[must_use]
 pub fn queenside_castle_dest(player: &Player) -> &Square {
     match player {
         Player::White => &C1,

@@ -84,17 +84,17 @@ pub(super) enum UciResponse {
 impl UciResponse {
     pub(super) fn as_string(&self) -> String {
         match self {
-            UciResponse::Id(i) => match i {
-                IdParam::Name(name) => format!("id name {}", name),
-                IdParam::Author(author) => format!("id author {}", author),
+            Self::Id(i) => match i {
+                IdParam::Name(name) => format!("id name {name}"),
+                IdParam::Author(author) => format!("id author {author}"),
             },
-            UciResponse::UciOk => "uciok".to_string(),
-            UciResponse::ReadyOk => "readyok".to_string(),
+            Self::UciOk => "uciok".to_string(),
+            Self::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
-            UciResponse::BestMove { mv, ponder } => format!("bestmove {}", mv.notation()),
-            UciResponse::CopyProtection(status) => todo!(),
-            UciResponse::Registration(status) => todo!(),
-            UciResponse::Info {
+            Self::BestMove { mv, ponder } => format!("bestmove {}", mv.notation()),
+            Self::CopyProtection(status) => todo!(),
+            Self::Registration(status) => todo!(),
+            Self::Info {
                 depth,
                 seldepth,
                 time,
@@ -112,7 +112,7 @@ impl UciResponse {
                 refutation,
                 currline,
             } => todo!(),
-            UciResponse::Option {
+            Self::Option {
                 name,
                 r#type,
                 default,

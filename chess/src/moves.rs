@@ -8,22 +8,25 @@ pub struct Move {
 }
 
 impl Move {
-    pub fn new(src: Square, dst: Square) -> Move {
-        Move {
+    #[must_use]
+    pub fn new(src: Square, dst: Square) -> Self {
+        Self {
             src,
             dst,
             promotion: None,
         }
     }
 
-    pub fn new_with_promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Move {
-        Move {
+    #[must_use]
+    pub fn new_with_promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
+        Self {
             src,
             dst,
             promotion: Some(promotion),
         }
     }
 
+    #[must_use]
     pub fn notation(&self) -> String {
         format!(
             "{}{}{}",

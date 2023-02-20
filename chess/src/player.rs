@@ -5,10 +5,11 @@ pub enum Player {
 }
 
 impl Player {
-    pub fn other(&self) -> Player {
+    #[must_use]
+    pub fn other(&self) -> Self {
         match *self {
-            Player::White => Player::Black,
-            Player::Black => Player::White,
+            Self::White => Self::Black,
+            Self::Black => Self::White,
         }
     }
 }

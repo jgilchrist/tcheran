@@ -48,7 +48,7 @@ impl OutOfProcessConnectionManager {
             Some(c) => run_fn(c),
             None => loop {
                 let client_result =
-                    OutOfProcessEngineClient::connect(format!("http://{}", BIND_ADDRESS));
+                    OutOfProcessEngineClient::connect(format!("http://{BIND_ADDRESS}"));
 
                 if let Ok(mut c) = client_result {
                     c.init().unwrap();

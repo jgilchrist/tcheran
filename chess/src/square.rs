@@ -24,35 +24,38 @@ pub enum File {
 }
 
 impl File {
-    pub fn from_idx(idx: u8) -> File {
+    #[must_use]
+    pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
         match idx {
-            0 => File::A,
-            1 => File::B,
-            2 => File::C,
-            3 => File::D,
-            4 => File::E,
-            5 => File::F,
-            6 => File::G,
-            7 => File::H,
+            0 => Self::A,
+            1 => Self::B,
+            2 => Self::C,
+            3 => Self::D,
+            4 => Self::E,
+            5 => Self::F,
+            6 => Self::G,
+            7 => Self::H,
             _ => unreachable!(),
         }
     }
 
+    #[must_use]
     pub const fn idx(&self) -> u8 {
         match self {
-            File::A => 0,
-            File::B => 1,
-            File::C => 2,
-            File::D => 3,
-            File::E => 4,
-            File::F => 5,
-            File::G => 6,
-            File::H => 7,
+            Self::A => 0,
+            Self::B => 1,
+            Self::C => 2,
+            Self::D => 3,
+            Self::E => 4,
+            Self::F => 5,
+            Self::G => 6,
+            Self::H => 7,
         }
     }
 
+    #[must_use]
     pub fn notation(&self) -> &str {
         match self {
             Self::A => "a",
@@ -103,35 +106,38 @@ pub enum Rank {
 }
 
 impl Rank {
-    pub fn from_idx(idx: u8) -> Rank {
+    #[must_use]
+    pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
         match idx {
-            0 => Rank::R1,
-            1 => Rank::R2,
-            2 => Rank::R3,
-            3 => Rank::R4,
-            4 => Rank::R5,
-            5 => Rank::R6,
-            6 => Rank::R7,
-            7 => Rank::R8,
+            0 => Self::R1,
+            1 => Self::R2,
+            2 => Self::R3,
+            3 => Self::R4,
+            4 => Self::R5,
+            5 => Self::R6,
+            6 => Self::R7,
+            7 => Self::R8,
             _ => unreachable!(),
         }
     }
 
+    #[must_use]
     pub const fn idx(&self) -> u8 {
         match self {
-            Rank::R1 => 0,
-            Rank::R2 => 1,
-            Rank::R3 => 2,
-            Rank::R4 => 3,
-            Rank::R5 => 4,
-            Rank::R6 => 5,
-            Rank::R7 => 6,
-            Rank::R8 => 7,
+            Self::R1 => 0,
+            Self::R2 => 1,
+            Self::R3 => 2,
+            Self::R4 => 3,
+            Self::R5 => 4,
+            Self::R6 => 5,
+            Self::R7 => 6,
+            Self::R8 => 7,
         }
     }
 
+    #[must_use]
     pub fn notation(&self) -> &str {
         match self {
             Self::R1 => "1",
@@ -162,10 +168,12 @@ impl std::fmt::Display for Rank {
 pub struct Square(pub Bitboard);
 
 impl Square {
+    #[must_use]
     pub const fn from_file_and_rank(file: File, rank: Rank) -> Self {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
+    #[must_use]
     pub fn from_bitboard(bitboard: Bitboard) -> Self {
         assert_eq!(bitboard.count(), 1);
         Self(bitboard)
@@ -179,10 +187,12 @@ impl Square {
         }
     }
 
+    #[must_use]
     pub const fn from_index(idx: u8) -> Self {
         Self(Bitboard::new(1 << idx))
     }
 
+    #[must_use]
     pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Self {
         let idx = rank_idx * 8 + file_idx;
         Self::from_index(idx)
@@ -198,11 +208,13 @@ impl Square {
         File::from_idx(self.0.trailing_zeros() % 8)
     }
 
+    #[must_use]
     pub fn notation(&self) -> String {
         format!("{}{}", self.file(), self.rank())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn in_direction(&self, direction: &Direction) -> Option<Self> {
         match direction {
             Direction::North => self.north(),
@@ -217,41 +229,49 @@ impl Square {
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north_east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south_east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_east())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.west())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn south_west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_west())
     }
 
     #[inline(always)]
+    #[must_use]
     pub fn north_west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_west())
     }

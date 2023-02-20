@@ -159,7 +159,7 @@ pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
                 log("");
             }
             Err(e) => {
-                eprintln!("{}", e);
+                eprintln!("{e}");
                 log("? Unknown command\n");
             }
         }

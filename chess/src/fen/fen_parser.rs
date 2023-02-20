@@ -131,7 +131,7 @@ fn fen_castling(input: &str) -> IResult<&str, (CastleRights, CastleRights)> {
     alt((
         value((CastleRights::none(), CastleRights::none()), tag("-")),
         map(many1(fen_castle_right), |rs| {
-            let rights: HashSet<FenCastleRight> = HashSet::from_iter(rs.iter().cloned());
+            let rights: HashSet<FenCastleRight> = HashSet::from_iter(rs.iter().copied());
 
             (
                 CastleRights {
