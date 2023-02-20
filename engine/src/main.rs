@@ -9,12 +9,9 @@
 )]
 
 use anyhow::Result;
-use chess::game::Game;
 use engine::log::log;
 
 mod cli {
-    use crate::{perft, perft_div};
-
     use anyhow::Result;
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
@@ -22,6 +19,8 @@ mod cli {
         strategy::{self, KnownStrategy},
         uci,
     };
+
+    use engine::perft;
 
     #[derive(ValueEnum, Clone)]
     pub enum Strategy {
@@ -81,7 +80,7 @@ mod cli {
             }
             Commands::Perft { depth, fen } => {
                 let game = fen.map_or_else(Game::default, |fen| Game::from_fen(&fen).unwrap());
-                let result = perft(depth, &game);
+                let result = perft::perft(depth, &game);
                 println!("{result}");
                 Ok(())
             }
@@ -95,37 +94,11 @@ mod cli {
                     }
                 }
 
-                perft_div(depth, &game);
+                perft::perft_div(depth, &game);
                 Ok(())
             }
         }
     }
-}
-
-fn perft(depth: u8, game: &Game) -> usize {
-    if depth == 1 {
-        return game.legal_moves().len();
-    }
-
-    game.legal_moves()
-        .iter()
-        .map(|m| perft(depth - 1, &game.make_move(m).unwrap()))
-        .sum()
-}
-
-fn perft_div(depth: u8, game: &Game) {
-    let root_moves = game.legal_moves();
-    let mut all = 0;
-
-    for mv in root_moves {
-        let number_for_mv = perft(depth - 1, &game.make_move(&mv).unwrap());
-
-        println!("{mv:?} {number_for_mv}");
-        all += number_for_mv;
-    }
-
-    println!();
-    println!("{all}");
 }
 
 fn main() -> Result<()> {
