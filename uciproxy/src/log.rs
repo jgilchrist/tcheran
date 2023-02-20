@@ -4,7 +4,7 @@ const LOG_DIRECTORY: &str = "/tmp/chess_engine";
 
 #[must_use]
 pub fn log_file() -> String {
-    "log".to_string()
+    "proxy".to_string()
 }
 
 // FIXME: It's not ideal to open a handle to the file every time we want to write a line
@@ -20,5 +20,6 @@ pub fn log<S: AsRef<str>>(s: S) {
         .unwrap();
 
     writeln!(f, "{}", s.as_ref()).unwrap();
+    eprintln!("{}", s.as_ref());
     f.flush().unwrap();
 }

@@ -2,6 +2,7 @@
 members = [
     "chess",
     "engine",
+    "uciproxy",
 ]
 
 [profile.release]
