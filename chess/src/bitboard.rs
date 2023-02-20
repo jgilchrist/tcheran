@@ -5,20 +5,6 @@ use crate::square::Square;
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Bitboard(u64);
 
-pub struct BitIterator(Bitboard);
-
-impl Iterator for BitIterator {
-    type Item = Bitboard;
-
-    fn next(&mut self) -> Option<Self::Item> {
-        if self.0.is_empty() {
-            None
-        } else {
-            Some(self.0.pop_lsb_inplace())
-        }
-    }
-}
-
 impl Bitboard {
     #[must_use]
     pub const fn new(bits: u64) -> Self {
@@ -37,13 +23,13 @@ impl Bitboard {
 
     #[inline(always)]
     #[must_use]
-    pub fn has_square(&self, square: Square) -> bool {
+    pub const fn has_square(&self, square: Square) -> bool {
         self.0 & square.0 .0 != 0
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn is_empty(&self) -> bool {
+    pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
@@ -55,10 +41,11 @@ impl Bitboard {
 
     #[inline(always)]
     #[must_use]
-    pub fn lsb(&self) -> Self {
+    pub const fn lsb(&self) -> Self {
         Self((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
+    #[must_use]
     pub fn pop_lsb_inplace(&mut self) -> Self {
         let lsb = self.lsb();
         self.0 &= self.0 - 1;
@@ -66,23 +53,20 @@ impl Bitboard {
     }
 
     #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub const fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
     #[must_use]
+    #[allow(clippy::cast_possible_truncation)]
     pub const fn trailing_zeros(&self) -> u8 {
         self.0.trailing_zeros() as u8
     }
 
-    #[must_use]
-    pub fn bits(&self) -> BitIterator {
-        BitIterator(*self)
-    }
-
     #[inline(always)]
     #[must_use]
-    pub fn in_direction(&self, direction: Direction) -> Self {
+    pub const fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -97,54 +81,54 @@ impl Bitboard {
 
     #[inline(always)]
     #[must_use]
-    pub fn north(&self) -> Self {
+    pub const fn north(&self) -> Self {
         Self(self.0 << 8)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south(&self) -> Self {
+    pub const fn south(&self) -> Self {
         Self(self.0 >> 8)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn east(&self) -> Self {
+    pub const fn east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self((self.0 << 1) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_east(&self) -> Self {
+    pub const fn north_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self((self.0 << 9) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_east(&self) -> Self {
+    pub const fn south_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self((self.0 >> 7) & known::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn west(&self) -> Self {
+    pub const fn west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self((self.0 >> 1) & known::NOT_H_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_west(&self) -> Self {
+    pub const fn south_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self((self.0 >> 9) & known::NOT_H_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_west(&self) -> Self {
+    pub const fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self((self.0 << 7) & known::NOT_H_FILE.0)
     }
@@ -160,7 +144,7 @@ impl std::ops::BitAnd for Bitboard {
 
 impl std::ops::BitAndAssign for Bitboard {
     fn bitand_assign(&mut self, rhs: Self) {
-        self.0 = self.0 & rhs.0
+        self.0 = self.0 & rhs.0;
     }
 }
 
@@ -174,7 +158,7 @@ impl std::ops::BitOr for Bitboard {
 
 impl std::ops::BitOrAssign for Bitboard {
     fn bitor_assign(&mut self, rhs: Self) {
-        self.0 = self.0 | rhs.0
+        self.0 = self.0 | rhs.0;
     }
 }
 
