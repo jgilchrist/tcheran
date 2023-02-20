@@ -1,4 +1,6 @@
-use chess::{debug, game::Game, moves::Move};
+use chess::{game::Game, moves::Move};
+
+use crate::log::log;
 
 use super::Strategy;
 
@@ -53,7 +55,7 @@ impl OutOfProcessConnectionManager {
                     self.client = Some(c);
                     return run_fn(self.client.as_mut().unwrap());
                 } else {
-                    debug::log(OUT_OF_PROCESS_LOG, "Unable to connect");
+                    log("Unable to connect");
                     std::thread::sleep(Duration::from_secs(1));
                 }
             },
@@ -73,8 +75,6 @@ impl OutOfProcessConnectionManager {
 
 // TODO: How can we ensure only a single connection is made at once?
 // Multiple games being played with the same engine will fight for the state.
-
-const OUT_OF_PROCESS_LOG: &str = "out_of_process";
 
 struct OutOfProcessEngineClient {
     runtime: Runtime,
