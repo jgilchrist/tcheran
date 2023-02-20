@@ -6,7 +6,7 @@ pub enum Player {
 
 impl Player {
     #[must_use]
-    pub fn other(&self) -> Self {
+    pub const fn other(&self) -> Self {
         match *self {
             Self::White => Self::Black,
             Self::Black => Self::White,

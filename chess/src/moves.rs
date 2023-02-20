@@ -9,7 +9,7 @@ pub struct Move {
 
 impl Move {
     #[must_use]
-    pub fn new(src: Square, dst: Square) -> Self {
+    pub const fn new(src: Square, dst: Square) -> Self {
         Self {
             src,
             dst,
@@ -18,7 +18,11 @@ impl Move {
     }
 
     #[must_use]
-    pub fn new_with_promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
+    pub const fn new_with_promotion(
+        src: Square,
+        dst: Square,
+        promotion: PromotionPieceKind,
+    ) -> Self {
         Self {
             src,
             dst,

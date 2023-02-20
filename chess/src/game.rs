@@ -27,12 +27,12 @@ pub struct CastleRights {
 
 impl CastleRights {
     #[must_use]
-    pub fn can_castle(&self) -> bool {
+    pub const fn can_castle(&self) -> bool {
         self.king_side || self.queen_side
     }
 
     #[must_use]
-    pub fn none() -> Self {
+    pub const fn none() -> Self {
         Self {
             king_side: false,
             queen_side: false,
@@ -40,7 +40,7 @@ impl CastleRights {
     }
 
     #[must_use]
-    pub fn without_kingside(&self) -> Self {
+    pub const fn without_kingside(&self) -> Self {
         Self {
             king_side: false,
             queen_side: self.queen_side,
@@ -48,7 +48,7 @@ impl CastleRights {
     }
 
     #[must_use]
-    pub fn without_queenside(&self) -> Self {
+    pub const fn without_queenside(&self) -> Self {
         Self {
             king_side: self.king_side,
             queen_side: false,
