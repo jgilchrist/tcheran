@@ -328,33 +328,37 @@ pub mod squares {
     pub const H8: Square = Square::new(File::H, Rank::R8);
 
     pub fn king_start(player: &Player) -> &Square {
-        player_square(player, &E1, &E8)
+        match player {
+            Player::White => &E1,
+            Player::Black => &E8,
+        }
     }
 
     pub fn kingside_rook_start(player: &Player) -> &Square {
-        player_square(player, &H1, &H8)
+        match player {
+            Player::White => &H1,
+            Player::Black => &H8,
+        }
     }
 
     pub fn queenside_rook_start(player: &Player) -> &Square {
-        player_square(player, &A1, &A8)
+        match player {
+            Player::White => &A1,
+            Player::Black => &A8,
+        }
     }
 
     pub fn kingside_castle_dest(player: &Player) -> &Square {
-        player_square(player, &G1, &G8)
+        match player {
+            Player::White => &G1,
+            Player::Black => &G8,
+        }
     }
 
     pub fn queenside_castle_dest(player: &Player) -> &Square {
-        player_square(player, &C1, &C8)
-    }
-
-    fn player_square<'a>(
-        player: &Player,
-        white_square: &'a Square,
-        black_square: &'a Square,
-    ) -> &'a Square {
         match player {
-            Player::White => white_square,
-            Player::Black => black_square,
+            Player::White => &C1,
+            Player::Black => &C8,
         }
     }
 }
