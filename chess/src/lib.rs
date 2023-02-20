@@ -1,5 +1,6 @@
 #![warn(clippy::pedantic)]
 #![warn(clippy::nursery)]
+#![allow(clippy::wildcard_imports)]
 
 pub mod bitboard;
 pub mod board;
