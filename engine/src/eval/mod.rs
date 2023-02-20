@@ -13,19 +13,19 @@ pub fn eval(game: &Game) -> i64 {
 fn white_piece_value(game: &Game) -> u64 {
     let pieces = &game.board.white_pieces;
 
-    pieces.pawns.count() as u64 * PAWN_VALUE
-        + pieces.knights.count() as u64 * KNIGHT_VALUE
-        + pieces.bishops.count() as u64 * BISHOP_VALUE
-        + pieces.rooks.count() as u64 * ROOK_VALUE
-        + pieces.queen.count() as u64 * QUEEN_VALUE
+    u64::from(pieces.pawns.count()) * PAWN_VALUE
+        + u64::from(pieces.knights.count()) * KNIGHT_VALUE
+        + u64::from(pieces.bishops.count()) * BISHOP_VALUE
+        + u64::from(pieces.rooks.count()) * ROOK_VALUE
+        + u64::from(pieces.queen.count()) * QUEEN_VALUE
 }
 
 fn black_piece_value(game: &Game) -> u64 {
     let pieces = &game.board.black_pieces;
 
-    pieces.pawns.count() as u64 * PAWN_VALUE
-        + pieces.knights.count() as u64 * KNIGHT_VALUE
-        + pieces.bishops.count() as u64 * BISHOP_VALUE
-        + pieces.rooks.count() as u64 * ROOK_VALUE
-        + pieces.queen.count() as u64 * QUEEN_VALUE
+    u64::from(pieces.pawns.count()) * PAWN_VALUE
+        + u64::from(pieces.knights.count()) * KNIGHT_VALUE
+        + u64::from(pieces.bishops.count()) * BISHOP_VALUE
+        + u64::from(pieces.rooks.count()) * ROOK_VALUE
+        + u64::from(pieces.queen.count()) * QUEEN_VALUE
 }

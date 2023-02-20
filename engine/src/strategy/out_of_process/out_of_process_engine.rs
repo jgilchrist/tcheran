@@ -38,7 +38,7 @@ impl out_of_process_engine_server::OutOfProcessEngine for OutOfProcessEngine {
 
     async fn go(&self, request: Request<GoRequest>) -> Result<Response<GoResponse>, Status> {
         let fen = request.into_inner().fen;
-        println!("GO: {}", fen);
+        println!("GO: {fen}");
 
         let game = Game::from_fen(&fen).unwrap();
 

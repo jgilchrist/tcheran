@@ -25,7 +25,7 @@ fn format_piece(piece: Piece) -> char {
 fn format_rank(rank: Vec<Option<Piece>>) -> String {
     let state = rank
         .iter()
-        .fold(("".to_string(), 0), |acc, piece| match piece {
+        .fold((String::new(), 0), |acc, piece| match piece {
             Some(p) => {
                 let (str_so_far, prev_empty_squares) = acc;
 
@@ -35,7 +35,7 @@ fn format_rank(rank: Vec<Option<Piece>>) -> String {
                     if prev_empty_squares > 0 {
                         prev_empty_squares.to_string()
                     } else {
-                        "".to_string()
+                        String::new()
                     },
                     format_piece(*p)
                 );
@@ -55,7 +55,7 @@ fn format_rank(rank: Vec<Option<Piece>>) -> String {
         if prev_empty_squares > 0 {
             prev_empty_squares.to_string()
         } else {
-            "".to_string()
+            String::new()
         }
     )
 }
@@ -117,6 +117,7 @@ fn format_fullmove_number(_game: &Game) -> String {
     1.to_string()
 }
 
+#[must_use]
 pub fn write(game: &Game) -> String {
     format!(
         "{} {} {} {} {} {}",

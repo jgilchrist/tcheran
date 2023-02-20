@@ -11,28 +11,23 @@ pub enum Direction {
 }
 
 impl Direction {
-    pub const ALL: &'static [Direction; 8] = &[
-        Direction::North,
-        Direction::NorthEast,
-        Direction::East,
-        Direction::SouthEast,
-        Direction::South,
-        Direction::SouthWest,
-        Direction::West,
-        Direction::NorthWest,
+    pub const ALL: &'static [Self; 8] = &[
+        Self::North,
+        Self::NorthEast,
+        Self::East,
+        Self::SouthEast,
+        Self::South,
+        Self::SouthWest,
+        Self::West,
+        Self::NorthWest,
     ];
 
-    pub const CARDINAL: &'static [Direction; 4] = &[
-        Direction::North,
-        Direction::East,
-        Direction::South,
-        Direction::West,
-    ];
+    pub const CARDINAL: &'static [Self; 4] = &[Self::North, Self::East, Self::South, Self::West];
 
-    pub const DIAGONAL: &'static [Direction; 4] = &[
-        Direction::NorthEast,
-        Direction::SouthEast,
-        Direction::SouthWest,
-        Direction::NorthWest,
+    pub const DIAGONAL: &'static [Self; 4] = &[
+        Self::NorthEast,
+        Self::SouthEast,
+        Self::SouthWest,
+        Self::NorthWest,
     ];
 }

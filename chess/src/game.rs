@@ -26,26 +26,30 @@ pub struct CastleRights {
 }
 
 impl CastleRights {
+    #[must_use]
     pub fn can_castle(&self) -> bool {
         self.king_side || self.queen_side
     }
 
-    pub fn none() -> CastleRights {
-        CastleRights {
+    #[must_use]
+    pub fn none() -> Self {
+        Self {
             king_side: false,
             queen_side: false,
         }
     }
 
-    pub fn without_kingside(&self) -> CastleRights {
-        CastleRights {
+    #[must_use]
+    pub fn without_kingside(&self) -> Self {
+        Self {
             king_side: false,
             queen_side: self.queen_side,
         }
     }
 
-    pub fn without_queenside(&self) -> CastleRights {
-        CastleRights {
+    #[must_use]
+    pub fn without_queenside(&self) -> Self {
+        Self {
             king_side: self.king_side,
             queen_side: false,
         }
@@ -54,7 +58,7 @@ impl CastleRights {
 
 impl Default for CastleRights {
     fn default() -> Self {
-        CastleRights {
+        Self {
             king_side: true,
             queen_side: true,
         }
@@ -71,8 +75,9 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new() -> Game {
-        Game {
+    #[must_use]
+    pub fn new() -> Self {
+        Self {
             board: Board::start(),
             player: Player::White,
             white_castle_rights: CastleRights::default(),
@@ -81,18 +86,21 @@ impl Game {
         }
     }
 
-    pub fn from_fen(fen: &str) -> Result<Game> {
+    pub fn from_fen(fen: &str) -> Result<Self> {
         fen::parse(fen)
     }
 
+    #[must_use]
     pub fn to_fen(&self) -> String {
         fen::write(self)
     }
 
+    #[must_use]
     pub fn pseudo_legal_moves(&self) -> Vec<Move> {
         generate_moves(self)
     }
 
+    #[must_use]
     pub fn legal_moves(&self) -> Vec<Move> {
         self.pseudo_legal_moves()
             .into_iter()
@@ -157,7 +165,7 @@ impl Game {
     }
 
     #[allow(unused)]
-    pub fn make_move(&self, mv: &Move) -> Result<Game, MoveError> {
+    pub fn make_move(&self, mv: &Move) -> Result<Self, MoveError> {
         let from = mv.src;
         let to = mv.dst;
 
@@ -244,7 +252,7 @@ impl Game {
         let white_castle_rights = castle_rights(&Player::White, &self.white_castle_rights);
         let black_castle_rights = castle_rights(&Player::Black, &self.black_castle_rights);
 
-        Ok(Game {
+        Ok(Self {
             board,
             player: self.player.other(),
             white_castle_rights,
@@ -256,6 +264,6 @@ impl Game {
 
 impl Default for Game {
     fn default() -> Self {
-        Game::new()
+        Self::new()
     }
 }

@@ -138,8 +138,8 @@ fn cmd_setoption(input: &str) -> IResult<&str, UciCommand> {
     Ok((
         input,
         UciCommand::SetOption {
-            name: "".to_string(),
-            value: "".to_string(),
+            name: String::new(),
+            value: String::new(),
         },
     ))
 }
@@ -152,8 +152,8 @@ fn cmd_register(input: &str) -> IResult<&str, UciCommand> {
         input,
         UciCommand::Register {
             later: false,
-            name: "".to_string(),
-            code: "".to_string(),
+            name: String::new(),
+            code: String::new(),
         },
     ))
 }

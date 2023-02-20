@@ -37,8 +37,9 @@ impl PlayerPieces {
 }
 
 impl Board {
-    pub fn start() -> Board {
-        Board {
+    #[must_use]
+    pub fn start() -> Self {
+        Self {
             white_pieces: PlayerPieces {
                 pawns: squares::INIT_WHITE_PAWNS,
                 knights: squares::INIT_WHITE_KNIGHTS,
@@ -58,7 +59,8 @@ impl Board {
         }
     }
 
-    pub fn from_array(pieces: [Option<Piece>; 64]) -> Board {
+    #[must_use]
+    pub fn from_array(pieces: [Option<Piece>; 64]) -> Self {
         let mut white_pawns = Squares::none();
         let mut white_knights = Squares::none();
         let mut white_bishops = Squares::none();
@@ -95,7 +97,7 @@ impl Board {
             }
         }
 
-        Board {
+        Self {
             white_pieces: PlayerPieces {
                 pawns: white_pawns,
                 knights: white_knights,
@@ -115,6 +117,7 @@ impl Board {
         }
     }
 
+    #[must_use]
     pub fn player_pieces(&self, player: &Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
@@ -122,6 +125,7 @@ impl Board {
         }
     }
 
+    #[must_use]
     pub fn player_piece_at(&self, player: &Player, square: &Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
@@ -142,6 +146,7 @@ impl Board {
         }
     }
 
+    #[must_use]
     pub fn piece_at(&self, square: &Square) -> Option<Piece> {
         if let Some(white_piece_kind) = self.player_piece_at(&Player::White, square) {
             return Some(Piece::white(white_piece_kind));
@@ -154,6 +159,7 @@ impl Board {
         None
     }
 
+    #[must_use]
     pub fn king_in_check(&self, player: &Player) -> bool {
         let enemy_attacks = generate_all_attacks(self, &player.other());
 
@@ -171,7 +177,7 @@ impl Board {
     //
     // TODO: Return info about the move (was it a capture?)
     #[allow(clippy::result_unit_err)]
-    pub fn make_move(&self, mv: &Move) -> Result<(Board, ()), ()> {
+    pub fn make_move(&self, mv: &Move) -> Result<(Self, ()), ()> {
         let moved_piece = self.piece_at(&mv.src).ok_or(())?;
 
         let remove_src_mask = Squares::all_except(&mv.src);
@@ -284,7 +290,7 @@ impl Board {
             new_squares
         };
 
-        let new_board = Board {
+        let new_board = Self {
             white_pieces: PlayerPieces {
                 pawns: mask_squares(self.white_pieces.pawns, &Piece::WHITE_PAWN),
                 knights: mask_squares(self.white_pieces.knights, &Piece::WHITE_KNIGHT),

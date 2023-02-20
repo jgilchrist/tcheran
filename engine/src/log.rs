@@ -2,6 +2,7 @@ use std::{fs, io::Write, path::Path};
 
 const LOG_DIRECTORY: &str = "/tmp/chess_engine";
 
+#[must_use]
 pub fn log_file() -> String {
     format!("log_{}", std::process::id())
 }
