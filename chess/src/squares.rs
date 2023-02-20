@@ -362,3 +362,16 @@ pub const INIT_BLACK_KING: Squares = Squares::from_bitboard(bitboard::known::INI
 
 pub const NOT_A_FILE: Squares = Squares::from_bitboard(bitboard::known::NOT_A_FILE);
 pub const NOT_H_FILE: Squares = Squares::from_bitboard(bitboard::known::NOT_H_FILE);
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn squares_size() {
+        assert_eq!(
+            std::mem::size_of::<Squares>(),
+            std::mem::size_of::<Bitboard>()
+        );
+    }
+}

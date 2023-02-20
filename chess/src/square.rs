@@ -311,4 +311,12 @@ mod tests {
         assert_eq!(Square::from_file_and_rank(File::A, Rank::R1), A1);
         assert_eq!(Square::from_file_and_rank(File::H, Rank::R8), H8);
     }
+
+    #[test]
+    fn square_size() {
+        assert_eq!(
+            std::mem::size_of::<Square>(),
+            std::mem::size_of::<Bitboard>()
+        );
+    }
 }

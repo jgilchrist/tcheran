@@ -289,4 +289,9 @@ mod tests {
             formatted_bitboard, "* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *"
         );
     }
+
+    #[test]
+    fn bitboard_size() {
+        assert_eq!(std::mem::size_of::<Bitboard>(), std::mem::size_of::<u64>());
+    }
 }
