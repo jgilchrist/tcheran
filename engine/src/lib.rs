@@ -1,7 +1,9 @@
-mod eval;
-mod search;
+pub mod log;
 pub mod strategy;
 pub mod uci;
+
+mod eval;
+mod search;
 
 pub fn engine_version() -> &'static str {
     // If we can't determine the version from git tags, fall back to the version

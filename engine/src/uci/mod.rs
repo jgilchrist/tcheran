@@ -1,8 +1,8 @@
 use anyhow::Result;
-use chess::{debug, game::Game, moves::Move};
+use chess::{game::Game, moves::Move};
 use std::io::BufRead;
 
-use crate::strategy::Strategy;
+use crate::{log::log, strategy::Strategy};
 
 use self::{
     commands::{GoCmdArguments, UciCommand},
@@ -17,9 +17,6 @@ pub mod responses;
 /// Implementation of the Universal Chess Interface (UCI) protocol
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
-
-const UCI_LOG: &str = "uci";
-const STATE_LOG: &str = "game_state";
 
 pub struct UciState {
     strategy: Box<dyn Strategy>,
@@ -38,15 +35,15 @@ impl UciState {
 
     fn set_game_state(&mut self, game: Game) {
         self.game = game;
-        debug::log(STATE_LOG, format!("{:?}", self.game.board));
+        log(format!("{:?}", self.game.board));
     }
 
     fn go(&mut self) -> Move {
         let best_move = self.strategy.next_move(&self.game);
-        debug::log(STATE_LOG, format!("{:?}", &best_move));
+        log(format!("{:?}", &best_move));
 
         let new_game_state = self.game.make_move(&best_move).unwrap();
-        debug::log(STATE_LOG, format!("{:?}", new_game_state.board));
+        log(format!("{:?}", new_game_state.board));
 
         best_move
     }
@@ -61,7 +58,7 @@ enum ExecuteResult {
 fn send_response(response: &UciResponse) {
     println!("{}", response.as_string());
 
-    debug::log(UCI_LOG, format!("\t\t{}", response.as_string()));
+    log(format!("\t\t{}", response.as_string()));
 }
 
 fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
@@ -145,12 +142,11 @@ pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
 
     let stdin = std::io::stdin();
 
-    debug::log(UCI_LOG, "\n\n============== Engine ============");
-    debug::log(STATE_LOG, "\n\n============== Engine ============");
+    log("\n\n============== Engine ============");
 
     for line in stdin.lock().lines() {
         let line = line?;
-        debug::log(UCI_LOG, &line);
+        log(&line);
         let command = parser::parse(&line);
 
         match command {
@@ -160,11 +156,11 @@ pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
                     break;
                 }
 
-                debug::log(UCI_LOG, "");
+                log("");
             }
             Err(e) => {
                 eprintln!("{}", e);
-                debug::log(UCI_LOG, "? Unknown command\n");
+                log("? Unknown command\n");
             }
         }
     }

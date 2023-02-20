@@ -1,5 +1,6 @@
 use anyhow::Result;
 use chess::game::Game;
+use engine::log::log;
 use engine::strategy::{self, KnownStrategy, Strategy};
 use engine::uci;
 
@@ -61,7 +62,9 @@ mod cli {
                 }
                 Commands::OutOfProcess {} => RunMode::OutOfProcessEngine,
                 Commands::Perft { depth, fen } => {
-                    let fen = fen.clone().unwrap_or_else(|| chess::fen::START_POS.to_string());
+                    let fen = fen
+                        .clone()
+                        .unwrap_or_else(|| chess::fen::START_POS.to_string());
                     RunMode::Perft(*depth, Game::from_fen(&fen).unwrap())
                 }
                 Commands::PerftDiv { depth, fen, moves } => {
@@ -91,7 +94,7 @@ pub enum RunMode {
 
 impl Default for RunMode {
     fn default() -> Self {
-        RunMode::Uci(KnownStrategy::OutOfProcess.create())
+        RunMode::Uci(KnownStrategy::Main.create())
     }
 }
 
@@ -122,9 +125,7 @@ fn perft_div(depth: u8, game: &Game) {
 }
 
 fn main() -> Result<()> {
-    std::panic::set_hook(Box::new(|info| {
-        chess::debug::log("crash", format!("{:?}", info))
-    }));
+    std::panic::set_hook(Box::new(|info| log(format!("{:?}", info))));
 
     let run_mode = cli::parse_cli();
 
