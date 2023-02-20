@@ -11,30 +11,33 @@
 use anyhow::Result;
 use chess::game::Game;
 use engine::log::log;
-use engine::strategy::{self, KnownStrategy, Strategy};
-use engine::uci;
 
 mod cli {
-    use super::RunMode;
+    use crate::{perft, perft_div};
+
+    use anyhow::Result;
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
-    use engine::{strategy::KnownStrategy, uci};
+    use engine::{
+        strategy::{self, KnownStrategy},
+        uci,
+    };
 
     #[derive(ValueEnum, Clone)]
-    enum Strategy {
+    pub enum Strategy {
         Random,
         TopEval,
         OutOfProcess,
     }
 
     #[derive(Parser)]
-    struct Cli {
+    pub struct Cli {
         #[command(subcommand)]
-        command: Option<Commands>,
+        pub command: Option<Commands>,
     }
 
     #[derive(Subcommand)]
-    enum Commands {
+    pub enum Commands {
         /// Run the engine using the UCI protocol
         Uci {
             #[arg(value_enum)]
@@ -42,7 +45,7 @@ mod cli {
         },
 
         /// Run in out-of-process engine mode
-        OutOfProcess {},
+        OutOfProcess,
 
         /// Run a perft test
         Perft { depth: u8, fen: Option<String> },
@@ -55,55 +58,45 @@ mod cli {
         },
     }
 
-    pub fn parse_cli() -> RunMode {
-        let args: Cli = Cli::parse();
-
-        match &args.command {
-            Some(cmd) => match cmd {
-                Commands::Uci { strategy } => {
-                    let known_strategy = match strategy {
-                        Strategy::Random => KnownStrategy::Random,
-                        Strategy::TopEval => KnownStrategy::TopEval,
-                        Strategy::OutOfProcess => KnownStrategy::OutOfProcess,
-                    };
-
-                    RunMode::Uci(known_strategy.create())
-                }
-                Commands::OutOfProcess {} => RunMode::OutOfProcessEngine,
-                Commands::Perft { depth, fen } => {
-                    let fen = fen
-                        .clone()
-                        .unwrap_or_else(|| chess::fen::START_POS.to_string());
-                    RunMode::Perft(*depth, Game::from_fen(&fen).unwrap())
-                }
-                Commands::PerftDiv { depth, fen, moves } => {
-                    let mut game = Game::from_fen(fen).unwrap();
-                    let (_, moves) = uci::parser::maybe_uci_moves(moves).unwrap();
-
-                    if let Some(moves) = moves {
-                        for mv in moves {
-                            game = game.make_move(&mv).unwrap();
-                        }
-                    }
-
-                    RunMode::PerftDiv(*depth, game)
-                }
-            },
-            None => RunMode::default(),
-        }
+    pub fn parse_cli() -> Cli {
+        Cli::parse()
     }
-}
 
-pub enum RunMode {
-    Uci(Box<dyn Strategy>),
-    OutOfProcessEngine,
-    Perft(u8, Game),
-    PerftDiv(u8, Game),
-}
+    pub fn run(cmd: Commands) -> Result<()> {
+        match cmd {
+            Commands::Uci { strategy } => {
+                let known_strategy = match strategy {
+                    Strategy::Random => KnownStrategy::Random,
+                    Strategy::TopEval => KnownStrategy::TopEval,
+                    Strategy::OutOfProcess => KnownStrategy::OutOfProcess,
+                };
 
-impl Default for RunMode {
-    fn default() -> Self {
-        Self::Uci(KnownStrategy::Main.create())
+                let strategy = known_strategy.create();
+                uci::uci(strategy)
+            }
+            Commands::OutOfProcess => {
+                engine::strategy::run_out_of_process_engine(strategy::KnownStrategy::Main.create())
+            }
+            Commands::Perft { depth, fen } => {
+                let game = fen.map_or_else(Game::default, |fen| Game::from_fen(&fen).unwrap());
+                let result = perft(depth, &game);
+                println!("{result}");
+                Ok(())
+            }
+            Commands::PerftDiv { depth, fen, moves } => {
+                let mut game = Game::from_fen(&fen).unwrap();
+                let (_, moves) = uci::parser::maybe_uci_moves(&moves).unwrap();
+
+                if let Some(moves) = moves {
+                    for mv in moves {
+                        game = game.make_move(&mv).unwrap();
+                    }
+                }
+
+                perft_div(depth, &game);
+                Ok(())
+            }
+        }
     }
 }
 
@@ -139,20 +132,8 @@ fn main() -> Result<()> {
         log(format!("{info:?}"));
     }));
 
-    let run_mode = cli::parse_cli();
-
-    match run_mode {
-        RunMode::Uci(strategy) => uci::uci(strategy),
-        RunMode::OutOfProcessEngine => {
-            engine::strategy::run_out_of_process_engine(strategy::KnownStrategy::Main.create())
-        }
-        RunMode::Perft(depth, game) => {
-            println!("{}", perft(depth, &game));
-            Ok(())
-        }
-        RunMode::PerftDiv(depth, game) => {
-            perft_div(depth, &game);
-            Ok(())
-        }
-    }
+    let args = cli::parse_cli();
+    cli::run(args.command.unwrap_or(cli::Commands::Uci {
+        strategy: cli::Strategy::Random,
+    }))
 }
