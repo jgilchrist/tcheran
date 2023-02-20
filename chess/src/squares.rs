@@ -71,7 +71,7 @@ impl Squares {
 
     pub fn pop_inplace(&mut self) -> Square {
         let lsb = self.0.pop_lsb_inplace();
-        Square::from_bitboard(lsb)
+        Square(lsb)
     }
 
     #[must_use]
@@ -83,7 +83,7 @@ impl Squares {
     #[must_use]
     pub fn single(&self) -> Square {
         assert_eq!(self.count(), 1);
-        Square::from_bitboard(self.0)
+        Square(self.0)
     }
 
     #[inline(always)]
