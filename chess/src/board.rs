@@ -1,5 +1,5 @@
 use crate::{
-    attacks::{self, generate_all_attacks},
+    attacks,
     direction::Direction,
     moves::Move,
     piece::{Piece, PieceKind},
@@ -118,7 +118,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_pieces(&self, player: &Player) -> &PlayerPieces {
+    pub fn player_pieces(&self, player: Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
             Player::Black => &self.black_pieces,
@@ -126,7 +126,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_piece_at(&self, player: &Player, square: &Square) -> Option<PieceKind> {
+    pub fn player_piece_at(&self, player: Player, square: &Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
         if player_pieces.pawns.contains(square) {
@@ -148,11 +148,11 @@ impl Board {
 
     #[must_use]
     pub fn piece_at(&self, square: &Square) -> Option<Piece> {
-        if let Some(white_piece_kind) = self.player_piece_at(&Player::White, square) {
+        if let Some(white_piece_kind) = self.player_piece_at(Player::White, square) {
             return Some(Piece::white(white_piece_kind));
         }
 
-        if let Some(black_piece_kind) = self.player_piece_at(&Player::Black, square) {
+        if let Some(black_piece_kind) = self.player_piece_at(Player::Black, square) {
             return Some(Piece::black(black_piece_kind));
         }
 
@@ -160,8 +160,8 @@ impl Board {
     }
 
     #[must_use]
-    pub fn king_in_check(&self, player: &Player) -> bool {
-        let enemy_attacks = generate_all_attacks(self, &player.other());
+    pub fn king_in_check(&self, player: Player) -> bool {
+        let enemy_attacks = attacks::generate_all_attacks(self, player.other());
 
         let king = self.player_pieces(player).king.single();
 
@@ -227,10 +227,10 @@ impl Board {
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
             if moved_piece.kind == PieceKind::Pawn {
-                let pawn_attacks = attacks::generate_pawn_attacks(&mv.src, &moved_piece.player);
+                let pawn_attacks = attacks::generate_pawn_attacks(&mv.src, moved_piece.player);
 
                 if pawn_attacks.contains(&mv.dst) {
-                    let opponent_pieces = self.player_pieces(&moved_piece.player.other()).all();
+                    let opponent_pieces = self.player_pieces(moved_piece.player.other()).all();
 
                     // Definitely en-passant, as we made a capture but there was no piece on that square.
                     if !opponent_pieces.contains(&mv.dst) {
@@ -249,7 +249,7 @@ impl Board {
                 }
             }
 
-            let king_start_square = *squares::king_start(&moved_piece.player);
+            let king_start_square = *squares::king_start(moved_piece.player);
 
             // PERF: Here, we figure out if the move was castling. It may be more performant to
             // tell this function that the move was castling, but it loses the cleanliness of
@@ -257,16 +257,16 @@ impl Board {
 
             // If we just moved a king from its start square, we may have castled.
             if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
-                let kingside_square = *squares::kingside_castle_dest(&moved_piece.player);
-                let queenside_square = *squares::queenside_castle_dest(&moved_piece.player);
+                let kingside_square = *squares::kingside_castle_dest(moved_piece.player);
+                let queenside_square = *squares::queenside_castle_dest(moved_piece.player);
 
                 // We're castling!
                 if mv.dst == kingside_square || mv.dst == queenside_square {
                     let is_kingside = mv.dst == kingside_square;
 
                     let rook_remove_mask = Squares::all_except(match is_kingside {
-                        true => squares::kingside_rook_start(&moved_piece.player),
-                        false => squares::queenside_rook_start(&moved_piece.player),
+                        true => squares::kingside_rook_start(moved_piece.player),
+                        false => squares::queenside_rook_start(moved_piece.player),
                     });
 
                     let rook_add_mask = match is_kingside {

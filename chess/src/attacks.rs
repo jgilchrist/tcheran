@@ -5,11 +5,11 @@ use crate::{
 
 // PERF: There are less naive approaches which would improve performance here
 
-pub fn generate_all_attacks(board: &Board, player: &Player) -> Squares {
+pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
     let mut attacks = Squares::none();
 
     let our_pieces = board.player_pieces(player).all();
-    let their_pieces = board.player_pieces(&player.other()).all();
+    let their_pieces = board.player_pieces(player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
     for square in our_pieces.iter() {
@@ -24,7 +24,7 @@ pub fn generate_all_attacks(board: &Board, player: &Player) -> Squares {
 
 fn generate_piece_attacks(
     piece_kind: PieceKind,
-    player: &Player,
+    player: Player,
     square: &Square,
     pieces: &Squares,
 ) -> Squares {
@@ -38,7 +38,7 @@ fn generate_piece_attacks(
     }
 }
 
-pub fn generate_pawn_attacks(square: &Square, player: &Player) -> Squares {
+pub fn generate_pawn_attacks(square: &Square, player: Player) -> Squares {
     let mut attacks = Squares::none();
 
     let pawn_move_direction = match player {

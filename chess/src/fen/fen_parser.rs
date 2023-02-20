@@ -131,7 +131,7 @@ fn fen_castling(input: &str) -> IResult<&str, (CastleRights, CastleRights)> {
     alt((
         value((CastleRights::none(), CastleRights::none()), tag("-")),
         map(many1(fen_castle_right), |rs| {
-            let rights: HashSet<FenCastleRight> = HashSet::from_iter(rs.iter().copied());
+            let rights: HashSet<FenCastleRight> = rs.iter().copied().collect();
 
             (
                 CastleRights {
@@ -272,6 +272,6 @@ mod tests {
 
     #[test]
     fn parse_kiwipete() {
-        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").is_ok())
+        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").is_ok());
     }
 }
