@@ -126,7 +126,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_piece_at(&self, player: Player, square: &Square) -> Option<PieceKind> {
+    pub fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
         if player_pieces.pawns.contains(square) {
@@ -147,7 +147,7 @@ impl Board {
     }
 
     #[must_use]
-    pub fn piece_at(&self, square: &Square) -> Option<Piece> {
+    pub fn piece_at(&self, square: Square) -> Option<Piece> {
         if let Some(white_piece_kind) = self.player_piece_at(Player::White, square) {
             return Some(Piece::white(white_piece_kind));
         }
@@ -165,7 +165,7 @@ impl Board {
 
         let king = self.player_pieces(player).king.single();
 
-        enemy_attacks.contains(&king)
+        enemy_attacks.contains(king)
     }
 
     // Does not consider move legality. Just concerned with the implementation details
@@ -178,10 +178,10 @@ impl Board {
     // TODO: Return info about the move (was it a capture?)
     #[allow(clippy::result_unit_err)]
     pub fn make_move(&self, mv: &Move) -> Result<(Self, ()), ()> {
-        let moved_piece = self.piece_at(&mv.src).ok_or(())?;
+        let moved_piece = self.piece_at(mv.src).ok_or(())?;
 
-        let remove_src_mask = Squares::all_except(&mv.src);
-        let remove_from_dst_mask = Squares::all_except(&mv.dst);
+        let remove_src_mask = Squares::all_except(mv.src);
+        let remove_from_dst_mask = Squares::all_except(mv.dst);
 
         let add_piece_to_dst_mask = |piece: &Piece| {
             if *piece == moved_piece {
@@ -203,7 +203,7 @@ impl Board {
 
             if let Some(promoted_to) = mv.promotion {
                 // The promoted pawn has turned into another piece
-                let remove_promoted_pawn_mask = Squares::all_except(&mv.dst);
+                let remove_promoted_pawn_mask = Squares::all_except(mv.dst);
 
                 let add_promoted_piece_mask =
                     if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
@@ -227,13 +227,13 @@ impl Board {
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
             if moved_piece.kind == PieceKind::Pawn {
-                let pawn_attacks = attacks::generate_pawn_attacks(&mv.src, moved_piece.player);
+                let pawn_attacks = attacks::generate_pawn_attacks(mv.src, moved_piece.player);
 
-                if pawn_attacks.contains(&mv.dst) {
+                if pawn_attacks.contains(mv.dst) {
                     let opponent_pieces = self.player_pieces(moved_piece.player.other()).all();
 
                     // Definitely en-passant, as we made a capture but there was no piece on that square.
-                    if !opponent_pieces.contains(&mv.dst) {
+                    if !opponent_pieces.contains(mv.dst) {
                         // Get the square that we need to remove the pawn from.
                         let inverse_pawn_move_direction = match moved_piece.player {
                             Player::White => Direction::South,
@@ -243,13 +243,13 @@ impl Board {
                         let capture_square =
                             mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
 
-                        let remove_captured_pawn_mask = Squares::all_except(&capture_square);
+                        let remove_captured_pawn_mask = Squares::all_except(capture_square);
                         new_squares &= remove_captured_pawn_mask;
                     }
                 }
             }
 
-            let king_start_square = *squares::king_start(moved_piece.player);
+            let king_start_square = squares::king_start(moved_piece.player);
 
             // PERF: Here, we figure out if the move was castling. It may be more performant to
             // tell this function that the move was castling, but it loses the cleanliness of
@@ -257,8 +257,8 @@ impl Board {
 
             // If we just moved a king from its start square, we may have castled.
             if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
-                let kingside_square = *squares::kingside_castle_dest(moved_piece.player);
-                let queenside_square = *squares::queenside_castle_dest(moved_piece.player);
+                let kingside_square = squares::kingside_castle_dest(moved_piece.player);
+                let queenside_square = squares::queenside_castle_dest(moved_piece.player);
 
                 // We're castling!
                 if mv.dst == kingside_square || mv.dst == queenside_square {
@@ -322,7 +322,7 @@ impl std::fmt::Debug for Board {
                 .rev()
                 .map(|rank| {
                     (0..8)
-                        .map(|file| match self.piece_at(&Square::from_idxs(file, rank)) {
+                        .map(|file| match self.piece_at(Square::from_idxs(file, rank)) {
                             Some(Piece { player, kind }) => match kind {
                                 PieceKind::Pawn => match player {
                                     Player::White => "♟",

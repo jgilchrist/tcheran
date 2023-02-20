@@ -37,7 +37,7 @@ impl Bitboard {
 
     #[inline(always)]
     #[must_use]
-    pub fn has_square(&self, square: &Square) -> bool {
+    pub fn has_square(&self, square: Square) -> bool {
         self.0 & square.0 .0 != 0
     }
 

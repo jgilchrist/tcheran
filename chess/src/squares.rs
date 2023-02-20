@@ -50,12 +50,12 @@ impl Squares {
     }
 
     #[must_use]
-    pub const fn all_except(square: &Square) -> Self {
+    pub const fn all_except(square: Square) -> Self {
         Self(square.0.invert())
     }
 
     #[must_use]
-    pub fn contains(&self, square: &Square) -> bool {
+    pub fn contains(&self, square: Square) -> bool {
         self.0.has_square(square)
     }
 
@@ -284,42 +284,42 @@ pub mod all {
 }
 
 #[must_use]
-pub fn king_start(player: Player) -> &'static Square {
+pub fn king_start(player: Player) -> Square {
     match player {
-        Player::White => &E1,
-        Player::Black => &E8,
+        Player::White => E1,
+        Player::Black => E8,
     }
 }
 
 #[must_use]
-pub fn kingside_rook_start(player: Player) -> &'static Square {
+pub fn kingside_rook_start(player: Player) -> Square {
     match player {
-        Player::White => &H1,
-        Player::Black => &H8,
+        Player::White => H1,
+        Player::Black => H8,
     }
 }
 
 #[must_use]
-pub fn queenside_rook_start(player: Player) -> &'static Square {
+pub fn queenside_rook_start(player: Player) -> Square {
     match player {
-        Player::White => &A1,
-        Player::Black => &A8,
+        Player::White => A1,
+        Player::Black => A8,
     }
 }
 
 #[must_use]
-pub fn kingside_castle_dest(player: Player) -> &'static Square {
+pub fn kingside_castle_dest(player: Player) -> Square {
     match player {
-        Player::White => &G1,
-        Player::Black => &G8,
+        Player::White => G1,
+        Player::Black => G8,
     }
 }
 
 #[must_use]
-pub fn queenside_castle_dest(player: Player) -> &'static Square {
+pub fn queenside_castle_dest(player: Player) -> Square {
     match player {
-        Player::White => &C1,
-        Player::Black => &C8,
+        Player::White => C1,
+        Player::Black => C8,
     }
 }
 

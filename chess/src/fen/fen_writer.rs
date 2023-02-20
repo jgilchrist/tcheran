@@ -67,7 +67,7 @@ fn format_board(board: Board) -> String {
         .map(|r| {
             FILES
                 .into_iter()
-                .map(|f| board.piece_at(&Square::from_file_and_rank(f, r)))
+                .map(|f| board.piece_at(Square::from_file_and_rank(f, r)))
                 .collect::<Vec<_>>()
         })
         .map(|r| format_rank(&r))
