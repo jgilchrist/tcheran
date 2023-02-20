@@ -7,10 +7,10 @@ use engine::uci;
 mod cli {
     use super::RunMode;
     use chess::game::Game;
-    use clap::{Parser, Subcommand};
+    use clap::{Parser, Subcommand, ValueEnum};
     use engine::{strategy::KnownStrategy, uci};
 
-    #[derive(clap::ValueEnum, Clone)]
+    #[derive(ValueEnum, Clone)]
     enum Strategy {
         Random,
         TopEval,
@@ -18,9 +18,8 @@ mod cli {
     }
 
     #[derive(Parser)]
-    #[clap()]
     struct Cli {
-        #[clap(subcommand)]
+        #[command(subcommand)]
         command: Option<Commands>,
     }
 
@@ -28,7 +27,7 @@ mod cli {
     enum Commands {
         /// Run the engine using the UCI protocol
         Uci {
-            #[clap(value_enum)]
+            #[arg(value_enum)]
             strategy: Strategy,
         },
 
