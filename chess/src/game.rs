@@ -1,5 +1,5 @@
 use crate::{
-    attacks::generate_all_attacks,
+    attacks,
     board::Board,
     direction::Direction,
     fen,
@@ -109,12 +109,12 @@ impl Game {
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
-        let enemy_attacks = generate_all_attacks(&self.board, &self.player.other());
-        let piece_to_move = self.board.player_piece_at(&self.player, &mv.src).unwrap();
+        let enemy_attacks = attacks::generate_all_attacks(&self.board, self.player.other());
+        let piece_to_move = self.board.player_piece_at(self.player, &mv.src).unwrap();
 
-        let king_start_square = *squares::king_start(&self.player);
-        let kingside_dst_square = *squares::kingside_castle_dest(&self.player);
-        let queenside_dst_square = *squares::queenside_castle_dest(&self.player);
+        let king_start_square = *squares::king_start(self.player);
+        let kingside_dst_square = *squares::kingside_castle_dest(self.player);
+        let queenside_dst_square = *squares::queenside_castle_dest(self.player);
 
         if piece_to_move == PieceKind::King
             // PERF: Don't create these moves on every single request
@@ -157,11 +157,7 @@ impl Game {
             }
         }
 
-        !self
-            .make_move(mv)
-            .unwrap()
-            .board
-            .king_in_check(&self.player)
+        !self.make_move(mv).unwrap().board.king_in_check(self.player)
     }
 
     #[allow(unused)]
@@ -176,7 +172,7 @@ impl Game {
 
         let piece_to_move = self
             .board
-            .player_piece_at(&self.player, &from)
+            .player_piece_at(self.player, &from)
             .ok_or(MoveError::InvalidMove)?;
 
         let dst_square_occupation = self.board.piece_at(&to);
@@ -213,7 +209,7 @@ impl Game {
         {
             let to_square = Squares::from_square(to);
             let en_passant_attacker_squares = to_square.west() | to_square.east();
-            let enemy_pawns = self.board.player_pieces(&self.player.other()).pawns;
+            let enemy_pawns = self.board.player_pieces(self.player.other()).pawns;
             let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
 
             if en_passant_can_happen {
@@ -228,12 +224,12 @@ impl Game {
         // FIXME: We update the castle rights when any piece moves off of/onto
         // the appropriate squares. This makes for simpler code, but will end up
         // copying CastleRights more than we need to.
-        let castle_rights = |player: &Player, castle_rights: &CastleRights| {
+        let castle_rights = |player: Player, castle_rights: &CastleRights| {
             let our_king_start = *squares::king_start(player);
             let our_kingside_rook = *squares::kingside_rook_start(player);
             let our_queenside_rook = *squares::queenside_rook_start(player);
 
-            if self.player == *player {
+            if self.player == player {
                 match mv.src {
                     s if s == our_king_start => CastleRights::none(),
                     s if s == our_kingside_rook => castle_rights.without_kingside(),
@@ -249,8 +245,8 @@ impl Game {
             }
         };
 
-        let white_castle_rights = castle_rights(&Player::White, &self.white_castle_rights);
-        let black_castle_rights = castle_rights(&Player::Black, &self.black_castle_rights);
+        let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
+        let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
 
         Ok(Self {
             board,

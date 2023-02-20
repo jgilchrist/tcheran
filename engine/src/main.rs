@@ -1,5 +1,10 @@
-#![warn(clippy::pedantic)]
-#![warn(clippy::nursery)]
+#![warn(clippy::pedantic, clippy::nursery)]
+#![allow(
+    clippy::wildcard_imports,
+    clippy::missing_errors_doc,
+    clippy::option_if_let_else,
+    clippy::module_name_repetitions
+)]
 
 use anyhow::Result;
 use chess::game::Game;

@@ -5,7 +5,7 @@ use crate::{
     square::{Square, FILES, RANKS},
 };
 
-fn format_piece(piece: Piece) -> char {
+const fn format_piece(piece: Piece) -> char {
     match piece {
         Piece::WHITE_ROOK => 'R',
         Piece::WHITE_KNIGHT => 'N',
@@ -22,7 +22,7 @@ fn format_piece(piece: Piece) -> char {
     }
 }
 
-fn format_rank(rank: Vec<Option<Piece>>) -> String {
+fn format_rank(rank: &[Option<Piece>]) -> String {
     let state = rank
         .iter()
         .fold((String::new(), 0), |acc, piece| match piece {
@@ -70,7 +70,7 @@ fn format_board(board: Board) -> String {
                 .map(|f| board.piece_at(&Square::from_file_and_rank(f, r)))
                 .collect::<Vec<_>>()
         })
-        .map(format_rank)
+        .map(|r| format_rank(&r))
         .collect::<Vec<String>>()
         .join("/")
 }

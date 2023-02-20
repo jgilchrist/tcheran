@@ -284,7 +284,7 @@ pub mod all {
 }
 
 #[must_use]
-pub fn king_start(player: &Player) -> &Square {
+pub fn king_start(player: Player) -> &'static Square {
     match player {
         Player::White => &E1,
         Player::Black => &E8,
@@ -292,7 +292,7 @@ pub fn king_start(player: &Player) -> &Square {
 }
 
 #[must_use]
-pub fn kingside_rook_start(player: &Player) -> &Square {
+pub fn kingside_rook_start(player: Player) -> &'static Square {
     match player {
         Player::White => &H1,
         Player::Black => &H8,
@@ -300,7 +300,7 @@ pub fn kingside_rook_start(player: &Player) -> &Square {
 }
 
 #[must_use]
-pub fn queenside_rook_start(player: &Player) -> &Square {
+pub fn queenside_rook_start(player: Player) -> &'static Square {
     match player {
         Player::White => &A1,
         Player::Black => &A8,
@@ -308,7 +308,7 @@ pub fn queenside_rook_start(player: &Player) -> &Square {
 }
 
 #[must_use]
-pub fn kingside_castle_dest(player: &Player) -> &Square {
+pub fn kingside_castle_dest(player: Player) -> &'static Square {
     match player {
         Player::White => &G1,
         Player::Black => &G8,
@@ -316,7 +316,7 @@ pub fn kingside_castle_dest(player: &Player) -> &Square {
 }
 
 #[must_use]
-pub fn queenside_castle_dest(player: &Player) -> &Square {
+pub fn queenside_castle_dest(player: Player) -> &'static Square {
     match player {
         Player::White => &C1,
         Player::Black => &C8,

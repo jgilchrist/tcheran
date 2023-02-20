@@ -27,8 +27,8 @@ pub fn generate_moves(game: &Game) -> Vec<Move> {
 }
 
 fn get_ctx(game: &Game) -> Ctx {
-    let our_pieces = game.board.player_pieces(&game.player).all();
-    let their_pieces = game.board.player_pieces(&game.player.other()).all();
+    let our_pieces = game.board.player_pieces(game.player).all();
+    let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
     Ctx {
@@ -39,7 +39,7 @@ fn get_ctx(game: &Game) -> Ctx {
 }
 
 fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let pawns = game.board.player_pieces(&game.player).pawns;
+    let pawns = game.board.player_pieces(game.player).pawns;
 
     let pawn_move_direction = match game.player {
         Player::White => Direction::North,
@@ -129,7 +129,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let knights = game.board.player_pieces(&game.player).knights;
+    let knights = game.board.player_pieces(game.player).knights;
 
     for start in knights.iter() {
         // Going clockwise, starting at 12
@@ -184,7 +184,7 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let bishops = game.board.player_pieces(&game.player).bishops;
+    let bishops = game.board.player_pieces(game.player).bishops;
 
     for bishop in bishops.iter() {
         for direction in Direction::DIAGONAL {
@@ -212,7 +212,7 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let rooks = game.board.player_pieces(&game.player).rooks;
+    let rooks = game.board.player_pieces(game.player).rooks;
 
     for rook in rooks.iter() {
         for direction in Direction::CARDINAL {
@@ -240,7 +240,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let queens = game.board.player_pieces(&game.player).queen;
+    let queens = game.board.player_pieces(game.player).queen;
 
     for queen in queens.iter() {
         for direction in Direction::ALL {
@@ -268,7 +268,7 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let king = game.board.player_pieces(&game.player).king.single();
+    let king = game.board.player_pieces(game.player).king.single();
 
     for direction in Direction::ALL {
         if let Some(dst) = king.in_direction(direction) {
@@ -285,7 +285,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         Player::Black => game.black_castle_rights,
     };
 
-    let king_start_square = squares::king_start(&game.player);
+    let king_start_square = squares::king_start(game.player);
 
     if king == *king_start_square && castle_rights_for_player.can_castle() {
         if castle_rights_for_player.king_side {
@@ -299,10 +299,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
                 .all(|s| !ctx.all_pieces.contains(s));
 
             if path_to_castle_is_empty {
-                moves.push(Move::new(
-                    king,
-                    *squares::kingside_castle_dest(&game.player),
-                ));
+                moves.push(Move::new(king, *squares::kingside_castle_dest(game.player)));
             }
         }
 
@@ -319,7 +316,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
             if path_to_castle_is_empty {
                 moves.push(Move::new(
                     king,
-                    *squares::queenside_castle_dest(&game.player),
+                    *squares::queenside_castle_dest(game.player),
                 ));
             }
         }
