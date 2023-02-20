@@ -55,8 +55,8 @@ impl Squares {
     }
 
     #[must_use]
-    pub const fn contains(&self, square: Square) -> bool {
-        self.0.has_square(square)
+    pub fn contains(&self, square: Square) -> bool {
+        !(*self & square).is_empty()
     }
 
     #[must_use]

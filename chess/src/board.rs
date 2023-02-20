@@ -126,7 +126,7 @@ impl Board {
     }
 
     #[must_use]
-    pub const fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
+    pub fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
         let player_pieces = self.player_pieces(player);
 
         if player_pieces.pawns.contains(square) {
@@ -147,7 +147,7 @@ impl Board {
     }
 
     #[must_use]
-    pub const fn piece_at(&self, square: Square) -> Option<Piece> {
+    pub fn piece_at(&self, square: Square) -> Option<Piece> {
         if let Some(white_piece_kind) = self.player_piece_at(Player::White, square) {
             return Some(Piece::white(white_piece_kind));
         }
