@@ -1,0 +1,8 @@
+[package]
+name = "uciproxy"
+version = "0.0.0"
+edition = "2021"
+
+[dependencies]
+anyhow = "1.0.56"
+message-io = "0.14.6"

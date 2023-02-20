@@ -12,12 +12,17 @@ use anyhow::Result;
 use engine::log::log;
 
 mod cli {
+    use std::{io::BufWriter, net::TcpStream};
+
     use anyhow::Result;
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
     use engine::{
         strategy::{self, KnownStrategy},
-        uci,
+        uci::{
+            self,
+            comms::{LocalComms, RemoteComms},
+        },
     };
 
     use engine::perft;
@@ -42,6 +47,9 @@ mod cli {
         Uci {
             #[arg(value_enum)]
             strategy: Strategy,
+
+            #[arg(long)]
+            remote: bool,
         },
 
         /// Run in out-of-process engine mode
@@ -64,7 +72,7 @@ mod cli {
 
     pub fn run(cmd: Commands) -> Result<()> {
         match cmd {
-            Commands::Uci { strategy } => {
+            Commands::Uci { strategy, remote } => {
                 let known_strategy = match strategy {
                     Strategy::Main => KnownStrategy::Main,
                     Strategy::Random => KnownStrategy::Random,
@@ -73,7 +81,17 @@ mod cli {
                 };
 
                 let strategy = known_strategy.create();
-                uci::uci(strategy)
+
+                // TODO: Move this code into comms
+                if remote {
+                    let stream = TcpStream::connect("localhost:3001").unwrap();
+                    let writer = BufWriter::new(stream.try_clone().unwrap());
+                    let mut comms = RemoteComms { stream, writer };
+                    uci::uci(&mut comms, strategy)
+                } else {
+                    let mut comms = LocalComms {};
+                    uci::uci(&mut comms, strategy)
+                }
             }
             Commands::OutOfProcess => {
                 engine::strategy::run_out_of_process_engine(strategy::KnownStrategy::Main.create())
@@ -110,5 +128,6 @@ fn main() -> Result<()> {
     let args = cli::parse_cli();
     cli::run(args.command.unwrap_or(cli::Commands::Uci {
         strategy: cli::Strategy::Main,
+        remote: false,
     }))
 }
