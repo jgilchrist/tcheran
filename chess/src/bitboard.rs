@@ -1,5 +1,4 @@
 use crate::direction::Direction;
-use crate::square::Square;
 
 // TODO: Try removing Copy so that clones have to be explicit
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -19,12 +18,6 @@ impl Bitboard {
     #[must_use]
     pub const fn full() -> Self {
         Self(u64::MAX)
-    }
-
-    #[inline(always)]
-    #[must_use]
-    pub const fn has_square(&self, square: Square) -> bool {
-        self.0 & square.0 .0 != 0
     }
 
     #[inline(always)]
