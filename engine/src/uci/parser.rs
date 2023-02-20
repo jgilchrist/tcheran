@@ -67,7 +67,7 @@ fn uci_rank(input: &str) -> IResult<&str, Rank> {
 
 fn uci_square(input: &str) -> IResult<&str, Square> {
     map(pair(uci_file, uci_rank), |(file, rank)| {
-        Square::new(file, rank)
+        Square::from_file_and_rank(file, rank)
     })(input)
 }
 

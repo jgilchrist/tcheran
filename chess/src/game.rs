@@ -1,6 +1,5 @@
 use crate::{
     attacks::generate_all_attacks,
-    bitboard,
     board::Board,
     direction::Direction,
     fen,
@@ -8,10 +7,8 @@ use crate::{
     moves::Move,
     piece::PieceKind,
     player::Player,
-    square::{
-        squares::{self, *},
-        Square,
-    },
+    square::Square,
+    squares::{self, all::*, Squares},
 };
 use anyhow::Result;
 
@@ -117,7 +114,7 @@ impl Game {
                 || *mv == Move::new(king_start_square, queenside_dst_square))
         {
             // If the king is in check, it cannot castle
-            if enemy_attacks.has_square(&king_start_square) {
+            if enemy_attacks.contains(&king_start_square) {
                 return false;
             }
 
@@ -131,7 +128,7 @@ impl Game {
 
                 if kingside_required_not_attacked_squares
                     .iter()
-                    .any(|s| enemy_attacks.has_square(s))
+                    .any(|s| enemy_attacks.contains(s))
                 {
                     return false;
                 }
@@ -145,7 +142,7 @@ impl Game {
 
                 if queenside_required_not_attacked_squares
                     .iter()
-                    .any(|s| enemy_attacks.has_square(s))
+                    .any(|s| enemy_attacks.contains(s))
                 {
                     return false;
                 }
@@ -194,20 +191,20 @@ impl Game {
         };
 
         let back_rank = match self.player {
-            Player::White => bitboard::known::RANK_2,
-            Player::Black => bitboard::known::RANK_7,
+            Player::White => squares::RANK_2,
+            Player::Black => squares::RANK_7,
         };
 
         let en_passant_target = if piece_to_move == PieceKind::Pawn
-            && back_rank.has_square(&from)
+            && back_rank.contains(&from)
             && to
                 == from
                     .in_direction(&pawn_move_direction)
                     .and_then(|s| s.in_direction(&pawn_move_direction))
                     .unwrap()
         {
-            let to_bb = to.bitboard();
-            let en_passant_attacker_squares = to_bb.west() | to_bb.east();
+            let to_square = Squares::from_square(to);
+            let en_passant_attacker_squares = to_square.west() | to_square.east();
             let enemy_pawns = self.board.player_pieces(&self.player.other()).pawns;
             let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
 

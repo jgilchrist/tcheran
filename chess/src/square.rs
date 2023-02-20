@@ -159,35 +159,43 @@ impl std::fmt::Display for Rank {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Square(pub u64);
+pub struct Square(pub Bitboard);
 
 impl Square {
-    pub const fn new(file: File, rank: Rank) -> Self {
-        Square::from_idxs(file.idx(), rank.idx())
+    pub const fn from_file_and_rank(file: File, rank: Rank) -> Self {
+        Self::from_idxs(file.idx(), rank.idx())
     }
 
-    pub const fn from_bitboard(bitboard: &Bitboard) -> Square {
-        debug_assert!(bitboard.count() == 1);
-        Square(bitboard.0)
+    pub fn from_bitboard(bitboard: Bitboard) -> Self {
+        assert_eq!(bitboard.count(), 1);
+        Self(bitboard)
     }
 
-    pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Square {
-        Square(1 << (rank_idx * 8 + file_idx))
+    fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
+        match bitboard.count() {
+            0 => None,
+            1 => Some(Self(bitboard)),
+            _ => panic!("Should have had 0 or 1 bits in bitboard."),
+        }
+    }
+
+    pub const fn from_index(idx: u8) -> Self {
+        Self(Bitboard::new(1 << idx))
+    }
+
+    pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Self {
+        let idx = rank_idx * 8 + file_idx;
+        Self::from_index(idx)
     }
 
     #[inline(always)]
     fn rank(&self) -> Rank {
-        Rank::from_idx((self.0.trailing_zeros() / 8) as u8)
+        Rank::from_idx(self.0.trailing_zeros() / 8)
     }
 
     #[inline(always)]
     fn file(&self) -> File {
-        File::from_idx((self.0.trailing_zeros() % 8) as u8)
-    }
-
-    // TODO: Remove this
-    pub fn bitboard(&self) -> Bitboard {
-        Bitboard::new(self.0)
+        File::from_idx(self.0.trailing_zeros() % 8)
     }
 
     pub fn notation(&self) -> String {
@@ -195,7 +203,7 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn in_direction(&self, direction: &Direction) -> Option<Square> {
+    pub fn in_direction(&self, direction: &Direction) -> Option<Self> {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -209,157 +217,43 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn north(&self) -> Option<Square> {
-        self.bitboard().north().to_square()
+    pub fn north(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.north())
     }
 
     #[inline(always)]
-    pub fn south(&self) -> Option<Square> {
-        self.bitboard().south().to_square()
+    pub fn south(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.south())
     }
 
     #[inline(always)]
-    pub fn east(&self) -> Option<Square> {
-        self.bitboard().east().to_square()
+    pub fn east(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.east())
     }
 
     #[inline(always)]
-    pub fn north_east(&self) -> Option<Square> {
-        self.bitboard().north_east().to_square()
+    pub fn north_east(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.north_east())
     }
 
     #[inline(always)]
-    pub fn south_east(&self) -> Option<Square> {
-        self.bitboard().south_east().to_square()
+    pub fn south_east(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.south_east())
     }
 
     #[inline(always)]
-    pub fn west(&self) -> Option<Square> {
-        self.bitboard().west().to_square()
+    pub fn west(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.west())
     }
 
     #[inline(always)]
-    pub fn south_west(&self) -> Option<Square> {
-        self.bitboard().south_west().to_square()
+    pub fn south_west(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.south_west())
     }
 
     #[inline(always)]
-    pub fn north_west(&self) -> Option<Square> {
-        self.bitboard().north_west().to_square()
-    }
-}
-
-pub mod squares {
-    use crate::player::Player;
-
-    use super::{File, Rank, Square};
-
-    // For convenience
-    pub const A1: Square = Square::new(File::A, Rank::R1);
-    pub const A2: Square = Square::new(File::A, Rank::R2);
-    pub const A3: Square = Square::new(File::A, Rank::R3);
-    pub const A4: Square = Square::new(File::A, Rank::R4);
-    pub const A5: Square = Square::new(File::A, Rank::R5);
-    pub const A6: Square = Square::new(File::A, Rank::R6);
-    pub const A7: Square = Square::new(File::A, Rank::R7);
-    pub const A8: Square = Square::new(File::A, Rank::R8);
-
-    pub const B1: Square = Square::new(File::B, Rank::R1);
-    pub const B2: Square = Square::new(File::B, Rank::R2);
-    pub const B3: Square = Square::new(File::B, Rank::R3);
-    pub const B4: Square = Square::new(File::B, Rank::R4);
-    pub const B5: Square = Square::new(File::B, Rank::R5);
-    pub const B6: Square = Square::new(File::B, Rank::R6);
-    pub const B7: Square = Square::new(File::B, Rank::R7);
-    pub const B8: Square = Square::new(File::B, Rank::R8);
-
-    pub const C1: Square = Square::new(File::C, Rank::R1);
-    pub const C2: Square = Square::new(File::C, Rank::R2);
-    pub const C3: Square = Square::new(File::C, Rank::R3);
-    pub const C4: Square = Square::new(File::C, Rank::R4);
-    pub const C5: Square = Square::new(File::C, Rank::R5);
-    pub const C6: Square = Square::new(File::C, Rank::R6);
-    pub const C7: Square = Square::new(File::C, Rank::R7);
-    pub const C8: Square = Square::new(File::C, Rank::R8);
-
-    pub const D1: Square = Square::new(File::D, Rank::R1);
-    pub const D2: Square = Square::new(File::D, Rank::R2);
-    pub const D3: Square = Square::new(File::D, Rank::R3);
-    pub const D4: Square = Square::new(File::D, Rank::R4);
-    pub const D5: Square = Square::new(File::D, Rank::R5);
-    pub const D6: Square = Square::new(File::D, Rank::R6);
-    pub const D7: Square = Square::new(File::D, Rank::R7);
-    pub const D8: Square = Square::new(File::D, Rank::R8);
-
-    pub const E1: Square = Square::new(File::E, Rank::R1);
-    pub const E2: Square = Square::new(File::E, Rank::R2);
-    pub const E3: Square = Square::new(File::E, Rank::R3);
-    pub const E4: Square = Square::new(File::E, Rank::R4);
-    pub const E5: Square = Square::new(File::E, Rank::R5);
-    pub const E6: Square = Square::new(File::E, Rank::R6);
-    pub const E7: Square = Square::new(File::E, Rank::R7);
-    pub const E8: Square = Square::new(File::E, Rank::R8);
-
-    pub const F1: Square = Square::new(File::F, Rank::R1);
-    pub const F2: Square = Square::new(File::F, Rank::R2);
-    pub const F3: Square = Square::new(File::F, Rank::R3);
-    pub const F4: Square = Square::new(File::F, Rank::R4);
-    pub const F5: Square = Square::new(File::F, Rank::R5);
-    pub const F6: Square = Square::new(File::F, Rank::R6);
-    pub const F7: Square = Square::new(File::F, Rank::R7);
-    pub const F8: Square = Square::new(File::F, Rank::R8);
-
-    pub const G1: Square = Square::new(File::G, Rank::R1);
-    pub const G2: Square = Square::new(File::G, Rank::R2);
-    pub const G3: Square = Square::new(File::G, Rank::R3);
-    pub const G4: Square = Square::new(File::G, Rank::R4);
-    pub const G5: Square = Square::new(File::G, Rank::R5);
-    pub const G6: Square = Square::new(File::G, Rank::R6);
-    pub const G7: Square = Square::new(File::G, Rank::R7);
-    pub const G8: Square = Square::new(File::G, Rank::R8);
-
-    pub const H1: Square = Square::new(File::H, Rank::R1);
-    pub const H2: Square = Square::new(File::H, Rank::R2);
-    pub const H3: Square = Square::new(File::H, Rank::R3);
-    pub const H4: Square = Square::new(File::H, Rank::R4);
-    pub const H5: Square = Square::new(File::H, Rank::R5);
-    pub const H6: Square = Square::new(File::H, Rank::R6);
-    pub const H7: Square = Square::new(File::H, Rank::R7);
-    pub const H8: Square = Square::new(File::H, Rank::R8);
-
-    pub fn king_start(player: &Player) -> &Square {
-        match player {
-            Player::White => &E1,
-            Player::Black => &E8,
-        }
-    }
-
-    pub fn kingside_rook_start(player: &Player) -> &Square {
-        match player {
-            Player::White => &H1,
-            Player::Black => &H8,
-        }
-    }
-
-    pub fn queenside_rook_start(player: &Player) -> &Square {
-        match player {
-            Player::White => &A1,
-            Player::Black => &A8,
-        }
-    }
-
-    pub fn kingside_castle_dest(player: &Player) -> &Square {
-        match player {
-            Player::White => &G1,
-            Player::Black => &G8,
-        }
-    }
-
-    pub fn queenside_castle_dest(player: &Player) -> &Square {
-        match player {
-            Player::White => &C1,
-            Player::Black => &C8,
-        }
+    pub fn north_west(&self) -> Option<Self> {
+        Self::from_bitboard_maybe(self.0.north_west())
     }
 }
 
@@ -372,5 +266,29 @@ impl std::fmt::Debug for Square {
 impl std::fmt::Display for Square {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.notation())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::squares::all::*;
+
+    #[test]
+    fn square_from_index() {
+        assert_eq!(Square::from_index(0), A1);
+        assert_eq!(Square::from_index(63), H8);
+    }
+
+    #[test]
+    fn square_from_idxs() {
+        assert_eq!(Square::from_idxs(0, 0), A1);
+        assert_eq!(Square::from_idxs(7, 7), H8);
+    }
+
+    #[test]
+    fn square_from_file_and_rank() {
+        assert_eq!(Square::from_file_and_rank(File::A, Rank::R1), A1);
+        assert_eq!(Square::from_file_and_rank(File::H, Rank::R8), H8);
     }
 }

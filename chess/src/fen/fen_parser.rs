@@ -187,7 +187,7 @@ fn fen_rank(input: &str) -> IResult<&str, Rank> {
 
 fn fen_square(input: &str) -> IResult<&str, Square> {
     map(pair(fen_file, fen_rank), |(file, rank)| {
-        Square::new(file, rank)
+        Square::from_file_and_rank(file, rank)
     })(input)
 }
 
@@ -246,7 +246,28 @@ mod tests {
 
     #[test]
     fn parse_startpos() {
-        assert!(parse("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1").is_ok())
+        let game_result = parse("rnbqkbnr/pppppppp/8/8/8/8/PPPPPPPP/RNBQKBNR w KQkq - 0 1");
+        assert!(game_result.is_ok());
+
+        let game = game_result.unwrap();
+        let default_game = Game::default();
+
+        dbg!(&game);
+        dbg!(&default_game);
+
+        assert!(game.board.white_pieces.pawns == default_game.board.white_pieces.pawns);
+        assert!(game.board.white_pieces.knights == default_game.board.white_pieces.knights);
+        assert!(game.board.white_pieces.bishops == default_game.board.white_pieces.bishops);
+        assert!(game.board.white_pieces.rooks == default_game.board.white_pieces.rooks);
+        assert!(game.board.white_pieces.queen == default_game.board.white_pieces.queen);
+        assert!(game.board.white_pieces.king == default_game.board.white_pieces.king);
+
+        assert!(game.board.black_pieces.pawns == default_game.board.black_pieces.pawns);
+        assert!(game.board.black_pieces.knights == default_game.board.black_pieces.knights);
+        assert!(game.board.black_pieces.bishops == default_game.board.black_pieces.bishops);
+        assert!(game.board.black_pieces.rooks == default_game.board.black_pieces.rooks);
+        assert!(game.board.black_pieces.queen == default_game.board.black_pieces.queen);
+        assert!(game.board.black_pieces.king == default_game.board.black_pieces.king);
     }
 
     #[test]
