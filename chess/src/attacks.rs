@@ -108,7 +108,7 @@ fn generate_bishop_attacks(square: &Square, pieces: &Bitboard) -> Bitboard {
 }
 
 fn generate_rook_attacks(square: &Square, pieces: &Bitboard) -> Bitboard {
-    generate_sliding_attacks(square, Direction::NON_DIAGONAL, pieces)
+    generate_sliding_attacks(square, Direction::CARDINAL, pieces)
 }
 
 fn generate_queen_attacks(square: &Square, pieces: &Bitboard) -> Bitboard {

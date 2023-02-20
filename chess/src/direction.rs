@@ -22,8 +22,7 @@ impl Direction {
         Direction::NorthWest,
     ];
 
-    // TODO: Naming?
-    pub const NON_DIAGONAL: &'static [Direction; 4] = &[
+    pub const CARDINAL: &'static [Direction; 4] = &[
         Direction::North,
         Direction::East,
         Direction::South,
