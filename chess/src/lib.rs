@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+
 pub mod bitboard;
 pub mod board;
 pub mod consts;

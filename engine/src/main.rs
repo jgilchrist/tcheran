@@ -1,3 +1,6 @@
+#![warn(clippy::pedantic)]
+#![warn(clippy::nursery)]
+
 use anyhow::Result;
 use chess::game::Game;
 use engine::log::log;
