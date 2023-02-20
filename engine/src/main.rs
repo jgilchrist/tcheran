@@ -126,7 +126,7 @@ fn perft_div(depth: u8, game: &Game) {
         let number_for_mv = perft(depth - 1, &game.make_move(&mv).unwrap());
 
         println!("{mv:?} {number_for_mv}");
-        all += number_for_mv
+        all += number_for_mv;
     }
 
     println!();

@@ -104,7 +104,7 @@ pub fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
     separated_list1(space1, uci_move)(input)
 }
 
-fn command_with_argument<'a, F: 'a, G: 'a, OInner, O, E: ParseError<&'a str>>(
+fn command_with_argument<'a, F, G, OInner, O, E: ParseError<&'a str>>(
     cmd: &'static str,
     argument_combinator: F,
     map_argument_fn: G,

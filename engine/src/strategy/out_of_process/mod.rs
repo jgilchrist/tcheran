@@ -27,7 +27,7 @@ pub struct OutOfProcessEngineStrategy {
 impl Strategy for OutOfProcessEngineStrategy {
     fn next_move(&mut self, game: &Game) -> Move {
         self.conn
-            .with_connected_client(|client| client.go(game.clone()).unwrap())
+            .with_connected_client(|client| client.go(&game.clone()).unwrap())
     }
 }
 
@@ -54,10 +54,10 @@ impl OutOfProcessConnectionManager {
                     c.init().unwrap();
                     self.client = Some(c);
                     return run_fn(self.client.as_mut().unwrap());
-                } else {
-                    log("Unable to connect");
-                    std::thread::sleep(Duration::from_secs(1));
                 }
+
+                log("Unable to connect");
+                std::thread::sleep(Duration::from_secs(1));
             },
         }
     }
@@ -110,7 +110,7 @@ impl OutOfProcessEngineClient {
             .map(|_| ())
     }
 
-    pub fn go(&mut self, game: Game) -> Result<Move, Status> {
+    pub fn go(&mut self, game: &Game) -> Result<Move, Status> {
         self.runtime
             .block_on(
                 self.client
