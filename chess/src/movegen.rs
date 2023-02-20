@@ -63,7 +63,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         let forward_one = start.in_direction(&pawn_move_direction);
 
         if let Some(dst) = forward_one {
-            if !ctx.all_pieces.contains(&dst) {
+            if !ctx.all_pieces.contains(dst) {
                 match will_promote {
                     false => moves.push(Move::new(start, dst)),
                     true => {
@@ -79,7 +79,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         let capture_left = forward_one.and_then(|s| s.west());
 
         if let Some(dst) = capture_left {
-            if ctx.their_pieces.contains(&dst) || game.en_passant_target == Some(dst) {
+            if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
                 match will_promote {
                     false => moves.push(Move::new(start, dst)),
                     true => {
@@ -94,7 +94,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         let capture_right = forward_one.and_then(|s| s.east());
 
         if let Some(dst) = capture_right {
-            if ctx.their_pieces.contains(&dst) || game.en_passant_target == Some(dst) {
+            if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
                 match will_promote {
                     false => moves.push(Move::new(start, dst)),
                     true => {
@@ -112,7 +112,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         let forward_one = start.in_direction(&pawn_move_direction);
 
         if let Some(forward_one) = forward_one {
-            if ctx.all_pieces.contains(&forward_one) {
+            if ctx.all_pieces.contains(forward_one) {
                 // Cannot jump over pieces
                 continue;
             }
@@ -120,7 +120,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
             let forward_two = forward_one.in_direction(&pawn_move_direction);
 
             if let Some(forward_two) = forward_two {
-                if !ctx.all_pieces.contains(&forward_two) {
+                if !ctx.all_pieces.contains(forward_two) {
                     moves.push(Move::new(start, forward_two));
                 }
             }
@@ -134,49 +134,49 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     for start in knights.iter() {
         // Going clockwise, starting at 12
         if let Some(nne) = start.north().and_then(|s| s.north_east()) {
-            if !ctx.our_pieces.contains(&nne) {
+            if !ctx.our_pieces.contains(nne) {
                 moves.push(Move::new(start, nne));
             }
         }
 
         if let Some(een) = start.east().and_then(|s| s.north_east()) {
-            if !ctx.our_pieces.contains(&een) {
+            if !ctx.our_pieces.contains(een) {
                 moves.push(Move::new(start, een));
             }
         }
 
         if let Some(ees) = start.east().and_then(|s| s.south_east()) {
-            if !ctx.our_pieces.contains(&ees) {
+            if !ctx.our_pieces.contains(ees) {
                 moves.push(Move::new(start, ees));
             }
         }
 
         if let Some(sse) = start.south().and_then(|s| s.south_east()) {
-            if !ctx.our_pieces.contains(&sse) {
+            if !ctx.our_pieces.contains(sse) {
                 moves.push(Move::new(start, sse));
             }
         }
 
         if let Some(ssw) = start.south().and_then(|s| s.south_west()) {
-            if !ctx.our_pieces.contains(&ssw) {
+            if !ctx.our_pieces.contains(ssw) {
                 moves.push(Move::new(start, ssw));
             }
         }
 
         if let Some(wws) = start.west().and_then(|s| s.south_west()) {
-            if !ctx.our_pieces.contains(&wws) {
+            if !ctx.our_pieces.contains(wws) {
                 moves.push(Move::new(start, wws));
             }
         }
 
         if let Some(wwn) = start.west().and_then(|s| s.north_west()) {
-            if !ctx.our_pieces.contains(&wwn) {
+            if !ctx.our_pieces.contains(wwn) {
                 moves.push(Move::new(start, wwn));
             }
         }
 
         if let Some(nnw) = start.north().and_then(|s| s.north_west()) {
-            if !ctx.our_pieces.contains(&nnw) {
+            if !ctx.our_pieces.contains(nnw) {
                 moves.push(Move::new(start, nnw));
             }
         }
@@ -195,12 +195,12 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
                 current_square = dst;
 
                 // Blocked by our piece
-                if ctx.our_pieces.contains(&dst) {
+                if ctx.our_pieces.contains(dst) {
                     break;
                 }
 
                 // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(&dst) {
+                if ctx.their_pieces.contains(dst) {
                     moves.push(Move::new(bishop, dst));
                     break;
                 }
@@ -223,12 +223,12 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
                 current_square = dst;
 
                 // Blocked by our piece
-                if ctx.our_pieces.contains(&dst) {
+                if ctx.our_pieces.contains(dst) {
                     break;
                 }
 
                 // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(&dst) {
+                if ctx.their_pieces.contains(dst) {
                     moves.push(Move::new(rook, dst));
                     break;
                 }
@@ -251,12 +251,12 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
                 current_square = dst;
 
                 // Blocked by our piece
-                if ctx.our_pieces.contains(&dst) {
+                if ctx.our_pieces.contains(dst) {
                     break;
                 }
 
                 // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(&dst) {
+                if ctx.their_pieces.contains(dst) {
                     moves.push(Move::new(queen, dst));
                     break;
                 }
@@ -272,7 +272,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     for direction in Direction::ALL {
         if let Some(dst) = king.in_direction(direction) {
-            if ctx.our_pieces.contains(&dst) {
+            if ctx.our_pieces.contains(dst) {
                 continue;
             }
 
@@ -287,7 +287,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     let king_start_square = squares::king_start(game.player);
 
-    if king == *king_start_square && castle_rights_for_player.can_castle() {
+    if king == king_start_square && castle_rights_for_player.can_castle() {
         if castle_rights_for_player.king_side {
             let kingside_required_empty_squares = match game.player {
                 Player::White => vec![F1, G1],
@@ -296,10 +296,10 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
             let path_to_castle_is_empty = kingside_required_empty_squares
                 .iter()
-                .all(|s| !ctx.all_pieces.contains(s));
+                .all(|&s| !ctx.all_pieces.contains(s));
 
             if path_to_castle_is_empty {
-                moves.push(Move::new(king, *squares::kingside_castle_dest(game.player)));
+                moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
             }
         }
 
@@ -311,13 +311,10 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
             let path_to_castle_is_empty = queenside_required_empty_squares
                 .iter()
-                .all(|s| !ctx.all_pieces.contains(s));
+                .all(|&s| !ctx.all_pieces.contains(s));
 
             if path_to_castle_is_empty {
-                moves.push(Move::new(
-                    king,
-                    *squares::queenside_castle_dest(game.player),
-                ));
+                moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
             }
         }
     }

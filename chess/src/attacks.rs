@@ -14,9 +14,9 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
 
     for square in our_pieces.iter() {
         let piece_kind = board
-            .player_piece_at(player, &square)
+            .player_piece_at(player, square)
             .expect("Unable to find piece on square it should be on.");
-        attacks |= generate_piece_attacks(piece_kind, player, &square, &all_pieces);
+        attacks |= generate_piece_attacks(piece_kind, player, square, all_pieces);
     }
 
     attacks
@@ -25,8 +25,8 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
 fn generate_piece_attacks(
     piece_kind: PieceKind,
     player: Player,
-    square: &Square,
-    pieces: &Squares,
+    square: Square,
+    pieces: Squares,
 ) -> Squares {
     match piece_kind {
         PieceKind::Pawn => generate_pawn_attacks(square, player),
@@ -38,7 +38,7 @@ fn generate_piece_attacks(
     }
 }
 
-pub fn generate_pawn_attacks(square: &Square, player: Player) -> Squares {
+pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
     let mut attacks = Squares::none();
 
     let pawn_move_direction = match player {
@@ -64,7 +64,7 @@ pub fn generate_pawn_attacks(square: &Square, player: Player) -> Squares {
     attacks
 }
 
-fn generate_knight_attacks(square: &Square) -> Squares {
+fn generate_knight_attacks(square: Square) -> Squares {
     let mut attacks = Squares::none();
 
     // Going clockwise, starting at 12
@@ -103,27 +103,23 @@ fn generate_knight_attacks(square: &Square) -> Squares {
     attacks
 }
 
-fn generate_bishop_attacks(square: &Square, pieces: &Squares) -> Squares {
+fn generate_bishop_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::DIAGONAL, pieces)
 }
 
-fn generate_rook_attacks(square: &Square, pieces: &Squares) -> Squares {
+fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::CARDINAL, pieces)
 }
 
-fn generate_queen_attacks(square: &Square, pieces: &Squares) -> Squares {
+fn generate_queen_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::ALL, pieces)
 }
 
-fn generate_sliding_attacks(
-    square: &Square,
-    directions: &[Direction],
-    pieces: &Squares,
-) -> Squares {
+fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Squares) -> Squares {
     let mut attacks = Squares::none();
 
     for direction in directions {
-        let mut current_square = *square;
+        let mut current_square = square;
 
         // Until we're off the board
         while let Some(dst) = current_square.in_direction(direction) {
@@ -131,7 +127,7 @@ fn generate_sliding_attacks(
             attacks |= dst;
 
             // Future squares blocked
-            if pieces.contains(&dst) {
+            if pieces.contains(dst) {
                 break;
             }
         }
@@ -140,7 +136,7 @@ fn generate_sliding_attacks(
     attacks
 }
 
-fn generate_king_attacks(square: &Square) -> Squares {
+fn generate_king_attacks(square: Square) -> Squares {
     let mut attacks = Squares::none();
 
     for direction in Direction::ALL {
