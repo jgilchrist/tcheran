@@ -6,6 +6,9 @@ list:
 build:
 	@cargo build --release
 
+run:
+	@cargo run --bin engine
+
 time-perft-5:
 	cargo build --release && time ./target/release/engine perft 5
 
