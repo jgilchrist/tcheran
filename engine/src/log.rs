@@ -19,6 +19,6 @@ pub fn log<S: AsRef<str>>(s: S) {
         .open(path)
         .unwrap();
 
-    writeln!(f, "{}", s.as_ref()).unwrap();
+    writeln!(f, "[{}] {}", std::process::id(), s.as_ref()).unwrap();
     f.flush().unwrap();
 }

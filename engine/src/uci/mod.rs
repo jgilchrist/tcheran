@@ -41,8 +41,6 @@ impl UciState {
 
     fn go(&mut self) -> Move {
         let best_move = self.strategy.next_move(&self.game);
-        log(format!("{:?}", &best_move));
-
         let new_game_state = self.game.make_move(&best_move).unwrap();
         log(format!("{:?}", new_game_state.board));
 
@@ -58,7 +56,7 @@ enum ExecuteResult {
 
 fn send_response(comms: &mut impl UciComms, response: &UciResponse) -> Result<()> {
     comms.send(&response.as_string())?;
-    log(format!("\t\t{}", response.as_string()));
+    log(format!(" > {}", response.as_string()));
     Ok(())
 }
 
@@ -154,10 +152,8 @@ pub fn uci(comms: &mut impl UciComms, strategy: Box<dyn Strategy>) -> Result<()>
         game: Game::new(),
     };
 
-    log("\n\n============== Engine ============");
-
     for line in comms.lines() {
-        log(&line);
+        log(format!("< {}", &line));
         let command = parser::parse(&line);
 
         match command {
