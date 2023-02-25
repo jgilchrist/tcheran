@@ -4,11 +4,11 @@ use crate::{
     direction::Direction,
     fen,
     movegen::generate_moves,
-    moves::Move,
+    moves::{self, Move},
     piece::PieceKind,
     player::Player,
     square::Square,
-    squares::{self, all::*, Squares},
+    squares::{self, Squares},
 };
 use anyhow::Result;
 
@@ -112,45 +112,33 @@ impl Game {
         let enemy_attacks = attacks::generate_all_attacks(&self.board, self.player.other());
         let piece_to_move = self.board.player_piece_at(self.player, mv.src).unwrap();
 
-        let king_start_square = squares::king_start(self.player);
-        let kingside_dst_square = squares::kingside_castle_dest(self.player);
-        let queenside_dst_square = squares::queenside_castle_dest(self.player);
+        if piece_to_move == PieceKind::King {
+            let kingside_castle_move = moves::known::kingside_castle_move(self.player);
+            let queenside_castle_move = moves::known::queenside_castle_move(self.player);
 
-        if piece_to_move == PieceKind::King
-            // PERF: Don't create these moves on every single request
-            && (*mv == Move::new(king_start_square, kingside_dst_square)
-                || *mv == Move::new(king_start_square, queenside_dst_square))
-        {
-            // If the king is in check, it cannot castle
-            if enemy_attacks.contains(king_start_square) {
-                return false;
-            }
+            if mv == kingside_castle_move || mv == queenside_castle_move {
+                let king_start_square = squares::king_start(self.player);
 
-            // The king cannot castle if the intervening squares are under attack
-            if *mv == Move::new(king_start_square, kingside_dst_square) {
-                let kingside_required_not_attacked_squares = match self.player {
-                    // PERF: Don't allocate these vectors on every single call
-                    Player::White => vec![F1, G1],
-                    Player::Black => vec![F8, G8],
-                };
+                // If the king is in check, it cannot castle
+                if enemy_attacks.contains(king_start_square) {
+                    return false;
+                }
 
-                if kingside_required_not_attacked_squares
-                    .iter()
-                    .any(|&s| enemy_attacks.contains(s))
+                let kingside_required_not_attacked_squares =
+                    squares::kingside_required_not_attacked_squares(self.player);
+
+                // The king cannot castle if the intervening squares are under attack
+                if mv == kingside_castle_move
+                    && !(enemy_attacks & kingside_required_not_attacked_squares).is_empty()
                 {
                     return false;
                 }
-            }
 
-            if *mv == Move::new(king_start_square, queenside_dst_square) {
-                let queenside_required_not_attacked_squares = match self.player {
-                    Player::White => vec![C1, D1],
-                    Player::Black => vec![C8, D8],
-                };
+                let queenside_required_not_attacked_squares =
+                    squares::queenside_required_not_attacked_squares(self.player);
 
-                if queenside_required_not_attacked_squares
-                    .iter()
-                    .any(|&s| enemy_attacks.contains(s))
+                if mv == queenside_castle_move
+                    && !(enemy_attacks & queenside_required_not_attacked_squares).is_empty()
                 {
                     return false;
                 }
