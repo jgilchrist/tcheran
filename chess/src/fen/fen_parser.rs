@@ -259,14 +259,14 @@ mod tests {
         assert!(game.board.white_pieces.knights == default_game.board.white_pieces.knights);
         assert!(game.board.white_pieces.bishops == default_game.board.white_pieces.bishops);
         assert!(game.board.white_pieces.rooks == default_game.board.white_pieces.rooks);
-        assert!(game.board.white_pieces.queen == default_game.board.white_pieces.queen);
+        assert!(game.board.white_pieces.queens == default_game.board.white_pieces.queens);
         assert!(game.board.white_pieces.king == default_game.board.white_pieces.king);
 
         assert!(game.board.black_pieces.pawns == default_game.board.black_pieces.pawns);
         assert!(game.board.black_pieces.knights == default_game.board.black_pieces.knights);
         assert!(game.board.black_pieces.bishops == default_game.board.black_pieces.bishops);
         assert!(game.board.black_pieces.rooks == default_game.board.black_pieces.rooks);
-        assert!(game.board.black_pieces.queen == default_game.board.black_pieces.queen);
+        assert!(game.board.black_pieces.queens == default_game.board.black_pieces.queens);
         assert!(game.board.black_pieces.king == default_game.board.black_pieces.king);
     }
 

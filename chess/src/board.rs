@@ -22,17 +22,13 @@ pub struct PlayerPieces {
     pub knights: Squares,
     pub bishops: Squares,
     pub rooks: Squares,
-
-    // TODO: Rename to queens
-    pub queen: Squares,
-
-    // TODO: Use Square here
+    pub queens: Squares,
     pub king: Squares,
 }
 
 impl PlayerPieces {
     pub(crate) fn all(&self) -> Squares {
-        self.pawns | self.knights | self.bishops | self.rooks | self.queen | self.king
+        self.pawns | self.knights | self.bishops | self.rooks | self.queens | self.king
     }
 }
 
@@ -45,7 +41,7 @@ impl Board {
                 knights: squares::INIT_WHITE_KNIGHTS,
                 bishops: squares::INIT_WHITE_BISHOPS,
                 rooks: squares::INIT_WHITE_ROOKS,
-                queen: squares::INIT_WHITE_QUEEN,
+                queens: squares::INIT_WHITE_QUEEN,
                 king: squares::INIT_WHITE_KING,
             },
             black_pieces: PlayerPieces {
@@ -53,7 +49,7 @@ impl Board {
                 knights: squares::INIT_BLACK_KNIGHTS,
                 bishops: squares::INIT_BLACK_BISHOPS,
                 rooks: squares::INIT_BLACK_ROOKS,
-                queen: squares::INIT_BLACK_QUEEN,
+                queens: squares::INIT_BLACK_QUEEN,
                 king: squares::INIT_BLACK_KING,
             },
         }
@@ -65,14 +61,14 @@ impl Board {
         let mut white_knights = Squares::none();
         let mut white_bishops = Squares::none();
         let mut white_rooks = Squares::none();
-        let mut white_queen = Squares::none();
+        let mut white_queens = Squares::none();
         let mut white_king = Squares::none();
 
         let mut black_pawns = Squares::none();
         let mut black_knights = Squares::none();
         let mut black_bishops = Squares::none();
         let mut black_rooks = Squares::none();
-        let mut black_queen = Squares::none();
+        let mut black_queens = Squares::none();
         let mut black_king = Squares::none();
 
         for (i, maybe_piece) in pieces.iter().enumerate() {
@@ -84,14 +80,14 @@ impl Board {
                     Piece::WHITE_KNIGHT => white_knights |= square,
                     Piece::WHITE_BISHOP => white_bishops |= square,
                     Piece::WHITE_ROOK => white_rooks |= square,
-                    Piece::WHITE_QUEEN => white_queen |= square,
+                    Piece::WHITE_QUEEN => white_queens |= square,
                     Piece::WHITE_KING => white_king |= square,
 
                     Piece::BLACK_PAWN => black_pawns |= square,
                     Piece::BLACK_KNIGHT => black_knights |= square,
                     Piece::BLACK_BISHOP => black_bishops |= square,
                     Piece::BLACK_ROOK => black_rooks |= square,
-                    Piece::BLACK_QUEEN => black_queen |= square,
+                    Piece::BLACK_QUEEN => black_queens |= square,
                     Piece::BLACK_KING => black_king |= square,
                 }
             }
@@ -103,7 +99,7 @@ impl Board {
                 knights: white_knights,
                 bishops: white_bishops,
                 rooks: white_rooks,
-                queen: white_queen,
+                queens: white_queens,
                 king: white_king,
             },
             black_pieces: PlayerPieces {
@@ -111,7 +107,7 @@ impl Board {
                 knights: black_knights,
                 bishops: black_bishops,
                 rooks: black_rooks,
-                queen: black_queen,
+                queens: black_queens,
                 king: black_king,
             },
         }
@@ -137,7 +133,7 @@ impl Board {
             Some(PieceKind::Bishop)
         } else if player_pieces.rooks.contains(square) {
             Some(PieceKind::Rook)
-        } else if player_pieces.queen.contains(square) {
+        } else if player_pieces.queens.contains(square) {
             Some(PieceKind::Queen)
         } else if player_pieces.king.contains(square) {
             Some(PieceKind::King)
@@ -298,7 +294,7 @@ impl Board {
                 knights: mask_squares(self.white_pieces.knights, &Piece::WHITE_KNIGHT),
                 bishops: mask_squares(self.white_pieces.bishops, &Piece::WHITE_BISHOP),
                 rooks: mask_squares(self.white_pieces.rooks, &Piece::WHITE_ROOK),
-                queen: mask_squares(self.white_pieces.queen, &Piece::WHITE_QUEEN),
+                queens: mask_squares(self.white_pieces.queens, &Piece::WHITE_QUEEN),
                 king: mask_squares(self.white_pieces.king, &Piece::WHITE_KING),
             },
             black_pieces: PlayerPieces {
@@ -306,7 +302,7 @@ impl Board {
                 knights: mask_squares(self.black_pieces.knights, &Piece::BLACK_KNIGHT),
                 bishops: mask_squares(self.black_pieces.bishops, &Piece::BLACK_BISHOP),
                 rooks: mask_squares(self.black_pieces.rooks, &Piece::BLACK_ROOK),
-                queen: mask_squares(self.black_pieces.queen, &Piece::BLACK_QUEEN),
+                queens: mask_squares(self.black_pieces.queens, &Piece::BLACK_QUEEN),
                 king: mask_squares(self.black_pieces.king, &Piece::BLACK_KING),
             },
         };
