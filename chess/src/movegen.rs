@@ -237,7 +237,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 }
 
 fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let queens = game.board.player_pieces(game.player).queen;
+    let queens = game.board.player_pieces(game.player).queens;
 
     for queen in queens.iter() {
         for direction in Direction::ALL {
