@@ -1,4 +1,4 @@
-use crate::{bitboard::Bitboard, direction::Direction};
+use crate::{bitboard::Bitboard, direction::Direction, squares::Squares};
 
 pub const FILES: [File; 8] = [
     File::A,
@@ -280,6 +280,14 @@ impl std::fmt::Debug for Square {
 impl std::fmt::Display for Square {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.notation())
+    }
+}
+
+impl const std::ops::BitOr for Square {
+    type Output = Squares;
+
+    fn bitor(self, rhs: Self) -> Self::Output {
+        Squares::from_bitboard(self.0 | rhs.0)
     }
 }
 

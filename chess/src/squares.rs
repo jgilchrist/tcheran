@@ -178,7 +178,7 @@ impl std::ops::BitAndAssign<Square> for Squares {
     }
 }
 
-impl std::ops::BitOr for Squares {
+impl const std::ops::BitOr for Squares {
     type Output = Self;
 
     fn bitor(self, rhs: Self) -> Self::Output {
@@ -192,7 +192,7 @@ impl std::ops::BitOrAssign for Squares {
     }
 }
 
-impl std::ops::BitOr<Square> for Squares {
+impl const std::ops::BitOr<Square> for Squares {
     type Output = Self;
 
     fn bitor(self, rhs: Square) -> Self::Output {
@@ -286,8 +286,8 @@ pub mod all {
 #[must_use]
 pub const fn king_start(player: Player) -> Square {
     match player {
-        Player::White => E1,
-        Player::Black => E8,
+        Player::White => INIT_WHITE_KING,
+        Player::Black => INIT_BLACK_KING,
     }
 }
 
@@ -310,58 +310,83 @@ pub const fn queenside_rook_start(player: Player) -> Square {
 #[must_use]
 pub const fn kingside_castle_dest(player: Player) -> Square {
     match player {
-        Player::White => G1,
-        Player::Black => G8,
+        Player::White => WHITE_KINGSIDE_CASTLE_SQUARE,
+        Player::Black => BLACK_KINGSIDE_CASTLE_SQUARE,
     }
 }
 
 #[must_use]
 pub const fn queenside_castle_dest(player: Player) -> Square {
     match player {
-        Player::White => C1,
-        Player::Black => C8,
+        Player::White => WHITE_QUEENSIDE_CASTLE_SQUARE,
+        Player::Black => BLACK_QUEENSIDE_CASTLE_SQUARE,
     }
 }
 
-pub const A_FILE: Squares = Squares::from_bitboard(bitboard::known::A_FILE);
-pub const B_FILE: Squares = Squares::from_bitboard(bitboard::known::B_FILE);
-pub const C_FILE: Squares = Squares::from_bitboard(bitboard::known::C_FILE);
-pub const D_FILE: Squares = Squares::from_bitboard(bitboard::known::D_FILE);
-pub const E_FILE: Squares = Squares::from_bitboard(bitboard::known::E_FILE);
-pub const F_FILE: Squares = Squares::from_bitboard(bitboard::known::F_FILE);
-pub const G_FILE: Squares = Squares::from_bitboard(bitboard::known::G_FILE);
-pub const H_FILE: Squares = Squares::from_bitboard(bitboard::known::H_FILE);
+#[must_use]
+pub const fn kingside_required_not_attacked_squares(player: Player) -> Squares {
+    match player {
+        Player::White => WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+        Player::Black => BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+    }
+}
 
-pub const RANK_1: Squares = Squares::from_bitboard(bitboard::known::RANK_1);
-pub const RANK_2: Squares = Squares::from_bitboard(bitboard::known::RANK_2);
-pub const RANK_3: Squares = Squares::from_bitboard(bitboard::known::RANK_3);
-pub const RANK_4: Squares = Squares::from_bitboard(bitboard::known::RANK_4);
-pub const RANK_5: Squares = Squares::from_bitboard(bitboard::known::RANK_5);
-pub const RANK_6: Squares = Squares::from_bitboard(bitboard::known::RANK_6);
-pub const RANK_7: Squares = Squares::from_bitboard(bitboard::known::RANK_7);
-pub const RANK_8: Squares = Squares::from_bitboard(bitboard::known::RANK_8);
+#[must_use]
+pub const fn queenside_required_not_attacked_squares(player: Player) -> Squares {
+    match player {
+        Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+        Player::Black => BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+    }
+}
 
-pub const UP_DIAGONAL: Squares = Squares::from_bitboard(bitboard::known::UP_DIAGONAL);
-pub const DOWN_DIAGONAL: Squares = Squares::from_bitboard(bitboard::known::DOWN_DIAGONAL);
+pub const A_FILE: Squares = A1 | A2 | A3 | A4 | A5 | A6 | A7 | A8;
+pub const B_FILE: Squares = B1 | B2 | B3 | B4 | B5 | B6 | B7 | B8;
+pub const C_FILE: Squares = C1 | C2 | C3 | C4 | C5 | C6 | C7 | C8;
+pub const D_FILE: Squares = D1 | D2 | D3 | D4 | D5 | D6 | D7 | D8;
+pub const E_FILE: Squares = E1 | E2 | E3 | E4 | E5 | E6 | E7 | E8;
+pub const F_FILE: Squares = F1 | F2 | F3 | F4 | F5 | F6 | F7 | F8;
+pub const G_FILE: Squares = G1 | G2 | G3 | G4 | G5 | G6 | G7 | G8;
+pub const H_FILE: Squares = H1 | H2 | H3 | H4 | H5 | H6 | H7 | H8;
+
+pub const RANK_1: Squares = A1 | B1 | C1 | D1 | E1 | F1 | G1 | H1;
+pub const RANK_2: Squares = A2 | B2 | C2 | D2 | E2 | F2 | G2 | H2;
+pub const RANK_3: Squares = A3 | B3 | C3 | D3 | E3 | F3 | G3 | H3;
+pub const RANK_4: Squares = A4 | B4 | C4 | D4 | E4 | F4 | G4 | H4;
+pub const RANK_5: Squares = A5 | B5 | C5 | D5 | E5 | F5 | G5 | H5;
+pub const RANK_6: Squares = A6 | B6 | C6 | D6 | E6 | F6 | G6 | H6;
+pub const RANK_7: Squares = A7 | B7 | C7 | D7 | E7 | F7 | G7 | H7;
+pub const RANK_8: Squares = A8 | B8 | C8 | D8 | E8 | F8 | G8 | H8;
+
+pub const UP_DIAGONAL: Squares = A1 | B2 | C3 | D4 | E5 | F6 | G7 | H8;
+pub const DOWN_DIAGONAL: Squares = A8 | B7 | C6 | D5 | E4 | F3 | G2 | H1;
 pub const LIGHT_SQUARES: Squares = Squares::from_bitboard(bitboard::known::LIGHT_SQUARES);
 pub const DARK_SQUARES: Squares = Squares::from_bitboard(bitboard::known::DARK_SQUARES);
 
 pub const INIT_WHITE_PAWNS: Squares = RANK_2;
-pub const INIT_WHITE_KNIGHTS: Squares = Squares::from_bitboard(bitboard::known::INIT_WHITE_KNIGHTS);
-pub const INIT_WHITE_BISHOPS: Squares = Squares::from_bitboard(bitboard::known::INIT_WHITE_BISHOPS);
-pub const INIT_WHITE_ROOKS: Squares = Squares::from_bitboard(bitboard::known::INIT_WHITE_ROOKS);
-pub const INIT_WHITE_QUEEN: Squares = Squares::from_bitboard(bitboard::known::INIT_WHITE_QUEEN);
-pub const INIT_WHITE_KING: Squares = Squares::from_bitboard(bitboard::known::INIT_WHITE_KING);
+pub const INIT_WHITE_KNIGHTS: Squares = B1 | G1;
+pub const INIT_WHITE_BISHOPS: Squares = C1 | F1;
+pub const INIT_WHITE_ROOKS: Squares = A1 | H1;
+pub const INIT_WHITE_QUEEN: Square = D1;
+pub const INIT_WHITE_KING: Square = E1;
+
+pub const WHITE_KINGSIDE_CASTLE_SQUARE: Square = G1;
+pub const WHITE_QUEENSIDE_CASTLE_SQUARE: Square = C1;
 
 pub const INIT_BLACK_PAWNS: Squares = RANK_7;
-pub const INIT_BLACK_KNIGHTS: Squares = Squares::from_bitboard(bitboard::known::INIT_BLACK_KNIGHTS);
-pub const INIT_BLACK_BISHOPS: Squares = Squares::from_bitboard(bitboard::known::INIT_BLACK_BISHOPS);
-pub const INIT_BLACK_ROOKS: Squares = Squares::from_bitboard(bitboard::known::INIT_BLACK_ROOKS);
-pub const INIT_BLACK_QUEEN: Squares = Squares::from_bitboard(bitboard::known::INIT_BLACK_QUEEN);
-pub const INIT_BLACK_KING: Squares = Squares::from_bitboard(bitboard::known::INIT_BLACK_KING);
+pub const INIT_BLACK_KNIGHTS: Squares = B8 | G8;
+pub const INIT_BLACK_BISHOPS: Squares = C8 | F8;
+pub const INIT_BLACK_ROOKS: Squares = A8 | H8;
+pub const INIT_BLACK_QUEEN: Square = D8;
+pub const INIT_BLACK_KING: Square = E8;
 
-pub const NOT_A_FILE: Squares = Squares::from_bitboard(bitboard::known::NOT_A_FILE);
-pub const NOT_H_FILE: Squares = Squares::from_bitboard(bitboard::known::NOT_H_FILE);
+pub const BLACK_KINGSIDE_CASTLE_SQUARE: Square = G8;
+pub const BLACK_QUEENSIDE_CASTLE_SQUARE: Square = C8;
+
+pub const WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = F1 | G1;
+pub const BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = F8 | G8;
+
+pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = C1 | D1;
+pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = C8 | D8;
 
 #[cfg(test)]
 mod tests {

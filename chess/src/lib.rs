@@ -1,3 +1,4 @@
+#![feature(const_trait_impl)]
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(
     clippy::wildcard_imports,

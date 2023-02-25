@@ -60,3 +60,41 @@ impl std::fmt::Display for Move {
         write!(f, "{}", self.notation())
     }
 }
+
+pub mod known {
+    use super::Move;
+    use crate::{player::Player, squares};
+
+    #[must_use]
+    pub const fn kingside_castle_move(player: Player) -> &'static Move {
+        match player {
+            Player::White => &WHITE_KINGSIDE_CASTLE_MOVE,
+            Player::Black => &BLACK_KINGSIDE_CASTLE_MOVE,
+        }
+    }
+
+    #[must_use]
+    pub const fn queenside_castle_move(player: Player) -> &'static Move {
+        match player {
+            Player::White => &WHITE_QUEENSIDE_CASTLE_MOVE,
+            Player::Black => &BLACK_QUEENSIDE_CASTLE_MOVE,
+        }
+    }
+
+    pub const WHITE_KINGSIDE_CASTLE_MOVE: Move = Move::new(
+        squares::INIT_WHITE_KING,
+        squares::WHITE_KINGSIDE_CASTLE_SQUARE,
+    );
+    pub const WHITE_QUEENSIDE_CASTLE_MOVE: Move = Move::new(
+        squares::INIT_WHITE_KING,
+        squares::WHITE_QUEENSIDE_CASTLE_SQUARE,
+    );
+    pub const BLACK_KINGSIDE_CASTLE_MOVE: Move = Move::new(
+        squares::INIT_BLACK_KING,
+        squares::BLACK_KINGSIDE_CASTLE_SQUARE,
+    );
+    pub const BLACK_QUEENSIDE_CASTLE_MOVE: Move = Move::new(
+        squares::INIT_BLACK_KING,
+        squares::BLACK_QUEENSIDE_CASTLE_SQUARE,
+    );
+}

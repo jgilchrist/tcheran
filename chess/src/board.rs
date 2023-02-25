@@ -41,16 +41,16 @@ impl Board {
                 knights: squares::INIT_WHITE_KNIGHTS,
                 bishops: squares::INIT_WHITE_BISHOPS,
                 rooks: squares::INIT_WHITE_ROOKS,
-                queens: squares::INIT_WHITE_QUEEN,
-                king: squares::INIT_WHITE_KING,
+                queens: Squares::from_square(squares::INIT_WHITE_QUEEN),
+                king: Squares::from_square(squares::INIT_WHITE_KING),
             },
             black_pieces: PlayerPieces {
                 pawns: squares::INIT_BLACK_PAWNS,
                 knights: squares::INIT_BLACK_KNIGHTS,
                 bishops: squares::INIT_BLACK_BISHOPS,
                 rooks: squares::INIT_BLACK_ROOKS,
-                queens: squares::INIT_BLACK_QUEEN,
-                king: squares::INIT_BLACK_KING,
+                queens: Squares::from_square(squares::INIT_BLACK_QUEEN),
+                king: Squares::from_square(squares::INIT_BLACK_KING),
             },
         }
     }
