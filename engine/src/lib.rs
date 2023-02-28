@@ -17,6 +17,7 @@ pub mod uci;
 
 mod eval;
 mod search;
+mod sync;
 
 pub fn engine_version() -> &'static str {
     // If we can't determine the version from git tags, fall back to the version

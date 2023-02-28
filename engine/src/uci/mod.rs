@@ -1,9 +1,14 @@
 use std::io::BufRead;
+use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
 
-use crate::{log::log, strategy::Strategy};
+use crate::sync::LockLatch;
+use crate::{
+    log::log,
+    strategy::{self, Strategy},
+};
 
 use self::{
     commands::{GoCmdArguments, UciCommand},
@@ -19,8 +24,30 @@ pub mod responses;
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
+#[derive(Clone)]
+pub struct UciReporter {
+    stop: Arc<Mutex<bool>>,
+    stopped: Arc<LockLatch>,
+}
+
+impl strategy::Reporter for UciReporter {
+    fn should_stop(&self) -> bool {
+        *self.stop.lock().unwrap()
+    }
+
+    fn report_progress(&self, s: &str) {
+        println!("{s}");
+    }
+
+    fn best_move(&self, mv: Move) {
+        send_response(&UciResponse::BestMove { mv, ponder: None });
+        self.stopped.set();
+    }
+}
+
 pub struct UciState {
-    strategy: Box<dyn Strategy>,
+    strategy: Arc<Mutex<Box<dyn Strategy<UciReporter>>>>,
+    reporter: UciReporter,
     debug: bool,
     game: Game,
 }
@@ -39,12 +66,23 @@ impl UciState {
         log(format!("{:?}", self.game.board));
     }
 
-    fn go(&mut self) -> Move {
-        let best_move = self.strategy.next_move(&self.game);
-        let new_game_state = self.game.make_move(&best_move).unwrap();
-        log(format!("{:?}", new_game_state.board));
+    fn go(&mut self) {
+        let strategy = self.strategy.clone();
+        let game = self.game.clone();
+        let reporter = self.reporter.clone();
 
-        best_move
+        std::thread::spawn(move || {
+            let mut s = strategy.lock().unwrap();
+            s.go(&game, reporter);
+        });
+    }
+
+    fn stop(&mut self) {
+        {
+            let mut stop = self.reporter.stop.lock().unwrap();
+            *stop = true;
+        }
+        self.reporter.stopped.wait();
     }
 }
 
@@ -109,20 +147,10 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
             movetime: _,
             infinite: _,
         }) => {
-            let best_move = state.go();
-
-            send_response(&UciResponse::BestMove {
-                mv: best_move,
-                ponder: None,
-            });
+            state.go();
         }
         UciCommand::Stop => {
-            let best_move = state.go();
-
-            send_response(&UciResponse::BestMove {
-                mv: best_move,
-                ponder: None,
-            });
+            state.stop();
         }
         UciCommand::PonderHit => {}
         UciCommand::Quit => return Ok(ExecuteResult::Exit),
@@ -131,9 +159,15 @@ fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
     Ok(ExecuteResult::KeepGoing)
 }
 
-pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
+pub fn uci(strategy: Box<dyn Strategy<UciReporter>>) -> Result<()> {
+    let strategy_arc = Arc::new(Mutex::new(strategy));
+
     let mut state = UciState {
-        strategy,
+        strategy: strategy_arc,
+        reporter: UciReporter {
+            stop: Arc::new(Mutex::new(false)),
+            stopped: Arc::new(LockLatch::new()),
+        },
         debug: false,
         game: Game::new(),
     };
