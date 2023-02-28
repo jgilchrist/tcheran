@@ -1,12 +1,12 @@
-use crate::direction::Direction;
+use crate::{direction::Direction, squares};
 
 // TODO: Try removing Copy so that clones have to be explicit
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub struct Bitboard(u64);
 
 impl Bitboard {
-    const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFE_FEFE_FEFE_FEFE); // ~0x0101010101010101
-    const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F_7F7F_7F7F_7F7F); // ~0x8080808080808080
+    const NOT_A_FILE: Self = squares::A_FILE.invert().0;
+    const NOT_H_FILE: Self = squares::H_FILE.invert().0;
 
     #[must_use]
     pub const fn new(bits: u64) -> Self {
@@ -91,42 +91,42 @@ impl Bitboard {
     #[must_use]
     pub const fn east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 << 1) & Self::NOT_A_FILE.0)
+        Self(self.0 << 1) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn north_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 << 9) & Self::NOT_A_FILE.0)
+        Self(self.0 << 9) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn south_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 >> 7) & Self::NOT_A_FILE.0)
+        Self(self.0 >> 7) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 >> 1) & Self::NOT_H_FILE.0)
+        Self(self.0 >> 1) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn south_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 >> 9) & Self::NOT_H_FILE.0)
+        Self(self.0 >> 9) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 << 7) & Self::NOT_H_FILE.0)
+        Self(self.0 << 7) & Self::NOT_H_FILE
     }
 }
 

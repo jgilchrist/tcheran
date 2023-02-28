@@ -1,9 +1,4 @@
-use crate::{
-    bitboard::{self, Bitboard},
-    direction::Direction,
-    player::Player,
-    square::Square,
-};
+use crate::{bitboard::Bitboard, direction::Direction, player::Player, square::Square};
 
 use self::all::*;
 
@@ -12,7 +7,7 @@ use self::all::*;
 /// In practice, a transparent wrapper for a bitboard.
 /// However, the terminology and API are bitboard agnostic.
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Squares(Bitboard);
+pub struct Squares(pub(super) Bitboard);
 
 pub struct SquareIterator(Squares);
 
@@ -51,7 +46,7 @@ impl Squares {
 
     #[must_use]
     pub const fn all_except(square: Square) -> Self {
-        Self(square.0.invert())
+        Self(square.0).invert()
     }
 
     #[must_use]
@@ -67,6 +62,11 @@ impl Squares {
     #[must_use]
     pub const fn count(&self) -> u8 {
         self.0.count()
+    }
+
+    #[must_use]
+    pub const fn invert(&self) -> Self {
+        Self(self.0.invert())
     }
 
     pub fn pop_inplace(&mut self) -> Square {
