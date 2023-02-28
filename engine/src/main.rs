@@ -12,17 +12,12 @@ use anyhow::Result;
 use engine::log::log;
 
 mod cli {
-    use std::{io::BufWriter, net::TcpStream};
-
     use anyhow::Result;
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
     use engine::{
         strategy::KnownStrategy,
-        uci::{
-            self,
-            comms::{LocalComms, RemoteComms},
-        },
+        uci::{self},
     };
 
     use engine::perft;
@@ -46,9 +41,6 @@ mod cli {
         Uci {
             #[arg(value_enum)]
             strategy: Strategy,
-
-            #[arg(long)]
-            remote: bool,
         },
 
         /// Run a perft test
@@ -68,7 +60,7 @@ mod cli {
 
     pub fn run(cmd: Commands) -> Result<()> {
         match cmd {
-            Commands::Uci { strategy, remote } => {
+            Commands::Uci { strategy } => {
                 let known_strategy = match strategy {
                     Strategy::Main => KnownStrategy::Main,
                     Strategy::Random => KnownStrategy::Random,
@@ -76,17 +68,7 @@ mod cli {
                 };
 
                 let strategy = known_strategy.create();
-
-                // TODO: Move this code into comms
-                if remote {
-                    let stream = TcpStream::connect("localhost:3001").unwrap();
-                    let writer = BufWriter::new(stream.try_clone().unwrap());
-                    let mut comms = RemoteComms { stream, writer };
-                    uci::uci(&mut comms, strategy)
-                } else {
-                    let mut comms = LocalComms {};
-                    uci::uci(&mut comms, strategy)
-                }
+                uci::uci(strategy)
             }
             Commands::Perft { depth, fen } => {
                 let game = fen.map_or_else(Game::default, |fen| Game::from_fen(&fen).unwrap());
@@ -120,6 +102,5 @@ fn main() -> Result<()> {
     let args = cli::parse_cli();
     cli::run(args.command.unwrap_or(cli::Commands::Uci {
         strategy: cli::Strategy::Main,
-        remote: false,
     }))
 }

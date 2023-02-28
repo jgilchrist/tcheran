@@ -595,6 +595,7 @@ name = "uciproxy"
 version = "0.0.0"
 dependencies = [
  "anyhow",
+ "clap",
  "message-io",
 ]
 

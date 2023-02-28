@@ -1,3 +1,5 @@
+use std::io::BufRead;
+
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
 
@@ -5,12 +7,10 @@ use crate::{log::log, strategy::Strategy};
 
 use self::{
     commands::{GoCmdArguments, UciCommand},
-    comms::UciComms,
     responses::{IdParam, UciResponse},
 };
 
 pub mod commands;
-pub mod comms;
 pub mod parser;
 #[allow(unused)]
 pub mod responses;
@@ -54,35 +54,27 @@ enum ExecuteResult {
     Exit,
 }
 
-fn send_response(comms: &mut impl UciComms, response: &UciResponse) -> Result<()> {
-    comms.send(&response.as_string())?;
+fn send_response(response: &UciResponse) {
+    println!("{}", &response.as_string());
     log(format!(" > {}", response.as_string()));
-    Ok(())
 }
 
 // Both of these clippy lints can be ignored as there is more to implement here.
 #[allow(clippy::unnecessary_wraps)]
 #[allow(clippy::match_same_arms)]
-fn execute(
-    cmd: &UciCommand,
-    comms: &mut impl UciComms,
-    state: &mut UciState,
-) -> Result<ExecuteResult> {
+fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
     match cmd {
         UciCommand::Uci => {
             state.reset();
             let version = crate::engine_version();
-            send_response(comms, &UciResponse::Id(IdParam::Name(format!(
+            send_response(&UciResponse::Id(IdParam::Name(format!(
                 "engine ({version})"
             ))));
-            send_response(
-                comms,
-                &UciResponse::Id(IdParam::Author("Jonathan Gilchrist")),
-            )?;
-            send_response(comms, &UciResponse::UciOk)?;
+            send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
+            send_response(&UciResponse::UciOk);
         }
         UciCommand::Debug(on) => state.set_debug(*on),
-        UciCommand::IsReady => send_response(comms, &UciResponse::ReadyOk)?,
+        UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
         UciCommand::SetOption { name: _, value: _ } => {}
         UciCommand::Register {
             later: _,
@@ -119,24 +111,18 @@ fn execute(
         }) => {
             let best_move = state.go();
 
-            send_response(
-                comms,
-                &UciResponse::BestMove {
-                    mv: best_move,
-                    ponder: None,
-                },
-            )?;
+            send_response(&UciResponse::BestMove {
+                mv: best_move,
+                ponder: None,
+            });
         }
         UciCommand::Stop => {
             let best_move = state.go();
 
-            send_response(
-                comms,
-                &UciResponse::BestMove {
-                    mv: best_move,
-                    ponder: None,
-                },
-            )?;
+            send_response(&UciResponse::BestMove {
+                mv: best_move,
+                ponder: None,
+            });
         }
         UciCommand::PonderHit => {}
         UciCommand::Quit => return Ok(ExecuteResult::Exit),
@@ -145,20 +131,25 @@ fn execute(
     Ok(ExecuteResult::KeepGoing)
 }
 
-pub fn uci(comms: &mut impl UciComms, strategy: Box<dyn Strategy>) -> Result<()> {
+pub fn uci(strategy: Box<dyn Strategy>) -> Result<()> {
     let mut state = UciState {
         strategy,
         debug: false,
         game: Game::new(),
     };
 
-    for line in comms.lines() {
+    let stdin = std::io::stdin().lock();
+    let stdin_lines = stdin.lines();
+
+    for line in stdin_lines {
+        let line = line?;
+
         log(format!("< {}", &line));
         let command = parser::parse(&line);
 
         match command {
             Ok(ref c) => {
-                let execute_result = execute(c, comms, &mut state)?;
+                let execute_result = execute(c, &mut state)?;
                 if execute_result == ExecuteResult::Exit {
                     break;
                 }

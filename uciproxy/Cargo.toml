@@ -5,4 +5,5 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.56"
+clap = { version = "4.1.6", features = ["derive"] }
 message-io = "0.14.6"
