@@ -5,6 +5,9 @@ use std::{
 
 use anyhow::Result;
 
+// TODO: Offload this to uciproxy by having uciproxy start
+// an instance of the engine and proxy stdin and stdout.
+
 pub trait UciComms {
     fn lines(&self) -> impl Iterator<Item = String>;
 
