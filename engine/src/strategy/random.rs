@@ -1,14 +1,16 @@
-use chess::{game::Game, moves::Move};
+use chess::game::Game;
 use rand::prelude::SliceRandom;
 
-use super::Strategy;
+use super::{Reporter, Strategy};
 
 #[derive(Default)]
 pub struct RandomMoveStrategy;
 
-impl Strategy for RandomMoveStrategy {
-    fn next_move(&mut self, game: &Game) -> Move {
+impl<T: Reporter> Strategy<T> for RandomMoveStrategy {
+    fn go(&mut self, game: &Game, reporter: T) {
         let moves = game.legal_moves();
-        *moves.choose(&mut rand::thread_rng()).unwrap()
+        let best_move = *moves.choose(&mut rand::thread_rng()).unwrap();
+
+        reporter.best_move(best_move);
     }
 }

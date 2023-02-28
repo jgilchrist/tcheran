@@ -17,3 +17,4 @@ pub mod uci;
 
 mod eval;
 mod search;
+mod sync;

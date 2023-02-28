@@ -2,8 +2,15 @@ use chess::{game::Game, moves::Move};
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 
-pub trait Strategy {
-    fn next_move(&mut self, game: &Game) -> Move;
+pub trait Strategy<T: Reporter>: Send + Sync {
+    fn go(&mut self, game: &Game, reporter: T);
+}
+
+pub trait Reporter {
+    fn should_stop(&self) -> bool;
+
+    fn report_progress(&self, s: &str);
+    fn best_move(&self, mv: Move);
 }
 
 mod main;
@@ -18,7 +25,7 @@ pub enum KnownStrategy {
 
 impl KnownStrategy {
     #[must_use]
-    pub fn create(&self) -> Box<dyn Strategy + Send + Sync> {
+    pub fn create<T: Reporter>(&self) -> Box<dyn Strategy<T> + Send + Sync> {
         match self {
             Self::Main => Box::<MainStrategy>::default(),
             Self::Random => Box::<RandomMoveStrategy>::default(),
