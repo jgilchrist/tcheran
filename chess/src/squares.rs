@@ -359,8 +359,28 @@ pub const RANK_8: Squares = A8 | B8 | C8 | D8 | E8 | F8 | G8 | H8;
 
 pub const UP_DIAGONAL: Squares = A1 | B2 | C3 | D4 | E5 | F6 | G7 | H8;
 pub const DOWN_DIAGONAL: Squares = A8 | B7 | C6 | D5 | E4 | F3 | G2 | H1;
-pub const LIGHT_SQUARES: Squares = Squares::from_bitboard(bitboard::known::LIGHT_SQUARES);
-pub const DARK_SQUARES: Squares = Squares::from_bitboard(bitboard::known::DARK_SQUARES);
+
+#[rustfmt::skip]
+pub const LIGHT_SQUARES: Squares =
+    A8 | C8 | E8 | G8 |
+    B7 | D7 | F7 | H7 |
+    A6 | C6 | E6 | G6 |
+    B5 | D5 | F5 | H5 |
+    A4 | C4 | E4 | G4 |
+    B3 | D3 | F3 | H3 |
+    A2 | C2 | E2 | G2 |
+    B1 | D1 | F1 | H1 ;
+
+#[rustfmt::skip]
+pub const DARK_SQUARES: Squares =
+    B8 | D8 | F8 | H8 |
+    A7 | C7 | E7 | G7 |
+    B6 | D6 | F6 | H6 |
+    A5 | C5 | E5 | G5 |
+    B4 | D4 | F4 | H4 |
+    A3 | C3 | E3 | G3 |
+    B2 | D2 | F2 | H2 |
+    A1 | C1 | E1 | G1 ;
 
 pub const INIT_WHITE_PAWNS: Squares = RANK_2;
 pub const INIT_WHITE_KNIGHTS: Squares = B1 | G1;
