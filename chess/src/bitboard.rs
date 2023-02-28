@@ -5,6 +5,9 @@ use crate::direction::Direction;
 pub struct Bitboard(u64);
 
 impl Bitboard {
+    const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFE_FEFE_FEFE_FEFE); // ~0x0101010101010101
+    const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F_7F7F_7F7F_7F7F); // ~0x8080808080808080
+
     #[must_use]
     pub const fn new(bits: u64) -> Self {
         Self(bits)
@@ -88,42 +91,42 @@ impl Bitboard {
     #[must_use]
     pub const fn east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 << 1) & known::NOT_A_FILE.0)
+        Self((self.0 << 1) & Self::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn north_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 << 9) & known::NOT_A_FILE.0)
+        Self((self.0 << 9) & Self::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn south_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
-        Self((self.0 >> 7) & known::NOT_A_FILE.0)
+        Self((self.0 >> 7) & Self::NOT_A_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 >> 1) & known::NOT_H_FILE.0)
+        Self((self.0 >> 1) & Self::NOT_H_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn south_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 >> 9) & known::NOT_H_FILE.0)
+        Self((self.0 >> 9) & Self::NOT_H_FILE.0)
     }
 
     #[inline(always)]
     #[must_use]
     pub const fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
-        Self((self.0 << 7) & known::NOT_H_FILE.0)
+        Self((self.0 << 7) & Self::NOT_H_FILE.0)
     }
 }
 
@@ -197,16 +200,6 @@ impl std::fmt::Display for Bitboard {
                 .join("\n")
         )
     }
-}
-
-pub mod known {
-    use super::Bitboard;
-
-    pub const LIGHT_SQUARES: Bitboard = Bitboard::new(0x55AA_55AA_55AA_55AA);
-    pub const DARK_SQUARES: Bitboard = Bitboard::new(0xAA55_AA55_AA55_AA55);
-
-    pub const NOT_A_FILE: Bitboard = Bitboard::new(0xFEFE_FEFE_FEFE_FEFE); // ~0x0101010101010101
-    pub const NOT_H_FILE: Bitboard = Bitboard::new(0x7F7F_7F7F_7F7F_7F7F); // ~0x8080808080808080
 }
 
 #[cfg(test)]
