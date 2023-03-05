@@ -90,7 +90,7 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
             // TODO: Error handling
             let pieces_array: [Option<Piece>; 64] = all_pieces.try_into().unwrap();
 
-            Board::from_array(pieces_array)
+            pieces_array.try_into().unwrap()
         },
     )(input)?;
 
