@@ -56,7 +56,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         Player::Black => squares::RANK_2,
     };
 
-    for start in pawns.iter() {
+    for start in pawns {
         let will_promote = !((will_promote_rank & start).is_empty());
 
         // Move forward by 1
@@ -65,7 +65,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         if let Some(dst) = forward_one {
             if !ctx.all_pieces.contains(dst) {
                 if will_promote {
-                    for promotion in PromotionPieceKind::ALL.iter() {
+                    for promotion in PromotionPieceKind::ALL {
                         moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
                 } else {
@@ -80,7 +80,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         if let Some(dst) = capture_left {
             if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
                 if will_promote {
-                    for promotion in PromotionPieceKind::ALL.iter() {
+                    for promotion in PromotionPieceKind::ALL {
                         moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
                 } else {
@@ -94,7 +94,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         if let Some(dst) = capture_right {
             if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
                 if will_promote {
-                    for promotion in PromotionPieceKind::ALL.iter() {
+                    for promotion in PromotionPieceKind::ALL {
                         moves.push(Move::new_with_promotion(start, dst, *promotion));
                     }
                 } else {
@@ -104,7 +104,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         }
     }
 
-    for start in (pawns & back_rank).iter() {
+    for start in pawns & back_rank {
         // Move forward by 2
         let forward_one = start.in_direction(&pawn_move_direction);
 
@@ -128,7 +128,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let knights = game.board.player_pieces(game.player).knights;
 
-    for start in knights.iter() {
+    for start in knights {
         // Going clockwise, starting at 12
         if let Some(nne) = start.north().and_then(|s| s.north_east()) {
             if !ctx.our_pieces.contains(nne) {
@@ -183,7 +183,7 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let bishops = game.board.player_pieces(game.player).bishops;
 
-    for bishop in bishops.iter() {
+    for bishop in bishops {
         for direction in Direction::DIAGONAL {
             let mut current_square = bishop;
 
@@ -211,7 +211,7 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let rooks = game.board.player_pieces(game.player).rooks;
 
-    for rook in rooks.iter() {
+    for rook in rooks {
         for direction in Direction::CARDINAL {
             let mut current_square = rook;
 
@@ -239,7 +239,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let queens = game.board.player_pieces(game.player).queens;
 
-    for queen in queens.iter() {
+    for queen in queens {
         for direction in Direction::ALL {
             let mut current_square = queen;
 
