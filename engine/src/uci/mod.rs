@@ -45,44 +45,118 @@ impl strategy::Reporter for UciReporter {
     }
 }
 
-pub struct UciState {
+pub struct Uci {
     strategy: Arc<Mutex<Box<dyn Strategy<UciReporter>>>>,
     reporter: UciReporter,
     debug: bool,
     game: Game,
 }
 
-impl UciState {
-    fn reset(&mut self) {
-        self.game = Game::new();
-    }
+impl Uci {
+    // Both of these clippy lints can be ignored as there is more to implement here.
+    #[allow(clippy::unnecessary_wraps)]
+    #[allow(clippy::match_same_arms)]
+    fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult> {
+        match cmd {
+            UciCommand::Uci => {
+                self.game = Game::new();
+                let version = crate::engine_version();
+                send_response(&UciResponse::Id(IdParam::Name(format!(
+                    "engine ({version})"
+                ))));
+                send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
+                send_response(&UciResponse::UciOk);
+            }
+            UciCommand::Debug(on) => {
+                self.debug = *on;
+            }
+            UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
+            UciCommand::SetOption { name: _, value: _ } => {}
+            UciCommand::Register {
+                later: _,
+                name: _,
+                code: _,
+            } => {}
+            UciCommand::UciNewGame => {
+                self.game = Game::new();
+                log(format!("{:?}", self.game.board));
+            }
+            // TODO: Error handling for invalid positions/moves
+            UciCommand::Position { position, moves } => {
+                let mut game = match position {
+                    commands::Position::StartPos => Game::new(),
+                    commands::Position::Fen(fen) => Game::from_fen(fen).unwrap(),
+                };
 
-    fn set_debug(&mut self, on: bool) {
-        self.debug = on;
-    }
+                for mv in moves {
+                    game = game.make_move(mv).unwrap();
+                }
 
-    fn set_game_state(&mut self, game: Game) {
-        self.game = game;
-        log(format!("{:?}", self.game.board));
-    }
+                self.game = game;
+                log(format!("{:?}", self.game.board));
+            }
+            UciCommand::Go(GoCmdArguments {
+                searchmoves: _,
+                ponder: _,
+                wtime: _,
+                btime: _,
+                winc: _,
+                binc: _,
+                movestogo: _,
+                depth: _,
+                nodes: _,
+                mate: _,
+                movetime: _,
+                infinite: _,
+            }) => {
+                let strategy = self.strategy.clone();
+                let game = self.game.clone();
+                let reporter = self.reporter.clone();
 
-    fn go(&mut self) {
-        let strategy = self.strategy.clone();
-        let game = self.game.clone();
-        let reporter = self.reporter.clone();
-
-        std::thread::spawn(move || {
-            let mut s = strategy.lock().unwrap();
-            s.go(&game, reporter);
-        });
-    }
-
-    fn stop(&mut self) {
-        {
-            let mut stop = self.reporter.stop.lock().unwrap();
-            *stop = true;
+                std::thread::spawn(move || {
+                    let mut s = strategy.lock().unwrap();
+                    s.go(&game, reporter);
+                });
+            }
+            UciCommand::Stop => {
+                {
+                    let mut stop = self.reporter.stop.lock().unwrap();
+                    *stop = true;
+                }
+                self.reporter.stopped.wait();
+            }
+            UciCommand::PonderHit => {}
+            UciCommand::Quit => return Ok(ExecuteResult::Exit),
         }
-        self.reporter.stopped.wait();
+
+        Ok(ExecuteResult::KeepGoing)
+    }
+
+    fn main_loop(&mut self) -> Result<()> {
+        let stdin = std::io::stdin().lock();
+        let stdin_lines = stdin.lines();
+
+        for line in stdin_lines {
+            let line = line?;
+
+            log(format!("< {}", &line));
+            let command = parser::parse(&line);
+
+            match command {
+                Ok(ref c) => {
+                    let execute_result = self.execute(c)?;
+                    if execute_result == ExecuteResult::Exit {
+                        break;
+                    }
+                }
+                Err(e) => {
+                    eprintln!("{e}");
+                    log("? Unknown command\n");
+                }
+            }
+        }
+
+        Ok(())
     }
 }
 
@@ -97,73 +171,9 @@ fn send_response(response: &UciResponse) {
     log(format!(" > {}", response.as_string()));
 }
 
-// Both of these clippy lints can be ignored as there is more to implement here.
-#[allow(clippy::unnecessary_wraps)]
-#[allow(clippy::match_same_arms)]
-fn execute(cmd: &UciCommand, state: &mut UciState) -> Result<ExecuteResult> {
-    match cmd {
-        UciCommand::Uci => {
-            state.reset();
-            let version = crate::engine_version();
-            send_response(&UciResponse::Id(IdParam::Name(format!(
-                "engine ({version})"
-            ))));
-            send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
-            send_response(&UciResponse::UciOk);
-        }
-        UciCommand::Debug(on) => state.set_debug(*on),
-        UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
-        UciCommand::SetOption { name: _, value: _ } => {}
-        UciCommand::Register {
-            later: _,
-            name: _,
-            code: _,
-        } => {}
-        UciCommand::UciNewGame => state.set_game_state(Game::new()),
-        // TODO: Error handling for invalid positions/moves
-        UciCommand::Position { position, moves } => {
-            let mut game = match position {
-                commands::Position::StartPos => Game::new(),
-                commands::Position::Fen(fen) => Game::from_fen(fen).unwrap(),
-            };
-
-            for mv in moves {
-                game = game.make_move(mv).unwrap();
-            }
-
-            state.set_game_state(game);
-        }
-        UciCommand::Go(GoCmdArguments {
-            searchmoves: _,
-            ponder: _,
-            wtime: _,
-            btime: _,
-            winc: _,
-            binc: _,
-            movestogo: _,
-            depth: _,
-            nodes: _,
-            mate: _,
-            movetime: _,
-            infinite: _,
-        }) => {
-            state.go();
-        }
-        UciCommand::Stop => {
-            state.stop();
-        }
-        UciCommand::PonderHit => {}
-        UciCommand::Quit => return Ok(ExecuteResult::Exit),
-    }
-
-    Ok(ExecuteResult::KeepGoing)
-}
-
 pub fn uci(strategy: Box<dyn Strategy<UciReporter>>) -> Result<()> {
-    let strategy_arc = Arc::new(Mutex::new(strategy));
-
-    let mut state = UciState {
-        strategy: strategy_arc,
+    let mut uci = Uci {
+        strategy: Arc::new(Mutex::new(strategy)),
         reporter: UciReporter {
             stop: Arc::new(Mutex::new(false)),
             stopped: Arc::new(LockLatch::new()),
@@ -172,28 +182,5 @@ pub fn uci(strategy: Box<dyn Strategy<UciReporter>>) -> Result<()> {
         game: Game::new(),
     };
 
-    let stdin = std::io::stdin().lock();
-    let stdin_lines = stdin.lines();
-
-    for line in stdin_lines {
-        let line = line?;
-
-        log(format!("< {}", &line));
-        let command = parser::parse(&line);
-
-        match command {
-            Ok(ref c) => {
-                let execute_result = execute(c, &mut state)?;
-                if execute_result == ExecuteResult::Exit {
-                    break;
-                }
-            }
-            Err(e) => {
-                eprintln!("{e}");
-                log("? Unknown command\n");
-            }
-        }
-    }
-
-    Ok(())
+    uci.main_loop()
 }
