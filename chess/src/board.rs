@@ -8,6 +8,8 @@ use crate::{
     squares::{self, all::*, Squares},
 };
 
+use anyhow::Result;
+
 #[derive(Clone, Copy)]
 pub struct Board {
     pub white_pieces: PlayerPieces,
@@ -51,64 +53,6 @@ impl Board {
                 rooks: squares::INIT_BLACK_ROOKS,
                 queens: Squares::from_square(squares::INIT_BLACK_QUEEN),
                 king: Squares::from_square(squares::INIT_BLACK_KING),
-            },
-        }
-    }
-
-    #[must_use]
-    pub fn from_array(pieces: [Option<Piece>; 64]) -> Self {
-        let mut white_pawns = Squares::none();
-        let mut white_knights = Squares::none();
-        let mut white_bishops = Squares::none();
-        let mut white_rooks = Squares::none();
-        let mut white_queens = Squares::none();
-        let mut white_king = Squares::none();
-
-        let mut black_pawns = Squares::none();
-        let mut black_knights = Squares::none();
-        let mut black_bishops = Squares::none();
-        let mut black_rooks = Squares::none();
-        let mut black_queens = Squares::none();
-        let mut black_king = Squares::none();
-
-        for (i, maybe_piece) in pieces.iter().enumerate() {
-            if let Some(p) = maybe_piece {
-                let square = Square::from_index(i.try_into().unwrap());
-
-                match *p {
-                    Piece::WHITE_PAWN => white_pawns |= square,
-                    Piece::WHITE_KNIGHT => white_knights |= square,
-                    Piece::WHITE_BISHOP => white_bishops |= square,
-                    Piece::WHITE_ROOK => white_rooks |= square,
-                    Piece::WHITE_QUEEN => white_queens |= square,
-                    Piece::WHITE_KING => white_king |= square,
-
-                    Piece::BLACK_PAWN => black_pawns |= square,
-                    Piece::BLACK_KNIGHT => black_knights |= square,
-                    Piece::BLACK_BISHOP => black_bishops |= square,
-                    Piece::BLACK_ROOK => black_rooks |= square,
-                    Piece::BLACK_QUEEN => black_queens |= square,
-                    Piece::BLACK_KING => black_king |= square,
-                }
-            }
-        }
-
-        Self {
-            white_pieces: PlayerPieces {
-                pawns: white_pawns,
-                knights: white_knights,
-                bishops: white_bishops,
-                rooks: white_rooks,
-                queens: white_queens,
-                king: white_king,
-            },
-            black_pieces: PlayerPieces {
-                pawns: black_pawns,
-                knights: black_knights,
-                bishops: black_bishops,
-                rooks: black_rooks,
-                queens: black_queens,
-                king: black_king,
             },
         }
     }
@@ -355,5 +299,66 @@ impl std::fmt::Debug for Board {
                 .collect::<Vec<_>>()
                 .join("\n")
         )
+    }
+}
+
+impl TryFrom<[Option<Piece>; 64]> for Board {
+    type Error = anyhow::Error;
+
+    fn try_from(pieces: [Option<Piece>; 64]) -> Result<Self> {
+        let mut white_pawns = Squares::none();
+        let mut white_knights = Squares::none();
+        let mut white_bishops = Squares::none();
+        let mut white_rooks = Squares::none();
+        let mut white_queens = Squares::none();
+        let mut white_king = Squares::none();
+
+        let mut black_pawns = Squares::none();
+        let mut black_knights = Squares::none();
+        let mut black_bishops = Squares::none();
+        let mut black_rooks = Squares::none();
+        let mut black_queens = Squares::none();
+        let mut black_king = Squares::none();
+
+        for (i, maybe_piece) in pieces.iter().enumerate() {
+            if let Some(p) = maybe_piece {
+                let square = Square::from_index(i.try_into()?);
+
+                match *p {
+                    Piece::WHITE_PAWN => white_pawns |= square,
+                    Piece::WHITE_KNIGHT => white_knights |= square,
+                    Piece::WHITE_BISHOP => white_bishops |= square,
+                    Piece::WHITE_ROOK => white_rooks |= square,
+                    Piece::WHITE_QUEEN => white_queens |= square,
+                    Piece::WHITE_KING => white_king |= square,
+
+                    Piece::BLACK_PAWN => black_pawns |= square,
+                    Piece::BLACK_KNIGHT => black_knights |= square,
+                    Piece::BLACK_BISHOP => black_bishops |= square,
+                    Piece::BLACK_ROOK => black_rooks |= square,
+                    Piece::BLACK_QUEEN => black_queens |= square,
+                    Piece::BLACK_KING => black_king |= square,
+                }
+            }
+        }
+
+        Ok(Self {
+            white_pieces: PlayerPieces {
+                pawns: white_pawns,
+                knights: white_knights,
+                bishops: white_bishops,
+                rooks: white_rooks,
+                queens: white_queens,
+                king: white_king,
+            },
+            black_pieces: PlayerPieces {
+                pawns: black_pawns,
+                knights: black_knights,
+                bishops: black_bishops,
+                rooks: black_rooks,
+                queens: black_queens,
+                king: black_king,
+            },
+        })
     }
 }
