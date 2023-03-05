@@ -23,6 +23,24 @@ impl Iterator for SquareIterator {
     }
 }
 
+impl IntoIterator for Squares {
+    type Item = Square;
+    type IntoIter = SquareIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        SquareIterator(self)
+    }
+}
+
+impl<'a> IntoIterator for &'a Squares {
+    type Item = Square;
+    type IntoIter = SquareIterator;
+
+    fn into_iter(self) -> Self::IntoIter {
+        SquareIterator(*self)
+    }
+}
+
 impl Squares {
     #[must_use]
     pub const fn from_bitboard(bitboard: Bitboard) -> Self {

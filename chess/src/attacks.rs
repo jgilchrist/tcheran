@@ -12,7 +12,7 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
     let their_pieces = board.player_pieces(player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
-    for square in our_pieces.iter() {
+    for square in our_pieces {
         let piece_kind = board
             .player_piece_at(player, square)
             .expect("Unable to find piece on square it should be on.");
