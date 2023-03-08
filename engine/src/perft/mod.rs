@@ -17,9 +17,13 @@ pub fn perft_div(depth: u8, game: &Game) {
     let mut all = 0;
 
     for mv in root_moves {
-        let number_for_mv = perft(depth - 1, &game.make_move(&mv).unwrap());
+        let number_for_mv = if depth == 1 {
+            1
+        } else {
+            perft(depth - 1, &game.make_move(&mv).unwrap())
+        };
 
-        println!("{mv:?} {number_for_mv}");
+        println!("{mv:?}: {number_for_mv}");
         all += number_for_mv;
     }
 
