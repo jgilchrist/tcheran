@@ -1,7 +1,6 @@
 use crate::{
-    attacks,
     direction::Direction,
-    move_tables,
+    move_tables, movegen,
     moves::Move,
     piece::{Piece, PieceKind},
     player::Player,
@@ -102,7 +101,7 @@ impl Board {
 
     #[must_use]
     pub fn king_in_check(&self, player: Player) -> bool {
-        let enemy_attacks = attacks::generate_all_attacks(self, player.other());
+        let enemy_attacks = movegen::generate_all_attacks(self, player.other());
 
         let king = self.player_pieces(player).king.single();
 

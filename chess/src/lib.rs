@@ -20,7 +20,6 @@ pub mod player;
 pub mod square;
 pub mod squares;
 
-mod attacks;
 mod move_tables;
 mod movegen;
 
