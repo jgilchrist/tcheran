@@ -133,8 +133,7 @@ impl Uci {
     }
 
     fn main_loop(&mut self) -> Result<()> {
-        let stdin = std::io::stdin().lock();
-        let stdin_lines = stdin.lines();
+        let stdin_lines = std::io::stdin().lock().lines();
 
         for line in stdin_lines {
             let line = line?;

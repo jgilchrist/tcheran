@@ -29,8 +29,7 @@ impl LockLatch {
     // Sets the lock to true and notifies any threads waiting on it.
     #[inline]
     pub fn set(&self) {
-        let mut guard = self.m.lock().unwrap();
-        *guard = true;
+        *self.m.lock().unwrap() = true;
         self.v.notify_all();
     }
 }
