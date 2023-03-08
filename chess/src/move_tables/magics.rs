@@ -1,6 +1,6 @@
-use crate::{attacks, bitboard::Bitboard, square::Square, squares::Squares};
+use crate::{bitboard::Bitboard, square::Square, squares::Squares};
 
-use super::occupancies;
+use super::{attacks, occupancies};
 
 static mut BISHOP_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
 const BISHOP_SHIFT: u64 = 9;
@@ -109,13 +109,11 @@ pub fn init() {
     initialise_bishop_attacks();
 }
 
-#[allow(unused)]
 pub fn rook_attacks(s: Square, blockers: Squares) -> Squares {
     let table_idx = table_index_rook(s, blockers.0);
     Squares(unsafe { ATTACKS_TABLE[table_idx] })
 }
 
-#[allow(unused)]
 pub fn bishop_attacks(s: Square, blockers: Squares) -> Squares {
     let table_idx = table_index_bishop(s, blockers.0);
     Squares(unsafe { ATTACKS_TABLE[table_idx] })

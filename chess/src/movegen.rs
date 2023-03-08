@@ -1,6 +1,7 @@
 use crate::{
     direction::Direction,
     game::Game,
+    move_tables,
     moves::Move,
     piece::PromotionPieceKind,
     player::Player,
@@ -184,26 +185,11 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let bishops = game.board.player_pieces(game.player).bishops;
 
     for bishop in bishops {
-        for direction in Direction::DIAGONAL {
-            let mut current_square = bishop;
+        let destinations =
+            move_tables::bishop_attacks(bishop, ctx.all_pieces) & ctx.our_pieces.invert();
 
-            // Until we're off the board
-            while let Some(dst) = current_square.in_direction(direction) {
-                current_square = dst;
-
-                // Blocked by our piece
-                if ctx.our_pieces.contains(dst) {
-                    break;
-                }
-
-                // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(dst) {
-                    moves.push(Move::new(bishop, dst));
-                    break;
-                }
-
-                moves.push(Move::new(bishop, dst));
-            }
+        for dst in destinations {
+            moves.push(Move::new(bishop, dst));
         }
     }
 }
@@ -212,26 +198,11 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let rooks = game.board.player_pieces(game.player).rooks;
 
     for rook in rooks {
-        for direction in Direction::CARDINAL {
-            let mut current_square = rook;
+        let destinations =
+            move_tables::rook_attacks(rook, ctx.all_pieces) & ctx.our_pieces.invert();
 
-            // Until we're off the board
-            while let Some(dst) = current_square.in_direction(direction) {
-                current_square = dst;
-
-                // Blocked by our piece
-                if ctx.our_pieces.contains(dst) {
-                    break;
-                }
-
-                // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(dst) {
-                    moves.push(Move::new(rook, dst));
-                    break;
-                }
-
-                moves.push(Move::new(rook, dst));
-            }
+        for dst in destinations {
+            moves.push(Move::new(rook, dst));
         }
     }
 }
@@ -240,26 +211,11 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let queens = game.board.player_pieces(game.player).queens;
 
     for queen in queens {
-        for direction in Direction::ALL {
-            let mut current_square = queen;
+        let destinations =
+            move_tables::queen_attacks(queen, ctx.all_pieces) & ctx.our_pieces.invert();
 
-            // Until we're off the board
-            while let Some(dst) = current_square.in_direction(direction) {
-                current_square = dst;
-
-                // Blocked by our piece
-                if ctx.our_pieces.contains(dst) {
-                    break;
-                }
-
-                // Capture a piece, but squares past here are off-limits
-                if ctx.their_pieces.contains(dst) {
-                    moves.push(Move::new(queen, dst));
-                    break;
-                }
-
-                moves.push(Move::new(queen, dst));
-            }
+        for dst in destinations {
+            moves.push(Move::new(queen, dst));
         }
     }
 }
