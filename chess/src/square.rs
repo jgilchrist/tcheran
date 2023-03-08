@@ -11,7 +11,8 @@ pub const FILES: [File; 8] = [
     File::H,
 ];
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Eq, Copy)]
+#[derive_const(PartialEq, Clone)]
 pub enum File {
     A,
     B,
@@ -25,7 +26,7 @@ pub enum File {
 
 impl File {
     #[must_use]
-    pub fn from_idx(idx: u8) -> Self {
+    pub const fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
         match idx {
@@ -93,7 +94,8 @@ pub const RANKS: [Rank; 8] = [
     Rank::R8,
 ];
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Eq, Copy)]
+#[derive_const(PartialEq, Clone)]
 pub enum Rank {
     R1,
     R2,
@@ -107,7 +109,7 @@ pub enum Rank {
 
 impl Rank {
     #[must_use]
-    pub fn from_idx(idx: u8) -> Self {
+    pub const fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
         match idx {
@@ -164,7 +166,8 @@ impl std::fmt::Display for Rank {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(Eq, Copy)]
+#[derive_const(PartialEq, Clone)]
 pub struct Square(pub Bitboard);
 
 impl Square {
@@ -173,7 +176,7 @@ impl Square {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
-    fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
+    const fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
         match bitboard.count() {
             0 => None,
             1 => Some(Self(bitboard)),
@@ -199,13 +202,13 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn rank(self) -> Rank {
+    pub const fn rank(self) -> Rank {
         Rank::from_idx(self.idx() / 8)
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn file(self) -> File {
+    pub const fn file(self) -> File {
         File::from_idx(self.idx() % 8)
     }
 
@@ -216,7 +219,7 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn in_direction(&self, direction: &Direction) -> Option<Self> {
+    pub const fn in_direction(&self, direction: &Direction) -> Option<Self> {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -231,49 +234,49 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn north(&self) -> Option<Self> {
+    pub const fn north(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south(&self) -> Option<Self> {
+    pub const fn south(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn east(&self) -> Option<Self> {
+    pub const fn east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_east(&self) -> Option<Self> {
+    pub const fn north_east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_east(&self) -> Option<Self> {
+    pub const fn south_east(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn west(&self) -> Option<Self> {
+    pub const fn west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.west())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_west(&self) -> Option<Self> {
+    pub const fn south_west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_west())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_west(&self) -> Option<Self> {
+    pub const fn north_west(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_west())
     }
 }

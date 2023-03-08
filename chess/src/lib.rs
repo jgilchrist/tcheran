@@ -1,4 +1,12 @@
-#![feature(const_trait_impl)]
+#![feature(
+    const_trait_impl,
+    const_mut_refs,
+    const_for,
+    let_chains,
+    const_intoiterator_identity,
+    derive_const,
+    const_discriminant
+)]
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(
     clippy::wildcard_imports,

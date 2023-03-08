@@ -168,7 +168,7 @@ impl Squares {
     }
 }
 
-impl std::ops::BitAnd for Squares {
+impl const std::ops::BitAnd for Squares {
     type Output = Self;
 
     fn bitand(self, rhs: Self) -> Self::Output {
@@ -182,7 +182,7 @@ impl std::ops::BitAndAssign for Squares {
     }
 }
 
-impl std::ops::BitAnd<Square> for Squares {
+impl const std::ops::BitAnd<Square> for Squares {
     type Output = Self;
 
     fn bitand(self, rhs: Square) -> Self::Output {
@@ -190,7 +190,7 @@ impl std::ops::BitAnd<Square> for Squares {
     }
 }
 
-impl std::ops::BitAndAssign<Square> for Squares {
+impl const std::ops::BitAndAssign<Square> for Squares {
     fn bitand_assign(&mut self, rhs: Square) {
         self.0 = self.0 & rhs.0;
     }
@@ -204,7 +204,7 @@ impl const std::ops::BitOr for Squares {
     }
 }
 
-impl std::ops::BitOrAssign for Squares {
+impl const std::ops::BitOrAssign for Squares {
     fn bitor_assign(&mut self, rhs: Self) {
         self.0 = self.0 | rhs.0;
     }
@@ -218,7 +218,7 @@ impl const std::ops::BitOr<Square> for Squares {
     }
 }
 
-impl std::ops::BitOrAssign<Square> for Squares {
+impl const std::ops::BitOrAssign<Square> for Squares {
     fn bitor_assign(&mut self, rhs: Square) {
         self.0 = self.0 | rhs.0;
     }

@@ -1,7 +1,8 @@
 use crate::{direction::Direction, squares};
 
 // TODO: Try removing Copy so that clones have to be explicit
-#[derive(Clone, Copy, PartialEq, Eq)]
+#[derive(Eq, Copy)]
+#[derive_const(PartialEq, Clone)]
 pub struct Bitboard(pub u64);
 
 impl Bitboard {

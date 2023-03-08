@@ -65,15 +65,19 @@ pub fn generate_knight_attacks(square: Square) -> Squares {
     attacks
 }
 
-pub fn generate_bishop_attacks(square: Square, pieces: Squares) -> Squares {
+pub const fn generate_bishop_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::DIAGONAL, pieces)
 }
 
-pub fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
+pub const fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::CARDINAL, pieces)
 }
 
-fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Squares) -> Squares {
+const fn generate_sliding_attacks(
+    square: Square,
+    directions: &[Direction],
+    pieces: Squares,
+) -> Squares {
     let mut attacks = Squares::none();
 
     for direction in directions {

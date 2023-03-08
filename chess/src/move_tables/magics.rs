@@ -2,13 +2,13 @@ use crate::{bitboard::Bitboard, square::Square, squares::Squares};
 
 use super::{attacks, occupancies};
 
-static mut BISHOP_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
+const BISHOP_NOT_MASKS: [Bitboard; 64] = initialise_bishop_not_masks();
 const BISHOP_SHIFT: u64 = 9;
-static mut ROOK_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
+const ROOK_NOT_MASKS: [Bitboard; 64] = initialise_rook_not_masks();
 const ROOK_SHIFT: u64 = 12;
 
 type AttacksTable = [Bitboard; 87988];
-static mut ATTACKS_TABLE: AttacksTable = [Bitboard::empty(); 87988];
+const ATTACKS_TABLE: AttacksTable = initialise_attacks_table();
 
 // Black magics found by Volker Annuss and Niklas Fiekas
 // See http://talkchess.com/forum/viewtopic.php?t=64790
@@ -101,12 +101,13 @@ impl Iterator for SubsetsOf {
     }
 }
 
-pub fn init() {
-    initialise_bishop_not_masks();
-    initialise_rook_not_masks();
+const fn initialise_attacks_table() -> AttacksTable {
+    let mut attacks_table: AttacksTable = [Bitboard::empty(); 87988];
 
-    initialise_rook_attacks();
-    initialise_bishop_attacks();
+    initialise_rook_attacks(&mut attacks_table);
+    initialise_bishop_attacks(&mut attacks_table);
+
+    attacks_table
 }
 
 pub fn rook_attacks(s: Square, blockers: Squares) -> Squares {
@@ -119,7 +120,7 @@ pub fn bishop_attacks(s: Square, blockers: Squares) -> Squares {
     Squares(unsafe { ATTACKS_TABLE[table_idx] })
 }
 
-fn initialise_bishop_attacks() {
+const fn initialise_bishop_attacks(attacks_table: &mut AttacksTable) {
     for s in Squares::all() {
         let occupancies = occupancies::generate_bishop_occupancies(s);
 
@@ -128,24 +129,25 @@ fn initialise_bishop_attacks() {
         for blockers in occupancy_subsets {
             let idx = table_index_bishop(s, blockers);
 
-            unsafe {
-                ATTACKS_TABLE[idx] = attacks::generate_bishop_attacks(s, Squares(blockers)).0;
-            }
+            attacks_table[idx] = attacks::generate_bishop_attacks(s, Squares(blockers)).0;
         }
     }
 }
 
-fn initialise_bishop_not_masks() {
+const fn initialise_bishop_not_masks() -> [Bitboard; 64] {
+    let mut not_masks = [Bitboard::empty(); 64];
+
     for s in Squares::all() {
         let occupancies = occupancies::generate_bishop_occupancies(s);
-        unsafe {
-            BISHOP_NOT_MASKS[s.idx() as usize] = occupancies.invert().0;
-        }
+
+        not_masks[s.idx() as usize] = occupancies.invert().0;
     }
+
+    not_masks
 }
 
 #[allow(clippy::cast_possible_truncation)]
-fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
+const fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.idx() as usize;
     let (magic, index) = DEFAULT_BISHOP_MAGICS[square_idx];
     let not_mask = unsafe { BISHOP_NOT_MASKS[square_idx] };
@@ -157,7 +159,7 @@ fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
     index + occupancies_index_offset as usize
 }
 
-fn initialise_rook_attacks() {
+const fn initialise_rook_attacks(attacks_table: &mut AttacksTable) {
     for s in Squares::all() {
         let occupancies = occupancies::generate_rook_occupancies(s);
 
@@ -166,24 +168,25 @@ fn initialise_rook_attacks() {
         for blockers in occupancy_subsets {
             let idx = table_index_rook(s, blockers);
 
-            unsafe {
-                ATTACKS_TABLE[idx] = attacks::generate_rook_attacks(s, Squares(blockers)).0;
-            }
+            attacks_table[idx] = attacks::generate_rook_attacks(s, Squares(blockers)).0;
         }
     }
 }
 
-fn initialise_rook_not_masks() {
+const fn initialise_rook_not_masks() -> [Bitboard; 64] {
+    let mut not_masks = [Bitboard::empty(); 64];
+
     for s in Squares::all() {
         let occupancies = occupancies::generate_rook_occupancies(s);
-        unsafe {
-            ROOK_NOT_MASKS[s.idx() as usize] = occupancies.invert().0;
-        }
+
+        not_masks[s.idx() as usize] = occupancies.invert().0;
     }
+
+    not_masks
 }
 
 #[allow(clippy::cast_possible_truncation)]
-fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
+const fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.idx() as usize;
 
     let (magic, index) = DEFAULT_ROOK_MAGICS[square_idx];

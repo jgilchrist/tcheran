@@ -20,7 +20,6 @@ pub fn queen_attacks(s: Square, blockers: Squares) -> Squares {
 }
 
 pub fn init() {
-    magics::init();
     knights::init();
     king::init();
     pawns::init();
