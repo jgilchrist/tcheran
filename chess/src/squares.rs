@@ -224,6 +224,31 @@ impl std::ops::BitOrAssign<Square> for Squares {
     }
 }
 
+impl std::fmt::Debug for Squares {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "\n{}\n",
+            (0..8)
+                .rev()
+                .map(|rank| {
+                    (0..8)
+                        .map(|file| {
+                            if self.contains(Square::from_idxs(file, rank)) {
+                                "*"
+                            } else {
+                                "."
+                            }
+                        })
+                        .collect::<Vec<_>>()
+                        .join(" ")
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        )
+    }
+}
+
 pub mod all {
     use crate::square::{File, Rank, Square};
 
