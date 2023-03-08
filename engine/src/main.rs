@@ -50,7 +50,7 @@ mod cli {
         PerftDiv {
             depth: u8,
             fen: String,
-            moves: String,
+            moves: Option<String>,
         },
     }
 
@@ -78,7 +78,7 @@ mod cli {
             }
             Commands::PerftDiv { depth, fen, moves } => {
                 let mut game = Game::from_fen(&fen).unwrap();
-                let (_, moves) = uci::parser::maybe_uci_moves(&moves).unwrap();
+                let moves = moves.map(|m| uci::parser::uci_moves(&m).unwrap().1);
 
                 if let Some(moves) = moves {
                     for mv in moves {
