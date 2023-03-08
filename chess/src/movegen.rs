@@ -9,8 +9,8 @@ use crate::{
 };
 
 struct Ctx {
-    our_pieces: Squares,
     their_pieces: Squares,
+    enemy_or_empty: Squares,
     all_pieces: Squares,
 }
 
@@ -29,12 +29,13 @@ pub fn generate_moves(game: &Game) -> Vec<Move> {
 
 fn get_ctx(game: &Game) -> Ctx {
     let our_pieces = game.board.player_pieces(game.player).all();
+    let enemy_or_empty = our_pieces.invert();
     let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
     Ctx {
-        our_pieces,
         their_pieces,
+        enemy_or_empty,
         all_pieces,
     }
 }
@@ -116,7 +117,7 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let knights = game.board.player_pieces(game.player).knights;
 
     for knight in knights {
-        let destinations = move_tables::knight_attacks(knight) & ctx.our_pieces.invert();
+        let destinations = move_tables::knight_attacks(knight) & ctx.enemy_or_empty;
 
         for dst in destinations {
             moves.push(Move::new(knight, dst));
@@ -128,8 +129,7 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let bishops = game.board.player_pieces(game.player).bishops;
 
     for bishop in bishops {
-        let destinations =
-            move_tables::bishop_attacks(bishop, ctx.all_pieces) & ctx.our_pieces.invert();
+        let destinations = move_tables::bishop_attacks(bishop, ctx.all_pieces) & ctx.enemy_or_empty;
 
         for dst in destinations {
             moves.push(Move::new(bishop, dst));
@@ -141,8 +141,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let rooks = game.board.player_pieces(game.player).rooks;
 
     for rook in rooks {
-        let destinations =
-            move_tables::rook_attacks(rook, ctx.all_pieces) & ctx.our_pieces.invert();
+        let destinations = move_tables::rook_attacks(rook, ctx.all_pieces) & ctx.enemy_or_empty;
 
         for dst in destinations {
             moves.push(Move::new(rook, dst));
@@ -154,8 +153,7 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let queens = game.board.player_pieces(game.player).queens;
 
     for queen in queens {
-        let destinations =
-            move_tables::queen_attacks(queen, ctx.all_pieces) & ctx.our_pieces.invert();
+        let destinations = move_tables::queen_attacks(queen, ctx.all_pieces) & ctx.enemy_or_empty;
 
         for dst in destinations {
             moves.push(Move::new(queen, dst));
@@ -166,7 +164,7 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let king = game.board.player_pieces(game.player).king.single();
 
-    let destinations = move_tables::king_attacks(king) & ctx.our_pieces.invert();
+    let destinations = move_tables::king_attacks(king) & ctx.enemy_or_empty;
 
     for dst in destinations {
         moves.push(Move::new(king, dst));
