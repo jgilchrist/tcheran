@@ -12,6 +12,7 @@
 pub mod bitboard;
 pub mod board;
 pub mod direction;
+pub mod fen;
 pub mod game;
 pub mod moves;
 pub mod piece;
@@ -20,7 +21,6 @@ pub mod square;
 pub mod squares;
 
 mod attacks;
-pub mod fen;
 mod magics;
 mod movegen;
 
