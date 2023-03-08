@@ -80,13 +80,19 @@ mod cli {
                 let mut game = Game::from_fen(&fen).unwrap();
                 let moves = moves.map(|m| uci::parser::uci_moves(&m).unwrap().1);
 
-                if let Some(moves) = moves {
+                if let Some(ref moves) = moves {
                     for mv in moves {
-                        game = game.make_move(&mv).unwrap();
+                        game = game.make_move(mv).unwrap();
                     }
                 }
 
-                perft::perft_div(depth, &game);
+                let depth_modifier: u8 = moves
+                    .map(|m| m.len())
+                    .unwrap_or_default()
+                    .try_into()
+                    .unwrap();
+
+                perft::perft_div(depth - depth_modifier, &game);
                 Ok(())
             }
         }
