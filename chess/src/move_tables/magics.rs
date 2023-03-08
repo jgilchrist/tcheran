@@ -1,5 +1,7 @@
 use crate::{attacks, bitboard::Bitboard, square::Square, squares::Squares};
 
+use super::occupancies;
+
 static mut BISHOP_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
 const BISHOP_SHIFT: u64 = 9;
 static mut ROOK_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
@@ -121,7 +123,7 @@ pub fn bishop_attacks(s: Square, blockers: Squares) -> Squares {
 
 fn initialise_bishop_attacks() {
     for s in Squares::all() {
-        let occupancies = attacks::generate_bishop_occupancies(s);
+        let occupancies = occupancies::generate_bishop_occupancies(s);
 
         let occupancy_subsets = SubsetsOf::new(occupancies.0);
 
@@ -137,7 +139,7 @@ fn initialise_bishop_attacks() {
 
 fn initialise_bishop_not_masks() {
     for s in Squares::all() {
-        let occupancies = attacks::generate_bishop_occupancies(s);
+        let occupancies = occupancies::generate_bishop_occupancies(s);
         unsafe {
             BISHOP_NOT_MASKS[s.idx() as usize] = occupancies.invert().0;
         }
@@ -159,7 +161,7 @@ fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
 
 fn initialise_rook_attacks() {
     for s in Squares::all() {
-        let occupancies = attacks::generate_rook_occupancies(s);
+        let occupancies = occupancies::generate_rook_occupancies(s);
 
         let occupancy_subsets = SubsetsOf::new(occupancies.0);
 
@@ -175,7 +177,7 @@ fn initialise_rook_attacks() {
 
 fn initialise_rook_not_masks() {
     for s in Squares::all() {
-        let occupancies = attacks::generate_rook_occupancies(s);
+        let occupancies = occupancies::generate_rook_occupancies(s);
         unsafe {
             ROOK_NOT_MASKS[s.idx() as usize] = occupancies.invert().0;
         }
