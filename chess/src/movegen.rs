@@ -211,3 +211,34 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         }
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_simple_rook_move() {
+        crate::init();
+        let game =
+            Game::from_fen("rnbqkbnr/1ppppppp/p7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0 2").unwrap();
+        let moves = game.legal_moves();
+
+        let has_rook_a1_a2 = moves.iter().any(|m| m.src == A1 && m.dst == A2);
+
+        assert!(has_rook_a1_a2);
+    }
+
+    #[test]
+    fn test_simple_bishop_move() {
+        crate::init();
+        let game = Game::from_fen("rnbqkbnr/1ppppp1p/p5p1/8/8/1P6/PBPPPPPP/RN1QKBNR w KQkq - 0 3")
+            .unwrap();
+        let moves = game.legal_moves();
+
+        let has_simple_bishop_move = moves.iter().any(|m| m.src == B2 && m.dst == C3);
+        let has_rook_capture = moves.iter().any(|m| m.src == B2 && m.dst == H8);
+
+        assert!(has_simple_bishop_move);
+        assert!(has_rook_capture);
+    }
+}
