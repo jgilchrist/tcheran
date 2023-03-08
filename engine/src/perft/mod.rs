@@ -30,3 +30,15 @@ pub fn perft_div(depth: u8, game: &Game) {
     println!();
     println!("{all}");
 }
+
+#[cfg(test)]
+mod tests {
+    pub use super::*;
+
+    #[test]
+    #[ignore]
+    fn perft_startpos_5() {
+        chess::init();
+        assert_eq!(perft(5, &Game::new()), 4_865_609);
+    }
+}
