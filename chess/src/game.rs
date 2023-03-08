@@ -109,10 +109,11 @@ impl Game {
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
-        let enemy_attacks = attacks::generate_all_attacks(&self.board, self.player.other());
         let piece_to_move = self.board.player_piece_at(self.player, mv.src).unwrap();
 
         if piece_to_move == PieceKind::King {
+            let enemy_attacks = attacks::generate_all_attacks(&self.board, self.player.other());
+
             let kingside_castle_move = moves::known::kingside_castle_move(self.player);
             let queenside_castle_move = moves::known::queenside_castle_move(self.player);
 
