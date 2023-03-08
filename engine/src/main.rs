@@ -99,6 +99,8 @@ fn main() -> Result<()> {
         log(format!("{info:?}"));
     }));
 
+    chess::init();
+
     let args = cli::parse_cli();
     cli::run(args.command.unwrap_or(cli::Commands::Uci {
         strategy: cli::Strategy::Main,

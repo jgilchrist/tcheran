@@ -21,4 +21,9 @@ pub mod squares;
 
 mod attacks;
 pub mod fen;
+mod magics;
 mod movegen;
+
+pub fn init() {
+    magics::init();
+}

@@ -192,14 +192,21 @@ impl Square {
         Self::from_index(idx)
     }
 
-    #[inline(always)]
-    fn rank(self) -> Rank {
-        Rank::from_idx(self.0.trailing_zeros() / 8)
+    #[must_use]
+    pub const fn idx(&self) -> u8 {
+        self.0.trailing_zeros()
     }
 
     #[inline(always)]
-    fn file(self) -> File {
-        File::from_idx(self.0.trailing_zeros() % 8)
+    #[must_use]
+    pub fn rank(self) -> Rank {
+        Rank::from_idx(self.idx() / 8)
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn file(self) -> File {
+        File::from_idx(self.idx() % 8)
     }
 
     #[must_use]

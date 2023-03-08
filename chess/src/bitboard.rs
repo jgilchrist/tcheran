@@ -2,7 +2,7 @@ use crate::{direction::Direction, squares};
 
 // TODO: Try removing Copy so that clones have to be explicit
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Bitboard(u64);
+pub struct Bitboard(pub u64);
 
 impl Bitboard {
     const NOT_A_FILE: Self = squares::A_FILE.invert().0;
@@ -127,6 +127,14 @@ impl Bitboard {
     pub const fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 << 7) & Self::NOT_H_FILE
+    }
+}
+
+impl const std::ops::Sub for Bitboard {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0.wrapping_sub(rhs.0))
     }
 }
 
