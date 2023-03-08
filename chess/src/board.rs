@@ -1,6 +1,7 @@
 use crate::{
     attacks,
     direction::Direction,
+    move_tables,
     moves::Move,
     piece::{Piece, PieceKind},
     player::Player,
@@ -167,7 +168,7 @@ impl Board {
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
             if moved_piece.kind == PieceKind::Pawn {
-                let pawn_attacks = attacks::generate_pawn_attacks(mv.src, moved_piece.player);
+                let pawn_attacks = move_tables::pawn_attacks(mv.src, moved_piece.player);
 
                 if pawn_attacks.contains(mv.dst) {
                     let opponent_pieces = self.player_pieces(moved_piece.player.other()).all();
