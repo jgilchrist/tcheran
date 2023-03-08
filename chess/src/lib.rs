@@ -21,9 +21,9 @@ pub mod square;
 pub mod squares;
 
 mod attacks;
-mod magics;
+mod move_tables;
 mod movegen;
 
 pub fn init() {
-    magics::init();
+    move_tables::init();
 }
