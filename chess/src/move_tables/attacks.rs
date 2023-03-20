@@ -73,6 +73,7 @@ pub const fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
     generate_sliding_attacks(square, Direction::CARDINAL, pieces)
 }
 
+#[allow(clippy::needless_range_loop)]
 const fn generate_sliding_attacks(
     square: Square,
     directions: &[Direction],
@@ -80,7 +81,9 @@ const fn generate_sliding_attacks(
 ) -> Squares {
     let mut attacks = Squares::none();
 
-    for direction in directions {
+    // TODO: Fix once &[] implements ~const IntoIterator
+    for direction_idx in 0..directions.len() {
+        let direction = &directions[direction_idx];
         let mut current_square = square;
 
         // Until we're off the board

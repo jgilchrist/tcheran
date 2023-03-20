@@ -11,7 +11,7 @@ pub struct Squares(pub(super) Bitboard);
 
 pub struct SquareIterator(Squares);
 
-impl Iterator for SquareIterator {
+impl const Iterator for SquareIterator {
     type Item = Square;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -23,7 +23,7 @@ impl Iterator for SquareIterator {
     }
 }
 
-impl IntoIterator for Squares {
+impl const IntoIterator for Squares {
     type Item = Square;
     type IntoIter = SquareIterator;
 
@@ -32,7 +32,7 @@ impl IntoIterator for Squares {
     }
 }
 
-impl<'a> IntoIterator for &'a Squares {
+impl<'a> const IntoIterator for &'a Squares {
     type Item = Square;
     type IntoIter = SquareIterator;
 
@@ -68,7 +68,7 @@ impl Squares {
     }
 
     #[must_use]
-    pub fn contains(&self, square: Square) -> bool {
+    pub const fn contains(&self, square: Square) -> bool {
         !(*self & square).is_empty()
     }
 
@@ -87,7 +87,7 @@ impl Squares {
         Self(self.0.invert())
     }
 
-    pub fn pop_inplace(&mut self) -> Square {
+    pub const fn pop_inplace(&mut self) -> Square {
         let lsb = self.0.pop_lsb_inplace();
         Square(lsb)
     }

@@ -83,7 +83,7 @@ impl SubsetsOf {
     }
 }
 
-impl Iterator for SubsetsOf {
+impl const Iterator for SubsetsOf {
     type Item = Bitboard;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -110,14 +110,14 @@ const fn initialise_attacks_table() -> AttacksTable {
     attacks_table
 }
 
-pub fn rook_attacks(s: Square, blockers: Squares) -> Squares {
+pub const fn rook_attacks(s: Square, blockers: Squares) -> Squares {
     let table_idx = table_index_rook(s, blockers.0);
-    Squares(unsafe { ATTACKS_TABLE[table_idx] })
+    Squares(ATTACKS_TABLE[table_idx])
 }
 
-pub fn bishop_attacks(s: Square, blockers: Squares) -> Squares {
+pub const fn bishop_attacks(s: Square, blockers: Squares) -> Squares {
     let table_idx = table_index_bishop(s, blockers.0);
-    Squares(unsafe { ATTACKS_TABLE[table_idx] })
+    Squares(ATTACKS_TABLE[table_idx])
 }
 
 const fn initialise_bishop_attacks(attacks_table: &mut AttacksTable) {
@@ -150,7 +150,7 @@ const fn initialise_bishop_not_masks() -> [Bitboard; 64] {
 const fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.idx() as usize;
     let (magic, index) = DEFAULT_BISHOP_MAGICS[square_idx];
-    let not_mask = unsafe { BISHOP_NOT_MASKS[square_idx] };
+    let not_mask = BISHOP_NOT_MASKS[square_idx];
 
     let relevant_occupancies = blockers | not_mask;
     let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);
@@ -190,7 +190,7 @@ const fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.idx() as usize;
 
     let (magic, index) = DEFAULT_ROOK_MAGICS[square_idx];
-    let not_mask = unsafe { ROOK_NOT_MASKS[square_idx] };
+    let not_mask = ROOK_NOT_MASKS[square_idx];
 
     let relevant_occupancies = blockers | not_mask;
     let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);

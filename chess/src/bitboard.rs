@@ -43,7 +43,7 @@ impl Bitboard {
     }
 
     #[must_use]
-    pub fn pop_lsb_inplace(&mut self) -> Self {
+    pub const fn pop_lsb_inplace(&mut self) -> Self {
         let lsb = self.lsb();
         self.0 &= self.0 - 1;
         lsb

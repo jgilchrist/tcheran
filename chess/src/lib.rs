@@ -2,11 +2,14 @@
     const_trait_impl,
     const_mut_refs,
     const_for,
+    const_iter,
+    const_eval_limit,
     let_chains,
     const_intoiterator_identity,
     derive_const,
     const_discriminant
 )]
+#![const_eval_limit = "0"]
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(
     clippy::wildcard_imports,

@@ -4,18 +4,21 @@ use crate::{
     squares::Squares,
 };
 
-pub fn generate_bishop_occupancies(square: Square) -> Squares {
+pub const fn generate_bishop_occupancies(square: Square) -> Squares {
     generate_sliding_occupancies(square, Direction::DIAGONAL)
 }
 
-pub fn generate_rook_occupancies(square: Square) -> Squares {
+pub const fn generate_rook_occupancies(square: Square) -> Squares {
     generate_sliding_occupancies(square, Direction::CARDINAL)
 }
 
-pub fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Squares {
+#[allow(clippy::needless_range_loop)]
+pub const fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Squares {
     let mut squares = Squares::none();
 
-    for direction in directions {
+    // TODO: Fix once &[] implements ~const IntoIterator
+    for direction_idx in 0..directions.len() {
+        let direction = &directions[direction_idx];
         let mut current_square = square;
 
         while let Some(dst) = current_square.in_direction(direction) {
