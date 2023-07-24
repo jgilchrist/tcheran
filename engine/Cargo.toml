@@ -1,14 +1,15 @@
 [package]
 name = "engine"
-version = "0.0.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-anyhow = "1.0.72"
+anyhow = { workspace = true }
 git-version = "0.3.8"
 chess = { path = "../chess" }
-clap = { version = "4.3.19", features = ["derive"] }
-nom = "7.1.1"
+clap = { workspace = true }
+nom = { workspace = true }
 rand = "0.8.5"
 
 [lib]

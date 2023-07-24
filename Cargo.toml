@@ -5,6 +5,16 @@ members = [
     "uciproxy",
 ]
 
+[workspace.package]
+version = "0.0.0"
+edition = "2021"
+rust-version = "1.71"
+
+[workspace.dependencies]
+anyhow = "1.0.72"
+clap = { version = "4.3.19", features = ["derive"] }
+nom = "7.1.1"
+
 [profile.release]
 debug = 1
 incremental = true

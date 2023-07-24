@@ -1,9 +1,10 @@
 [package]
 name = "uciproxy"
-version = "0.0.0"
-edition = "2021"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
 
 [dependencies]
-anyhow = "1.0.72"
-clap = { version = "4.3.19", features = ["derive"] }
+anyhow = { workspace = true }
+clap = { workspace = true }
 message-io = "0.17.0"
