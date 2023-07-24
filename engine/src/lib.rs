@@ -1,4 +1,3 @@
-#![feature(return_position_impl_trait_in_trait)]
 #![warn(clippy::pedantic, clippy::nursery)]
 #![allow(
     incomplete_features,

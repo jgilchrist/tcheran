@@ -290,7 +290,7 @@ impl std::fmt::Display for Square {
     }
 }
 
-impl const std::ops::BitOr for Square {
+impl std::ops::BitOr for Square {
     type Output = Squares;
 
     fn bitor(self, rhs: Self) -> Self::Output {
