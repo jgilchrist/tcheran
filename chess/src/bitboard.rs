@@ -1,4 +1,7 @@
-use crate::{direction::Direction, squares::{self}};
+use crate::{
+    direction::Direction,
+    squares::{self},
+};
 
 // TODO: Try removing Copy so that clones have to be explicit
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -212,6 +215,7 @@ impl std::fmt::Display for Bitboard {
 
 // TODO: Once const traits are stabilised, all of this logic can be moved
 // to BitOr and BitAnd impls directly on Square/Squares.
+#[rustfmt::skip]
 pub mod known {
     use super::*;
     use squares::all::*;
@@ -237,7 +241,6 @@ pub mod known {
     pub const UP_DIAGONAL: Bitboard = Bitboard::new(A1.0.0 | B2.0.0 | C3.0.0 | D4.0.0 | E5.0.0 | F6.0.0 | G7.0.0 | H8.0.0);
     pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8.0.0 | B7.0.0 | C6.0.0 | D5.0.0 | E4.0.0 | F3.0.0 | G2.0.0 | H1.0.0);
 
-    #[rustfmt::skip]
     pub const LIGHT_SQUARES: Bitboard = Bitboard::new(
         A8.0.0 | C8.0.0 | E8.0.0 | G8.0.0 |
         B7.0.0 | D7.0.0 | F7.0.0 | H7.0.0 |
@@ -275,7 +278,6 @@ pub mod known {
     pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C1.0.0 | D1.0.0);
     pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C8.0.0 | D8.0.0);
 }
-
 
 #[cfg(test)]
 mod tests {

@@ -1,4 +1,4 @@
-use chess::{game::Game, board::PlayerPieces};
+use chess::{board::PlayerPieces, game::Game};
 
 const PAWN_VALUE: i64 = 100;
 const KNIGHT_VALUE: i64 = 300;
@@ -35,8 +35,7 @@ impl std::ops::Neg for Eval {
 
 #[allow(clippy::cast_possible_wrap)]
 pub fn eval(game: &Game) -> Eval {
-    white_piece_value(game)
-      + black_piece_value(game)
+    white_piece_value(game) + black_piece_value(game)
 }
 
 fn white_piece_value(game: &Game) -> Eval {
@@ -47,13 +46,12 @@ fn black_piece_value(game: &Game) -> Eval {
     -count_piece_values(&game.board.black_pieces)
 }
 
-fn count_piece_values(pieces: &PlayerPieces) -> Eval
-{
+fn count_piece_values(pieces: &PlayerPieces) -> Eval {
     Eval(
         i64::from(pieces.pawns.count()) * PAWN_VALUE
             + i64::from(pieces.knights.count()) * KNIGHT_VALUE
             + i64::from(pieces.bishops.count()) * BISHOP_VALUE
             + i64::from(pieces.rooks.count()) * ROOK_VALUE
-            + i64::from(pieces.queens.count()) * QUEEN_VALUE
+            + i64::from(pieces.queens.count()) * QUEEN_VALUE,
     )
 }

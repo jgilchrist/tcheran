@@ -1,4 +1,9 @@
-use crate::{bitboard::{Bitboard, self}, direction::Direction, player::Player, square::Square};
+use crate::{
+    bitboard::{self, Bitboard},
+    direction::Direction,
+    player::Player,
+    square::Square,
+};
 
 use self::all::*;
 
@@ -426,11 +431,15 @@ pub const INIT_BLACK_KING: Square = E8;
 pub const BLACK_KINGSIDE_CASTLE_SQUARE: Square = G8;
 pub const BLACK_QUEENSIDE_CASTLE_SQUARE: Square = C8;
 
-pub const WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = Squares::from_bitboard(bitboard::known::WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
-pub const BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = Squares::from_bitboard(bitboard::known::BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
+pub const WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
+pub const BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
 
-pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = Squares::from_bitboard(bitboard::known::WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
-pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares = Squares::from_bitboard(bitboard::known::BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
+pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
+pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
 
 #[cfg(test)]
 mod tests {
