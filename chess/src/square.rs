@@ -197,6 +197,11 @@ impl Square {
         self.0.trailing_zeros()
     }
 
+    #[must_use]
+    pub const fn array_idx(&self) -> usize {
+        self.idx() as usize
+    }
+
     #[inline(always)]
     #[must_use]
     pub fn rank(self) -> Rank {

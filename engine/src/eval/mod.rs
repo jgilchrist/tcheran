@@ -1,13 +1,10 @@
-use chess::{board::PlayerPieces, game::Game};
+mod material_diff;
+mod piece_square_tables;
 
-const PAWN_VALUE: i64 = 100;
-const KNIGHT_VALUE: i64 = 300;
-const BISHOP_VALUE: i64 = 300;
-const ROOK_VALUE: i64 = 500;
-const QUEEN_VALUE: i64 = 800;
+use chess::game::Game;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
-pub struct Eval(i64);
+pub struct Eval(i32);
 
 impl std::ops::Add for Eval {
     type Output = Self;
@@ -41,24 +38,8 @@ impl std::fmt::Display for Eval {
 }
 
 #[allow(clippy::cast_possible_wrap)]
+#[must_use]
 pub fn eval(game: &Game) -> Eval {
-    white_piece_value(game) + black_piece_value(game)
-}
-
-fn white_piece_value(game: &Game) -> Eval {
-    count_piece_values(&game.board.white_pieces)
-}
-
-fn black_piece_value(game: &Game) -> Eval {
-    -count_piece_values(&game.board.black_pieces)
-}
-
-fn count_piece_values(pieces: &PlayerPieces) -> Eval {
-    Eval(
-        i64::from(pieces.pawns.count()) * PAWN_VALUE
-            + i64::from(pieces.knights.count()) * KNIGHT_VALUE
-            + i64::from(pieces.bishops.count()) * BISHOP_VALUE
-            + i64::from(pieces.rooks.count()) * ROOK_VALUE
-            + i64::from(pieces.queens.count()) * QUEEN_VALUE,
-    )
+    material_diff::material_diff(game)
+        + piece_square_tables::piece_square_tables(game)
 }
