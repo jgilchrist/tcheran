@@ -5,6 +5,11 @@ members = [
     "uciproxy",
 ]
 
+default-members = [
+    "chess",
+    "engine",
+]
+
 [workspace.package]
 version = "0.0.0"
 edition = "2021"
