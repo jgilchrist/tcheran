@@ -33,6 +33,13 @@ impl std::ops::Neg for Eval {
     }
 }
 
+impl std::fmt::Display for Eval {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let formatted_value = self.0 as f32 / 100.0;
+        write!(f, "{formatted_value}")
+    }
+}
+
 #[allow(clippy::cast_possible_wrap)]
 pub fn eval(game: &Game) -> Eval {
     white_piece_value(game) + black_piece_value(game)

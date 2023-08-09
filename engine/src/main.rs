@@ -16,6 +16,7 @@ mod cli {
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
     use engine::{
+        eval,
         strategy::KnownStrategy,
         uci::{self},
     };
@@ -52,6 +53,9 @@ mod cli {
             fen: String,
             moves: Option<String>,
         },
+
+        /// Return the engine's evaluation of a position
+        Eval { fen: String },
     }
 
     pub fn parse_cli() -> Cli {
@@ -94,7 +98,14 @@ mod cli {
 
                 perft::perft_div(depth - depth_modifier, &game);
                 Ok(())
-            }
+            },
+            Commands::Eval { fen } => {
+                let game = Game::from_fen(&fen).unwrap();
+                let eval = eval(&game);
+
+                println!("{eval}");
+                Ok(())
+            },
         }
     }
 }
