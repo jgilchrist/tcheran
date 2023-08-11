@@ -2,7 +2,7 @@ use std::time::{Duration, Instant};
 
 use chess::{game::Game, moves::Move};
 
-use crate::{eval::Eval, strategy::Reporter};
+use crate::{eval::Eval, strategy::{Reporter, SearchInfo, SearchStats, SearchScore}};
 
 mod negamax;
 mod negamax_eval;
@@ -47,13 +47,15 @@ pub fn search(game: &Game, reporter: &impl Reporter) -> (Move, Eval) {
     let depth = 6;
     let (best_move, eval) = negamax::negamax(game, depth, &mut state);
 
-    reporter.report_search_progress(
-        depth.into(),
-        state.elapsed_time(),
-        state.nodes_visited,
-        state.nodes_per_second(),
-        eval.0,
-    );
+    reporter.report_search_progress(&SearchInfo {
+        depth: depth.into(),
+        score: SearchScore::Centipawns(eval.0),
+        stats: SearchStats {
+            time: state.elapsed_time(),
+            nodes: state.nodes_visited,
+            nodes_per_second: state.nodes_per_second(),
+        }
+    });
 
     (best_move, eval.to_eval(game.player))
 }

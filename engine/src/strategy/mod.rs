@@ -8,14 +8,30 @@ pub trait Strategy<T: Reporter>: Send + Sync {
     fn go(&mut self, game: &Game, reporter: T);
 }
 
+pub enum SearchScore {
+    Centipawns(i32),
+    Mate(u32),
+}
+
+pub struct SearchInfo {
+    pub depth: u32,
+    pub score: SearchScore,
+    pub stats: SearchStats,
+}
+
+pub struct SearchStats {
+    pub time: Duration,
+    pub nodes: u32,
+    pub nodes_per_second: u32,
+}
+
 pub trait Reporter {
     fn should_stop(&self) -> bool;
 
     fn generic_report(&self, s: &str);
 
-    // TODO: Collect these fields into a struct
-    fn report_current_move(&self, currmove: Move, nodes: u32, nps: u32, score: i32);
-    fn report_search_progress(&self, depth: u32, time: Duration, nodes: u32, nps: u32, score: i32);
+    fn report_search_progress(&self, progress: &SearchInfo);
+    fn report_search_stats(&self, stats: &SearchStats);
 
     fn best_move(&self, mv: Move);
 }

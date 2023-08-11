@@ -39,6 +39,26 @@ pub(super) enum RegistrationStatus {
     Error,
 }
 
+#[derive(Debug, Default)]
+pub(crate) struct InfoFields {
+    pub(super) depth: Option<u32>,
+    pub(super) seldepth: Option<u32>,
+    pub(super) time: Option<Duration>,
+    pub(super) nodes: Option<u32>,
+    pub(super) pv: Option<Vec<Move>>,
+    pub(super) multipv: Option<u32>,
+    pub(super) score: Option<InfoScore>,
+    pub(super) currmove: Option<Move>,
+    pub(super) currmovenumber: Option<u32>,
+    pub(super) hashfull: Option<u32>,
+    pub(super) nps: Option<u32>,
+    pub(super) tbhits: Option<u32>,
+    pub(super) cpuload: Option<u32>,
+    pub(super) string: Option<String>,
+    pub(super) refutation: Option<(Move, Option<Move>)>,
+    pub(super) currline: Option<Vec<Move>>,
+}
+
 #[derive(Debug)]
 pub(super) enum UciResponse {
     Id(IdParam),
@@ -50,29 +70,7 @@ pub(super) enum UciResponse {
     },
     CopyProtection(CopyProtectionStatus),
     Registration(RegistrationStatus),
-    // TODO: Make this enum variant reflect actual info messages that would be sent
-    // Typically certain info messages are sent together, e.g.:
-    // info depth 1 seldepth 0
-    // info nps 15937
-    // info score cp 20  depth 3 nodes 423 time 15 pv f1c4 g8f6 b1c3
-    Info {
-        depth: Option<u32>,
-        seldepth: Option<u32>,
-        time: Option<Duration>,
-        nodes: Option<u32>,
-        pv: Option<Vec<Move>>,
-        multipv: Option<u32>,
-        score: Option<InfoScore>,
-        currmove: Option<Move>,
-        currmovenumber: Option<u32>,
-        hashfull: Option<u32>,
-        nps: Option<u32>,
-        tbhits: Option<u32>,
-        cpuload: Option<u32>,
-        string: Option<String>,
-        refutation: Option<(Move, Option<Move>)>,
-        currline: Option<Vec<Move>>,
-    },
+    Info(InfoFields),
     Option {
         name: String,
         r#type: OptionType,
@@ -96,7 +94,7 @@ impl UciResponse {
             Self::BestMove { mv, ponder } => format!("bestmove {}", mv.notation()),
             Self::CopyProtection(status) => todo!(),
             Self::Registration(status) => todo!(),
-            Self::Info {
+            Self::Info(InfoFields {
                 depth,
                 seldepth,
                 time,
@@ -113,8 +111,10 @@ impl UciResponse {
                 string,
                 refutation,
                 currline,
-            } => {
+            }) => {
                 let mut response = "info".to_owned();
+
+                // TODO: Some of these fields are not implemented
 
                 if let Some(depth) = depth {
                     response.push_str(&format!(" depth {depth}"));
@@ -143,10 +143,10 @@ impl UciResponse {
                 if let Some(score) = score {
                     match score {
                         InfoScore::Centipawns(centipawns) => {
-                            response.push_str(&format!(" score cp {centipawns}"))
+                            response.push_str(&format!(" score cp {centipawns}"));
                         }
                         InfoScore::Mate(turns) => {
-                            response.push_str(&format!(" score mate {turns}"))
+                            response.push_str(&format!(" score mate {turns}"));
                         }
                     }
                 }
