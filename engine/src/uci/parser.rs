@@ -104,6 +104,19 @@ pub fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
     separated_list1(space1, uci_move)(input)
 }
 
+fn command_without_arguments<'a, G, O, E: ParseError<&'a str>>(
+    cmd: &'a str,
+    map_argument_fn: G,
+) -> impl FnMut(&'a str) -> IResult<&'a str, O, E>
+where
+    G: FnMut(&'a str) -> O,
+{
+    map(
+        tag(cmd),
+        map_argument_fn,
+    )
+}
+
 fn command_with_argument<'a, F, G, OInner, O, E: ParseError<&'a str>>(
     cmd: &'static str,
     argument_combinator: F,
@@ -263,7 +276,7 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.movetime = Some(movetime);
                     })
                 }),
-                command_with_argument("infinite", success(()), |_| {
+                command_without_arguments("infinite", |_| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.infinite = true;
                     })
@@ -343,5 +356,15 @@ pub fn parse(input: &str) -> Result<UciCommand> {
     match result {
         Ok((_, cmd)) => Ok(cmd),
         Err(e) => bail!("Unknown command: {} ({})", input, e),
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn parse_go_infinite() {
+        assert!(parse("go infinite").is_ok());
     }
 }
