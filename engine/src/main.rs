@@ -5,7 +5,8 @@
     clippy::missing_panics_doc,
     clippy::option_if_let_else,
     clippy::module_name_repetitions,
-    clippy::inline_always
+    clippy::inline_always,
+    clippy::missing_const_for_fn
 )]
 
 use anyhow::Result;
