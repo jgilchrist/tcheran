@@ -101,9 +101,14 @@ mod cli {
             }
             Commands::Eval { fen } => {
                 let game = Game::from_fen(&fen).unwrap();
-                let eval = eval(&game);
+                let eval_components = eval::eval_components(&game);
 
-                println!("{eval}");
+                println!("Eval: {}", eval_components.eval);
+                println!("Components:");
+                println!("  Material: {}", eval_components.material);
+                println!("  Piece square tables: {}", eval_components.piece_square_tables);
+                println!("    White: {}", eval_components.piece_square_tables_white);
+                println!("    Black: {}", eval_components.piece_square_tables_black);
                 Ok(())
             }
         }

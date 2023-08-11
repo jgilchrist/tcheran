@@ -55,3 +55,22 @@ impl std::fmt::Display for Eval {
 pub fn eval(game: &Game) -> Eval {
     material_diff::material_diff(game) + piece_square_tables::piece_square_tables(game)
 }
+
+#[derive(Debug)]
+pub struct EvalComponents {
+    pub eval: Eval,
+    pub material: Eval,
+    pub piece_square_tables_white: Eval,
+    pub piece_square_tables_black: Eval,
+    pub piece_square_tables: Eval,
+}
+
+pub fn eval_components(game: &Game) -> EvalComponents {
+    let eval = eval(game);
+    let material = material_diff::material_diff(game);
+    let piece_square_tables_white = piece_square_tables::piece_square_tables_white(game);
+    let piece_square_tables_black = piece_square_tables::piece_square_tables_black(game);
+    let piece_square_tables = piece_square_tables::piece_square_tables(game);
+
+    EvalComponents { eval, material, piece_square_tables_white, piece_square_tables_black, piece_square_tables }
+}

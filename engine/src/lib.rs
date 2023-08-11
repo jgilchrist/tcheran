@@ -9,12 +9,12 @@
     clippy::inline_always
 )]
 
+pub mod eval;
 pub mod log;
 pub mod perft;
 pub mod strategy;
 pub mod uci;
 
-mod eval;
 mod search;
 mod sync;
 
