@@ -3,8 +3,13 @@ mod piece_square_tables;
 
 use chess::game::Game;
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Eval(i32);
+
+impl Eval {
+    pub(crate) const MAX: Self = Self(i32::MAX);
+    pub(crate) const MIN: Self = Self(i32::MIN);
+}
 
 impl std::ops::Add for Eval {
     type Output = Self;
@@ -19,6 +24,14 @@ impl std::ops::Sub for Eval {
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::Mul<i32> for Eval {
+    type Output = Self;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        Self(self.0 * rhs)
     }
 }
 
