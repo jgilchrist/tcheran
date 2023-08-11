@@ -30,8 +30,8 @@ pub trait Reporter {
 
     fn generic_report(&self, s: &str);
 
-    fn report_search_progress(&self, progress: &SearchInfo);
-    fn report_search_stats(&self, stats: &SearchStats);
+    fn report_search_progress(&self, progress: SearchInfo);
+    fn report_search_stats(&self, stats: SearchStats);
 
     fn best_move(&self, mv: Move);
 }

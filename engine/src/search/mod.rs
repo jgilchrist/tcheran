@@ -34,9 +34,12 @@ impl SearchState {
         t.elapsed()
     }
 
+    // This is an approximate calculations so ignoring all of the possible issues around
+    // precision loss here
+    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss, clippy::cast_precision_loss)]
     pub fn nodes_per_second(&self) -> u32 {
         let elapsed_time = self.elapsed_time();
-        self.nodes_visited / elapsed_time.as_secs() as u32
+        (self.nodes_visited as f32 / elapsed_time.as_secs_f32()) as u32
     }
 }
 
@@ -45,9 +48,9 @@ pub fn search(game: &Game, reporter: &impl Reporter) -> (Move, Eval) {
     state.start_timer();
 
     let depth = 6;
-    let (best_move, eval) = negamax::negamax(game, depth, &mut state);
+    let (best_move, eval) = negamax::negamax(game, depth, &mut state, reporter);
 
-    reporter.report_search_progress(&SearchInfo {
+    reporter.report_search_progress(SearchInfo {
         depth: depth.into(),
         score: SearchScore::Centipawns(eval.0),
         stats: SearchStats {

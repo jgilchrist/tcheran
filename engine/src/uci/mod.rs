@@ -46,7 +46,7 @@ impl strategy::Reporter for UciReporter {
         self.stopped.set();
     }
 
-    fn report_search_progress(&self, progress: &strategy::SearchInfo) {
+    fn report_search_progress(&self, progress: strategy::SearchInfo) {
         let score = match progress.score {
             strategy::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
             strategy::SearchScore::Mate(moves) => InfoScore::Mate(moves),
@@ -62,7 +62,7 @@ impl strategy::Reporter for UciReporter {
         }));
     }
 
-    fn report_search_stats(&self, stats: &strategy::SearchStats) {
+    fn report_search_stats(&self, stats: strategy::SearchStats) {
         send_response(&UciResponse::Info(InfoFields {
             time: Some(stats.time),
             nodes: Some(stats.nodes),
