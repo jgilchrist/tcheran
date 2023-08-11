@@ -26,21 +26,17 @@ impl NegamaxEval {
     // 'maximise' its score. However, this means when we report the eval, it will be reversed
     // if we're playing as black since we need the scores to be positive if black is winning.
     // When reporting this back, we'll want to normalise back to + = white winning.
-    pub const fn to_eval(self, player: Player) -> Eval {
-        let reporting_multiplier = Self::sign_for_player(player);
-        Eval(self.0 * reporting_multiplier)
-    }
-
-    pub const fn from_eval(eval: Eval, player: Player) -> Self {
-        let reporting_multiplier = Self::sign_for_player(player);
-        Self(eval.0 * reporting_multiplier)
-    }
-
-    #[must_use]
-    const fn sign_for_player(player: Player) -> i32 {
+    pub fn to_eval(self, player: Player) -> Eval {
         match player {
-            Player::White => 1,
-            Player::Black => -1,
+            Player::White => Eval(self.0),
+            Player::Black => -Eval(self.0),
+        }
+    }
+
+    pub fn from_eval(eval: Eval, player: Player) -> Self {
+        match player {
+            Player::White => Self(eval.0),
+            Player::Black => Self((-eval).0),
         }
     }
 }
