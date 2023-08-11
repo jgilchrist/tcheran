@@ -1,0 +1,78 @@
+use chess::player::Player;
+
+use crate::eval::Eval;
+
+/// The standard `Eval` struct contains a value that is always from white's
+/// perspective - i.e. positive if white is winning and negative if black is
+/// winning.
+/// When running a negamax search, in order for the same code to work for both
+/// players, we need both players to try 'maximising' their score - so when black
+/// is playing, we need positive values when black is winning.
+/// However, when reporting results from Negamax, it can be confusing to see
+/// evaluation numbers that are positive when black is winning.
+/// `NegamaxEval` represents an evaluation from the perspective of a particular
+/// player to avoid issues here. It can be easily constructed from an `Eval`
+/// (by supplying the player whose perspective it will be from) and can easily
+/// be turned back into an `Eval` for reporting or storage.
+
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+pub struct NegamaxEval(i32);
+
+impl NegamaxEval {
+    pub(crate) const MAX: Self = Self(i32::MAX);
+    pub(crate) const MIN: Self = Self(i32::MIN);
+
+    // For negamax to work, the eval must be flipped for each side so that each side can
+    // 'maximise' its score. However, this means when we report the eval, it will be reversed
+    // if we're playing as black since we need the scores to be positive if black is winning.
+    // When reporting this back, we'll want to normalise back to + = white winning.
+    pub const fn to_eval(self, player: Player) -> Eval {
+        let reporting_multiplier = Self::sign_for_player(player);
+        Eval(self.0 * reporting_multiplier)
+    }
+
+    pub const fn from_eval(eval: Eval, player: Player) -> Self {
+        let reporting_multiplier = Self::sign_for_player(player);
+        Self(eval.0 * reporting_multiplier)
+    }
+
+    #[must_use]
+    const fn sign_for_player(player: Player) -> i32 {
+        match player {
+            Player::White => 1,
+            Player::Black => -1,
+        }
+    }
+}
+
+impl std::ops::Add for NegamaxEval {
+    type Output = Self;
+
+    fn add(self, rhs: Self) -> Self::Output {
+        Self(self.0 + rhs.0)
+    }
+}
+
+impl std::ops::Sub for NegamaxEval {
+    type Output = Self;
+
+    fn sub(self, rhs: Self) -> Self::Output {
+        Self(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::Mul<i32> for NegamaxEval {
+    type Output = Self;
+
+    fn mul(self, rhs: i32) -> Self::Output {
+        Self(self.0 * rhs)
+    }
+}
+
+impl std::ops::Neg for NegamaxEval {
+    type Output = Self;
+
+    fn neg(self) -> Self::Output {
+        Self(self.0.saturating_neg())
+    }
+}

@@ -106,7 +106,10 @@ mod cli {
                 println!("Eval: {}", eval_components.eval);
                 println!("Components:");
                 println!("  Material: {}", eval_components.material);
-                println!("  Piece square tables: {}", eval_components.piece_square_tables);
+                println!(
+                    "  Piece square tables: {}",
+                    eval_components.piece_square_tables
+                );
                 println!("    White: {}", eval_components.piece_square_tables_white);
                 println!("    Black: {}", eval_components.piece_square_tables_black);
                 Ok(())

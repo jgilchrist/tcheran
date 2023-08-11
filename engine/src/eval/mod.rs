@@ -4,12 +4,7 @@ mod piece_square_tables;
 use chess::game::Game;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Eval(i32);
-
-impl Eval {
-    pub(crate) const MAX: Self = Self(i32::MAX);
-    pub(crate) const MIN: Self = Self(i32::MIN);
-}
+pub struct Eval(pub i32);
 
 impl std::ops::Add for Eval {
     type Output = Self;
@@ -72,5 +67,11 @@ pub fn eval_components(game: &Game) -> EvalComponents {
     let piece_square_tables_black = piece_square_tables::piece_square_tables_black(game);
     let piece_square_tables = piece_square_tables::piece_square_tables(game);
 
-    EvalComponents { eval, material, piece_square_tables_white, piece_square_tables_black, piece_square_tables }
+    EvalComponents {
+        eval,
+        material,
+        piece_square_tables_white,
+        piece_square_tables_black,
+        piece_square_tables,
+    }
 }
