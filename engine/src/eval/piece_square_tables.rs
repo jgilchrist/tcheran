@@ -170,15 +170,15 @@ pub(crate) fn piece_square_tables_black(game: &Game) -> Eval {
     // Piece contributions for black are reversed
     // Whereas for white, +50 would mean 'we are winning' and -50 would mean 'we are losing', for black
     // +50 should mean 'white is winning' and -50 should mean 'black is winning'.
-    let pawn_score = -piece_contribution(game.board.black_pieces.pawns, &tables::PAWN_TABLE_BLACK);
+    let pawn_score = piece_contribution(game.board.black_pieces.pawns, &tables::PAWN_TABLE_BLACK);
     let knight_score =
-        -piece_contribution(game.board.black_pieces.knights, &tables::KNIGHT_TABLE_BLACK);
+        piece_contribution(game.board.black_pieces.knights, &tables::KNIGHT_TABLE_BLACK);
     let bishops_score =
-        -piece_contribution(game.board.black_pieces.bishops, &tables::BISHOP_TABLE_BLACK);
+        piece_contribution(game.board.black_pieces.bishops, &tables::BISHOP_TABLE_BLACK);
     let rook_score = -piece_contribution(game.board.black_pieces.rooks, &tables::ROOK_TABLE_BLACK);
     let queen_score =
-        -piece_contribution(game.board.black_pieces.queens, &tables::QUEEN_TABLE_BLACK);
-    let king_score = -piece_contribution(game.board.black_pieces.king, &tables::KING_TABLE_BLACK);
+        piece_contribution(game.board.black_pieces.queens, &tables::QUEEN_TABLE_BLACK);
+    let king_score = piece_contribution(game.board.black_pieces.king, &tables::KING_TABLE_BLACK);
 
     -Eval(pawn_score + knight_score + bishops_score + rook_score + queen_score + king_score)
 }
