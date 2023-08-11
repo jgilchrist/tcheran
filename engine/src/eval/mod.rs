@@ -26,7 +26,7 @@ impl std::ops::Neg for Eval {
     type Output = Self;
 
     fn neg(self) -> Self::Output {
-        Self(-self.0)
+        Self(self.0.saturating_neg())
     }
 }
 
