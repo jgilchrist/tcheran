@@ -53,6 +53,5 @@ impl std::fmt::Display for Eval {
 #[allow(clippy::cast_possible_wrap)]
 #[must_use]
 pub fn eval(game: &Game) -> Eval {
-    material_diff::material_diff(game)
-        + piece_square_tables::piece_square_tables(game)
+    material_diff::material_diff(game) + piece_square_tables::piece_square_tables(game)
 }

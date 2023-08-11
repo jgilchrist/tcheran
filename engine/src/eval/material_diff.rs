@@ -1,4 +1,4 @@
-use chess::{game::Game, board::PlayerPieces};
+use chess::{board::PlayerPieces, game::Game};
 
 use super::Eval;
 

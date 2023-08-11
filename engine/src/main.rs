@@ -98,14 +98,14 @@ mod cli {
 
                 perft::perft_div(depth - depth_modifier, &game);
                 Ok(())
-            },
+            }
             Commands::Eval { fen } => {
                 let game = Game::from_fen(&fen).unwrap();
                 let eval = eval(&game);
 
                 println!("{eval}");
                 Ok(())
-            },
+            }
         }
     }
 }

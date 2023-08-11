@@ -1,13 +1,13 @@
 use chess::{game::Game, moves::Move, player::Player};
 
-use crate::eval::{Eval, self};
+use crate::eval::{self, Eval};
 
 use super::SearchState;
 
 pub fn negamax(game: &Game, depth: u8, state: &mut SearchState) -> (Move, Eval) {
     let mut best_move: Option<Move> = None;
     let mut best_score = Eval::MIN;
-    
+
     let root_moves = game.legal_moves();
     for mv in &root_moves {
         let game_after_move = game.make_move(mv).unwrap();
@@ -25,7 +25,13 @@ pub fn negamax(game: &Game, depth: u8, state: &mut SearchState) -> (Move, Eval) 
     (best_move.unwrap(), best_score)
 }
 
-fn negamax_inner(game: &Game, mut alpha: Eval, beta: Eval, depth: u8, state: &mut SearchState) -> Eval {
+fn negamax_inner(
+    game: &Game,
+    mut alpha: Eval,
+    beta: Eval,
+    depth: u8,
+    state: &mut SearchState,
+) -> Eval {
     // TODO: Quiescence search
     // TODO: Check if game is over
     if depth == 0 {
