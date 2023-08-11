@@ -111,10 +111,7 @@ fn command_without_arguments<'a, G, O, E: ParseError<&'a str>>(
 where
     G: FnMut(&'a str) -> O,
 {
-    map(
-        tag(cmd),
-        map_argument_fn,
-    )
+    map(tag(cmd), map_argument_fn)
 }
 
 fn command_with_argument<'a, F, G, OInner, O, E: ParseError<&'a str>>(

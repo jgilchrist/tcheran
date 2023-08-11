@@ -1,5 +1,6 @@
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
@@ -10,6 +11,7 @@ use crate::{
     strategy::{self, Strategy},
 };
 
+use self::responses::InfoScore;
 use self::{
     commands::{GoCmdArguments, UciCommand},
     responses::{IdParam, UciResponse},
@@ -24,6 +26,7 @@ pub mod responses;
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
+// TODO: Split reporting from control
 #[derive(Clone)]
 pub struct UciReporter {
     stop: Arc<Mutex<bool>>,
@@ -35,13 +38,57 @@ impl strategy::Reporter for UciReporter {
         *self.stop.lock().unwrap()
     }
 
-    fn report_progress(&self, s: &str) {
+    fn generic_report(&self, s: &str) {
         println!("{s}");
     }
 
     fn best_move(&self, mv: Move) {
         send_response(&UciResponse::BestMove { mv, ponder: None });
         self.stopped.set();
+    }
+
+    fn report_search_progress(&self, depth: u32, time: Duration, nodes: u32, nps: u32, score: i32) {
+        // TODO: Many of these fields need to be reworked to be sent properly
+
+        send_response(&UciResponse::Info {
+            depth: Some(depth),
+            seldepth: None,
+            time: Some(time),
+            nodes: Some(nodes),
+            pv: None,
+            multipv: None,
+            score: Some(InfoScore::Centipawns(score)),
+            currmove: None,
+            currmovenumber: None,
+            hashfull: None,
+            nps: Some(nps),
+            tbhits: None,
+            cpuload: None,
+            string: None,
+            refutation: None,
+            currline: None,
+        });
+    }
+
+    fn report_current_move(&self, currmove: Move, nodes: u32, nps: u32, score: i32) {
+        send_response(&UciResponse::Info {
+            depth: None,
+            seldepth: None,
+            time: None,
+            nodes: Some(nodes),
+            pv: None,
+            multipv: None,
+            score: Some(InfoScore::Centipawns(score)),
+            currmove: Some(currmove),
+            currmovenumber: None,
+            hashfull: None,
+            nps: Some(nps),
+            tbhits: None,
+            cpuload: None,
+            string: None,
+            refutation: None,
+            currline: None,
+        });
     }
 }
 

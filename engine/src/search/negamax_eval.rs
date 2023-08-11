@@ -16,7 +16,7 @@ use crate::eval::Eval;
 /// be turned back into an `Eval` for reporting or storage.
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct NegamaxEval(i32);
+pub struct NegamaxEval(pub i32);
 
 impl NegamaxEval {
     pub(crate) const MAX: Self = Self(i32::MAX);

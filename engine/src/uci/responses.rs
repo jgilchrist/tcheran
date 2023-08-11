@@ -1,11 +1,13 @@
+use std::time::Duration;
+
 use chess::moves::Move;
 
 #[derive(Debug)]
-pub(super) struct InfoScore {
-    cp: i32,
-    mate: u32,
-    lowerbound: i32,
-    upperbound: i32,
+pub(super) enum InfoScore {
+    Centipawns(i32),
+    Mate(u32),
+    // lowerbound: i32,
+    // upperbound: i32,
 }
 
 #[derive(Debug)]
@@ -56,7 +58,7 @@ pub(super) enum UciResponse {
     Info {
         depth: Option<u32>,
         seldepth: Option<u32>,
-        time: Option<u32>,
+        time: Option<Duration>,
         nodes: Option<u32>,
         pv: Option<Vec<Move>>,
         multipv: Option<u32>,
@@ -111,7 +113,46 @@ impl UciResponse {
                 string,
                 refutation,
                 currline,
-            } => todo!(),
+            } => {
+                let mut response = "info".to_owned();
+
+                if let Some(depth) = depth {
+                    response.push_str(&format!(" depth {depth}"));
+                }
+
+                if let Some(seldepth) = seldepth {
+                    response.push_str(&format!(" seldepth {seldepth}"));
+                }
+
+                if let Some(time) = time {
+                    response.push_str(&format!(" time {}", time.as_millis()));
+                }
+
+                if let Some(nodes) = nodes {
+                    response.push_str(&format!(" nodes {nodes}"));
+                }
+
+                if let Some(nps) = nps {
+                    response.push_str(&format!(" nps {nps}"));
+                }
+
+                if let Some(currmove) = currmove {
+                    response.push_str(&format!(" currmove {}", currmove.notation()));
+                }
+
+                if let Some(score) = score {
+                    match score {
+                        InfoScore::Centipawns(centipawns) => {
+                            response.push_str(&format!(" score cp {centipawns}"))
+                        }
+                        InfoScore::Mate(turns) => {
+                            response.push_str(&format!(" score mate {turns}"))
+                        }
+                    }
+                }
+
+                response
+            }
             Self::Option {
                 name,
                 r#type,
