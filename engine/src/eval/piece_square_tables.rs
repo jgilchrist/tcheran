@@ -152,7 +152,7 @@ fn piece_contribution(pieces: Squares, piece_table: &PieceValueTable) -> i32 {
     pieces.iter().map(|p| piece_table[p.array_idx()]).sum()
 }
 
-pub(crate) fn piece_square_tables_white(game: &Game) -> Eval {
+pub fn piece_square_tables_white(game: &Game) -> Eval {
     let pawn_score = piece_contribution(game.board.white_pieces.pawns, &tables::PAWN_TABLE_WHITE);
     let knight_score =
         piece_contribution(game.board.white_pieces.knights, &tables::KNIGHT_TABLE_WHITE);
@@ -166,7 +166,7 @@ pub(crate) fn piece_square_tables_white(game: &Game) -> Eval {
     Eval(pawn_score + knight_score + bishops_score + rook_score + queen_score + king_score)
 }
 
-pub(crate) fn piece_square_tables_black(game: &Game) -> Eval {
+pub fn piece_square_tables_black(game: &Game) -> Eval {
     // Piece contributions for black are reversed
     // Whereas for white, +50 would mean 'we are winning' and -50 would mean 'we are losing', for black
     // +50 should mean 'white is winning' and -50 should mean 'black is winning'.

@@ -38,6 +38,7 @@ impl std::ops::Neg for Eval {
     }
 }
 
+#[allow(clippy::cast_precision_loss)]
 impl std::fmt::Display for Eval {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let formatted_value = self.0 as f32 / 100.0;
@@ -60,6 +61,7 @@ pub struct EvalComponents {
     pub piece_square_tables: Eval,
 }
 
+#[must_use]
 pub fn eval_components(game: &Game) -> EvalComponents {
     let eval = eval(game);
     let material = material_diff::material_diff(game);
