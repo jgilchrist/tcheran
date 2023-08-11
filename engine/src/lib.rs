@@ -18,6 +18,7 @@ pub mod uci;
 
 mod search;
 mod sync;
+mod move_ordering;
 
 pub use eval::eval;
 

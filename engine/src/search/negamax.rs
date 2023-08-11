@@ -1,6 +1,6 @@
 use chess::{game::Game, moves::Move};
 
-use crate::{eval::{self}, strategy::{Reporter, SearchStats}};
+use crate::{eval::{self}, strategy::{Reporter, SearchStats}, move_ordering};
 
 use super::{negamax_eval::NegamaxEval, SearchState};
 
@@ -8,7 +8,9 @@ pub fn negamax(game: &Game, depth: u8, state: &mut SearchState, reporter: &impl 
     let mut best_move: Option<Move> = None;
     let mut best_score = NegamaxEval::MIN;
 
-    let root_moves = game.legal_moves();
+    let mut root_moves = game.legal_moves();
+    move_ordering::order_moves(game, &mut root_moves);
+
     for mv in &root_moves {
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
@@ -51,7 +53,8 @@ fn negamax_inner(
         return NegamaxEval::from_eval(eval, game.player);
     }
 
-    let legal_moves = game.legal_moves();
+    let mut legal_moves = game.legal_moves();
+    move_ordering::order_moves(game, &mut legal_moves);
 
     for mv in &legal_moves {
         let game_after_move = game.make_move(mv).unwrap();
