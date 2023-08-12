@@ -10,7 +10,7 @@
 )]
 
 use anyhow::Result;
-use engine::log::log;
+use engine::util::log::log;
 
 mod cli {
     use anyhow::Result;

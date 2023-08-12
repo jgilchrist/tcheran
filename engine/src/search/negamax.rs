@@ -1,10 +1,18 @@
 use chess::{game::Game, moves::Move};
 
-use crate::{eval::{self}, strategy::{Reporter, SearchStats}, move_ordering};
+use crate::{
+    eval::{self},
+    strategy::{Reporter, SearchStats},
+};
 
-use super::{negamax_eval::NegamaxEval, SearchState};
+use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
-pub fn negamax(game: &Game, depth: u8, state: &mut SearchState, reporter: &impl Reporter) -> (Move, NegamaxEval) {
+pub fn negamax(
+    game: &Game,
+    depth: u8,
+    state: &mut SearchState,
+    reporter: &impl Reporter,
+) -> (Move, NegamaxEval) {
     let mut best_move: Option<Move> = None;
     let mut best_score = NegamaxEval::MIN;
 

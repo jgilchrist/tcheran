@@ -11,14 +11,12 @@
 )]
 
 pub mod eval;
-pub mod log;
 pub mod perft;
 pub mod strategy;
 pub mod uci;
+pub mod util;
 
 mod search;
-mod sync;
-mod move_ordering;
 
 pub use eval::eval;
 

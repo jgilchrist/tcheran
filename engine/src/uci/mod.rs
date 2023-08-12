@@ -4,13 +4,13 @@ use std::sync::{Arc, Mutex};
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
 
-use crate::sync::LockLatch;
+use crate::util::sync::LockLatch;
 use crate::{
-    log::log,
     strategy::{self, Strategy},
+    util::log::log,
 };
 
-use self::responses::{InfoScore, InfoFields};
+use self::responses::{InfoFields, InfoScore};
 use self::{
     commands::{GoCmdArguments, UciCommand},
     responses::{IdParam, UciResponse},
