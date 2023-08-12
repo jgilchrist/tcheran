@@ -1,6 +1,6 @@
 use crate::{
     direction::Direction,
-    squares::{self},
+    squares::{self}, square::{Rank, File},
 };
 
 // TODO: Try removing Copy so that clones have to be explicit
@@ -174,10 +174,10 @@ impl std::fmt::Debug for Bitboard {
         write!(
             f,
             "\n{}\n",
-            (0..8)
+            (0..Rank::N)
                 .rev()
                 .map(|rank| {
-                    (0..8)
+                    (0..File::N)
                         .map(|file| match self.0 & (1 << (rank * 8 + file)) {
                             0 => ".",
                             _ => "*",

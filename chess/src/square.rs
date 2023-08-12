@@ -1,6 +1,6 @@
 use crate::{bitboard::Bitboard, direction::Direction, squares::Squares};
 
-pub const FILES: [File; 8] = [
+pub const FILES: [File; File::N] = [
     File::A,
     File::B,
     File::C,
@@ -24,6 +24,8 @@ pub enum File {
 }
 
 impl File {
+    pub const N: usize = 8;
+
     #[must_use]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
@@ -82,7 +84,7 @@ impl std::fmt::Display for File {
     }
 }
 
-pub const RANKS: [Rank; 8] = [
+pub const RANKS: [Rank; Rank::N] = [
     Rank::R1,
     Rank::R2,
     Rank::R3,
@@ -106,6 +108,8 @@ pub enum Rank {
 }
 
 impl Rank {
+    pub const N: usize = 8;
+
     #[must_use]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
@@ -187,9 +191,20 @@ impl Square {
     }
 
     #[must_use]
+    pub const fn from_array_index(idx: usize) -> Self {
+        Self(Bitboard::new(1 << idx))
+    }
+
+    #[must_use]
     pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Self {
         let idx = rank_idx * 8 + file_idx;
         Self::from_index(idx)
+    }
+
+    #[must_use]
+    pub const fn from_array_idxs(file_idx: usize, rank_idx: usize) -> Self {
+        let idx = rank_idx * 8 + file_idx;
+        Self::from_array_index(idx)
     }
 
     #[must_use]

@@ -302,10 +302,10 @@ impl std::fmt::Debug for Board {
     }
 }
 
-impl TryFrom<[Option<Piece>; 64]> for Board {
+impl TryFrom<[Option<Piece>; Squares::N]> for Board {
     type Error = anyhow::Error;
 
-    fn try_from(pieces: [Option<Piece>; 64]) -> Result<Self> {
+    fn try_from(pieces: [Option<Piece>; Squares::N]) -> Result<Self> {
         let mut white_pawns = Squares::none();
         let mut white_knights = Squares::none();
         let mut white_bishops = Squares::none();

@@ -7,7 +7,7 @@ use crate::{
     game::{CastleRights, Game},
     piece::Piece,
     player::Player,
-    square::{File, Rank, Square},
+    square::{File, Rank, Square}, squares::Squares,
 };
 
 use nom::{
@@ -85,10 +85,10 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
             all_pieces.extend(line7.0);
             all_pieces.extend(line8.0);
 
-            assert!(all_pieces.len() == 64);
+            assert!(all_pieces.len() == Squares::N);
 
             // TODO: Error handling
-            let pieces_array: [Option<Piece>; 64] = all_pieces.try_into().unwrap();
+            let pieces_array: [Option<Piece>; Squares::N] = all_pieces.try_into().unwrap();
 
             pieces_array.try_into().unwrap()
         },

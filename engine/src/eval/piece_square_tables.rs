@@ -4,7 +4,7 @@ use chess::{game::Game, squares::Squares};
 
 use super::Eval;
 
-type PieceValueTable = [i32; 64];
+type PieceValueTable = [i32; Squares::N];
 
 #[rustfmt::skip]
 mod tables {

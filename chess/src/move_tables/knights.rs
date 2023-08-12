@@ -2,7 +2,7 @@ use crate::{bitboard::Bitboard, square::Square, squares::Squares};
 
 use super::attacks;
 
-static mut ATTACKS_TABLE: [Bitboard; 64] = [Bitboard::empty(); 64];
+static mut ATTACKS_TABLE: [Bitboard; Squares::N] = [Bitboard::empty(); Squares::N];
 
 pub fn knight_attacks(s: Square) -> Squares {
     Squares(unsafe { ATTACKS_TABLE[s.idx() as usize] })

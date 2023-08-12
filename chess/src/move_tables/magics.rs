@@ -2,10 +2,10 @@ use crate::{bitboard::Bitboard, square::Square, squares::Squares};
 
 use super::{attacks, occupancies};
 
-static mut BISHOP_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
-const BISHOP_SHIFT: u64 = 9;
-static mut ROOK_NOT_MASKS: [Bitboard; 64] = [Bitboard::empty(); 64];
-const ROOK_SHIFT: u64 = 12;
+static mut BISHOP_NOT_MASKS: [Bitboard; Squares::N] = [Bitboard::empty(); Squares::N];
+const BISHOP_SHIFT: usize = 9;
+static mut ROOK_NOT_MASKS: [Bitboard; Squares::N] = [Bitboard::empty(); Squares::N];
+const ROOK_SHIFT: usize = 12;
 
 type AttacksTable = [Bitboard; 87988];
 static mut ATTACKS_TABLE: AttacksTable = [Bitboard::empty(); 87988];
@@ -15,7 +15,7 @@ static mut ATTACKS_TABLE: AttacksTable = [Bitboard::empty(); 87988];
 
 #[rustfmt::skip]
 #[allow(clippy::unreadable_literal)]
-const DEFAULT_BISHOP_MAGICS: [(u64, usize); 64] = [
+const DEFAULT_BISHOP_MAGICS: [(u64, usize); Squares::N] = [
     (0xA7020080601803D8, 60984), (0x13802040400801F1, 66046), (0x0A0080181001F60C, 32910),
     (0x1840802004238008, 16369), (0xC03FE00100000000, 42115), (0x24C00BFFFF400000,   835),
     (0x0808101F40007F04, 18910), (0x100808201EC00080, 25911), (0xFFA2FEFFBFEFB7FF, 63301),
@@ -42,7 +42,7 @@ const DEFAULT_BISHOP_MAGICS: [(u64, usize); 64] = [
 
 #[rustfmt::skip]
 #[allow(clippy::unreadable_literal)]
-const DEFAULT_ROOK_MAGICS: [(u64, usize); 64] = [
+const DEFAULT_ROOK_MAGICS: [(u64, usize); Squares::N] = [
 	(0x80280013FF84FFFF, 10890), (0x5FFBFEFDFEF67FFF, 50579), (0xFFEFFAFFEFFDFFFF, 62020),
     (0x003000900300008A, 67322), (0x0050028010500023, 80251), (0x0020012120A00020, 58503),
     (0x0030006000C00030, 51175), (0x0058005806B00002, 83130), (0x7FBFF7FBFBEAFFFC, 50430),
@@ -152,7 +152,7 @@ fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
 
     let relevant_occupancies = blockers | not_mask;
     let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);
-    occupancies_index_offset >>= 64 - BISHOP_SHIFT;
+    occupancies_index_offset >>= Squares::N - BISHOP_SHIFT;
 
     index + occupancies_index_offset as usize
 }
@@ -191,7 +191,7 @@ fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
 
     let relevant_occupancies = blockers | not_mask;
     let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);
-    occupancies_index_offset >>= 64 - ROOK_SHIFT;
+    occupancies_index_offset >>= Squares::N - ROOK_SHIFT;
 
     index + occupancies_index_offset as usize
 }

@@ -2,7 +2,7 @@ use crate::{
     bitboard::{self, Bitboard},
     direction::Direction,
     player::Player,
-    square::Square,
+    square::{Square, File, Rank},
 };
 
 use self::all::*;
@@ -47,6 +47,8 @@ impl<'a> IntoIterator for &'a Squares {
 }
 
 impl Squares {
+    pub const N: usize = File::N * Rank::N;
+
     #[must_use]
     pub const fn from_bitboard(bitboard: Bitboard) -> Self {
         Self(bitboard)
@@ -234,12 +236,12 @@ impl std::fmt::Debug for Squares {
         write!(
             f,
             "\n{}\n",
-            (0..8)
+            (0..Rank::N)
                 .rev()
                 .map(|rank| {
-                    (0..8)
+                    (0..File::N)
                         .map(|file| {
-                            if self.contains(Square::from_idxs(file, rank)) {
+                            if self.contains(Square::from_array_idxs(file, rank)) {
                                 "*"
                             } else {
                                 "."
