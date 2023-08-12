@@ -7,7 +7,8 @@ use crate::{
     game::{CastleRights, Game},
     piece::Piece,
     player::Player,
-    square::{File, Rank, Square}, squares::Squares,
+    square::{File, Rank, Square},
+    squares::Squares,
 };
 
 use nom::{

@@ -10,6 +10,22 @@ pub enum PieceKind {
     King,
 }
 
+impl PieceKind {
+    pub const N: usize = 6;
+
+    #[must_use]
+    pub fn array_idx(&self) -> usize {
+        match self {
+            Self::Pawn => 0,
+            Self::Knight => 1,
+            Self::Bishop => 2,
+            Self::Rook => 3,
+            Self::Queen => 4,
+            Self::King => 5,
+        }
+    }
+}
+
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PromotionPieceKind {
     Knight,

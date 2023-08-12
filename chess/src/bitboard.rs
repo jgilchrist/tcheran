@@ -1,6 +1,7 @@
 use crate::{
     direction::Direction,
-    squares::{self}, square::{Rank, File},
+    square::{File, Rank},
+    squares::{self},
 };
 
 // TODO: Try removing Copy so that clones have to be explicit

@@ -2,7 +2,7 @@ use crate::{
     bitboard::{self, Bitboard},
     direction::Direction,
     player::Player,
-    square::{Square, File, Rank},
+    square::{File, Rank, Square},
 };
 
 use self::all::*;

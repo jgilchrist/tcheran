@@ -3,6 +3,10 @@ mod piece_square_tables;
 
 use chess::game::Game;
 
+pub fn init() {
+    piece_square_tables::init();
+}
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct Eval(pub i32);
 

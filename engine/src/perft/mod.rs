@@ -38,7 +38,7 @@ mod tests {
     #[test]
     #[ignore]
     fn perft_startpos_5() {
-        chess::init();
+        crate::init();
         assert_eq!(perft(5, &Game::new()), 4_865_609);
     }
 }

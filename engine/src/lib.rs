@@ -37,3 +37,9 @@ pub fn engine_version() -> &'static str {
     // Otherwise, if we got a version from Git, we can use it directly
     version
 }
+
+pub fn init() {
+    chess::init();
+
+    eval::init();
+}
