@@ -91,26 +91,26 @@ impl UciResponse {
             Self::UciOk => "uciok".to_string(),
             Self::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
-            Self::BestMove { mv, ponder } => format!("bestmove {}", mv.notation()),
-            Self::CopyProtection(status) => todo!(),
-            Self::Registration(status) => todo!(),
+            Self::BestMove { mv, ponder: _ponder } => format!("bestmove {}", mv.notation()),
+            Self::CopyProtection(_status) => todo!(),
+            Self::Registration(_status) => todo!(),
             Self::Info(InfoFields {
                 depth,
                 seldepth,
                 time,
                 nodes,
-                pv,
-                multipv,
+               pv: _pv,
+               multipv: _multipv,
                 score,
                 currmove,
-                currmovenumber,
-                hashfull,
+                currmovenumber: _currmovenumber,
+                hashfull: _hashfull,
                 nps,
-                tbhits,
-                cpuload,
-                string,
-                refutation,
-                currline,
+                tbhits: _tbhits,
+                cpuload: _cpuload,
+                string: _string,
+                refutation: _refutation,
+                currline: _currline,
             }) => {
                 let mut response = "info".to_owned();
 
@@ -154,12 +154,12 @@ impl UciResponse {
                 response
             }
             Self::Option {
-                name,
-                r#type,
-                default,
-                min,
-                max,
-                var,
+                name: _name,
+                r#type: _type,
+                default: _default,
+                min: _min,
+                max: _max,
+                var: _var,
             } => todo!(),
         }
     }
