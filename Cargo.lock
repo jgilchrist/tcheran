@@ -340,9 +340,9 @@ dependencies = [
 
 [[package]]
 name = "message-io"
-version = "0.17.0"
+version = "0.18.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d1ecb7ea15ed361656b2423e3d0f7a63fee6db5cea153549e23cb9cdd50bb5c"
+checksum = "7739db2d8ff81aeeb776a15ace32f0ae30da9f9f818322bd3316ea47d71c61d0"
 dependencies = [
  "crossbeam-channel",
  "crossbeam-utils",
