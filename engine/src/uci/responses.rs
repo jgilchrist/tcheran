@@ -91,7 +91,10 @@ impl UciResponse {
             Self::UciOk => "uciok".to_string(),
             Self::ReadyOk => "readyok".to_string(),
             // TODO: Account for 'ponder'
-            Self::BestMove { mv, ponder: _ponder } => format!("bestmove {}", mv.notation()),
+            Self::BestMove {
+                mv,
+                ponder: _ponder,
+            } => format!("bestmove {}", mv.notation()),
             Self::CopyProtection(_status) => todo!(),
             Self::Registration(_status) => todo!(),
             Self::Info(InfoFields {
@@ -99,8 +102,8 @@ impl UciResponse {
                 seldepth,
                 time,
                 nodes,
-               pv: _pv,
-               multipv: _multipv,
+                pv: _pv,
+                multipv: _multipv,
                 score,
                 currmove,
                 currmovenumber: _currmovenumber,

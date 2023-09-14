@@ -385,8 +385,8 @@ mod tests {
 
     #[test]
     fn test_debugon() {
-                    parse("debugon").expect_err("Should not parse 'debugon'");
-                                                                                    }
+        parse("debugon").expect_err("Should not parse 'debugon'");
+    }
 
     #[test]
     fn test_debug_wrong_param() {
@@ -396,8 +396,8 @@ mod tests {
 
     #[test]
     fn test_debug_cutoff() {
-                         parse("debug    ontario").expect_err("Should not parse");
-                                                                                        }
+        parse("debug    ontario").expect_err("Should not parse");
+    }
 
     #[test]
     fn test_isready() {
