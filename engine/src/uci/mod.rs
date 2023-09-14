@@ -41,11 +41,6 @@ impl strategy::Reporter for UciReporter {
         println!("{s}");
     }
 
-    fn best_move(&self, mv: Move) {
-        send_response(&UciResponse::BestMove { mv, ponder: None });
-        self.stopped.set();
-    }
-
     fn report_search_progress(&self, progress: strategy::SearchInfo) {
         let score = match progress.score {
             strategy::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
@@ -69,6 +64,11 @@ impl strategy::Reporter for UciReporter {
             nps: Some(stats.nodes_per_second),
             ..Default::default()
         }));
+    }
+
+    fn best_move(&self, mv: Move) {
+        send_response(&UciResponse::BestMove { mv, ponder: None });
+        self.stopped.set();
     }
 }
 

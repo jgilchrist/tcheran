@@ -12,7 +12,7 @@ pub fn log<S: AsRef<str>>(s: S) {
     fs::create_dir_all(LOG_DIRECTORY).expect("Unable to create log directory");
     let path = Path::new(LOG_DIRECTORY).join(log_file());
 
-    let mut f = std::fs::OpenOptions::new()
+    let mut f = fs::OpenOptions::new()
         .create(true)
         .write(true)
         .append(true)
