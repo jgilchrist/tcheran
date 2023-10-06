@@ -8,7 +8,7 @@ use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{one_of, space0, space1},
-    combinator::{eof, map, opt, success, value},
+    combinator::{eof, map, opt, value},
     error::ParseError,
     multi::{fold_many0, separated_list1},
     sequence::{pair, preceded, tuple},
@@ -223,7 +223,7 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.searchmoves = Some(searchmoves);
                     })
                 }),
-                command_with_argument("ponder", success(()), |_| {
+                command_without_arguments("ponder", |_| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.ponder = true;
                     })
