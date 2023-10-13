@@ -1,4 +1,4 @@
-use chess::{game::Game, moves::Move, squares};
+use chess::{game::Game, moves::Move};
 use chess::game::GameStatus;
 
 use crate::{

@@ -204,7 +204,7 @@ fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
     nom::character::complete::u32(input)
 }
 
-pub fn fen_parser(input: &str) -> IResult<&str, Game> {
+fn fen_parser(input: &str) -> IResult<&str, Game> {
     let (
         input,
         (board, player, castle_rights, en_passant_target, _halfmove_clock, _fullmove_number, _),
