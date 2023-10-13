@@ -4,8 +4,8 @@ use chess::{game::Game, moves::Move};
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 
-pub trait Strategy<T: Reporter>: Send + Sync {
-    fn go(&mut self, game: &Game, reporter: T);
+pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
+    fn go(&mut self, game: &Game, control: TCx, reporter: TRx);
 }
 
 pub enum SearchScore {
@@ -25,9 +25,12 @@ pub struct SearchStats {
     pub nodes_per_second: u32,
 }
 
-pub trait Reporter {
+pub trait Control {
+    fn stop(&self);
     fn should_stop(&self) -> bool;
+}
 
+pub trait Reporter {
     fn generic_report(&self, s: &str);
 
     fn report_search_progress(&self, progress: SearchInfo);
@@ -48,7 +51,7 @@ pub enum KnownStrategy {
 
 impl KnownStrategy {
     #[must_use]
-    pub fn create<T: Reporter>(&self) -> Box<dyn Strategy<T> + Send + Sync> {
+    pub fn create<TCx: Control, TRx: Reporter>(&self) -> Box<dyn Strategy<TCx, TRx> + Send + Sync> {
         match self {
             Self::Main => Box::<MainStrategy>::default(),
             Self::Random => Box::<RandomMoveStrategy>::default(),

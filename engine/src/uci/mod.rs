@@ -25,18 +25,26 @@ pub mod responses;
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
-// TODO: Split reporting from control
 #[derive(Clone)]
-pub struct UciReporter {
+pub struct UciControl {
     stop: Arc<Mutex<bool>>,
     stopped: Arc<LockLatch>,
 }
 
-impl strategy::Reporter for UciReporter {
+impl strategy::Control for UciControl {
+    fn stop(&self) {
+        self.stopped.set();
+    }
+
     fn should_stop(&self) -> bool {
         *self.stop.lock().unwrap()
     }
+}
 
+#[derive(Clone)]
+pub struct UciReporter;
+
+impl strategy::Reporter for UciReporter {
     fn generic_report(&self, s: &str) {
         println!("{s}");
     }
@@ -68,12 +76,12 @@ impl strategy::Reporter for UciReporter {
 
     fn best_move(&self, mv: Move) {
         send_response(&UciResponse::BestMove { mv, ponder: None });
-        self.stopped.set();
     }
 }
 
 pub struct Uci {
-    strategy: Arc<Mutex<Box<dyn Strategy<UciReporter>>>>,
+    strategy: Arc<Mutex<Box<dyn Strategy<UciControl, UciReporter>>>>,
+    control: UciControl,
     reporter: UciReporter,
     debug: bool,
     game: Game,
@@ -137,19 +145,20 @@ impl Uci {
             }) => {
                 let strategy = self.strategy.clone();
                 let game = self.game.clone();
+                let control = self.control.clone();
                 let reporter = self.reporter.clone();
 
                 std::thread::spawn(move || {
                     let mut s = strategy.lock().unwrap();
-                    s.go(&game, reporter);
+                    s.go(&game, control, reporter);
                 });
             }
             UciCommand::Stop => {
                 {
-                    let mut stop = self.reporter.stop.lock().unwrap();
+                    let mut stop = self.control.stop.lock().unwrap();
                     *stop = true;
                 }
-                self.reporter.stopped.wait();
+                self.control.stopped.wait();
             }
             UciCommand::PonderHit => {}
             UciCommand::Quit => return Ok(ExecuteResult::Exit),
@@ -196,13 +205,14 @@ fn send_response(response: &UciResponse) {
     log(format!(" > {}", response.as_string()));
 }
 
-pub fn uci(strategy: Box<dyn Strategy<UciReporter>>) -> Result<()> {
+pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
     let mut uci = Uci {
         strategy: Arc::new(Mutex::new(strategy)),
-        reporter: UciReporter {
+        control: UciControl {
             stop: Arc::new(Mutex::new(false)),
             stopped: Arc::new(LockLatch::new()),
         },
+        reporter: UciReporter {},
         debug: false,
         game: Game::new(),
     };
