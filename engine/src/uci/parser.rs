@@ -1,9 +1,5 @@
 use anyhow::{bail, Result};
-use chess::{
-    moves::Move,
-    piece::PromotionPieceKind,
-    square::{File, Rank, Square},
-};
+use chess::{fen, moves::Move, piece::PromotionPieceKind, square::{File, Rank, Square}};
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -12,16 +8,13 @@ use nom::{
     error::ParseError,
     multi::{fold_many0, separated_list1},
     sequence::{pair, preceded, tuple},
-    IResult, InputTakeAtPosition, Parser,
+    IResult, Parser,
 };
+use crate::uci::commands::Position;
 
-use super::commands::{GoCmdArguments, Position, UciCommand};
+use super::commands::{GoCmdArguments, UciCommand};
 
 // FIXME: Don't accept `isreadymorechars` as `IsReady`
-
-fn non_space(input: &str) -> IResult<&str, &str> {
-    input.split_at_position_complete(char::is_whitespace)
-}
 
 fn boolean(input: &str) -> IResult<&str, bool> {
     alt((value(true, tag("on")), value(false, tag("off"))))(input)
@@ -176,7 +169,7 @@ fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
     fn position_arg(input: &str) -> IResult<&str, Position> {
         alt((
             value(Position::StartPos, tag("startpos")),
-            command_with_argument("fen", non_space, |fen| Position::Fen(fen.to_string())),
+            command_with_argument("fen", fen::fen_parser, |game| Position::Fen(fen::write(&game))),
         ))(input)
     }
 
@@ -403,5 +396,11 @@ mod tests {
     fn test_isready() {
         let ml = parse(" \tisready  ").unwrap();
         assert_eq!(ml, UciCommand::IsReady);
+    }
+
+    #[test]
+    fn test_position_fen() {
+        let ml = parse("position fen 6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45");
+        assert!(ml.is_ok());
     }
 }
