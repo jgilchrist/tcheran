@@ -1,5 +1,5 @@
-use chess::{game::Game, moves::Move};
 use chess::game::GameStatus;
+use chess::{game::Game, moves::Move};
 
 use crate::{
     eval::{self},
@@ -80,14 +80,8 @@ fn negamax_inner(
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
 
-        let move_score = -negamax_inner(
-            &game_after_move,
-            -beta,
-            -alpha,
-            depth - 1,
-            plies + 1,
-            state,
-        );
+        let move_score =
+            -negamax_inner(&game_after_move, -beta, -alpha, depth - 1, plies + 1, state);
 
         if move_score >= beta {
             state.beta_cutoffs += 1;

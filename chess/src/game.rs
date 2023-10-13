@@ -27,7 +27,7 @@ pub struct CastleRights {
 pub enum GameStatus {
     Won,
     Lost,
-    Stalemate
+    Stalemate,
 }
 
 impl CastleRights {
@@ -115,7 +115,9 @@ impl Game {
 
     pub fn game_status(&self) -> Option<GameStatus> {
         let legal_moves = self.legal_moves();
-        if !legal_moves.is_empty() { return None; }
+        if !legal_moves.is_empty() {
+            return None;
+        }
 
         if self.board.king_in_check(self.player.other()) {
             return Some(GameStatus::Won);

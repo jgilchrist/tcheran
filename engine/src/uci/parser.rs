@@ -1,5 +1,12 @@
+use crate::uci::commands::Position;
 use anyhow::{bail, Result};
-use chess::{moves::Move, piece::PromotionPieceKind, square::{File, Rank, Square}};
+use chess::{
+    moves::Move,
+    piece::PromotionPieceKind,
+    square::{File, Rank, Square},
+};
+use nom::bytes::complete::take_until;
+use nom::combinator::rest;
 use nom::{
     branch::alt,
     bytes::complete::tag,
@@ -10,9 +17,6 @@ use nom::{
     sequence::{pair, preceded, tuple},
     IResult, Parser,
 };
-use nom::bytes::complete::{take_until};
-use nom::combinator::rest;
-use crate::uci::commands::Position;
 
 use super::commands::{GoCmdArguments, UciCommand};
 
@@ -171,9 +175,9 @@ fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
     fn position_arg(input: &str) -> IResult<&str, Position> {
         alt((
             value(Position::StartPos, tag("startpos")),
-            command_with_argument("fen",
-                                  alt((take_until(" moves"), rest)),
-                                  |fen| Position::Fen(fen.to_string())),
+            command_with_argument("fen", alt((take_until(" moves"), rest)), |fen| {
+                Position::Fen(fen.to_string())
+            }),
         ))(input)
     }
 
@@ -410,7 +414,8 @@ mod tests {
 
     #[test]
     fn test_position_fen_then_moves() {
-        let ml = parse("position fen 6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45 moves a7a6 c1d1");
+        let ml =
+            parse("position fen 6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45 moves a7a6 c1d1");
         assert!(ml.is_ok());
     }
 }
