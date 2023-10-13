@@ -1,4 +1,5 @@
-use chess::{game::Game, moves::Move};
+use chess::{game::Game, moves::Move, squares};
+use chess::game::GameStatus;
 
 use crate::{
     eval::{self},
@@ -28,6 +29,7 @@ pub fn negamax(
             NegamaxEval::MIN,
             NegamaxEval::MAX,
             depth - 1,
+            1,
             state,
         );
 
@@ -51,6 +53,7 @@ fn negamax_inner(
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     depth: u8,
+    plies: u8,
     state: &mut SearchState,
 ) -> NegamaxEval {
     // TODO: Quiescence search
@@ -61,6 +64,15 @@ fn negamax_inner(
         return NegamaxEval::from_eval(eval, game.player);
     }
 
+    let game_status = game.game_status();
+    if let Some(status) = game_status {
+        return match status {
+            GameStatus::Won => NegamaxEval::mate_in(plies),
+            GameStatus::Lost => NegamaxEval::mated_in(plies),
+            GameStatus::Stalemate => NegamaxEval::DRAW,
+        };
+    }
+
     let mut legal_moves = game.legal_moves();
     move_ordering::order_moves(game, &mut legal_moves);
 
@@ -68,7 +80,14 @@ fn negamax_inner(
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
 
-        let move_score = -negamax_inner(&game_after_move, -beta, -alpha, depth - 1, state);
+        let move_score = -negamax_inner(
+            &game_after_move,
+            -beta,
+            -alpha,
+            depth - 1,
+            plies + 1,
+            state,
+        );
 
         if move_score >= beta {
             state.beta_cutoffs += 1;

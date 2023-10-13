@@ -21,6 +21,17 @@ pub struct NegamaxEval(pub i32);
 impl NegamaxEval {
     pub(crate) const MAX: Self = Self(i32::MAX);
     pub(crate) const MIN: Self = Self(i32::MIN);
+    pub(crate) const DRAW: Self = Self(0);
+
+    const MATE: i32 = 32000;
+
+    pub fn mate_in(ply: u8) -> Self {
+        Self(Self::MATE - ply as i32)
+    }
+
+    pub fn mated_in(ply: u8) -> Self {
+        Self(-Self::MATE + ply as i32)
+    }
 
     // For negamax to work, the eval must be flipped for each side so that each side can
     // 'maximise' its score. However, this means when we report the eval, it will be reversed
