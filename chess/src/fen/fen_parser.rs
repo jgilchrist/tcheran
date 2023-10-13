@@ -88,7 +88,6 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
 
             assert_eq!(all_pieces.len(), Squares::N);
 
-            // TODO: Error handling
             let pieces_array: [Option<Piece>; Squares::N] = all_pieces.try_into().unwrap();
 
             pieces_array.try_into().unwrap()

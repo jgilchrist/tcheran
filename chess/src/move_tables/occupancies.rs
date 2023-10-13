@@ -20,7 +20,6 @@ pub fn generate_sliding_occupancies(square: Square, directions: &[Direction]) ->
 
         while let Some(dst) = current_square.in_direction(direction) {
             // Until we hit one of the edges
-            // TODO: Optimise edge checking using an edges bitboard
             let (src_rank, src_file) = (square.rank(), square.file());
             let (dst_rank, dst_file) = (dst.rank(), dst.file());
 

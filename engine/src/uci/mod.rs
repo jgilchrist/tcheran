@@ -108,7 +108,6 @@ impl Uci {
                 self.game = Game::new();
                 log(format!("{:?}", self.game.board));
             }
-            // TODO: Error handling for invalid positions/moves
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
                     commands::Position::StartPos => Game::new(),

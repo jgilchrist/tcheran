@@ -56,8 +56,6 @@ fn negamax_inner(
     plies: u8,
     state: &mut SearchState,
 ) -> NegamaxEval {
-    // TODO: Quiescence search
-    // TODO: Check if game is over
     if depth == 0 {
         state.nodes_visited += 1;
         let eval = eval::eval(game);

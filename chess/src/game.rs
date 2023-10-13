@@ -11,7 +11,6 @@ use crate::{
 };
 use anyhow::Result;
 
-// TODO: Flesh out this error type
 #[derive(Debug)]
 pub enum MoveError {
     InvalidMove,

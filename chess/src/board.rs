@@ -114,8 +114,6 @@ impl Board {
     //
     // PERF: There's likely many more efficient ways to do this.
     // A good target for optimisation once things are working.
-    //
-    // TODO: Return info about the move (was it a capture?)
     #[allow(clippy::result_unit_err)]
     pub fn make_move(&self, mv: &Move) -> Result<(Self, ()), ()> {
         let moved_piece = self.piece_at(mv.src).ok_or(())?;
