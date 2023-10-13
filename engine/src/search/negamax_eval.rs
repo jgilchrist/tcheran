@@ -26,11 +26,11 @@ impl NegamaxEval {
     const MATE: i32 = 32000;
 
     pub fn mate_in(ply: u8) -> Self {
-        Self(Self::MATE - ply as i32)
+        Self(Self::MATE - i32::from(ply))
     }
 
     pub fn mated_in(ply: u8) -> Self {
-        Self(-Self::MATE + ply as i32)
+        Self(-Self::MATE + i32::from(ply))
     }
 
     // For negamax to work, the eval must be flipped for each side so that each side can

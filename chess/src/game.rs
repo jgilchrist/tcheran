@@ -113,6 +113,7 @@ impl Game {
             .collect()
     }
 
+    #[must_use]
     pub fn game_status(&self) -> Option<GameStatus> {
         let legal_moves = self.legal_moves();
         if !legal_moves.is_empty() {
