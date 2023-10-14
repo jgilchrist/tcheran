@@ -107,9 +107,8 @@ fn format_en_passant_target(game: &Game) -> String {
     }
 }
 
-fn format_halfmove_clock(_game: &Game) -> String {
-    // TODO
-    0.to_string()
+fn format_halfmove_clock(game: &Game) -> String {
+    game.halfmove_clock.to_string()
 }
 
 fn format_fullmove_number(game: &Game) -> String {

@@ -207,7 +207,7 @@ fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
 fn fen_parser(input: &str) -> IResult<&str, Game> {
     let (
         input,
-        (board, player, castle_rights, en_passant_target, _halfmove_clock, fullmove_number),
+        (board, player, castle_rights, en_passant_target, halfmove_clock, fullmove_number),
     ) = terminated(
         tuple((
             fen_position,
@@ -232,6 +232,7 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
+            halfmove_clock,
             plies,
         },
     ))

@@ -76,6 +76,7 @@ pub struct Game {
     pub white_castle_rights: CastleRights,
     pub black_castle_rights: CastleRights,
     pub en_passant_target: Option<Square>,
+    pub halfmove_clock: u32,
     pub plies: u32,
 }
 
@@ -88,6 +89,7 @@ impl Game {
             white_castle_rights: CastleRights::default(),
             black_castle_rights: CastleRights::default(),
             en_passant_target: None,
+            halfmove_clock: 0,
             plies: 0,
         }
     }
@@ -120,6 +122,10 @@ impl Game {
 
     #[must_use]
     pub fn game_status(&self) -> Option<GameStatus> {
+        if self.halfmove_clock >= 100 {
+            return Some(GameStatus::Stalemate);
+        }
+
         let legal_moves = self.legal_moves();
         if !legal_moves.is_empty() {
             return None;
@@ -265,6 +271,9 @@ impl Game {
         let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
         let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
 
+        let should_reset_halfmove_clock = captured_piece.is_some() || piece_to_move == PieceKind::Pawn;
+        let halfmove_clock = if should_reset_halfmove_clock { 0 } else { self.halfmove_clock };
+
         let plies = self.plies + 1;
 
         Ok(Self {
@@ -273,6 +282,7 @@ impl Game {
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
+            halfmove_clock,
             plies,
         })
     }
