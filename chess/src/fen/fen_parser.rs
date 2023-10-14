@@ -222,6 +222,8 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
 
     let (white_castle_rights, black_castle_rights) = castle_rights;
 
+    let plies = (fullmove_number - 1) * 2 + if player == Player::Black { 1 } else { 0 };
+
     Ok((
         input,
         Game {
@@ -230,7 +232,7 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
-            fullmove_number,
+            plies,
         },
     ))
 }
@@ -308,10 +310,14 @@ mod tests {
             game.board.black_pieces.king,
             default_game.board.black_pieces.king
         );
+
+        assert_eq!(game.plies, 0);
     }
 
     #[test]
     fn parse_kiwipete() {
-        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").is_ok());
+        assert!(
+            parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").is_ok()
+        );
     }
 }

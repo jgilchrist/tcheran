@@ -76,7 +76,7 @@ pub struct Game {
     pub white_castle_rights: CastleRights,
     pub black_castle_rights: CastleRights,
     pub en_passant_target: Option<Square>,
-    pub fullmove_number: u32,
+    pub plies: u32,
 }
 
 impl Game {
@@ -88,7 +88,7 @@ impl Game {
             white_castle_rights: CastleRights::default(),
             black_castle_rights: CastleRights::default(),
             en_passant_target: None,
-            fullmove_number: 1,
+            plies: 0,
         }
     }
 
@@ -99,6 +99,10 @@ impl Game {
     #[must_use]
     pub fn to_fen(&self) -> String {
         fen::write(self)
+    }
+
+    pub fn turn(&self) -> u32 {
+        self.plies / 2 + 1
     }
 
     #[must_use]
@@ -261,11 +265,7 @@ impl Game {
         let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
         let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
 
-        let fullmove_number = if self.player == Player::Black {
-            self.fullmove_number + 1
-        } else {
-            self.fullmove_number
-        };
+        let plies = self.plies + 1;
 
         Ok(Self {
             board,
@@ -273,7 +273,7 @@ impl Game {
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
-            fullmove_number,
+            plies,
         })
     }
 }

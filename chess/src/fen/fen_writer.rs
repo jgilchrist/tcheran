@@ -113,7 +113,7 @@ fn format_halfmove_clock(_game: &Game) -> String {
 }
 
 fn format_fullmove_number(game: &Game) -> String {
-    game.fullmove_number.to_string()
+    game.turn().to_string()
 }
 
 #[must_use]
