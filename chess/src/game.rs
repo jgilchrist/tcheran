@@ -76,6 +76,7 @@ pub struct Game {
     pub white_castle_rights: CastleRights,
     pub black_castle_rights: CastleRights,
     pub en_passant_target: Option<Square>,
+    pub fullmove_number: u32,
 }
 
 impl Game {
@@ -87,6 +88,7 @@ impl Game {
             white_castle_rights: CastleRights::default(),
             black_castle_rights: CastleRights::default(),
             en_passant_target: None,
+            fullmove_number: 1,
         }
     }
 
@@ -259,12 +261,19 @@ impl Game {
         let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
         let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
 
+        let fullmove_number = if self.player == Player::Black {
+            self.fullmove_number + 1
+        } else {
+            self.fullmove_number
+        };
+
         Ok(Self {
             board,
             player: self.player.other(),
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
+            fullmove_number,
         })
     }
 }

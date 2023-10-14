@@ -11,11 +11,12 @@ use crate::{
     squares::Squares,
 };
 
+use nom::sequence::terminated;
 use nom::{
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, one_of, space1},
-    combinator::{eof, map, opt, value},
+    combinator::{eof, map, value},
     multi::many1,
     sequence::{pair, preceded, tuple},
     IResult,
@@ -206,16 +207,18 @@ fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
 fn fen_parser(input: &str) -> IResult<&str, Game> {
     let (
         input,
-        (board, player, castle_rights, en_passant_target, _halfmove_clock, _fullmove_number, _),
-    ) = tuple((
-        fen_position,
-        preceded(space1, fen_color),
-        preceded(space1, fen_castling),
-        preceded(space1, fen_en_passant_target),
-        opt(preceded(space1, fen_halfmove_clock)),
-        opt(preceded(space1, fen_fullmove_number)),
+        (board, player, castle_rights, en_passant_target, _halfmove_clock, fullmove_number),
+    ) = terminated(
+        tuple((
+            fen_position,
+            preceded(space1, fen_color),
+            preceded(space1, fen_castling),
+            preceded(space1, fen_en_passant_target),
+            preceded(space1, fen_halfmove_clock),
+            preceded(space1, fen_fullmove_number),
+        )),
         eof,
-    ))(input)?;
+    )(input)?;
 
     let (white_castle_rights, black_castle_rights) = castle_rights;
 
@@ -227,6 +230,7 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
+            fullmove_number,
         },
     ))
 }
@@ -308,6 +312,6 @@ mod tests {
 
     #[test]
     fn parse_kiwipete() {
-        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -").is_ok());
+        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").is_ok());
     }
 }

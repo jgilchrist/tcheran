@@ -266,7 +266,7 @@ mod tests {
     #[test]
     fn test_simple_rook_move() {
         should_allow_move(
-            "rnbqkbnr/1ppppppp/p7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0",
+            "rnbqkbnr/1ppppppp/p7/8/8/P7/1PPPPPPP/RNBQKBNR w KQkq - 0 2",
             (A1, A2),
         );
     }
