@@ -158,7 +158,7 @@ impl UciResponse {
                     response.push_str(" pv");
 
                     for mv in pv {
-                        response.push_str(&format!(" {}", mv.notation()))
+                        response.push_str(&format!(" {}", mv.notation()));
                     }
                 }
 

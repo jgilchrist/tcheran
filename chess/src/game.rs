@@ -103,6 +103,7 @@ impl Game {
         fen::write(self)
     }
 
+    #[must_use]
     pub fn turn(&self) -> u32 {
         self.plies / 2 + 1
     }
