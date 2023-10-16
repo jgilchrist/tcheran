@@ -7,7 +7,8 @@
     clippy::module_name_repetitions,
     clippy::inline_always,
     clippy::missing_const_for_fn,
-    clippy::too_many_lines
+    clippy::too_many_lines,
+    clippy::cognitive_complexity
 )]
 
 pub mod bitboard;

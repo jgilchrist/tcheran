@@ -53,12 +53,20 @@ impl CastleRights {
         }
     }
 
+    pub fn remove_kingside_rights(&mut self) {
+        self.king_side = false;
+    }
+
     #[must_use]
     pub const fn without_queenside(&self) -> Self {
         Self {
             king_side: self.king_side,
             queen_side: false,
         }
+    }
+
+    pub fn remove_queenside_rights(&mut self) {
+        self.queen_side = false;
     }
 }
 
@@ -195,9 +203,10 @@ impl Game {
         let maybe_captured_piece = self.board.piece_at(to);
 
         let mut board = self.board;
+
         board.remove_at(from);
 
-        if let Some(captured_piece) = maybe_captured_piece {
+        if maybe_captured_piece.is_some() {
             board.remove_at(to);
         }
 
@@ -302,32 +311,34 @@ impl Game {
             }
         }
 
-        // PERF: We update the castle rights when any piece moves off of/onto
-        // the appropriate squares. This makes for simpler code, but will end up
-        // copying CastleRights more than we need to.
-        let castle_rights = |player: Player, castle_rights: &CastleRights| {
-            let our_king_start = squares::king_start(player);
-            let our_kingside_rook = squares::kingside_rook_start(player);
-            let our_queenside_rook = squares::queenside_rook_start(player);
-
-            if self.player == player {
-                match from {
-                    s if s == our_king_start => CastleRights::none(),
-                    s if s == our_kingside_rook => castle_rights.without_kingside(),
-                    s if s == our_queenside_rook => castle_rights.without_queenside(),
-                    _ => *castle_rights,
-                }
-            } else {
-                match to {
-                    s if s == our_kingside_rook => castle_rights.without_kingside(),
-                    s if s == our_queenside_rook => castle_rights.without_queenside(),
-                    _ => *castle_rights,
-                }
-            }
+        let (mut castle_rights, mut other_player_castle_rights) = match self.player {
+            Player::White => (self.white_castle_rights, self.black_castle_rights),
+            Player::Black => (self.black_castle_rights, self.white_castle_rights),
         };
 
-        let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
-        let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
+        if moved_piece.kind == PieceKind::King && from == squares::king_start(self.player) {
+            castle_rights.remove_kingside_rights();
+            castle_rights.remove_queenside_rights();
+        } else if moved_piece.kind == PieceKind::Rook {
+            if from == squares::kingside_rook_start(self.player) {
+                castle_rights.remove_kingside_rights();
+            } else if from == squares::queenside_rook_start(self.player) {
+                castle_rights.remove_queenside_rights();
+            }
+        }
+
+        if maybe_captured_piece.is_some() {
+            if to == squares::kingside_rook_start(self.player.other()) {
+                other_player_castle_rights.remove_kingside_rights();
+            } else if to == squares::queenside_rook_start(self.player.other()) {
+                other_player_castle_rights.remove_queenside_rights();
+            }
+        }
+
+        let (white_castle_rights, black_castle_rights) = match self.player {
+            Player::White => (castle_rights, other_player_castle_rights),
+            Player::Black => (other_player_castle_rights, castle_rights),
+        };
 
         let should_reset_halfmove_clock =
             maybe_captured_piece.is_some() || moved_piece.kind == PieceKind::Pawn;
