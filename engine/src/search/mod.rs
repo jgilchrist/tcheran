@@ -56,11 +56,12 @@ pub fn search(game: &Game, reporter: &impl Reporter) -> (Move, Eval) {
     state.start_timer();
 
     let depth = 6;
-    let (best_move, eval) = negamax::negamax(game, depth, &mut state, reporter);
+    let (best_move, pv, eval) = negamax::negamax(game, depth, &mut state, reporter);
 
     reporter.report_search_progress(SearchInfo {
         depth: depth.into(),
         score: SearchScore::Centipawns(eval.0),
+        pv,
         stats: SearchStats {
             time: state.elapsed_time(),
             nodes: state.nodes_visited,

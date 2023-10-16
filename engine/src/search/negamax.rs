@@ -13,8 +13,9 @@ pub fn negamax(
     depth: u8,
     state: &mut SearchState,
     reporter: &impl Reporter,
-) -> (Move, NegamaxEval) {
+) -> (Move, Vec<Move>, NegamaxEval) {
     let mut best_move: Option<Move> = None;
+    let mut best_line: Option<Vec<Move>> = None;
     let mut best_score = NegamaxEval::MIN;
 
     let mut root_moves = game.legal_moves();
@@ -24,17 +25,22 @@ pub fn negamax(
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
 
+        let mut line: Vec<Move> = vec![];
+
         let move_score = -negamax_inner(
             &game_after_move,
             NegamaxEval::MIN,
             NegamaxEval::MAX,
             depth - 1,
             1,
+            &mut line,
             state,
         );
 
         if move_score > best_score {
+            line.insert(0, *mv);
             best_score = move_score;
+            best_line = Some(line);
             best_move = Some(*mv);
         }
 
@@ -45,7 +51,7 @@ pub fn negamax(
         });
     }
 
-    (best_move.unwrap(), best_score)
+    (best_move.unwrap(), best_line.unwrap(), best_score)
 }
 
 fn negamax_inner(
@@ -54,13 +60,18 @@ fn negamax_inner(
     beta: NegamaxEval,
     depth: u8,
     plies: u8,
+    pv: &mut Vec<Move>,
     state: &mut SearchState,
 ) -> NegamaxEval {
     if depth == 0 {
+        pv.clear();
+
         state.nodes_visited += 1;
         let eval = eval::eval(game);
         return NegamaxEval::from_eval(eval, game.player);
     }
+
+    let mut line: Vec<Move> = vec![];
 
     let game_status = game.game_status();
     if let Some(status) = game_status {
@@ -79,7 +90,7 @@ fn negamax_inner(
         state.nodes_visited += 1;
 
         let move_score =
-            -negamax_inner(&game_after_move, -beta, -alpha, depth - 1, plies + 1, state);
+            -negamax_inner(&game_after_move, -beta, -alpha, depth - 1, plies + 1, &mut line, state);
 
         if move_score >= beta {
             state.beta_cutoffs += 1;
@@ -88,6 +99,10 @@ fn negamax_inner(
 
         if move_score > alpha {
             alpha = move_score;
+
+            pv.clear();
+            pv.push(*mv);
+            pv.extend_from_slice(&line);
         }
     }
 

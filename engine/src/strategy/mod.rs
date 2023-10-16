@@ -17,6 +17,7 @@ pub struct SearchInfo {
     pub depth: u32,
     pub score: SearchScore,
     pub stats: SearchStats,
+    pub pv: Vec<Move>,
 }
 
 pub struct SearchStats {
