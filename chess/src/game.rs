@@ -19,7 +19,6 @@ pub enum MoveError {
 }
 
 #[derive(Copy, Clone, Debug)]
-#[allow(unused)]
 pub struct CastleRights {
     pub king_side: bool,
     pub queen_side: bool,
@@ -194,7 +193,6 @@ impl Game {
         !self.make_move(mv).unwrap().board.king_in_check(self.player)
     }
 
-    #[allow(unused)]
     pub fn make_move(&self, mv: &Move) -> Result<Self, MoveError> {
         let from = mv.src;
         let to = mv.dst;

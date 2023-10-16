@@ -7,7 +7,6 @@ pub struct LockLatch {
     v: Condvar,
 }
 
-#[allow(unused)]
 impl LockLatch {
     #[inline]
     #[must_use]
