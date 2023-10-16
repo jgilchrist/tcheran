@@ -89,8 +89,15 @@ fn negamax_inner(
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
 
-        let move_score =
-            -negamax_inner(&game_after_move, -beta, -alpha, depth - 1, plies + 1, &mut line, state);
+        let move_score = -negamax_inner(
+            &game_after_move,
+            -beta,
+            -alpha,
+            depth - 1,
+            plies + 1,
+            &mut line,
+            state,
+        );
 
         if move_score >= beta {
             state.beta_cutoffs += 1;
