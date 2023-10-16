@@ -99,6 +99,16 @@ impl Squares {
         Square(lsb)
     }
 
+    #[inline(always)]
+    pub fn set_inplace(&mut self, square: Square) {
+        self.0 |= square.0;
+    }
+
+    #[inline(always)]
+    pub fn unset_inplace(&mut self, square: Square) {
+        self.0 &= Self::all_except(square).0;
+    }
+
     #[must_use]
     pub const fn iter(&self) -> SquareIterator {
         SquareIterator(*self)

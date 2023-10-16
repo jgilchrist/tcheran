@@ -97,6 +97,43 @@ impl Board {
         None
     }
 
+    #[inline]
+    fn player_pieces_for(&mut self, player: Player) -> &mut PlayerPieces {
+        match player {
+            Player::White => &mut self.white_pieces,
+            Player::Black => &mut self.black_pieces,
+        }
+    }
+
+    #[inline]
+    fn squares_for_piece(&mut self, piece: Piece) -> &mut Squares {
+        let player_pieces = self.player_pieces_for(piece.player);
+
+        match piece.kind {
+            PieceKind::Pawn => &mut player_pieces.pawns,
+            PieceKind::Knight => &mut player_pieces.knights,
+            PieceKind::Bishop => &mut player_pieces.bishops,
+            PieceKind::Rook => &mut player_pieces.rooks,
+            PieceKind::Queen => &mut player_pieces.queens,
+            PieceKind::King => &mut player_pieces.king,
+        }
+    }
+
+    #[inline]
+    pub fn remove_at(&mut self, square: Square) -> bool {
+        let Some(piece) = self.piece_at(square) else {
+            return false;
+        };
+
+        self.squares_for_piece(piece).unset_inplace(square);
+        true
+    }
+
+    #[inline]
+    pub fn set_at(&mut self, square: Square, piece: Piece) {
+        self.squares_for_piece(piece).set_inplace(square);
+    }
+
     #[must_use]
     pub fn king_in_check(&self, player: Player) -> bool {
         let enemy_attacks = movegen::generate_all_attacks(self, player.other());
