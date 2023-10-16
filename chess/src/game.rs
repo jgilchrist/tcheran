@@ -1,7 +1,10 @@
+use crate::board::PlayerPieces;
+use crate::piece::Piece;
+use crate::squares::all::*;
 use crate::{
     board::Board,
     direction::Direction,
-    fen,
+    fen, move_tables,
     movegen::{self, generate_moves},
     moves::{self, Move},
     piece::PieceKind,
@@ -189,10 +192,139 @@ impl Game {
         let from = mv.src;
         let to = mv.dst;
 
-        let (board, move_info) = self
-            .board
-            .make_move(mv)
-            .map_err(|()| MoveError::InvalidMove)?;
+        let moved_piece = self.board.piece_at(mv.src).ok_or(MoveError::InvalidMove)?;
+
+        let remove_src_mask = Squares::all_except(mv.src);
+        let remove_from_dst_mask = Squares::all_except(mv.dst);
+
+        let add_piece_to_dst_mask = |piece: &Piece| {
+            if *piece == moved_piece {
+                Squares::from_square(mv.dst)
+            } else {
+                Squares::none()
+            }
+        };
+
+        let mask_squares = |squares: Squares, piece: &Piece| {
+            let mut new_squares = squares
+                // Remove the piece that is being moved
+                // Currently unconditional as it's the same as removing for all pieces
+                & remove_src_mask
+                // Remove any piece currently occupying the destination square
+                & remove_from_dst_mask
+                // Add the piece that is being moved to the destination square
+                | add_piece_to_dst_mask(piece);
+
+            if let Some(promoted_to) = mv.promotion {
+                // The promoted pawn has turned into another piece
+                let remove_promoted_pawn_mask = Squares::all_except(mv.dst);
+
+                let add_promoted_piece_mask =
+                    if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
+                        Squares::from_square(mv.dst)
+                    } else {
+                        Squares::none()
+                    };
+
+                // Place that piece on the board
+                new_squares &= remove_promoted_pawn_mask;
+                new_squares |= add_promoted_piece_mask;
+            }
+
+            // PERF: Here, we figure out if the move was en-passant. It may be more performant to
+            // tell this function that the move was en-passant, but it loses the cleanliness of
+            // just telling the board the start and end destination for the piece.
+            //
+            // PERF: We only need to check mv.is_diagonal() if we moved from the rank where
+            // en-passant can happen which is likely a much cheaper check (just bitwise and).
+            //
+            // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
+            // in which case we need to remove the captured pawn.
+            if moved_piece.kind == PieceKind::Pawn {
+                let pawn_attacks = move_tables::pawn_attacks(mv.src, moved_piece.player);
+
+                if pawn_attacks.contains(mv.dst) {
+                    let opponent_pieces =
+                        self.board.player_pieces(moved_piece.player.other()).all();
+
+                    // Definitely en-passant, as we made a capture but there was no piece on that square.
+                    if !opponent_pieces.contains(mv.dst) {
+                        // Get the square that we need to remove the pawn from.
+                        let inverse_pawn_move_direction = match moved_piece.player {
+                            Player::White => Direction::South,
+                            Player::Black => Direction::North,
+                        };
+
+                        let capture_square =
+                            mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
+
+                        let remove_captured_pawn_mask = Squares::all_except(capture_square);
+                        new_squares &= remove_captured_pawn_mask;
+                    }
+                }
+            }
+
+            let king_start_square = squares::king_start(moved_piece.player);
+
+            // PERF: Here, we figure out if the move was castling. It may be more performant to
+            // tell this function that the move was castling, but it loses the cleanliness of
+            // just telling the board the start and end destination for the piece.
+
+            // If we just moved a king from its start square, we may have castled.
+            if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
+                let kingside_square = squares::kingside_castle_dest(moved_piece.player);
+                let queenside_square = squares::queenside_castle_dest(moved_piece.player);
+
+                // We're castling!
+                if mv.dst == kingside_square || mv.dst == queenside_square {
+                    let is_kingside = mv.dst == kingside_square;
+
+                    let rook_remove_mask = Squares::all_except(if is_kingside {
+                        squares::kingside_rook_start(moved_piece.player)
+                    } else {
+                        squares::queenside_rook_start(moved_piece.player)
+                    });
+
+                    let rook_add_mask = if is_kingside {
+                        match moved_piece.player {
+                            Player::White => F1,
+                            Player::Black => F8,
+                        }
+                    } else {
+                        match moved_piece.player {
+                            Player::White => D1,
+                            Player::Black => D8,
+                        }
+                    };
+
+                    if *piece == Piece::new(moved_piece.player, PieceKind::Rook) {
+                        new_squares &= rook_remove_mask;
+                        new_squares |= rook_add_mask;
+                    }
+                }
+            }
+
+            new_squares
+        };
+
+        let board = Board {
+            white_pieces: PlayerPieces {
+                pawns: mask_squares(self.board.white_pieces.pawns, &Piece::WHITE_PAWN),
+                knights: mask_squares(self.board.white_pieces.knights, &Piece::WHITE_KNIGHT),
+                bishops: mask_squares(self.board.white_pieces.bishops, &Piece::WHITE_BISHOP),
+                rooks: mask_squares(self.board.white_pieces.rooks, &Piece::WHITE_ROOK),
+                queens: mask_squares(self.board.white_pieces.queens, &Piece::WHITE_QUEEN),
+                king: mask_squares(self.board.white_pieces.king, &Piece::WHITE_KING),
+            },
+            black_pieces: PlayerPieces {
+                pawns: mask_squares(self.board.black_pieces.pawns, &Piece::BLACK_PAWN),
+                knights: mask_squares(self.board.black_pieces.knights, &Piece::BLACK_KNIGHT),
+                bishops: mask_squares(self.board.black_pieces.bishops, &Piece::BLACK_BISHOP),
+                rooks: mask_squares(self.board.black_pieces.rooks, &Piece::BLACK_ROOK),
+                queens: mask_squares(self.board.black_pieces.queens, &Piece::BLACK_QUEEN),
+                king: mask_squares(self.board.black_pieces.king, &Piece::BLACK_KING),
+            },
+        };
 
         let piece_to_move = self
             .board

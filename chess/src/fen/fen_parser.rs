@@ -236,7 +236,8 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
     ))
 }
 
-#[inline] fn plies_from_fullmove_number(fullmove_number: u32, player: Player) -> u32 {
+#[inline]
+fn plies_from_fullmove_number(fullmove_number: u32, player: Player) -> u32 {
     (fullmove_number - 1) * 2 + u32::from(player == Player::Black)
 }
 
