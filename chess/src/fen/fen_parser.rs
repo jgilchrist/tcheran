@@ -220,7 +220,7 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
 
     let (white_castle_rights, black_castle_rights) = castle_rights;
 
-    let plies = (fullmove_number - 1) * 2 + if player == Player::Black { 1 } else { 0 };
+    let plies = plies_from_fullmove_number(fullmove_number, player);
 
     Ok((
         input,
@@ -234,6 +234,10 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
             plies,
         },
     ))
+}
+
+#[inline] fn plies_from_fullmove_number(fullmove_number: u32, player: Player) -> u32 {
+    (fullmove_number - 1) * 2 + u32::from(player == Player::Black)
 }
 
 pub fn parse(input: &str) -> Result<Game> {
@@ -318,5 +322,13 @@ mod tests {
         assert!(
             parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").is_ok()
         );
+    }
+
+    #[test]
+    fn plies_from_fullmove_number() {
+        assert_eq!(super::plies_from_fullmove_number(1, Player::White), 0);
+        assert_eq!(super::plies_from_fullmove_number(1, Player::Black), 1);
+        assert_eq!(super::plies_from_fullmove_number(2, Player::White), 2);
+        assert_eq!(super::plies_from_fullmove_number(2, Player::Black), 3);
     }
 }
