@@ -7,3 +7,10 @@ rust-version.workspace = true
 [dependencies]
 anyhow = { workspace = true }
 nom = { workspace = true }
+
+[dev-dependencies]
+criterion = { version = "0.4", features = ["html_reports"] }
+
+[[bench]]
+name = "benches"
+harness = false

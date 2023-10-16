@@ -1,4 +1,5 @@
-use chess::game::Game;
+use crate::game::Game;
+use crate::moves::Move;
 
 #[must_use]
 pub fn perft(depth: u8, game: &Game) -> usize {
@@ -12,9 +13,10 @@ pub fn perft(depth: u8, game: &Game) -> usize {
         .sum()
 }
 
-pub fn perft_div(depth: u8, game: &Game) {
+#[must_use]
+pub fn perft_div(depth: u8, game: &Game) -> Vec<(Move, usize)> {
     let root_moves = game.legal_moves();
-    let mut all = 0;
+    let mut perft_for_moves: Vec<(Move, usize)> = vec![];
 
     for mv in root_moves {
         let number_for_mv = if depth == 1 {
@@ -23,22 +25,8 @@ pub fn perft_div(depth: u8, game: &Game) {
             perft(depth - 1, &game.make_move(&mv).unwrap())
         };
 
-        println!("{mv:?}: {number_for_mv}");
-        all += number_for_mv;
+        perft_for_moves.push((mv, number_for_mv));
     }
 
-    println!();
-    println!("{all}");
-}
-
-#[cfg(test)]
-mod tests {
-    pub use super::*;
-
-    #[test]
-    #[ignore]
-    fn perft_startpos_5() {
-        crate::init();
-        assert_eq!(perft(5, &Game::new()), 4_865_609);
-    }
+    perft_for_moves
 }

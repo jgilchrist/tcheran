@@ -271,8 +271,13 @@ impl Game {
         let white_castle_rights = castle_rights(Player::White, &self.white_castle_rights);
         let black_castle_rights = castle_rights(Player::Black, &self.black_castle_rights);
 
-        let should_reset_halfmove_clock = captured_piece.is_some() || piece_to_move == PieceKind::Pawn;
-        let halfmove_clock = if should_reset_halfmove_clock { 0 } else { self.halfmove_clock };
+        let should_reset_halfmove_clock =
+            captured_piece.is_some() || piece_to_move == PieceKind::Pawn;
+        let halfmove_clock = if should_reset_halfmove_clock {
+            0
+        } else {
+            self.halfmove_clock
+        };
 
         let plies = self.plies + 1;
 

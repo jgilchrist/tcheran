@@ -205,20 +205,18 @@ fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
 }
 
 fn fen_parser(input: &str) -> IResult<&str, Game> {
-    let (
-        input,
-        (board, player, castle_rights, en_passant_target, halfmove_clock, fullmove_number),
-    ) = terminated(
-        tuple((
-            fen_position,
-            preceded(space1, fen_color),
-            preceded(space1, fen_castling),
-            preceded(space1, fen_en_passant_target),
-            preceded(space1, fen_halfmove_clock),
-            preceded(space1, fen_fullmove_number),
-        )),
-        eof,
-    )(input)?;
+    let (input, (board, player, castle_rights, en_passant_target, halfmove_clock, fullmove_number)) =
+        terminated(
+            tuple((
+                fen_position,
+                preceded(space1, fen_color),
+                preceded(space1, fen_castling),
+                preceded(space1, fen_en_passant_target),
+                preceded(space1, fen_halfmove_clock),
+                preceded(space1, fen_fullmove_number),
+            )),
+            eof,
+        )(input)?;
 
     let (white_castle_rights, black_castle_rights) = castle_rights;
 

@@ -22,7 +22,7 @@ mod cli {
         uci::{self},
     };
 
-    use engine::perft;
+    use chess::perft;
 
     #[derive(ValueEnum, Clone)]
     pub enum Strategy {
@@ -97,7 +97,12 @@ mod cli {
                     .try_into()
                     .unwrap();
 
-                perft::perft_div(depth - depth_modifier, &game);
+                let result = perft::perft_div(depth - depth_modifier, &game);
+
+                for (mv, number_for_mv) in result {
+                    println!("{mv:?}: {number_for_mv}");
+                }
+
                 Ok(())
             }
             Commands::Eval { fen } => {

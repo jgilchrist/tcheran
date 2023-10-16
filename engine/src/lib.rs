@@ -11,7 +11,6 @@
 )]
 
 pub mod eval;
-pub mod perft;
 pub mod strategy;
 pub mod uci;
 pub mod util;
