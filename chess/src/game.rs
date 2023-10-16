@@ -246,14 +246,14 @@ impl Game {
             Player::Black => squares::RANK_7,
         };
 
-        // PERF: Check against double-push rank instead of computing .in_direction every time
+        let double_push_rank = match self.player {
+            Player::White => squares::RANK_4,
+            Player::Black => squares::RANK_5,
+        };
+
         let en_passant_target = if moved_piece.kind == PieceKind::Pawn
             && back_rank.contains(from)
-            && to
-                == from
-                    .in_direction(&pawn_move_direction)
-                    .and_then(|s| s.in_direction(&pawn_move_direction))
-                    .unwrap()
+            && double_push_rank.contains(to)
         {
             let to_square = Squares::from_square(to);
             let en_passant_attacker_squares = to_square.west() | to_square.east();
