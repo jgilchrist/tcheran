@@ -1,7 +1,7 @@
 use chess::game::Game;
 use chess::perft::perft;
 
-fn test_perft(game: &Game, depth: u8, expected_positions: usize) {
+fn test_perft(game: &mut Game, depth: u8, expected_positions: usize) {
     chess::init();
     let actual_positions = perft(depth, game);
 
@@ -11,31 +11,31 @@ fn test_perft(game: &Game, depth: u8, expected_positions: usize) {
 #[test]
 #[ignore]
 fn perft_startpos_1() {
-    test_perft(&Game::new(), 1, 20);
+    test_perft(&mut Game::new(), 1, 20);
 }
 
 #[test]
 #[ignore]
 fn perft_startpos_2() {
-    test_perft(&Game::new(), 2, 400);
+    test_perft(&mut Game::new(), 2, 400);
 }
 
 #[test]
 #[ignore]
 fn perft_startpos_3() {
-    test_perft(&Game::new(), 3, 8902);
+    test_perft(&mut Game::new(), 3, 8902);
 }
 
 #[test]
 #[ignore]
 fn perft_startpos_4() {
-    test_perft(&Game::new(), 4, 197281);
+    test_perft(&mut Game::new(), 4, 197281);
 }
 
 #[test]
 #[ignore]
 fn perft_startpos_5() {
-    test_perft(&Game::new(), 5, 4865609);
+    test_perft(&mut Game::new(), 5, 4865609);
 }
 
 fn kiwipete_game() -> Game {
@@ -45,31 +45,31 @@ fn kiwipete_game() -> Game {
 #[test]
 #[ignore]
 fn perft_kiwipete_1() {
-    test_perft(&kiwipete_game(), 1, 48);
+    test_perft(&mut kiwipete_game(), 1, 48);
 }
 
 #[test]
 #[ignore]
 fn perft_kiwipete_2() {
-    test_perft(&kiwipete_game(), 2, 2039);
+    test_perft(&mut kiwipete_game(), 2, 2039);
 }
 
 #[test]
 #[ignore]
 fn perft_kiwipete_3() {
-    test_perft(&kiwipete_game(), 3, 97862);
+    test_perft(&mut kiwipete_game(), 3, 97862);
 }
 
 #[test]
 #[ignore]
 fn perft_kiwipete_4() {
-    test_perft(&kiwipete_game(), 4, 4085603);
+    test_perft(&mut kiwipete_game(), 4, 4085603);
 }
 
 #[test]
 #[ignore]
 fn perft_kiwipete_5() {
-    test_perft(&kiwipete_game(), 5, 193690690);
+    test_perft(&mut kiwipete_game(), 5, 193690690);
 }
 
 fn chessprogramming_wiki_pos3() -> Game {
@@ -80,31 +80,31 @@ fn chessprogramming_wiki_pos3() -> Game {
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos3_1() {
-    test_perft(&chessprogramming_wiki_pos3(), 1, 14);
+    test_perft(&mut chessprogramming_wiki_pos3(), 1, 14);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos3_2() {
-    test_perft(&chessprogramming_wiki_pos3(), 2, 191);
+    test_perft(&mut chessprogramming_wiki_pos3(), 2, 191);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos3_3() {
-    test_perft(&chessprogramming_wiki_pos3(), 3, 2812);
+    test_perft(&mut chessprogramming_wiki_pos3(), 3, 2812);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos3_4() {
-    test_perft(&chessprogramming_wiki_pos3(), 4, 43238);
+    test_perft(&mut chessprogramming_wiki_pos3(), 4, 43238);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos3_5() {
-    test_perft(&chessprogramming_wiki_pos3(), 5, 674624);
+    test_perft(&mut chessprogramming_wiki_pos3(), 5, 674624);
 }
 
 fn chessprogramming_wiki_pos4() -> Game {
@@ -115,31 +115,31 @@ fn chessprogramming_wiki_pos4() -> Game {
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos4_1() {
-    test_perft(&chessprogramming_wiki_pos4(), 1, 6);
+    test_perft(&mut chessprogramming_wiki_pos4(), 1, 6);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos4_2() {
-    test_perft(&chessprogramming_wiki_pos4(), 2, 264);
+    test_perft(&mut chessprogramming_wiki_pos4(), 2, 264);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos4_3() {
-    test_perft(&chessprogramming_wiki_pos4(), 3, 9467);
+    test_perft(&mut chessprogramming_wiki_pos4(), 3, 9467);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos4_4() {
-    test_perft(&chessprogramming_wiki_pos4(), 4, 422333);
+    test_perft(&mut chessprogramming_wiki_pos4(), 4, 422333);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos4_5() {
-    test_perft(&chessprogramming_wiki_pos4(), 5, 15833292);
+    test_perft(&mut chessprogramming_wiki_pos4(), 5, 15833292);
 }
 
 fn chessprogramming_wiki_pos5() -> Game {
@@ -150,29 +150,29 @@ fn chessprogramming_wiki_pos5() -> Game {
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos5_1() {
-    test_perft(&chessprogramming_wiki_pos5(), 1, 44);
+    test_perft(&mut chessprogramming_wiki_pos5(), 1, 44);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos5_2() {
-    test_perft(&chessprogramming_wiki_pos5(), 2, 1486);
+    test_perft(&mut chessprogramming_wiki_pos5(), 2, 1486);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos5_3() {
-    test_perft(&chessprogramming_wiki_pos5(), 3, 62379);
+    test_perft(&mut chessprogramming_wiki_pos5(), 3, 62379);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos5_4() {
-    test_perft(&chessprogramming_wiki_pos5(), 4, 2103487);
+    test_perft(&mut chessprogramming_wiki_pos5(), 4, 2103487);
 }
 
 #[test]
 #[ignore]
 fn perft_chessprogramming_pos5_5() {
-    test_perft(&chessprogramming_wiki_pos5(), 5, 89941194);
+    test_perft(&mut chessprogramming_wiki_pos5(), 5, 89941194);
 }

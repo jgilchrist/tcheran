@@ -10,7 +10,7 @@ pub struct RandomMoveStrategy;
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for RandomMoveStrategy {
     fn go(
         &mut self,
-        game: &Game,
+        game: &mut Game,
         _args: &GoArgs,
         _options: &EngineOptions,
         control: TCx,

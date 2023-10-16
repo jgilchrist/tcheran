@@ -93,6 +93,17 @@ impl Default for CastleRights {
 }
 
 #[derive(Debug, Clone)]
+pub struct History {
+    pub mv: Move,
+    pub captured: Option<Piece>,
+    pub white_castle_rights: CastleRights,
+    pub black_castle_rights: CastleRights,
+    pub en_passant_target: Option<Square>,
+    pub halfmove_clock: u32,
+    pub zobrist: ZobristHash,
+}
+
+#[derive(Debug, Clone)]
 pub struct Game {
     pub player: Player,
     pub board: Board,
@@ -103,7 +114,7 @@ pub struct Game {
     pub plies: u32,
 
     pub zobrist: ZobristHash,
-    pub history: Vec<ZobristHash>,
+    pub history: Vec<History>,
 }
 
 impl Game {
@@ -144,7 +155,6 @@ impl Game {
         };
 
         let zobrist = zobrist::hash(&game);
-        game.history.push(zobrist.clone());
         game.zobrist = zobrist;
         game
     }
@@ -169,7 +179,7 @@ impl Game {
     }
 
     #[must_use]
-    pub fn legal_moves(&self) -> Vec<Move> {
+    pub fn legal_moves(&mut self) -> Vec<Move> {
         self.pseudo_legal_moves()
             .into_iter()
             .filter(|m| self.is_legal(m))
@@ -189,11 +199,13 @@ impl Game {
         let mut count = 0;
 
         for seen_state in self.history.iter().rev() {
-            if self.zobrist == *seen_state {
+            if self.zobrist == seen_state.zobrist {
                 count += 1;
             }
 
-            if count == 3 {
+            // We've seen the current state twice before, so it has occurred three times overall
+            // This is a draw by threefold repetition.
+            if count == 2 {
                 return true;
             }
         }
@@ -201,35 +213,59 @@ impl Game {
         false
     }
 
-    fn is_legal(&self, mv: &Move) -> bool {
-        !self.make_move(mv).unwrap().board.king_in_check(self.player)
+    fn is_legal(&mut self, mv: &Move) -> bool {
+        let player = self.player;
+        self.make_move(mv);
+        let is_in_check = self.board.king_in_check(player);
+        self.undo_move();
+        !is_in_check
     }
 
-    pub fn make_move(&self, mv: &Move) -> Result<Self, MoveError> {
+    fn set_at(&mut self, sq: Square, piece: Piece) {
+        self.board.set_at(sq, piece);
+        self.zobrist.toggle_piece_on_square(sq, piece);
+    }
+
+    fn remove_at(&mut self, sq: Square) {
+        let removed_piece = self.board.piece_at(sq).unwrap();
+        self.board.remove_at(sq);
+        self.zobrist.toggle_piece_on_square(sq, removed_piece);
+    }
+
+    pub fn make_move(&mut self, mv: &Move) {
         let from = mv.src;
         let to = mv.dst;
 
-        let moved_piece = self.board.piece_at(from).ok_or(MoveError::InvalidMove)?;
+        let moved_piece = self.board.piece_at(from).unwrap();
         let maybe_captured_piece = self.board.piece_at(to);
 
-        let mut board = self.board;
-        let mut zobrist = self.zobrist.clone();
+        let previous_en_passant_target = self.en_passant_target.clone();
 
-        board.remove_at(from);
-        zobrist.toggle_piece_on_square(from, moved_piece);
+        // Capture the irreversible aspects of the position so that they can be restored
+        // if we undo this move.
+        let history = History {
+            mv: *mv,
+            captured: maybe_captured_piece,
+            white_castle_rights: self.white_castle_rights,
+            black_castle_rights: self.black_castle_rights,
+            en_passant_target: self.en_passant_target,
+            halfmove_clock: self.halfmove_clock,
+            zobrist: self.zobrist.clone(),
+        };
 
-        if let Some(captured_piece) = maybe_captured_piece {
-            board.remove_at(to);
-            zobrist.toggle_piece_on_square(from, captured_piece);
+        self.history.push(history);
+
+        self.remove_at(from);
+
+        if maybe_captured_piece.is_some() {
+            self.remove_at(to);
         }
 
         if let Some(promoted_to) = mv.promotion {
             let promoted_piece = Piece::new(moved_piece.player, promoted_to.piece());
-            board.set_at(to, promoted_piece);
-            zobrist.toggle_piece_on_square(to, promoted_piece);
+            self.set_at(to, promoted_piece);
         } else {
-            board.set_at(to, moved_piece);
-            zobrist.toggle_piece_on_square(to, moved_piece);
+            self.set_at(to, moved_piece);
         }
 
         // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
@@ -258,10 +294,7 @@ impl Game {
                         };
 
                         let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
-                        let captured_piece = self.board.piece_at(capture_square).unwrap();
-
-                        board.remove_at(capture_square);
-                        zobrist.toggle_piece_on_square(capture_square, captured_piece);
+                        self.remove_at(capture_square);
                     }
                 }
             }
@@ -282,7 +315,7 @@ impl Game {
             Player::Black => squares::RANK_5,
         };
 
-        let en_passant_target = if moved_piece.kind == PieceKind::Pawn
+        self.en_passant_target = if moved_piece.kind == PieceKind::Pawn
             && back_rank.contains(from)
             && double_push_rank.contains(to)
         {
@@ -300,7 +333,8 @@ impl Game {
             None
         };
 
-        zobrist.set_en_passant(self.en_passant_target, en_passant_target);
+        self.zobrist
+            .set_en_passant(previous_en_passant_target, self.en_passant_target);
 
         // If we just moved a king from its start square, we may have castled.
         //
@@ -320,11 +354,8 @@ impl Game {
                     Player::Black => F8,
                 };
 
-                board.remove_at(rook_remove_square);
-                zobrist.toggle_piece_on_square(rook_remove_square, our_rook);
-
-                board.set_at(rook_add_square, our_rook);
-                zobrist.toggle_piece_on_square(rook_add_square, our_rook);
+                self.remove_at(rook_remove_square);
+                self.set_at(rook_add_square, our_rook);
             } else if to == squares::queenside_castle_dest(moved_piece.player) {
                 let rook_remove_square = squares::queenside_rook_start(moved_piece.player);
                 let rook_add_square = match moved_piece.player {
@@ -332,37 +363,38 @@ impl Game {
                     Player::Black => D8,
                 };
 
-                board.remove_at(rook_remove_square);
-                zobrist.toggle_piece_on_square(rook_remove_square, our_rook);
-
-                board.set_at(rook_add_square, our_rook);
-                zobrist.toggle_piece_on_square(rook_add_square, our_rook);
+                self.remove_at(rook_remove_square);
+                self.set_at(rook_add_square, our_rook);
             }
         }
 
-        let (mut castle_rights, mut other_player_castle_rights) = match self.player {
-            Player::White => (self.white_castle_rights, self.black_castle_rights),
-            Player::Black => (self.black_castle_rights, self.white_castle_rights),
+        let (castle_rights, other_player_castle_rights) = match self.player {
+            Player::White => (&mut self.white_castle_rights, &mut self.black_castle_rights),
+            Player::Black => (&mut self.black_castle_rights, &mut self.white_castle_rights),
         };
 
         if moved_piece.kind == PieceKind::King && from == squares::king_start(self.player) {
             if castle_rights.king_side {
                 castle_rights.remove_kingside_rights();
-                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Kingside);
+                self.zobrist
+                    .toggle_castle_rights(self.player, CastleRightsSide::Kingside);
             }
 
             if castle_rights.queen_side {
                 castle_rights.remove_queenside_rights();
-                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Queenside);
+                self.zobrist
+                    .toggle_castle_rights(self.player, CastleRightsSide::Queenside);
             }
         } else if moved_piece.kind == PieceKind::Rook {
             if from == squares::kingside_rook_start(self.player) && castle_rights.king_side {
-                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Kingside);
+                self.zobrist
+                    .toggle_castle_rights(self.player, CastleRightsSide::Kingside);
                 castle_rights.remove_kingside_rights();
             } else if from == squares::queenside_rook_start(self.player) && castle_rights.queen_side
             {
                 castle_rights.remove_queenside_rights();
-                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Queenside);
+                self.zobrist
+                    .toggle_castle_rights(self.player, CastleRightsSide::Queenside);
             }
         }
 
@@ -371,48 +403,132 @@ impl Game {
                 && other_player_castle_rights.king_side
             {
                 other_player_castle_rights.remove_kingside_rights();
-                zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Kingside);
+                self.zobrist
+                    .toggle_castle_rights(self.player.other(), CastleRightsSide::Kingside);
             } else if to == squares::queenside_rook_start(self.player.other())
                 && other_player_castle_rights.queen_side
             {
                 other_player_castle_rights.remove_queenside_rights();
-                zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Queenside);
+                self.zobrist
+                    .toggle_castle_rights(self.player.other(), CastleRightsSide::Queenside);
             }
         }
 
-        let (white_castle_rights, black_castle_rights) = match self.player {
-            Player::White => (castle_rights, other_player_castle_rights),
-            Player::Black => (other_player_castle_rights, castle_rights),
-        };
-
         let should_reset_halfmove_clock =
             maybe_captured_piece.is_some() || moved_piece.kind == PieceKind::Pawn;
-        let halfmove_clock = if should_reset_halfmove_clock {
-            0
+
+        if should_reset_halfmove_clock {
+            self.halfmove_clock = 0;
         } else {
-            self.halfmove_clock
-        };
+            self.halfmove_clock += 1;
+        }
 
-        let plies = self.plies + 1;
+        self.plies += 1;
 
-        let player = self.player.other();
-        zobrist.toggle_side_to_play();
+        self.player = self.player.other();
+        self.zobrist.toggle_side_to_play();
+    }
 
-        let mut history = self.history.clone();
-        history.push(zobrist.clone());
+    pub fn undo_move(&mut self) {
+        let history = self.history.pop().unwrap();
+        let mv = history.mv;
+        let from = mv.src;
+        let to = mv.dst;
 
-        Ok(Self {
-            player,
-            board,
-            white_castle_rights,
-            black_castle_rights,
-            en_passant_target,
-            halfmove_clock,
-            plies,
+        let moved_piece = self.board.piece_at(to).unwrap();
 
-            zobrist,
-            history,
-        })
+        self.player = self.player.other();
+        self.zobrist.toggle_side_to_play();
+
+        self.plies -= 1;
+
+        self.halfmove_clock = history.halfmove_clock;
+
+        // If either player lost their castle rights during the move, we restore them
+        if !self.white_castle_rights.king_side && history.white_castle_rights.king_side {
+            self.zobrist
+                .toggle_castle_rights(Player::White, CastleRightsSide::Kingside);
+        }
+        if !self.white_castle_rights.queen_side && history.white_castle_rights.queen_side {
+            self.zobrist
+                .toggle_castle_rights(Player::White, CastleRightsSide::Queenside);
+        }
+        if !self.black_castle_rights.king_side && history.black_castle_rights.king_side {
+            self.zobrist
+                .toggle_castle_rights(Player::Black, CastleRightsSide::Kingside);
+        }
+        if !self.black_castle_rights.queen_side && history.black_castle_rights.queen_side {
+            self.zobrist
+                .toggle_castle_rights(Player::Black, CastleRightsSide::Queenside);
+        }
+
+        self.white_castle_rights = history.white_castle_rights;
+        self.black_castle_rights = history.black_castle_rights;
+
+        // Undo castling, if we castled
+        if moved_piece.kind == PieceKind::King && from == squares::king_start(moved_piece.player) {
+            let our_rook = Piece::new(moved_piece.player, PieceKind::Rook);
+
+            if to == squares::kingside_castle_dest(moved_piece.player) {
+                let rook_removed_square = squares::kingside_rook_start(moved_piece.player);
+                let rook_added_square = match moved_piece.player {
+                    Player::White => F1,
+                    Player::Black => F8,
+                };
+
+                self.remove_at(rook_added_square);
+                self.set_at(rook_removed_square, our_rook);
+            } else if to == squares::queenside_castle_dest(moved_piece.player) {
+                let rook_removed_square = squares::queenside_rook_start(moved_piece.player);
+                let rook_added_square = match moved_piece.player {
+                    Player::White => D1,
+                    Player::Black => D8,
+                };
+
+                self.remove_at(rook_added_square);
+                self.set_at(rook_removed_square, our_rook);
+            }
+        }
+
+        // Replace the pawn taken by en-passant capture
+        if let Some(en_passant_target) = history.en_passant_target {
+            if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
+                let pawn_attacks = move_tables::pawn_attacks(from, moved_piece.player);
+
+                if pawn_attacks.contains(to) {
+                    // Get the square that we need to remove the pawn from.
+                    let inverse_pawn_move_direction = match moved_piece.player {
+                        Player::White => Direction::South,
+                        Player::Black => Direction::North,
+                    };
+
+                    let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
+                    self.set_at(
+                        capture_square,
+                        Piece::new(moved_piece.player.other(), PieceKind::Pawn),
+                    );
+                }
+            }
+        }
+
+        let en_passant_target_before_undo = self.en_passant_target;
+        self.en_passant_target = history.en_passant_target;
+
+        self.zobrist
+            .set_en_passant(en_passant_target_before_undo, history.en_passant_target);
+
+        let moved_piece = self.board.piece_at(to).unwrap();
+        self.remove_at(to);
+
+        if let Some(captured_piece) = history.captured {
+            self.set_at(to, captured_piece);
+        }
+
+        if mv.promotion.is_some() {
+            self.set_at(from, Piece::new(self.player, PieceKind::Pawn));
+        } else {
+            self.set_at(from, moved_piece);
+        }
     }
 }
 

@@ -149,7 +149,7 @@ impl Uci {
                 };
 
                 for mv in moves {
-                    game = game.make_move(mv).unwrap();
+                    game.make_move(mv);
                 }
 
                 self.game = game;
@@ -170,7 +170,7 @@ impl Uci {
                 infinite: _,
             }) => {
                 let strategy = self.strategy.clone();
-                let game = self.game.clone();
+                let mut game = self.game.clone();
                 let options = self.options.clone();
                 let control = self.control.clone();
                 let reporter = self.reporter.clone();
@@ -186,7 +186,7 @@ impl Uci {
 
                 std::thread::spawn(move || {
                     let mut s = strategy.lock().unwrap();
-                    s.go(&game, &args, &options, control, reporter);
+                    s.go(&mut game, &args, &options, control, reporter);
                 });
             }
             UciCommand::Stop => {
@@ -203,14 +203,14 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Move { mv } => {
-                    self.game = self.game.make_move(mv).unwrap();
+                    self.game.make_move(mv);
                     println!("{:?}", self.game.board);
                     println!("FEN: {}", chess::fen::write(&self.game));
                     println!();
                 }
                 DebugCommand::Perft { depth } => {
                     let started_at = Instant::now();
-                    let result = perft::perft(*depth, &self.game);
+                    let result = perft::perft(*depth, &mut self.game);
                     let finished_at = Instant::now();
 
                     let time_taken = finished_at - started_at;
@@ -223,7 +223,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::PerftDiv { depth } => {
-                    let result = perft::perft_div(*depth, &self.game);
+                    let result = perft::perft_div(*depth, &mut self.game);
 
                     for (mv, number_for_mv) in result {
                         println!("{mv:?}: {number_for_mv}");

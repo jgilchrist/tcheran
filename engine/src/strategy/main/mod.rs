@@ -11,7 +11,7 @@ pub struct MainStrategy;
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for MainStrategy {
     fn go(
         &mut self,
-        game: &Game,
+        game: &mut Game,
         args: &GoArgs,
         options: &EngineOptions,
         control: TCx,

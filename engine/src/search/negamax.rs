@@ -9,7 +9,7 @@ use chess::{game::Game, moves::Move};
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
 pub fn negamax(
-    game: &Game,
+    game: &mut Game,
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     depth: u8,
@@ -69,15 +69,16 @@ pub fn negamax(
     for mv in &moves {
         let player = game.player;
 
-        let game_after_move = game.make_move(mv).unwrap();
-        if game_after_move.board.king_in_check(player) {
+        game.make_move(mv);
+        if game.board.king_in_check(player) {
+            game.undo_move();
             continue;
         }
 
         number_of_legal_moves += 1;
 
         let move_score = -negamax(
-            &game_after_move,
+            game,
             -beta,
             -alpha,
             depth - 1,
@@ -87,6 +88,8 @@ pub fn negamax(
             state,
             control,
         )?;
+
+        game.undo_move();
 
         if move_score > best_eval {
             best_move = Some(*mv);

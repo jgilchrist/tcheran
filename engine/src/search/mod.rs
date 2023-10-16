@@ -48,7 +48,7 @@ impl SearchState {
 }
 
 pub fn search(
-    game: &Game,
+    game: &mut Game,
     args: &GoArgs,
     options: &EngineOptions,
     control: &impl Control,

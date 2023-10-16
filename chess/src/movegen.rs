@@ -260,7 +260,7 @@ mod tests {
     #[inline(always)]
     fn should_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
-        let game = Game::from_fen(fen).unwrap();
+        let mut game = Game::from_fen(fen).unwrap();
         let moves = game.legal_moves();
         let (src, dst) = squares;
         let mv = Move::new(src, dst);

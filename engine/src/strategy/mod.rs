@@ -8,7 +8,7 @@ pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEval
 pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
     fn go(
         &mut self,
-        game: &Game,
+        game: &mut Game,
         args: &GoArgs,
         options: &EngineOptions,
         control: TCx,

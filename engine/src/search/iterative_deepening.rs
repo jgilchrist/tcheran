@@ -12,7 +12,7 @@ use chess::util::nodes_per_second;
 const MAX_SEARCH_DEPTH: u8 = 100;
 
 pub fn search(
-    game: &Game,
+    game: &mut Game,
     _options: &EngineOptions,
     state: &mut SearchState,
     time_control: &TimeControl,
@@ -88,7 +88,7 @@ fn get_pv(depth: u8, game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
 
         let best_move_in_position = tt_entry.best_move.unwrap();
         pv.push(best_move_in_position);
-        current_position = current_position.make_move(&best_move_in_position).unwrap();
+        current_position.make_move(&best_move_in_position);
     }
 
     pv
