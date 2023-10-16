@@ -102,7 +102,7 @@ impl UciResponse {
                 seldepth,
                 time,
                 nodes,
-                pv: _pv,
+                pv,
                 multipv: _multipv,
                 score,
                 currmove,
@@ -127,6 +127,17 @@ impl UciResponse {
                     response.push_str(&format!(" seldepth {seldepth}"));
                 }
 
+                if let Some(score) = score {
+                    match score {
+                        InfoScore::Centipawns(centipawns) => {
+                            response.push_str(&format!(" score cp {centipawns}"));
+                        }
+                        InfoScore::Mate(turns) => {
+                            response.push_str(&format!(" score mate {turns}"));
+                        }
+                    }
+                }
+
                 if let Some(time) = time {
                     response.push_str(&format!(" time {}", time.as_millis()));
                 }
@@ -143,14 +154,11 @@ impl UciResponse {
                     response.push_str(&format!(" currmove {}", currmove.notation()));
                 }
 
-                if let Some(score) = score {
-                    match score {
-                        InfoScore::Centipawns(centipawns) => {
-                            response.push_str(&format!(" score cp {centipawns}"));
-                        }
-                        InfoScore::Mate(turns) => {
-                            response.push_str(&format!(" score mate {turns}"));
-                        }
+                if let Some(pv) = pv {
+                    response.push_str(" pv");
+
+                    for mv in pv {
+                        response.push_str(&format!(" {}", mv.notation()))
                     }
                 }
 
