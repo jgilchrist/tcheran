@@ -147,7 +147,7 @@ impl Game {
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
-        let piece_to_move = self.board.player_piece_at(self.player, mv.src).unwrap();
+        let piece_to_move = self.board.player_piece_at(self.player, from).unwrap();
 
         if piece_to_move == PieceKind::King {
             let enemy_attacks = movegen::generate_all_attacks(&self.board, self.player.other());
@@ -192,14 +192,14 @@ impl Game {
         let from = mv.src;
         let to = mv.dst;
 
-        let moved_piece = self.board.piece_at(mv.src).ok_or(MoveError::InvalidMove)?;
+        let moved_piece = self.board.piece_at(from).ok_or(MoveError::InvalidMove)?;
 
-        let remove_src_mask = Squares::all_except(mv.src);
-        let remove_from_dst_mask = Squares::all_except(mv.dst);
+        let remove_src_mask = Squares::all_except(from);
+        let remove_from_dst_mask = Squares::all_except(to);
 
         let add_piece_to_dst_mask = |piece: &Piece| {
             if *piece == moved_piece {
-                Squares::from_square(mv.dst)
+                Squares::from_square(to)
             } else {
                 Squares::none()
             }
@@ -217,11 +217,11 @@ impl Game {
 
             if let Some(promoted_to) = mv.promotion {
                 // The promoted pawn has turned into another piece
-                let remove_promoted_pawn_mask = Squares::all_except(mv.dst);
+                let remove_promoted_pawn_mask = Squares::all_except(to);
 
                 let add_promoted_piece_mask =
                     if *piece == Piece::new(moved_piece.player, promoted_to.piece()) {
-                        Squares::from_square(mv.dst)
+                        Squares::from_square(to)
                     } else {
                         Squares::none()
                     };
@@ -241,14 +241,14 @@ impl Game {
             // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
             // in which case we need to remove the captured pawn.
             if moved_piece.kind == PieceKind::Pawn {
-                let pawn_attacks = move_tables::pawn_attacks(mv.src, moved_piece.player);
+                let pawn_attacks = move_tables::pawn_attacks(from, moved_piece.player);
 
-                if pawn_attacks.contains(mv.dst) {
+                if pawn_attacks.contains(to) {
                     let opponent_pieces =
                         self.board.player_pieces(moved_piece.player.other()).all();
 
                     // Definitely en-passant, as we made a capture but there was no piece on that square.
-                    if !opponent_pieces.contains(mv.dst) {
+                    if !opponent_pieces.contains(to) {
                         // Get the square that we need to remove the pawn from.
                         let inverse_pawn_move_direction = match moved_piece.player {
                             Player::White => Direction::South,
@@ -256,7 +256,7 @@ impl Game {
                         };
 
                         let capture_square =
-                            mv.dst.in_direction(&inverse_pawn_move_direction).unwrap();
+                            to.in_direction(&inverse_pawn_move_direction).unwrap();
 
                         let remove_captured_pawn_mask = Squares::all_except(capture_square);
                         new_squares &= remove_captured_pawn_mask;
@@ -271,13 +271,13 @@ impl Game {
             // just telling the board the start and end destination for the piece.
 
             // If we just moved a king from its start square, we may have castled.
-            if moved_piece.kind == PieceKind::King && mv.src == king_start_square {
+            if moved_piece.kind == PieceKind::King && from == king_start_square {
                 let kingside_square = squares::kingside_castle_dest(moved_piece.player);
                 let queenside_square = squares::queenside_castle_dest(moved_piece.player);
 
                 // We're castling!
-                if mv.dst == kingside_square || mv.dst == queenside_square {
-                    let is_kingside = mv.dst == kingside_square;
+                if to == kingside_square || to == queenside_square {
+                    let is_kingside = to == kingside_square;
 
                     let rook_remove_mask = Squares::all_except(if is_kingside {
                         squares::kingside_rook_start(moved_piece.player)
@@ -386,14 +386,14 @@ impl Game {
             let our_queenside_rook = squares::queenside_rook_start(player);
 
             if self.player == player {
-                match mv.src {
+                match from {
                     s if s == our_king_start => CastleRights::none(),
                     s if s == our_kingside_rook => castle_rights.without_kingside(),
                     s if s == our_queenside_rook => castle_rights.without_queenside(),
                     _ => *castle_rights,
                 }
             } else {
-                match mv.dst {
+                match to {
                     s if s == our_kingside_rook => castle_rights.without_kingside(),
                     s if s == our_queenside_rook => castle_rights.without_queenside(),
                     _ => *castle_rights,
