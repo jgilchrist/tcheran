@@ -85,6 +85,8 @@ fn negamax_inner(
 
     let game_status = game.game_status();
     if let Some(status) = game_status {
+        pv.clear();
+
         return match status {
             GameStatus::Won => NegamaxEval::mate_in(plies),
             GameStatus::Lost => NegamaxEval::mated_in(plies),
