@@ -223,22 +223,25 @@ impl Game {
         //
         // PERF: We only need to check mv.is_diagonal() if we moved from the rank where
         // en-passant can happen which is likely a much cheaper check (just bitwise and).
-        if moved_piece.kind == PieceKind::Pawn {
-            let pawn_attacks = move_tables::pawn_attacks(from, moved_piece.player);
+        if let Some(en_passant_target) = self.en_passant_target {
+            if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
+                let pawn_attacks = move_tables::pawn_attacks(from, moved_piece.player);
 
-            if pawn_attacks.contains(to) {
-                let opponent_pieces = self.board.player_pieces(moved_piece.player.other()).all();
+                if pawn_attacks.contains(to) {
+                    let opponent_pieces =
+                        self.board.player_pieces(moved_piece.player.other()).all();
 
-                // Definitely en-passant, as we made a capture but there was no piece on that square.
-                if !opponent_pieces.contains(to) {
-                    // Get the square that we need to remove the pawn from.
-                    let inverse_pawn_move_direction = match moved_piece.player {
-                        Player::White => Direction::South,
-                        Player::Black => Direction::North,
-                    };
+                    // Definitely en-passant, as we made a capture but there was no piece on that square.
+                    if !opponent_pieces.contains(to) {
+                        // Get the square that we need to remove the pawn from.
+                        let inverse_pawn_move_direction = match moved_piece.player {
+                            Player::White => Direction::South,
+                            Player::Black => Direction::North,
+                        };
 
-                    let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
-                    board.remove_at(capture_square);
+                        let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
+                        board.remove_at(capture_square);
+                    }
                 }
             }
         }
