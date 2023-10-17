@@ -143,12 +143,21 @@ fn cmd_isready(input: &str) -> IResult<&str, UciCommand> {
 fn cmd_setoption(input: &str) -> IResult<&str, UciCommand> {
     let (input, _) = tag("setoption")(input)?;
 
-    // TODO: Parse out 'setoption' arguments
+    let (input, _) = space1(input)?;
+
+    let (input, name) = command_with_argument("name", take_until(" value"), |name| name)(input)?;
+
+    let (input, _) = space1(input)?;
+    let (input, _) = tag("value")(input)?;
+    let (input, _) = space1(input)?;
+
+    let (input, value) = rest(input)?;
+
     Ok((
         input,
         UciCommand::SetOption {
-            name: String::new(),
-            value: String::new(),
+            name: name.to_string(),
+            value: value.to_string(),
         },
     ))
 }
@@ -392,7 +401,7 @@ mod tests {
     #[test]
     fn test_debug_wrong_param() {
         let ml = parse("debug abc");
-        assert_eq!(ml.is_err(), true);
+        assert!(ml.is_err());
     }
 
     #[test]

@@ -1,6 +1,6 @@
+use crate::options::EngineOptions;
 use chess::game::Game;
 use rand::prelude::SliceRandom;
-use crate::options::EngineOptions;
 
 use super::{Control, Reporter, Strategy};
 

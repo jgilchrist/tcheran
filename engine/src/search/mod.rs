@@ -2,11 +2,11 @@ use std::time::{Duration, Instant};
 
 use chess::{game::Game, moves::Move};
 
+use crate::options::EngineOptions;
 use crate::{
     eval::Eval,
     strategy::{Reporter, SearchInfo, SearchScore, SearchStats},
 };
-use crate::options::EngineOptions;
 
 mod move_ordering;
 mod negamax;

@@ -1,7 +1,7 @@
 use std::time::Duration;
 
-use chess::{game::Game, moves::Move};
 use crate::options::EngineOptions;
+use chess::{game::Game, moves::Move};
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 

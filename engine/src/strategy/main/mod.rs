@@ -1,5 +1,5 @@
-use chess::game::Game;
 use crate::options::EngineOptions;
+use chess::game::Game;
 
 use crate::search;
 

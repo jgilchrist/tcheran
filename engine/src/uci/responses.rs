@@ -1,5 +1,7 @@
 use std::time::Duration;
 
+use crate::uci::options;
+use crate::uci::options::UciOptionType;
 use chess::moves::Move;
 
 #[derive(Debug)]
@@ -8,15 +10,6 @@ pub(super) enum InfoScore {
     Mate(u32),
     // lowerbound: i32,
     // upperbound: i32,
-}
-
-#[derive(Debug)]
-pub(super) enum OptionType {
-    Check,
-    Spin,
-    Combo,
-    Button,
-    String,
 }
 
 #[derive(Debug)]
@@ -72,12 +65,12 @@ pub(super) enum UciResponse {
     Registration(RegistrationStatus),
     Info(InfoFields),
     Option {
-        name: String,
-        r#type: OptionType,
-        default: String,
-        min: String,
-        max: String,
-        var: String,
+        name: &'static str,
+        r#type: options::UciOptionType,
+        default: &'static str,
+        min: Option<String>,
+        max: Option<String>,
+        var: Option<String>,
     },
 }
 
@@ -165,13 +158,33 @@ impl UciResponse {
                 response
             }
             Self::Option {
-                name: _name,
-                r#type: _type,
-                default: _default,
-                min: _min,
-                max: _max,
-                var: _var,
-            } => todo!(),
+                name,
+                r#type: typ,
+                default,
+                min,
+                max,
+                var,
+            } => {
+                let type_str = match typ {
+                    UciOptionType::Check => "check",
+                    UciOptionType::Spin => "spin",
+                    UciOptionType::Combo => "combo",
+                    UciOptionType::String => "string",
+                    UciOptionType::Button => "button",
+                };
+
+                if min.is_some() {
+                    todo!();
+                }
+                if max.is_some() {
+                    todo!();
+                }
+                if var.is_some() {
+                    todo!();
+                }
+
+                format!("option name {name} type {type_str} default {default}")
+            }
         }
     }
 }

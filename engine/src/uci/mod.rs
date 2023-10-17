@@ -3,13 +3,14 @@ use std::sync::{Arc, Mutex};
 
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
+use options::UciOption;
 
+use crate::options::EngineOptions;
 use crate::util::sync::LockLatch;
 use crate::{
     strategy::{self, Strategy},
     util::log::log,
 };
-use crate::options::EngineOptions;
 
 use self::responses::{InfoFields, InfoScore};
 use self::{
@@ -18,6 +19,7 @@ use self::{
 };
 
 pub mod commands;
+mod options;
 pub mod parser;
 #[allow(unused)]
 pub mod responses;
@@ -103,13 +105,32 @@ impl Uci {
                     "engine ({version})"
                 ))));
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
+
+                send_response(&UciResponse::Option {
+                    name: options::MaxSearchDepthOption::NAME,
+                    r#type: options::MaxSearchDepthOption::TYPE,
+                    default: options::MaxSearchDepthOption::DEFAULT_VALUE,
+                    min: None,
+                    max: None,
+                    var: None,
+                });
+
                 send_response(&UciResponse::UciOk);
             }
             UciCommand::Debug(on) => {
                 self.debug = *on;
             }
             UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
-            UciCommand::SetOption { name: _, value: _ } => {}
+            UciCommand::SetOption { name, value } => {
+                match name.as_str() {
+                    options::MaxSearchDepthOption::NAME => {
+                        options::MaxSearchDepthOption::set(&mut self.options, value)?;
+                    }
+                    _ => {
+                        println!("Unknown option: {name}");
+                    }
+                };
+            }
             UciCommand::Register {
                 later: _,
                 name: _,
