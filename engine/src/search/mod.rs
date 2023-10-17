@@ -6,6 +6,7 @@ use crate::{
     eval::Eval,
     strategy::{Reporter, SearchInfo, SearchScore, SearchStats},
 };
+use crate::options::EngineOptions;
 
 mod move_ordering;
 mod negamax;
@@ -51,11 +52,11 @@ impl SearchState {
     }
 }
 
-pub fn search(game: &Game, reporter: &impl Reporter) -> (Move, Eval) {
+pub fn search(game: &Game, options: &EngineOptions, reporter: &impl Reporter) -> (Move, Eval) {
     let mut state = SearchState::new();
     state.start_timer();
 
-    let depth = 6;
+    let depth = options.max_search_depth;
     let (best_move, pv, eval) = negamax::negamax(game, depth, &mut state, reporter);
 
     reporter.report_search_progress(SearchInfo {

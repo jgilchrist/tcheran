@@ -9,6 +9,7 @@ use crate::{
     strategy::{self, Strategy},
     util::log::log,
 };
+use crate::options::EngineOptions;
 
 use self::responses::{InfoFields, InfoScore};
 use self::{
@@ -86,6 +87,7 @@ pub struct Uci {
     reporter: UciReporter,
     debug: bool,
     game: Game,
+    options: EngineOptions,
 }
 
 impl Uci {
@@ -146,12 +148,13 @@ impl Uci {
             }) => {
                 let strategy = self.strategy.clone();
                 let game = self.game.clone();
+                let options = self.options.clone();
                 let control = self.control.clone();
                 let reporter = self.reporter.clone();
 
                 std::thread::spawn(move || {
                     let mut s = strategy.lock().unwrap();
-                    s.go(&game, control, reporter);
+                    s.go(&game, &options, control, reporter);
                 });
             }
             UciCommand::Stop => {
@@ -216,6 +219,7 @@ pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
         reporter: UciReporter {},
         debug: false,
         game: Game::new(),
+        options: EngineOptions::default(),
     };
 
     uci.main_loop()

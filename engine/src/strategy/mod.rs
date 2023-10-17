@@ -1,11 +1,12 @@
 use std::time::Duration;
 
 use chess::{game::Game, moves::Move};
+use crate::options::EngineOptions;
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 
 pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
-    fn go(&mut self, game: &Game, control: TCx, reporter: TRx);
+    fn go(&mut self, game: &Game, options: &EngineOptions, control: TCx, reporter: TRx);
 }
 
 pub enum SearchScore {

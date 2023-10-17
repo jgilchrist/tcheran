@@ -12,6 +12,7 @@
 
 pub mod eval;
 pub mod strategy;
+pub mod options;
 pub mod uci;
 pub mod util;
 
