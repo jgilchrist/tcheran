@@ -11,7 +11,7 @@ pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
 
 pub enum SearchScore {
     Centipawns(i32),
-    Mate(u32),
+    Mate(i32),
 }
 
 pub struct SearchInfo {

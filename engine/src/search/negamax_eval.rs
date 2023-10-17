@@ -33,6 +33,20 @@ impl NegamaxEval {
         Self(-Self::MATE + i32::from(ply))
     }
 
+    // TODO: We say 'any rating within 100 of 32000 is still mate in x moves'
+    // Can we make this less arbitrary?
+    pub fn is_mate_in_moves(self) -> Option<i32> {
+        if self.0 > 32000 - 100 {
+            return Some((Self::MATE - self.0 + 1) / 2);
+        }
+
+        if self.0 < -32000 + 100 {
+            return Some((-Self::MATE - self.0) / 2);
+        }
+
+        None
+    }
+
     // For negamax to work, the eval must be flipped for each side so that each side can
     // 'maximise' its score. However, this means when we report the eval, it will be reversed
     // if we're playing as black since we need the scores to be positive if black is winning.

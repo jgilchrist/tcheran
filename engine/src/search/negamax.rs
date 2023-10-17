@@ -1,12 +1,12 @@
-use rand::Rng;
 use chess::game::GameStatus;
 use chess::{game::Game, moves::Move};
+use rand::Rng;
 
+use crate::eval::Eval;
 use crate::{
     eval::{self},
     strategy::{Reporter, SearchStats},
 };
-use crate::eval::Eval;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 

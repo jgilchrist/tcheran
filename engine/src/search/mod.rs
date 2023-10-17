@@ -61,10 +61,16 @@ pub fn search(game: &Game, options: &EngineOptions, reporter: &impl Reporter) ->
     let depth = options.max_search_depth;
     let (best_move, pv, eval) = negamax::negamax(game, depth, &mut state, reporter);
 
+    let score = if let Some(nmoves) = eval.is_mate_in_moves() {
+        SearchScore::Mate(nmoves)
+    } else {
+        SearchScore::Centipawns(eval.0)
+    };
+
     reporter.report_search_progress(SearchInfo {
         depth,
         seldepth: state.max_depth_reached,
-        score: SearchScore::Centipawns(eval.0),
+        score,
         pv,
         stats: SearchStats {
             time: state.elapsed_time(),
