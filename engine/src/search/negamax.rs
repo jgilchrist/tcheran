@@ -1,3 +1,4 @@
+use rand::Rng;
 use chess::game::GameStatus;
 use chess::{game::Game, moves::Move};
 
@@ -5,6 +6,7 @@ use crate::{
     eval::{self},
     strategy::{Reporter, SearchStats},
 };
+use crate::eval::Eval;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
@@ -69,7 +71,13 @@ fn negamax_inner(
         pv.clear();
 
         state.nodes_visited += 1;
-        let eval = eval::eval(game);
+
+        // Introduce a tiny bit of noise into the evaluation function to add some variation
+        // to play in the same situations where we'd otherwise always pick the first move
+        // with the same score.
+        let eval_noise = rand::thread_rng().gen_range(0..10);
+        let eval = eval::eval(game) + Eval(eval_noise);
+
         return NegamaxEval::from_eval(eval, game.player);
     }
 
