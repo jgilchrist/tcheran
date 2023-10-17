@@ -15,6 +15,7 @@ mod negamax_eval;
 pub struct SearchState {
     start_time: Option<Instant>,
     nodes_visited: u32,
+    max_depth_reached: u8,
     beta_cutoffs: u32,
 }
 
@@ -22,6 +23,7 @@ impl SearchState {
     const fn new() -> Self {
         Self {
             start_time: None,
+            max_depth_reached: 0,
             nodes_visited: 0,
             beta_cutoffs: 0,
         }
@@ -60,7 +62,8 @@ pub fn search(game: &Game, options: &EngineOptions, reporter: &impl Reporter) ->
     let (best_move, pv, eval) = negamax::negamax(game, depth, &mut state, reporter);
 
     reporter.report_search_progress(SearchInfo {
-        depth: depth.into(),
+        depth,
+        seldepth: state.max_depth_reached,
         score: SearchScore::Centipawns(eval.0),
         pv,
         stats: SearchStats {

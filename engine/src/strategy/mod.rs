@@ -15,7 +15,8 @@ pub enum SearchScore {
 }
 
 pub struct SearchInfo {
-    pub depth: u32,
+    pub depth: u8,
+    pub seldepth: u8,
     pub score: SearchScore,
     pub stats: SearchStats,
     pub pv: Vec<Move>,

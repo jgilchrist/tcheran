@@ -60,6 +60,7 @@ impl strategy::Reporter for UciReporter {
 
         send_response(&UciResponse::Info(InfoFields {
             depth: Some(progress.depth),
+            seldepth: Some(progress.seldepth),
             score: Some(score),
             pv: Some(progress.pv),
             time: Some(progress.stats.time),

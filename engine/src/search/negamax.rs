@@ -63,6 +63,8 @@ fn negamax_inner(
     pv: &mut Vec<Move>,
     state: &mut SearchState,
 ) -> NegamaxEval {
+    state.max_depth_reached = state.max_depth_reached.max(plies);
+
     if depth == 0 {
         pv.clear();
 
