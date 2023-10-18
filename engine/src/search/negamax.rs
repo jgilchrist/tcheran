@@ -23,8 +23,6 @@ pub fn negamax(
     state.nodes_visited += 1;
 
     if depth == 0 {
-        pv.clear();
-
         // Introduce a tiny bit of noise into the evaluation function to add some variation
         // to play in the same situations where we'd otherwise always pick the first move
         // with the same score.
