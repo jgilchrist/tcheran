@@ -18,6 +18,7 @@ pub mod uci;
 pub mod util;
 
 mod search;
+mod transposition;
 
 pub use eval::eval;
 
@@ -43,4 +44,5 @@ pub fn init() {
     chess::init();
 
     eval::init();
+    transposition::init();
 }

@@ -38,6 +38,7 @@ pub struct SearchInfo {
     pub score: SearchScore,
     pub stats: SearchStats,
     pub pv: Vec<Move>,
+    pub hashfull: usize,
 }
 
 pub struct SearchStats {

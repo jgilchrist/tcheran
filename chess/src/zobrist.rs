@@ -6,7 +6,7 @@ use crate::squares::Squares;
 use rand::prelude::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
-pub struct ZobristHash(u64);
+pub struct ZobristHash(pub u64);
 
 impl ZobristHash {
     #[must_use]

@@ -43,7 +43,7 @@ pub(crate) struct InfoFields {
     pub(super) score: Option<InfoScore>,
     pub(super) currmove: Option<Move>,
     pub(super) currmovenumber: Option<u32>,
-    pub(super) hashfull: Option<u32>,
+    pub(super) hashfull: Option<usize>,
     pub(super) nps: Option<u32>,
     pub(super) tbhits: Option<u32>,
     pub(super) cpuload: Option<u32>,
@@ -100,7 +100,7 @@ impl UciResponse {
                 score,
                 currmove,
                 currmovenumber: _currmovenumber,
-                hashfull: _hashfull,
+                hashfull,
                 nps,
                 tbhits: _tbhits,
                 cpuload: _cpuload,
@@ -141,6 +141,10 @@ impl UciResponse {
 
                 if let Some(nps) = nps {
                     response.push_str(&format!(" nps {nps}"));
+                }
+
+                if let Some(hashfull) = hashfull {
+                    response.push_str(&format!(" hashfull {hashfull}"));
                 }
 
                 if let Some(currmove) = currmove {

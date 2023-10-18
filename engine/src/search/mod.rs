@@ -7,6 +7,8 @@ use crate::search::time_control::TimeControl;
 use crate::strategy::{Control, GoArgs};
 use crate::{eval::Eval, strategy::Reporter};
 
+pub use negamax_eval::NegamaxEval;
+
 mod iterative_deepening;
 mod move_ordering;
 mod negamax;

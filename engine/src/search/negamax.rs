@@ -1,7 +1,10 @@
 use crate::eval::{self};
 use crate::search::time_control::TimeControl;
-use chess::{game::Game, moves::Move};
 use crate::strategy::Control;
+use crate::transposition::transposition_table::{
+    NodeBound, SearchTranspositionTable, SearchTranspositionTableData,
+};
+use chess::{game::Game, moves::Move};
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
@@ -12,7 +15,7 @@ pub fn negamax(
     depth: u8,
     plies: u8,
     pv: &mut Vec<Move>,
-    best_previous_move: Option<Move>,
+    tt: &mut SearchTranspositionTable,
     time_control: &TimeControl,
     state: &mut SearchState,
     control: &impl Control,
@@ -34,7 +37,22 @@ pub fn negamax(
         return Ok(NegamaxEval::from_eval(eval, game.player));
     }
 
-    let mut line: Vec<Move> = vec![];
+    let mut previous_best_move: Option<Move> = None;
+
+    if let Some(tt_entry) = tt.get(&game.zobrist) {
+        if !is_root && tt_entry.depth > depth {
+            match tt_entry.bound {
+                NodeBound::Exact => return Ok(tt_entry.eval),
+                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
+                NodeBound::Lower if tt_entry.eval >= beta => return Ok(beta),
+                _ => {}
+            }
+        }
+
+        previous_best_move = tt_entry.best_move;
+    }
+
+    let mut node_pv: Vec<Move> = vec![];
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
@@ -56,7 +74,11 @@ pub fn negamax(
         };
     }
 
-    move_ordering::order_moves(game, &mut legal_moves, best_previous_move);
+    move_ordering::order_moves(game, &mut legal_moves, previous_best_move);
+
+    let mut tt_node_bound = NodeBound::Upper;
+    let mut best_move = None;
+    let mut best_eval = NegamaxEval::MIN;
 
     for mv in &legal_moves {
         let game_after_move = game.make_move(mv).unwrap();
@@ -67,26 +89,51 @@ pub fn negamax(
             -alpha,
             depth - 1,
             plies + 1,
-            &mut line,
-            None,
+            &mut node_pv,
+            tt,
             time_control,
             state,
             control,
         )?;
 
+        if move_score > best_eval {
+            best_move = Some(*mv);
+            best_eval = move_score;
+        }
+
+        // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
+            let tt_data = SearchTranspositionTableData {
+                bound: NodeBound::Lower,
+                eval: move_score,
+                best_move: None,
+                depth,
+            };
+
+            tt.insert(&game.zobrist, tt_data);
+
             state.beta_cutoffs += 1;
             return Ok(beta);
         }
 
         if move_score > alpha {
             alpha = move_score;
+            tt_node_bound = NodeBound::Exact;
 
             pv.clear();
             pv.push(*mv);
-            pv.extend_from_slice(&line);
+            pv.extend_from_slice(&node_pv);
         }
     }
+
+    let tt_data = SearchTranspositionTableData {
+        bound: tt_node_bound,
+        eval: alpha,
+        best_move,
+        depth,
+    };
+
+    tt.insert(&game.zobrist, tt_data);
 
     Ok(alpha)
 }
