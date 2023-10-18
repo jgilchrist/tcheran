@@ -3,65 +3,19 @@ use chess::{game::Game, moves::Move};
 use rand::Rng;
 
 use crate::eval::Eval;
+use crate::eval::{self};
 use crate::search::time_control::TimeControl;
-use crate::{
-    eval::{self},
-    strategy::Reporter,
-};
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
 pub fn negamax(
-    game: &Game,
-    depth: u8,
-    state: &mut SearchState,
-    time_control: &TimeControl,
-    _reporter: &impl Reporter,
-) -> Result<(Move, Vec<Move>, NegamaxEval), ()> {
-    let mut best_move: Option<Move> = None;
-    let mut best_line: Option<Vec<Move>> = None;
-    let mut best_score = NegamaxEval::MIN;
-
-    let mut root_moves = game.legal_moves();
-    let best_previous_root_move = state.best_pv.as_ref().and_then(|pv| pv.first().copied());
-
-    move_ordering::order_moves(game, &mut root_moves, best_previous_root_move);
-
-    for mv in &root_moves {
-        let game_after_move = game.make_move(mv).unwrap();
-        state.nodes_visited += 1;
-
-        let mut line: Vec<Move> = vec![];
-
-        let move_score = -negamax_inner(
-            &game_after_move,
-            NegamaxEval::MIN,
-            NegamaxEval::MAX,
-            depth - 1,
-            1,
-            &mut line,
-            time_control,
-            state,
-        )?;
-
-        if move_score > best_score {
-            line.insert(0, *mv);
-            best_score = move_score;
-            best_line = Some(line);
-            best_move = Some(*mv);
-        }
-    }
-
-    Ok((best_move.unwrap(), best_line.unwrap(), best_score))
-}
-
-fn negamax_inner(
     game: &Game,
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     depth: u8,
     plies: u8,
     pv: &mut Vec<Move>,
+    best_previous_move: Option<Move>,
     time_control: &TimeControl,
     state: &mut SearchState,
 ) -> Result<NegamaxEval, ()> {
@@ -101,19 +55,20 @@ fn negamax_inner(
     }
 
     let mut legal_moves = game.legal_moves();
-    move_ordering::order_moves(game, &mut legal_moves, None);
+    move_ordering::order_moves(game, &mut legal_moves, best_previous_move);
 
     for mv in &legal_moves {
         let game_after_move = game.make_move(mv).unwrap();
         state.nodes_visited += 1;
 
-        let move_score = -negamax_inner(
+        let move_score = -negamax(
             &game_after_move,
             -beta,
             -alpha,
             depth - 1,
             plies + 1,
             &mut line,
+            None,
             time_control,
             state,
         )?;

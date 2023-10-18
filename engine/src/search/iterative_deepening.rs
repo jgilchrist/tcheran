@@ -19,9 +19,20 @@ pub fn search(
     let mut overall_eval: Option<NegamaxEval> = None;
 
     for depth in 1..=MAX_SEARCH_DEPTH {
-        let Ok((best_move, pv, eval)) =
-            negamax::negamax(game, depth, state, time_control, reporter)
-        else {
+        let best_previous_root_move = state.best_pv.as_ref().and_then(|pv| pv.first().copied());
+        let mut pv: Vec<Move> = Vec::new();
+
+        let Ok(eval) = negamax::negamax(
+            game,
+            NegamaxEval::MIN,
+            NegamaxEval::MAX,
+            depth,
+            0,
+            &mut pv,
+            best_previous_root_move,
+            time_control,
+            state,
+        ) else {
             // TODO: Send results, even if the search is cancelled, since they may still be better
             // than whatever we found at the previous depth even if we didn't finish the search.
             break;
@@ -33,7 +44,9 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        overall_best_move = Some(best_move);
+        let best_move = pv.first().unwrap();
+
+        overall_best_move = Some(*best_move);
         overall_eval = Some(eval);
         state.best_pv = Some(pv.clone());
 
