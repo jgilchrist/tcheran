@@ -213,17 +213,23 @@ impl Game {
         let maybe_captured_piece = self.board.piece_at(to);
 
         let mut board = self.board;
+        let mut zobrist = self.zobrist.clone();
 
         board.remove_at(from);
+        zobrist.toggle_piece_on_square(from, moved_piece);
 
-        if maybe_captured_piece.is_some() {
+        if let Some(captured_piece) = maybe_captured_piece {
             board.remove_at(to);
+            zobrist.toggle_piece_on_square(from, captured_piece);
         }
 
         if let Some(promoted_to) = mv.promotion {
-            board.set_at(to, Piece::new(moved_piece.player, promoted_to.piece()));
+            let promoted_piece = Piece::new(moved_piece.player, promoted_to.piece());
+            board.set_at(to, promoted_piece);
+            zobrist.toggle_piece_on_square(to, promoted_piece);
         } else {
             board.set_at(to, moved_piece);
+            zobrist.toggle_piece_on_square(to, moved_piece);
         }
 
         // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
@@ -252,7 +258,10 @@ impl Game {
                         };
 
                         let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
+                        let captured_piece = self.board.piece_at(capture_square).unwrap();
+
                         board.remove_at(capture_square);
+                        zobrist.toggle_piece_on_square(capture_square, captured_piece);
                     }
                 }
             }
@@ -291,12 +300,18 @@ impl Game {
             None
         };
 
+        zobrist.set_en_passant(self.en_passant_target, en_passant_target);
+
         // If we just moved a king from its start square, we may have castled.
         //
         // PERF: Here, we figure out if the move was castling. It may be more performant to
         // tell this function that the move was castling, but it loses the cleanliness of
         // just telling the board the start and end destination for the piece.
+        //
+        // TODO: Collapse the queenside and kingside code paths into one here
         if moved_piece.kind == PieceKind::King && from == squares::king_start(moved_piece.player) {
+            let our_rook = Piece::new(moved_piece.player, PieceKind::Rook);
+
             // We're castling!
             if to == squares::kingside_castle_dest(moved_piece.player) {
                 let rook_remove_square = squares::kingside_rook_start(moved_piece.player);
@@ -306,21 +321,22 @@ impl Game {
                 };
 
                 board.remove_at(rook_remove_square);
-                board.set_at(
-                    rook_add_square,
-                    Piece::new(moved_piece.player, PieceKind::Rook),
-                );
+                zobrist.toggle_piece_on_square(rook_remove_square, our_rook);
+
+                board.set_at(rook_add_square, our_rook);
+                zobrist.toggle_piece_on_square(rook_add_square, our_rook);
             } else if to == squares::queenside_castle_dest(moved_piece.player) {
                 let rook_remove_square = squares::queenside_rook_start(moved_piece.player);
                 let rook_add_square = match moved_piece.player {
                     Player::White => D1,
                     Player::Black => D8,
                 };
+
                 board.remove_at(rook_remove_square);
-                board.set_at(
-                    rook_add_square,
-                    Piece::new(moved_piece.player, PieceKind::Rook),
-                );
+                zobrist.toggle_piece_on_square(rook_remove_square, our_rook);
+
+                board.set_at(rook_add_square, our_rook);
+                zobrist.toggle_piece_on_square(rook_add_square, our_rook);
             }
         }
 
@@ -330,21 +346,32 @@ impl Game {
         };
 
         if moved_piece.kind == PieceKind::King && from == squares::king_start(self.player) {
-            castle_rights.remove_kingside_rights();
-            castle_rights.remove_queenside_rights();
-        } else if moved_piece.kind == PieceKind::Rook {
-            if from == squares::kingside_rook_start(self.player) {
+            if castle_rights.king_side {
                 castle_rights.remove_kingside_rights();
-            } else if from == squares::queenside_rook_start(self.player) {
+                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Kingside);
+            }
+
+            if castle_rights.queen_side {
                 castle_rights.remove_queenside_rights();
+                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Queenside);
+            }
+        } else if moved_piece.kind == PieceKind::Rook {
+            if from == squares::kingside_rook_start(self.player) && castle_rights.king_side {
+                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Kingside);
+                castle_rights.remove_kingside_rights();
+            } else if from == squares::queenside_rook_start(self.player) && castle_rights.queen_side {
+                castle_rights.remove_queenside_rights();
+                zobrist.toggle_castle_rights(self.player, CastleRightsSide::Queenside);
             }
         }
 
         if maybe_captured_piece.is_some() {
-            if to == squares::kingside_rook_start(self.player.other()) {
+            if to == squares::kingside_rook_start(self.player.other()) && other_player_castle_rights.king_side {
                 other_player_castle_rights.remove_kingside_rights();
-            } else if to == squares::queenside_rook_start(self.player.other()) {
+                zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Kingside);
+            } else if to == squares::queenside_rook_start(self.player.other()) && other_player_castle_rights.queen_side {
                 other_player_castle_rights.remove_queenside_rights();
+                zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Queenside);
             }
         }
 
@@ -363,16 +390,20 @@ impl Game {
 
         let plies = self.plies + 1;
 
+        let player = self.player.other();
+        zobrist.toggle_side_to_play(player);
+
         // PERF: Incrementally update the Zobrist hash
-        Ok(Self::from_state(
+        Ok(Self {
             board,
-            self.player.other(),
+            player,
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,
-        ))
+            zobrist,
+        })
     }
 }
 

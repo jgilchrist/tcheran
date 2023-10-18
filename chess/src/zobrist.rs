@@ -14,7 +14,7 @@ impl ZobristHash {
     }
 
     #[allow(unused)]
-    pub fn toggle_piece_on_square(&mut self, piece: Piece, square: Square) {
+    pub fn toggle_piece_on_square(&mut self, square: Square, piece: Piece) {
         self.0 ^= piece_on_square(piece.player, piece.kind, square);
     }
 
