@@ -1,4 +1,3 @@
-use chess::game::GameStatus;
 use chess::{game::Game, moves::Move};
 use rand::Rng;
 
@@ -34,24 +33,28 @@ pub fn negamax(
 
     let mut line: Vec<Move> = vec![];
 
-    let game_status = game.game_status();
-    if let Some(status) = game_status {
-        pv.clear();
-
-        return Ok(match status {
-            GameStatus::Won => NegamaxEval::mate_in(plies),
-            GameStatus::Lost => NegamaxEval::mated_in(plies),
-            GameStatus::Stalemate => NegamaxEval::DRAW,
-        });
-    }
-
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
     if state.nodes_visited % 10000 == 0 && time_control.should_stop() {
         return Err(());
     }
 
+    if game.is_stalemate_by_fifty_move_rule() {
+        return Ok(NegamaxEval::DRAW);
+    }
+
     let mut legal_moves = game.legal_moves();
+
+    if legal_moves.is_empty() {
+        return if game.board.king_in_check(game.player) {
+            Ok(NegamaxEval::mated_in(plies))
+        } else if game.board.king_in_check(game.player) {
+            Ok(NegamaxEval::mate_in(plies))
+        } else {
+            Ok(NegamaxEval::DRAW)
+        }
+    }
+
     move_ordering::order_moves(game, &mut legal_moves, best_previous_move);
 
     for mv in &legal_moves {

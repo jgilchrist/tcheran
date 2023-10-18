@@ -24,12 +24,6 @@ pub struct CastleRights {
     pub queen_side: bool,
 }
 
-pub enum GameStatus {
-    Won,
-    Lost,
-    Stalemate,
-}
-
 impl CastleRights {
     #[must_use]
     pub const fn can_castle(&self) -> bool {
@@ -131,25 +125,8 @@ impl Game {
     }
 
     #[must_use]
-    pub fn game_status(&self) -> Option<GameStatus> {
-        if self.halfmove_clock >= 100 {
-            return Some(GameStatus::Stalemate);
-        }
-
-        let legal_moves = self.legal_moves();
-        if !legal_moves.is_empty() {
-            return None;
-        }
-
-        if self.board.king_in_check(self.player.other()) {
-            return Some(GameStatus::Won);
-        }
-
-        if self.board.king_in_check(self.player) {
-            return Some(GameStatus::Lost);
-        }
-
-        Some(GameStatus::Stalemate)
+    pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
+        self.halfmove_clock >= 100
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
