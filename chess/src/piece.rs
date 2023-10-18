@@ -24,6 +24,24 @@ impl PieceKind {
             Self::King => 5,
         }
     }
+
+    #[must_use]
+    #[inline]
+    pub fn value_of(p: Self) -> i32 {
+        match p {
+            Self::Pawn => 100,
+            Self::Knight | Self::Bishop => 300,
+            Self::Rook => 500,
+            Self::Queen => 800,
+            Self::King => 10000,
+        }
+    }
+
+    #[inline]
+    #[must_use]
+    pub fn value(&self) -> i32 {
+        Self::value_of(*self)
+    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

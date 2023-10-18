@@ -1,12 +1,7 @@
+use chess::piece::PieceKind;
 use chess::{board::PlayerPieces, game::Game};
 
 use super::Eval;
-
-const PAWN_VALUE: i32 = 100;
-const KNIGHT_VALUE: i32 = 300;
-const BISHOP_VALUE: i32 = 300;
-const ROOK_VALUE: i32 = 500;
-const QUEEN_VALUE: i32 = 800;
 
 pub fn material_diff(game: &Game) -> Eval {
     white_piece_value(game) + black_piece_value(game)
@@ -22,10 +17,10 @@ fn black_piece_value(game: &Game) -> Eval {
 
 fn count_piece_values(pieces: &PlayerPieces) -> Eval {
     Eval(
-        i32::from(pieces.pawns.count()) * PAWN_VALUE
-            + i32::from(pieces.knights.count()) * KNIGHT_VALUE
-            + i32::from(pieces.bishops.count()) * BISHOP_VALUE
-            + i32::from(pieces.rooks.count()) * ROOK_VALUE
-            + i32::from(pieces.queens.count()) * QUEEN_VALUE,
+        i32::from(pieces.pawns.count()) * PieceKind::value_of(PieceKind::Pawn)
+            + i32::from(pieces.knights.count()) * PieceKind::value_of(PieceKind::Knight)
+            + i32::from(pieces.bishops.count()) * PieceKind::value_of(PieceKind::Bishop)
+            + i32::from(pieces.rooks.count()) * PieceKind::value_of(PieceKind::Rook)
+            + i32::from(pieces.queens.count()) * PieceKind::value_of(PieceKind::Queen),
     )
 }
