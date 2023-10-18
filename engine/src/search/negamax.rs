@@ -20,11 +20,10 @@ pub fn negamax(
     state: &mut SearchState,
 ) -> Result<NegamaxEval, ()> {
     state.max_depth_reached = state.max_depth_reached.max(plies);
+    state.nodes_visited += 1;
 
     if depth == 0 {
         pv.clear();
-
-        state.nodes_visited += 1;
 
         // Introduce a tiny bit of noise into the evaluation function to add some variation
         // to play in the same situations where we'd otherwise always pick the first move
@@ -59,7 +58,6 @@ pub fn negamax(
 
     for mv in &legal_moves {
         let game_after_move = game.make_move(mv).unwrap();
-        state.nodes_visited += 1;
 
         let move_score = -negamax(
             &game_after_move,
