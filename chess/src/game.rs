@@ -1,21 +1,28 @@
 use crate::piece::Piece;
 use crate::squares::all::*;
-use crate::{
-    board::Board,
-    direction::Direction,
-    fen, move_tables,
-    movegen::{self, generate_moves},
-    moves::{self, Move},
-    piece::PieceKind,
-    player::Player,
-    square::Square,
-    squares::{self, Squares},
-};
+use crate::{board::Board, direction::Direction, fen, move_tables, movegen::{self, generate_moves}, moves::{self, Move}, piece::PieceKind, player::Player, square::Square, squares::{self, Squares}, zobrist};
 use anyhow::Result;
+use crate::zobrist::ZobristHash;
 
 #[derive(Debug)]
 pub enum MoveError {
     InvalidMove,
+}
+
+pub enum CastleRightsSide {
+    Kingside,
+    Queenside,
+}
+
+impl CastleRightsSide {
+    pub const N: usize = 2;
+
+    pub fn array_idx(&self) -> usize {
+        match self {
+            CastleRightsSide::Kingside => 0,
+            CastleRightsSide::Queenside => 1,
+        }
+    }
 }
 
 #[derive(Copy, Clone, Debug)]
@@ -81,20 +88,48 @@ pub struct Game {
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub plies: u32,
+
+    pub zobrist: ZobristHash,
 }
 
 impl Game {
     #[must_use]
     pub fn new() -> Self {
-        Self {
-            board: Board::start(),
-            player: Player::White,
-            white_castle_rights: CastleRights::default(),
-            black_castle_rights: CastleRights::default(),
-            en_passant_target: None,
-            halfmove_clock: 0,
-            plies: 0,
-        }
+        Self::from_state(
+            Board::start(),
+            Player::White,
+            CastleRights::default(),
+            CastleRights::default(),
+            None,
+            0,
+            0,
+        )
+    }
+
+    pub fn from_state(
+        board: Board,
+        player: Player,
+        white_castle_rights: CastleRights,
+        black_castle_rights: CastleRights,
+        en_passant_target: Option<Square>,
+        halfmove_clock: u32,
+        plies: u32,
+    ) -> Self {
+        let mut game = Self {
+            board,
+            player,
+            white_castle_rights,
+            black_castle_rights,
+            en_passant_target,
+            halfmove_clock,
+            plies,
+
+            zobrist: ZobristHash::new(),
+        };
+
+        let zobrist = zobrist::hash(&game);
+        game.zobrist = zobrist;
+        game
     }
 
     pub fn from_fen(fen: &str) -> Result<Self> {
@@ -328,15 +363,16 @@ impl Game {
 
         let plies = self.plies + 1;
 
-        Ok(Self {
+        // PERF: Incrementally update the Zobrist hash
+        Ok(Self::from_state(
             board,
-            player: self.player.other(),
+            self.player.other(),
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,
-        })
+        ))
     }
 }
 

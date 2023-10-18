@@ -2,14 +2,7 @@ use std::collections::HashSet;
 
 use anyhow::{bail, Result};
 
-use crate::{
-    board::Board,
-    game::{CastleRights, Game},
-    piece::Piece,
-    player::Player,
-    square::{File, Rank, Square},
-    squares::Squares,
-};
+use crate::{board::Board, game::{CastleRights, Game}, piece::Piece, player::Player, square::{File, Rank, Square}, squares::Squares};
 
 use nom::sequence::terminated;
 use nom::{
@@ -224,15 +217,15 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
 
     Ok((
         input,
-        Game {
-            player,
+        Game::from_state(
             board,
+            player,
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,
-        },
+        ),
     ))
 }
 

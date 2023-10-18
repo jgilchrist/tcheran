@@ -25,7 +25,9 @@ pub mod squares;
 
 mod move_tables;
 mod movegen;
+pub mod zobrist;
 
 pub fn init() {
     move_tables::init();
+    zobrist::init();
 }
