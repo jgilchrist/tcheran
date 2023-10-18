@@ -35,6 +35,7 @@ pub fn search(
 
         overall_best_move = Some(best_move);
         overall_eval = Some(eval);
+        state.best_pv = Some(pv.clone());
 
         reporter.report_search_progress(SearchInfo {
             depth,

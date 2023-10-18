@@ -2,8 +2,15 @@ use chess::piece::Piece;
 use chess::{game::Game, moves::Move};
 use std::cmp::Ordering;
 
-pub fn order_moves(game: &Game, moves: &mut [Move]) {
+pub fn order_moves(game: &Game, moves: &mut [Move], previous_best_move: Option<Move>) {
     moves.sort_unstable_by(|m1, m2| {
+        // If there was some best move in this situation previously, always search it first
+        if let Some(m) = previous_best_move {
+            if m == *m1 {
+                return Ordering::Less;
+            }
+        }
+
         let m1_victim = game.board.piece_at(m1.dst);
         let m2_victim = game.board.piece_at(m2.dst);
 

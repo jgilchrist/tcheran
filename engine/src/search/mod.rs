@@ -16,6 +16,7 @@ mod time_control;
 
 pub struct SearchState {
     start_time: Option<Instant>,
+    best_pv: Option<Vec<Move>>,
     nodes_visited: u32,
     max_depth_reached: u8,
     beta_cutoffs: u32,
@@ -28,6 +29,7 @@ impl SearchState {
             max_depth_reached: 0,
             nodes_visited: 0,
             beta_cutoffs: 0,
+            best_pv: None,
         }
     }
 

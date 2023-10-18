@@ -23,7 +23,9 @@ pub fn negamax(
     let mut best_score = NegamaxEval::MIN;
 
     let mut root_moves = game.legal_moves();
-    move_ordering::order_moves(game, &mut root_moves);
+    let best_previous_root_move = state.best_pv.as_ref().and_then(|pv| pv.first().copied());
+
+    move_ordering::order_moves(game, &mut root_moves, best_previous_root_move);
 
     for mv in &root_moves {
         let game_after_move = game.make_move(mv).unwrap();
@@ -99,7 +101,7 @@ fn negamax_inner(
     }
 
     let mut legal_moves = game.legal_moves();
-    move_ordering::order_moves(game, &mut legal_moves);
+    move_ordering::order_moves(game, &mut legal_moves, None);
 
     for mv in &legal_moves {
         let game_after_move = game.make_move(mv).unwrap();
