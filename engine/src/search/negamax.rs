@@ -45,12 +45,6 @@ pub fn negamax(
             best_line = Some(line);
             best_move = Some(*mv);
         }
-
-        reporter.report_search_stats(SearchStats {
-            time: state.elapsed_time(),
-            nodes: state.nodes_visited,
-            nodes_per_second: state.nodes_per_second(),
-        });
     }
 
     (best_move.unwrap(), best_line.unwrap(), best_score)
