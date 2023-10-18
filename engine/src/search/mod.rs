@@ -5,12 +5,13 @@ use chess::{game::Game, moves::Move};
 use crate::options::EngineOptions;
 use crate::{
     eval::Eval,
-    strategy::{Reporter, SearchInfo, SearchScore, SearchStats},
+    strategy::Reporter,
 };
 
 mod move_ordering;
 mod negamax;
 mod negamax_eval;
+mod iterative_deepening;
 
 pub struct SearchState {
     start_time: Option<Instant>,
@@ -58,26 +59,7 @@ pub fn search(game: &Game, options: &EngineOptions, reporter: &impl Reporter) ->
     let mut state = SearchState::new();
     state.start_timer();
 
-    let depth = options.max_search_depth;
-    let (best_move, pv, eval) = negamax::negamax(game, depth, &mut state, reporter);
-
-    let score = if let Some(nmoves) = eval.is_mate_in_moves() {
-        SearchScore::Mate(nmoves)
-    } else {
-        SearchScore::Centipawns(eval.0)
-    };
-
-    reporter.report_search_progress(SearchInfo {
-        depth,
-        seldepth: state.max_depth_reached,
-        score,
-        pv,
-        stats: SearchStats {
-            time: state.elapsed_time(),
-            nodes: state.nodes_visited,
-            nodes_per_second: state.nodes_per_second(),
-        },
-    });
+    let (best_move, eval) = iterative_deepening::search(game, options, &mut state, reporter);
 
     (best_move, eval.to_eval(game.player))
 }

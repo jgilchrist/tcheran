@@ -5,7 +5,7 @@ use rand::Rng;
 use crate::eval::Eval;
 use crate::{
     eval::{self},
-    strategy::{Reporter, SearchStats},
+    strategy::Reporter,
 };
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
@@ -14,7 +14,7 @@ pub fn negamax(
     game: &Game,
     depth: u8,
     state: &mut SearchState,
-    reporter: &impl Reporter,
+    _reporter: &impl Reporter,
 ) -> (Move, Vec<Move>, NegamaxEval) {
     let mut best_move: Option<Move> = None;
     let mut best_line: Option<Vec<Move>> = None;
