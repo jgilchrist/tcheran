@@ -5,7 +5,7 @@ use crate::player::Player;
 use crate::square::Square;
 use crate::squares::Squares;
 
-#[derive(Debug, Clone)]
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ZobristHash(u64);
 
 impl ZobristHash {

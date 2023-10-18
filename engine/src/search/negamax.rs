@@ -39,7 +39,7 @@ pub fn negamax(
         return Err(());
     }
 
-    if game.is_stalemate_by_fifty_move_rule() {
+    if game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule() {
         return Ok(NegamaxEval::DRAW);
     }
 

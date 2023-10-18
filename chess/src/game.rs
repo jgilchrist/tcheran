@@ -90,6 +90,7 @@ pub struct Game {
     pub plies: u32,
 
     pub zobrist: ZobristHash,
+    pub history: Vec<ZobristHash>,
 }
 
 impl Game {
@@ -125,9 +126,11 @@ impl Game {
             plies,
 
             zobrist: ZobristHash::new(),
+            history: Vec::new(),
         };
 
         let zobrist = zobrist::hash(&game);
+        game.history.push(zobrist.clone());
         game.zobrist = zobrist;
         game
     }
@@ -162,6 +165,24 @@ impl Game {
     #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         self.halfmove_clock >= 100
+    }
+
+    #[must_use]
+    pub fn is_stalemate_by_repetition(&self) -> bool {
+        // PERF: We only need to search up to the last irreversible move
+        let mut count = 0;
+
+        for seen_state in self.history.iter().rev() {
+            if self.zobrist == *seen_state {
+                count += 1;
+            }
+
+            if count == 3 {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
@@ -393,6 +414,9 @@ impl Game {
         let player = self.player.other();
         zobrist.toggle_side_to_play(player);
 
+        let mut history = self.history.clone();
+        history.push(zobrist.clone());
+
         // PERF: Incrementally update the Zobrist hash
         Ok(Self {
             board,
@@ -403,6 +427,7 @@ impl Game {
             halfmove_clock,
             plies,
             zobrist,
+            history,
         })
     }
 }
