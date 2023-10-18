@@ -132,6 +132,7 @@ dependencies = [
  "anyhow",
  "criterion",
  "nom",
+ "rand",
 ]
 
 [[package]]
@@ -319,7 +320,6 @@ dependencies = [
  "clap",
  "git-version",
  "nom",
- "rand",
 ]
 
 [[package]]

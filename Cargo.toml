@@ -21,6 +21,7 @@ rust-version = "1.71"
 anyhow = "1.0.72"
 clap = { version = "4.3.19", features = ["derive"] }
 nom = "7.1.1"
+rand = "0.8.5"
 
 [profile.release]
 debug = 1

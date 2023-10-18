@@ -10,7 +10,7 @@ git-version = "0.3.8"
 chess = { path = "../chess" }
 clap = { workspace = true }
 nom = { workspace = true }
-rand = "0.8.5"
+rand = { workspace = true }
 
 [lib]
 name = "engine"
