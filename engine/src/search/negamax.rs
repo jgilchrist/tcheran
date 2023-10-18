@@ -46,6 +46,8 @@ pub fn negamax(
     let mut legal_moves = game.legal_moves();
 
     if legal_moves.is_empty() {
+        pv.clear();
+
         return if game.board.king_in_check(game.player) {
             Ok(NegamaxEval::mated_in(plies))
         } else if game.board.king_in_check(game.player) {
