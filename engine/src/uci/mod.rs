@@ -1,11 +1,12 @@
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
+use std::time::Duration;
 
 use anyhow::Result;
 use chess::{game::Game, moves::Move};
-use options::UciOption;
 
 use crate::options::EngineOptions;
+use crate::strategy::GoArgs;
 use crate::util::sync::LockLatch;
 use crate::{
     strategy::{self, Strategy},
@@ -107,14 +108,7 @@ impl Uci {
                 ))));
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
 
-                send_response(&UciResponse::Option {
-                    name: options::MaxSearchDepthOption::NAME,
-                    r#type: options::MaxSearchDepthOption::TYPE,
-                    default: options::MaxSearchDepthOption::DEFAULT_VALUE,
-                    min: None,
-                    max: None,
-                    var: None,
-                });
+                // Options
 
                 send_response(&UciResponse::UciOk);
             }
@@ -122,11 +116,12 @@ impl Uci {
                 self.debug = *on;
             }
             UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
-            UciCommand::SetOption { name, value } => {
+            #[allow(clippy::match_single_binding)]
+            UciCommand::SetOption {
+                name,
+                value: _value,
+            } => {
                 match name.as_str() {
-                    options::MaxSearchDepthOption::NAME => {
-                        options::MaxSearchDepthOption::set(&mut self.options, value)?;
-                    }
                     _ => {
                         println!("Unknown option: {name}");
                     }
@@ -157,8 +152,8 @@ impl Uci {
             UciCommand::Go(GoCmdArguments {
                 searchmoves: _,
                 ponder: _,
-                wtime: _,
-                btime: _,
+                wtime,
+                btime,
                 winc: _,
                 binc: _,
                 movestogo: _,
@@ -174,9 +169,14 @@ impl Uci {
                 let control = self.control.clone();
                 let reporter = self.reporter.clone();
 
+                let args = GoArgs {
+                    wtime: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    btime: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                };
+
                 std::thread::spawn(move || {
                     let mut s = strategy.lock().unwrap();
-                    s.go(&game, &options, control, reporter);
+                    s.go(&game, &args, &options, control, reporter);
                 });
             }
             UciCommand::Stop => {

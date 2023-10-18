@@ -1,17 +1,18 @@
 use std::time::{Duration, Instant};
 
+use chess::player::Player;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
-use crate::{
-    eval::Eval,
-    strategy::Reporter,
-};
+use crate::search::time_control::TimeControl;
+use crate::strategy::GoArgs;
+use crate::{eval::Eval, strategy::Reporter};
 
+mod iterative_deepening;
 mod move_ordering;
 mod negamax;
 mod negamax_eval;
-mod iterative_deepening;
+mod time_control;
 
 pub struct SearchState {
     start_time: Option<Instant>,
@@ -55,11 +56,25 @@ impl SearchState {
     }
 }
 
-pub fn search(game: &Game, options: &EngineOptions, reporter: &impl Reporter) -> (Move, Eval) {
+pub fn search(
+    game: &Game,
+    args: &GoArgs,
+    options: &EngineOptions,
+    reporter: &impl Reporter,
+) -> (Move, Eval) {
     let mut state = SearchState::new();
     state.start_timer();
 
-    let (best_move, eval) = iterative_deepening::search(game, options, &mut state, reporter);
+    let my_time = match game.player {
+        Player::White => args.wtime,
+        Player::Black => args.btime,
+    };
+
+    let mut time_control = TimeControl::new(my_time);
+    time_control.init();
+
+    let (best_move, eval) =
+        iterative_deepening::search(game, options, &mut state, &time_control, reporter);
 
     (best_move, eval.to_eval(game.player))
 }

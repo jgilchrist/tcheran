@@ -3,13 +3,20 @@ use chess::game::Game;
 use crate::eval;
 use crate::options::EngineOptions;
 
-use super::{Control, Reporter, Strategy};
+use super::{Control, GoArgs, Reporter, Strategy};
 
 #[derive(Default)]
 pub struct TopEvalStrategy;
 
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
-    fn go(&mut self, game: &Game, _options: &EngineOptions, control: TCx, reporter: TRx) {
+    fn go(
+        &mut self,
+        game: &Game,
+        _args: &GoArgs,
+        _options: &EngineOptions,
+        control: TCx,
+        reporter: TRx,
+    ) {
         let mut moves = game.legal_moves();
         moves.sort_unstable_by_key(|m| eval::eval(&game.make_move(m).unwrap()));
 

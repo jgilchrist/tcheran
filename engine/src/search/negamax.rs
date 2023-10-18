@@ -3,6 +3,7 @@ use chess::{game::Game, moves::Move};
 use rand::Rng;
 
 use crate::eval::Eval;
+use crate::search::time_control::TimeControl;
 use crate::{
     eval::{self},
     strategy::Reporter,
@@ -14,8 +15,9 @@ pub fn negamax(
     game: &Game,
     depth: u8,
     state: &mut SearchState,
+    time_control: &TimeControl,
     _reporter: &impl Reporter,
-) -> (Move, Vec<Move>, NegamaxEval) {
+) -> Result<(Move, Vec<Move>, NegamaxEval), ()> {
     let mut best_move: Option<Move> = None;
     let mut best_line: Option<Vec<Move>> = None;
     let mut best_score = NegamaxEval::MIN;
@@ -36,8 +38,9 @@ pub fn negamax(
             depth - 1,
             1,
             &mut line,
+            time_control,
             state,
-        );
+        )?;
 
         if move_score > best_score {
             line.insert(0, *mv);
@@ -47,7 +50,7 @@ pub fn negamax(
         }
     }
 
-    (best_move.unwrap(), best_line.unwrap(), best_score)
+    Ok((best_move.unwrap(), best_line.unwrap(), best_score))
 }
 
 fn negamax_inner(
@@ -57,8 +60,9 @@ fn negamax_inner(
     depth: u8,
     plies: u8,
     pv: &mut Vec<Move>,
+    time_control: &TimeControl,
     state: &mut SearchState,
-) -> NegamaxEval {
+) -> Result<NegamaxEval, ()> {
     state.max_depth_reached = state.max_depth_reached.max(plies);
 
     if depth == 0 {
@@ -72,7 +76,7 @@ fn negamax_inner(
         let eval_noise = rand::thread_rng().gen_range(0..10);
         let eval = eval::eval(game) + Eval(eval_noise);
 
-        return NegamaxEval::from_eval(eval, game.player);
+        return Ok(NegamaxEval::from_eval(eval, game.player));
     }
 
     let mut line: Vec<Move> = vec![];
@@ -81,11 +85,17 @@ fn negamax_inner(
     if let Some(status) = game_status {
         pv.clear();
 
-        return match status {
+        return Ok(match status {
             GameStatus::Won => NegamaxEval::mate_in(plies),
             GameStatus::Lost => NegamaxEval::mated_in(plies),
             GameStatus::Stalemate => NegamaxEval::DRAW,
-        };
+        });
+    }
+
+    // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
+    // so we return Err to signal to the caller that the search did not complete.
+    if state.nodes_visited % 10000 == 0 && time_control.should_stop() {
+        return Err(());
     }
 
     let mut legal_moves = game.legal_moves();
@@ -102,12 +112,13 @@ fn negamax_inner(
             depth - 1,
             plies + 1,
             &mut line,
+            time_control,
             state,
-        );
+        )?;
 
         if move_score >= beta {
             state.beta_cutoffs += 1;
-            return beta;
+            return Ok(beta);
         }
 
         if move_score > alpha {
@@ -119,5 +130,5 @@ fn negamax_inner(
         }
     }
 
-    alpha
+    Ok(alpha)
 }

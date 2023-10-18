@@ -6,12 +6,24 @@ use chess::{game::Game, moves::Move};
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 
 pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
-    fn go(&mut self, game: &Game, options: &EngineOptions, control: TCx, reporter: TRx);
+    fn go(
+        &mut self,
+        game: &Game,
+        args: &GoArgs,
+        options: &EngineOptions,
+        control: TCx,
+        reporter: TRx,
+    );
 }
 
 pub enum SearchScore {
     Centipawns(i32),
     Mate(i32),
+}
+
+pub struct GoArgs {
+    pub wtime: Option<Duration>,
+    pub btime: Option<Duration>,
 }
 
 pub struct SearchInfo {

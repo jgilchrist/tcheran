@@ -18,17 +18,3 @@ pub trait UciOption {
 
     fn set(options: &mut EngineOptions, value: &str) -> Result<()>;
 }
-
-pub struct MaxSearchDepthOption;
-
-impl UciOption for MaxSearchDepthOption {
-    const NAME: &'static str = "MaxSearchDepth";
-    const TYPE: UciOptionType = UciOptionType::Spin;
-    const DEFAULT_VALUE: &'static str = "6";
-
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
-        let new_value = value.parse::<u8>()?;
-        options.max_search_depth = new_value;
-        Ok(())
-    }
-}

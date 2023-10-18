@@ -7,7 +7,8 @@
     clippy::option_if_let_else,
     clippy::module_name_repetitions,
     clippy::inline_always,
-    clippy::missing_const_for_fn
+    clippy::missing_const_for_fn,
+    clippy::too_many_arguments
 )]
 
 pub mod eval;
