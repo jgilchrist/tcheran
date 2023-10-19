@@ -154,8 +154,8 @@ impl Uci {
                 ponder: _,
                 wtime,
                 btime,
-                winc: _,
-                binc: _,
+                winc,
+                binc,
                 movestogo: _,
                 depth: _,
                 nodes: _,
@@ -172,6 +172,8 @@ impl Uci {
                 let args = GoArgs {
                     wtime: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
                     btime: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    winc: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    binc: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
                 };
 
                 std::thread::spawn(move || {

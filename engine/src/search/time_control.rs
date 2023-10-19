@@ -4,13 +4,15 @@ use std::time::{Duration, Instant};
 
 pub struct TimeControl {
     time_remaining: Option<Duration>,
+    increment: Option<Duration>,
     stop_searching_at: Option<Instant>,
 }
 
 impl TimeControl {
-    pub fn new(time_remaining: Option<Duration>) -> Self {
+    pub fn new(time_remaining: Option<Duration>, increment: Option<Duration>) -> Self {
         Self {
             time_remaining,
+            increment,
             stop_searching_at: None,
         }
     }
@@ -20,8 +22,16 @@ impl TimeControl {
         self.stop_searching_at = Some(Instant::now() + time_allotted_for_move);
     }
 
-    // TODO: Improve this - for now, it's super simple.
     fn time_allotted(&self) -> Duration {
+        let base_time_allotted = self.simple_time_allotted();
+
+        let increment = self.increment.unwrap_or_default();
+
+        base_time_allotted + increment
+    }
+
+    // TODO: Improve this - for now, it's super simple.
+    fn simple_time_allotted(&self) -> Duration {
         // If we don't have a time limit, spend a minute per move
         let Some(time_remaining) = self.time_remaining else {
             return Duration::from_secs(60);

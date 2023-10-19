@@ -72,7 +72,12 @@ pub fn search(
         Player::Black => args.btime,
     };
 
-    let mut time_control = TimeControl::new(my_time);
+    let my_increment = match game.player {
+        Player::White => args.winc,
+        Player::Black => args.binc,
+    };
+
+    let mut time_control = TimeControl::new(my_time, my_increment);
     time_control.init();
 
     let (best_move, eval) =

@@ -24,6 +24,8 @@ pub enum SearchScore {
 pub struct GoArgs {
     pub wtime: Option<Duration>,
     pub btime: Option<Duration>,
+    pub winc: Option<Duration>,
+    pub binc: Option<Duration>,
 }
 
 pub struct SearchInfo {
