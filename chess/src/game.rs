@@ -164,6 +164,8 @@ impl Game {
 
     #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
+        // TODO: Make sure that the order of checking checkmates vs. draws in search
+        // won't cause us to detect a draw when we should have checkmate.
         self.halfmove_clock >= 100
     }
 
