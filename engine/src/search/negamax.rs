@@ -22,6 +22,11 @@ pub fn negamax(
     state.max_depth_reached = state.max_depth_reached.max(plies);
     state.nodes_visited += 1;
 
+    if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
+        pv.clear();
+        return Ok(NegamaxEval::DRAW);
+    }
+
     if depth == 0 {
         // Introduce a tiny bit of noise into the evaluation function to add some variation
         // to play in the same situations where we'd otherwise always pick the first move
@@ -40,10 +45,6 @@ pub fn negamax(
         return Err(());
     }
 
-    if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
-        pv.clear();
-        return Ok(NegamaxEval::DRAW);
-    }
 
     let mut legal_moves = game.legal_moves();
 
