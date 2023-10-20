@@ -1,7 +1,7 @@
-use std::time::{Duration, Instant};
+use crate::strategy::Clocks;
 use chess::game::Game;
 use chess::player::Player;
-use crate::strategy::Clocks;
+use std::time::{Duration, Instant};
 
 // TODO: Handle increments
 
@@ -50,7 +50,7 @@ impl TimeControl {
 
         // Time pressure - we have less than two minutes.
         if time_remaining < Duration::from_secs(60 * 2) {
-            return Duration::from_secs(4) + increment
+            return Duration::from_secs(4) + increment;
         }
 
         Duration::from_secs(20) + increment

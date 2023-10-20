@@ -1,6 +1,6 @@
-use chess::{game::Game, moves::Move};
 use crate::eval::{self};
 use crate::search::time_control::TimeControl;
+use chess::{game::Game, moves::Move};
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
@@ -40,7 +40,6 @@ pub fn negamax(
         return Err(());
     }
 
-
     let mut legal_moves = game.legal_moves();
 
     if legal_moves.is_empty() {
@@ -52,7 +51,7 @@ pub fn negamax(
             Ok(NegamaxEval::mate_in(plies))
         } else {
             Ok(NegamaxEval::DRAW)
-        }
+        };
     }
 
     move_ordering::order_moves(game, &mut legal_moves, best_previous_move);

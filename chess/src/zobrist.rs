@@ -1,9 +1,9 @@
-use rand::prelude::*;
 use crate::game::{CastleRightsSide, Game};
 use crate::piece::{Piece, PieceKind};
 use crate::player::Player;
 use crate::square::Square;
 use crate::squares::Squares;
+use rand::prelude::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ZobristHash(u64);
@@ -38,16 +38,16 @@ impl ZobristHash {
 type ZobristComponent = u64;
 
 mod components {
+    use super::*;
     use crate::piece::PieceKind;
     use crate::player::Player;
     use crate::squares::Squares;
-    use super::*;
 
-    pub static mut PIECE_SQUARE: [[[ZobristComponent; PieceKind::N]; Squares::N]; Player::N]
-        = [[[0; PieceKind::N]; Squares::N]; Player::N];
+    pub static mut PIECE_SQUARE: [[[ZobristComponent; PieceKind::N]; Squares::N]; Player::N] =
+        [[[0; PieceKind::N]; Squares::N]; Player::N];
 
-    pub static mut CASTLING: [[ZobristComponent; CastleRightsSide::N]; Player::N]
-        = [[0; CastleRightsSide::N]; Player::N];
+    pub static mut CASTLING: [[ZobristComponent; CastleRightsSide::N]; Player::N] =
+        [[0; CastleRightsSide::N]; Player::N];
 
     pub static mut EN_PASSANT_SQUARE: [ZobristComponent; Squares::N] = [0; Squares::N];
 
@@ -64,22 +64,32 @@ pub fn init() {
     for player in 0..Player::N {
         for square in 0..Squares::N {
             for piece in 0..PieceKind::N {
-                unsafe { components::PIECE_SQUARE[player][square][piece] = random.next_u64(); }
+                unsafe {
+                    components::PIECE_SQUARE[player][square][piece] = random.next_u64();
+                }
             }
         }
 
         for castle_rights in 0..CastleRightsSide::N {
-            unsafe { components::CASTLING[player][castle_rights] = random.next_u64(); }
+            unsafe {
+                components::CASTLING[player][castle_rights] = random.next_u64();
+            }
         }
     }
 
     for square in 0..Squares::N {
-        unsafe { components::EN_PASSANT_SQUARE[square] = random.next_u64(); }
+        unsafe {
+            components::EN_PASSANT_SQUARE[square] = random.next_u64();
+        }
     }
 
-    unsafe { components::NO_EN_PASSANT_SQUARE = random.next_u64(); }
+    unsafe {
+        components::NO_EN_PASSANT_SQUARE = random.next_u64();
+    }
 
-    unsafe { components::BLACK_TO_PLAY = random.next_u64(); }
+    unsafe {
+        components::BLACK_TO_PLAY = random.next_u64();
+    }
 }
 
 // TODO: It isn't efficient to recompute the full hash every time

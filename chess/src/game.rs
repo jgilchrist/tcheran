@@ -1,8 +1,19 @@
 use crate::piece::Piece;
 use crate::squares::all::*;
-use crate::{board::Board, direction::Direction, fen, move_tables, movegen::{self, generate_moves}, moves::{self, Move}, piece::PieceKind, player::Player, square::Square, squares::{self, Squares}, zobrist};
-use anyhow::Result;
 use crate::zobrist::ZobristHash;
+use crate::{
+    board::Board,
+    direction::Direction,
+    fen, move_tables,
+    movegen::{self, generate_moves},
+    moves::{self, Move},
+    piece::PieceKind,
+    player::Player,
+    square::Square,
+    squares::{self, Squares},
+    zobrist,
+};
+use anyhow::Result;
 
 #[derive(Debug)]
 pub enum MoveError {
@@ -382,17 +393,22 @@ impl Game {
             if from == squares::kingside_rook_start(self.player) && castle_rights.king_side {
                 zobrist.toggle_castle_rights(self.player, CastleRightsSide::Kingside);
                 castle_rights.remove_kingside_rights();
-            } else if from == squares::queenside_rook_start(self.player) && castle_rights.queen_side {
+            } else if from == squares::queenside_rook_start(self.player) && castle_rights.queen_side
+            {
                 castle_rights.remove_queenside_rights();
                 zobrist.toggle_castle_rights(self.player, CastleRightsSide::Queenside);
             }
         }
 
         if maybe_captured_piece.is_some() {
-            if to == squares::kingside_rook_start(self.player.other()) && other_player_castle_rights.king_side {
+            if to == squares::kingside_rook_start(self.player.other())
+                && other_player_castle_rights.king_side
+            {
                 other_player_castle_rights.remove_kingside_rights();
                 zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Kingside);
-            } else if to == squares::queenside_rook_start(self.player.other()) && other_player_castle_rights.queen_side {
+            } else if to == squares::queenside_rook_start(self.player.other())
+                && other_player_castle_rights.queen_side
+            {
                 other_player_castle_rights.remove_queenside_rights();
                 zobrist.toggle_castle_rights(self.player.other(), CastleRightsSide::Queenside);
             }

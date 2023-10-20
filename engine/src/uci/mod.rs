@@ -6,7 +6,7 @@ use anyhow::Result;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
-use crate::strategy::{GoArgs, Clocks};
+use crate::strategy::{Clocks, GoArgs};
 use crate::util::sync::LockLatch;
 use crate::{
     strategy::{self, Strategy},
@@ -175,7 +175,7 @@ impl Uci {
                         black_clock: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
                         white_increment: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
                         black_increment: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    }
+                    },
                 };
 
                 std::thread::spawn(move || {

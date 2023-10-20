@@ -2,7 +2,14 @@ use std::collections::HashSet;
 
 use anyhow::{bail, Result};
 
-use crate::{board::Board, game::{CastleRights, Game}, piece::Piece, player::Player, square::{File, Rank, Square}, squares::Squares};
+use crate::{
+    board::Board,
+    game::{CastleRights, Game},
+    piece::Piece,
+    player::Player,
+    square::{File, Rank, Square},
+    squares::Squares,
+};
 
 use nom::sequence::terminated;
 use nom::{
