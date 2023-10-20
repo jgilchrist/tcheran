@@ -419,7 +419,6 @@ impl Game {
         let mut history = self.history.clone();
         history.push(zobrist.clone());
 
-        // PERF: Incrementally update the Zobrist hash
         Ok(Self {
             board,
             player,
