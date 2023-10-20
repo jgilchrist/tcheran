@@ -22,16 +22,10 @@ impl TimeControl {
         self.stop_searching_at = Some(Instant::now() + time_allotted_for_move);
     }
 
+    // TODO: Improve this - for now, it's super simple.
     fn time_allotted(&self) -> Duration {
-        let base_time_allotted = self.simple_time_allotted();
-
         let increment = self.increment.unwrap_or_default();
 
-        base_time_allotted + increment
-    }
-
-    // TODO: Improve this - for now, it's super simple.
-    fn simple_time_allotted(&self) -> Duration {
         // If we don't have a time limit, spend a minute per move
         let Some(time_remaining) = self.time_remaining else {
             return Duration::from_secs(60);
@@ -42,12 +36,16 @@ impl TimeControl {
             return Duration::from_millis(100);
         }
 
-        // Time pressure - we have less than two minutes.
-        if time_remaining < Duration::from_secs(60 * 2) {
-            return Duration::from_secs(4);
+        if time_remaining < Duration::from_secs(60) {
+            return Duration::from_secs(1) + increment;
         }
 
-        Duration::from_secs(20)
+        // Time pressure - we have less than two minutes.
+        if time_remaining < Duration::from_secs(60 * 2) {
+            return Duration::from_secs(4) + increment
+        }
+
+        Duration::from_secs(20) + increment
     }
 
     pub fn should_stop(&self) -> bool {
