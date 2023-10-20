@@ -18,6 +18,7 @@ pub fn negamax(
     time_control: &TimeControl,
     state: &mut SearchState,
 ) -> Result<NegamaxEval, ()> {
+    let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
     state.nodes_visited += 1;
 
@@ -39,7 +40,7 @@ pub fn negamax(
         return Err(());
     }
 
-    if game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule() {
+    if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
         return Ok(NegamaxEval::DRAW);
     }
 
