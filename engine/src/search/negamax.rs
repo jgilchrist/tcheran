@@ -1,7 +1,4 @@
 use chess::{game::Game, moves::Move};
-use rand::Rng;
-
-use crate::eval::Eval;
 use crate::eval::{self};
 use crate::search::time_control::TimeControl;
 
@@ -31,12 +28,7 @@ pub fn negamax(
     }
 
     if depth == 0 {
-        // Introduce a tiny bit of noise into the evaluation function to add some variation
-        // to play in the same situations where we'd otherwise always pick the first move
-        // with the same score.
-        let eval_noise = rand::thread_rng().gen_range(0..10);
-        let eval = eval::eval(game) + Eval(eval_noise);
-
+        let eval = eval::eval(game);
         return Ok(NegamaxEval::from_eval(eval, game.player));
     }
 
