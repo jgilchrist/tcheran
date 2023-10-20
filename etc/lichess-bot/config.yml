@@ -184,6 +184,8 @@ matchmaking:
   challenge_variant: "random"      # If set to 'random', the bot will choose one variant from the variants enabled in 'challenge.variants'.
   challenge_timeout: 1             # Create a challenge after being idle for 'challenge_timeout' minutes. The minimum is 1 minute.
   challenge_initial_time:          # Initial time in seconds of the challenge (to be chosen at random).
+    - 60
+    - 180
     - 600
   challenge_increment:             # Increment in seconds of the challenge (to be chosen at random).
     - 1
