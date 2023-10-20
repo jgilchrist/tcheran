@@ -41,6 +41,7 @@ pub fn negamax(
     }
 
     if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
+        pv.clear();
         return Ok(NegamaxEval::DRAW);
     }
 
