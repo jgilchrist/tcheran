@@ -22,10 +22,14 @@ pub enum SearchScore {
 }
 
 pub struct GoArgs {
-    pub wtime: Option<Duration>,
-    pub btime: Option<Duration>,
-    pub winc: Option<Duration>,
-    pub binc: Option<Duration>,
+    pub clocks: Clocks,
+}
+
+pub struct Clocks {
+    pub white_clock: Option<Duration>,
+    pub black_clock: Option<Duration>,
+    pub white_increment: Option<Duration>,
+    pub black_increment: Option<Duration>,
 }
 
 pub struct SearchInfo {

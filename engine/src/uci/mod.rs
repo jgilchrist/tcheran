@@ -6,7 +6,7 @@ use anyhow::Result;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
-use crate::strategy::GoArgs;
+use crate::strategy::{GoArgs, Clocks};
 use crate::util::sync::LockLatch;
 use crate::{
     strategy::{self, Strategy},
@@ -170,10 +170,12 @@ impl Uci {
                 let reporter = self.reporter.clone();
 
                 let args = GoArgs {
-                    wtime: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    btime: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    winc: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    binc: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    clocks: Clocks {
+                        white_clock: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                        black_clock: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                        white_increment: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                        black_increment: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    }
                 };
 
                 std::thread::spawn(move || {

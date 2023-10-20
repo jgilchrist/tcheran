@@ -67,17 +67,7 @@ pub fn search(
     let mut state = SearchState::new();
     state.start_timer();
 
-    let my_time = match game.player {
-        Player::White => args.wtime,
-        Player::Black => args.btime,
-    };
-
-    let my_increment = match game.player {
-        Player::White => args.winc,
-        Player::Black => args.binc,
-    };
-
-    let mut time_control = TimeControl::new(my_time, my_increment);
+    let mut time_control = TimeControl::new(game, &args.clocks);
     time_control.init();
 
     let (best_move, eval) =

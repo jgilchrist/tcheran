@@ -1,4 +1,7 @@
 use std::time::{Duration, Instant};
+use chess::game::Game;
+use chess::player::Player;
+use crate::strategy::Clocks;
 
 // TODO: Handle increments
 
@@ -9,7 +12,12 @@ pub struct TimeControl {
 }
 
 impl TimeControl {
-    pub fn new(time_remaining: Option<Duration>, increment: Option<Duration>) -> Self {
+    pub fn new(game: &Game, clocks: &Clocks) -> Self {
+        let (time_remaining, increment) = match game.player {
+            Player::White => (clocks.white_clock, clocks.white_increment),
+            Player::Black => (clocks.black_clock, clocks.black_increment),
+        };
+
         Self {
             time_remaining,
             increment,
