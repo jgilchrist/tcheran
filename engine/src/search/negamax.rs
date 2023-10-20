@@ -20,7 +20,10 @@ pub fn negamax(
 ) -> Result<NegamaxEval, ()> {
     let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
-    state.nodes_visited += 1;
+
+    if !is_root {
+        state.nodes_visited += 1;
+    }
 
     if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
         pv.clear();
