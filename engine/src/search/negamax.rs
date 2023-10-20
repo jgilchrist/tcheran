@@ -47,7 +47,7 @@ pub fn negamax(
 
         return if game.board.king_in_check(game.player) {
             Ok(NegamaxEval::mated_in(plies))
-        } else if game.board.king_in_check(game.player) {
+        } else if game.board.king_in_check(game.player.other()) {
             Ok(NegamaxEval::mate_in(plies))
         } else {
             Ok(NegamaxEval::DRAW)

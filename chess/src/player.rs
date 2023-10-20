@@ -15,6 +15,7 @@ impl Player {
         }
     }
 
+    #[must_use]
     pub fn array_idx(&self) -> usize {
         *self as usize
     }

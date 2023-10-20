@@ -9,8 +9,9 @@ use rand::prelude::*;
 pub struct ZobristHash(u64);
 
 impl ZobristHash {
-    pub fn new() -> Self {
-        ZobristHash(0)
+    #[must_use]
+    pub fn uninit() -> Self {
+        Self(0)
     }
 
     #[allow(unused)]
@@ -92,8 +93,7 @@ pub fn init() {
     }
 }
 
-// TODO: It isn't efficient to recompute the full hash every time
-// Instead, we should be XORing out components of the hash when the position is modified
+#[must_use]
 pub fn hash(game: &Game) -> ZobristHash {
     let mut hash = 0u64;
 

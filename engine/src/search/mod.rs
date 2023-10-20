@@ -1,6 +1,5 @@
 use std::time::{Duration, Instant};
 
-use chess::player::Player;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;

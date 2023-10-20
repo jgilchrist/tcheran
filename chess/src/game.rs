@@ -20,6 +20,7 @@ pub enum MoveError {
     InvalidMove,
 }
 
+#[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
     Kingside,
     Queenside,
@@ -28,10 +29,11 @@ pub enum CastleRightsSide {
 impl CastleRightsSide {
     pub const N: usize = 2;
 
+    #[must_use]
     pub fn array_idx(&self) -> usize {
         match self {
-            CastleRightsSide::Kingside => 0,
-            CastleRightsSide::Queenside => 1,
+            Self::Kingside => 0,
+            Self::Queenside => 1,
         }
     }
 }
@@ -118,6 +120,7 @@ impl Game {
         )
     }
 
+    #[must_use]
     pub fn from_state(
         board: Board,
         player: Player,
@@ -136,7 +139,7 @@ impl Game {
             halfmove_clock,
             plies,
 
-            zobrist: ZobristHash::new(),
+            zobrist: ZobristHash::uninit(),
             history: Vec::new(),
         };
 
@@ -195,7 +198,7 @@ impl Game {
             }
         }
 
-        return false;
+        false
     }
 
     fn is_legal(&self, mv: &Move) -> bool {
@@ -436,13 +439,14 @@ impl Game {
         history.push(zobrist.clone());
 
         Ok(Self {
-            board,
             player,
+            board,
             white_castle_rights,
             black_castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,
+
             zobrist,
             history,
         })
