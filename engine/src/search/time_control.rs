@@ -40,8 +40,8 @@ impl TimeControl {
         };
 
         // Extreme time pressure - start blitzing
-        if time_remaining < Duration::from_secs(10) {
-            return Duration::from_millis(100);
+        if time_remaining < Duration::from_secs(2) {
+            return Duration::from_millis(500);
         }
 
         if time_remaining < Duration::from_secs(60) {
