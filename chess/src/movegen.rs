@@ -10,9 +10,10 @@ use crate::{
 };
 
 struct Ctx {
-    their_pieces: Squares,
-    enemy_or_empty: Squares,
     all_pieces: Squares,
+    their_pieces: Squares,
+    their_attacks: Squares,
+    enemy_or_empty: Squares,
 }
 
 pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
@@ -66,12 +67,14 @@ fn get_ctx(game: &Game) -> Ctx {
     let our_pieces = game.board.player_pieces(game.player).all();
     let enemy_or_empty = our_pieces.invert();
     let their_pieces = game.board.player_pieces(game.player.other()).all();
+    let their_attacks = generate_all_attacks(&game.board, game.player.other());
     let all_pieces = our_pieces | their_pieces;
 
     Ctx {
-        their_pieces,
-        enemy_or_empty,
         all_pieces,
+        their_pieces,
+        their_attacks,
+        enemy_or_empty,
     }
 }
 
@@ -207,7 +210,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     let king_start_square = squares::king_start(game.player);
 
-    if king == king_start_square {
+    if king == king_start_square && !ctx.their_attacks.contains(king) {
         let castle_rights_for_player = match game.player {
             Player::White => game.white_castle_rights,
             Player::Black => game.black_castle_rights,
@@ -215,31 +218,42 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
         if castle_rights_for_player.can_castle() {
             if castle_rights_for_player.king_side {
+                // TODO: Use a bitboard for these
                 let kingside_required_empty_squares = match game.player {
                     Player::White => vec![F1, G1],
                     Player::Black => vec![F8, G8],
                 };
 
-                let path_to_castle_is_empty = kingside_required_empty_squares
+                let path_to_castle_is_empty_and_not_attacked = kingside_required_empty_squares
                     .iter()
-                    .all(|&s| !ctx.all_pieces.contains(s));
+                    .all(|&s| !ctx.all_pieces.contains(s) && !ctx.their_attacks.contains(s));
 
-                if path_to_castle_is_empty {
+                if path_to_castle_is_empty_and_not_attacked {
                     moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
                 }
             }
 
             if castle_rights_for_player.queen_side {
+                // TODO: Use a bitboard for these
                 let queenside_required_empty_squares = match game.player {
                     Player::White => vec![B1, C1, D1],
                     Player::Black => vec![B8, C8, D8],
+                };
+
+                let queenside_required_not_attacked_squares = match game.player {
+                    Player::White => vec![C1, D1],
+                    Player::Black => vec![C8, D8],
                 };
 
                 let path_to_castle_is_empty = queenside_required_empty_squares
                     .iter()
                     .all(|&s| !ctx.all_pieces.contains(s));
 
-                if path_to_castle_is_empty {
+                let path_to_castle_is_not_attacked = queenside_required_not_attacked_squares
+                    .iter()
+                    .all(|&s| !ctx.their_attacks.contains(s));
+
+                if path_to_castle_is_empty && path_to_castle_is_not_attacked {
                     moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
                 }
             }

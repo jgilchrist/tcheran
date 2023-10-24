@@ -71,7 +71,9 @@ pub fn negamax(
     let mut number_of_legal_moves = 0;
 
     for mv in &moves {
-        if !game.is_legal(mv) { continue; }
+        if !game.is_legal(mv) {
+            continue;
+        }
 
         let game_after_move = game.make_move(mv).unwrap();
         number_of_legal_moves += 1;

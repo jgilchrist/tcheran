@@ -5,8 +5,8 @@ use crate::{
     board::Board,
     direction::Direction,
     fen, move_tables,
-    movegen::{self, generate_moves},
-    moves::{self, Move},
+    movegen::generate_moves,
+    moves::Move,
     piece::PieceKind,
     player::Player,
     square::Square,
@@ -202,43 +202,6 @@ impl Game {
     }
 
     pub fn is_legal(&self, mv: &Move) -> bool {
-        let piece_to_move = self.board.player_piece_at(self.player, mv.src).unwrap();
-
-        if piece_to_move == PieceKind::King {
-            let enemy_attacks = movegen::generate_all_attacks(&self.board, self.player.other());
-
-            let kingside_castle_move = moves::known::kingside_castle_move(self.player);
-            let queenside_castle_move = moves::known::queenside_castle_move(self.player);
-
-            if mv == kingside_castle_move || mv == queenside_castle_move {
-                let king_start_square = squares::king_start(self.player);
-
-                // If the king is in check, it cannot castle
-                if enemy_attacks.contains(king_start_square) {
-                    return false;
-                }
-
-                let kingside_required_not_attacked_squares =
-                    squares::kingside_required_not_attacked_squares(self.player);
-
-                // The king cannot castle if the intervening squares are under attack
-                if mv == kingside_castle_move
-                    && !(enemy_attacks & kingside_required_not_attacked_squares).is_empty()
-                {
-                    return false;
-                }
-
-                let queenside_required_not_attacked_squares =
-                    squares::queenside_required_not_attacked_squares(self.player);
-
-                if mv == queenside_castle_move
-                    && !(enemy_attacks & queenside_required_not_attacked_squares).is_empty()
-                {
-                    return false;
-                }
-            }
-        }
-
         !self.make_move(mv).unwrap().board.king_in_check(self.player)
     }
 
