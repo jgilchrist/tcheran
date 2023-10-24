@@ -2,7 +2,7 @@ use crate::options::EngineOptions;
 use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeControl;
 use crate::search::{negamax, SearchState};
-use crate::strategy::{Reporter, SearchInfo, SearchScore, SearchStats};
+use crate::strategy::{Control, Reporter, SearchInfo, SearchScore, SearchStats};
 use chess::game::Game;
 use chess::moves::Move;
 
@@ -13,6 +13,7 @@ pub fn search(
     _options: &EngineOptions,
     state: &mut SearchState,
     time_control: &TimeControl,
+    control: &impl Control,
     reporter: &impl Reporter,
 ) -> (Move, NegamaxEval) {
     let mut overall_best_move: Option<Move> = None;
@@ -32,6 +33,7 @@ pub fn search(
             best_previous_root_move,
             time_control,
             state,
+            control,
         ) else {
             // TODO: Send results, even if the search is cancelled, since they may still be better
             // than whatever we found at the previous depth even if we didn't finish the search.

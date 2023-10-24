@@ -4,7 +4,7 @@ use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
 use crate::search::time_control::TimeControl;
-use crate::strategy::GoArgs;
+use crate::strategy::{Control, GoArgs};
 use crate::{eval::Eval, strategy::Reporter};
 
 mod iterative_deepening;
@@ -61,6 +61,7 @@ pub fn search(
     game: &Game,
     args: &GoArgs,
     options: &EngineOptions,
+    control: &impl Control,
     reporter: &impl Reporter,
 ) -> (Move, Eval) {
     let mut state = SearchState::new();
@@ -70,7 +71,7 @@ pub fn search(
     time_control.init();
 
     let (best_move, eval) =
-        iterative_deepening::search(game, options, &mut state, &time_control, reporter);
+        iterative_deepening::search(game, options, &mut state, &time_control, control, reporter);
 
     (best_move, eval.to_eval(game.player))
 }

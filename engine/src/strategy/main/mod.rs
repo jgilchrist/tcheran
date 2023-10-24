@@ -17,7 +17,7 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for MainStrategy {
         control: TCx,
         reporter: TRx,
     ) {
-        let (best_move, _eval) = search::search(game, args, options, &reporter);
+        let (best_move, _eval) = search::search(game, args, options, &control, &reporter);
 
         reporter.best_move(best_move);
         control.stop();

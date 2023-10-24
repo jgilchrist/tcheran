@@ -1,6 +1,7 @@
 use crate::eval::{self};
 use crate::search::time_control::TimeControl;
 use chess::{game::Game, moves::Move};
+use crate::strategy::Control;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
 
@@ -14,6 +15,7 @@ pub fn negamax(
     best_previous_move: Option<Move>,
     time_control: &TimeControl,
     state: &mut SearchState,
+    control: &impl Control,
 ) -> Result<NegamaxEval, ()> {
     let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
@@ -36,7 +38,7 @@ pub fn negamax(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if state.nodes_visited % 10000 == 0 && time_control.should_stop() {
+    if state.nodes_visited % 10000 == 0 && (time_control.should_stop() || control.should_stop()) {
         return Err(());
     }
 
@@ -69,6 +71,7 @@ pub fn negamax(
             None,
             time_control,
             state,
+            control,
         )?;
 
         if move_score >= beta {
