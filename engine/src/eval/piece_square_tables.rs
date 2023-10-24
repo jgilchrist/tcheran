@@ -1,10 +1,11 @@
 use chess::{
-    board::PlayerPieces,
     game::Game,
     piece::PieceKind,
     square::{File, Rank},
     squares::Squares,
 };
+use chess::piece::Piece;
+use chess::player::Player;
 
 use super::Eval;
 
@@ -131,30 +132,55 @@ pub fn init() {
 }
 
 pub fn piece_square_tables(game: &Game) -> Eval {
-    piece_square_tables_white(game) + piece_square_tables_black(game)
-}
+    let mut eval = 0;
 
-pub fn piece_square_tables_white(game: &Game) -> Eval {
-    let eval = all_piece_contributions(&game.board.white_pieces, unsafe { &tables::WHITE_TABLES });
+    for idx in 0..Squares::N {
+        let maybe_piece = game.board.pieces[idx];
+
+        if let Some(piece) = maybe_piece {
+            eval += piece_contribution(idx, &piece);
+        }
+    }
+
     Eval(eval)
 }
 
-pub fn piece_square_tables_black(game: &Game) -> Eval {
-    let eval = all_piece_contributions(&game.board.black_pieces, unsafe { &tables::BLACK_TABLES });
-    -Eval(eval)
+pub(crate) fn piece_square_tables_white(game: &Game) -> Eval {
+    let mut eval = 0;
+
+    for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
+        if let Some(piece) = maybe_piece {
+            if piece.player == Player::White {
+                eval += piece_contribution(idx, piece);
+            }
+        }
+    }
+
+    Eval(eval)
 }
 
-fn all_piece_contributions(pieces: &PlayerPieces, tables: &PieceValueTables) -> i32 {
-    let pawn_score = piece_contribution(pieces.pawns, tables[PieceKind::Pawn.array_idx()]);
-    let knight_score = piece_contribution(pieces.knights, tables[PieceKind::Knight.array_idx()]);
-    let bishops_score = piece_contribution(pieces.bishops, tables[PieceKind::Bishop.array_idx()]);
-    let rook_score = piece_contribution(pieces.rooks, tables[PieceKind::Rook.array_idx()]);
-    let queen_score = piece_contribution(pieces.queens, tables[PieceKind::Queen.array_idx()]);
-    let king_score = piece_contribution(pieces.king, tables[PieceKind::King.array_idx()]);
+pub(crate) fn piece_square_tables_black(game: &Game) -> Eval {
+    let mut eval = 0;
 
-    pawn_score + knight_score + bishops_score + rook_score + queen_score + king_score
+    for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
+        if let Some(piece) = maybe_piece {
+            if piece.player == Player::Black {
+                eval += piece_contribution(idx, piece);
+            }
+        }
+    }
+
+    Eval(eval)
 }
 
-fn piece_contribution(pieces: Squares, piece_table: PieceValueTable) -> i32 {
-    pieces.iter().map(|p| piece_table[p.array_idx()]).sum()
+#[inline]
+fn piece_contribution(idx: usize, piece: &Piece) -> i32 {
+    // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
+    // generating idx from Square
+    unsafe {
+        match piece.player {
+            Player::White => tables::WHITE_TABLES[piece.kind.array_idx()][idx],
+            Player::Black => -tables::BLACK_TABLES[piece.kind.array_idx()][idx],
+        }
+    }
 }
