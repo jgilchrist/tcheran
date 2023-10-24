@@ -115,19 +115,19 @@ pub fn init() {
     use tables::*;
 
     unsafe {
-        WHITE_TABLES[PieceKind::Pawn.array_idx()] = flatten(PAWNS);
-        WHITE_TABLES[PieceKind::Knight.array_idx()] = flatten(KNIGHTS);
-        WHITE_TABLES[PieceKind::Bishop.array_idx()] = flatten(BISHOPS);
-        WHITE_TABLES[PieceKind::Rook.array_idx()] = flatten(ROOKS);
-        WHITE_TABLES[PieceKind::Queen.array_idx()] = flatten(QUEENS);
-        WHITE_TABLES[PieceKind::King.array_idx()] = flatten(KINGS);
+        BLACK_TABLES[PieceKind::Pawn.array_idx()] = flatten(PAWNS);
+        BLACK_TABLES[PieceKind::Knight.array_idx()] = flatten(KNIGHTS);
+        BLACK_TABLES[PieceKind::Bishop.array_idx()] = flatten(BISHOPS);
+        BLACK_TABLES[PieceKind::Rook.array_idx()] = flatten(ROOKS);
+        BLACK_TABLES[PieceKind::Queen.array_idx()] = flatten(QUEENS);
+        BLACK_TABLES[PieceKind::King.array_idx()] = flatten(KINGS);
 
-        BLACK_TABLES[PieceKind::Pawn.array_idx()] = flatten(flip(PAWNS));
-        BLACK_TABLES[PieceKind::Knight.array_idx()] = flatten(flip(KNIGHTS));
-        BLACK_TABLES[PieceKind::Bishop.array_idx()] = flatten(flip(BISHOPS));
-        BLACK_TABLES[PieceKind::Rook.array_idx()] = flatten(flip(ROOKS));
-        BLACK_TABLES[PieceKind::Queen.array_idx()] = flatten(flip(QUEENS));
-        BLACK_TABLES[PieceKind::King.array_idx()] = flatten(flip(KINGS));
+        WHITE_TABLES[PieceKind::Pawn.array_idx()] = flatten(flip(PAWNS));
+        WHITE_TABLES[PieceKind::Knight.array_idx()] = flatten(flip(KNIGHTS));
+        WHITE_TABLES[PieceKind::Bishop.array_idx()] = flatten(flip(BISHOPS));
+        WHITE_TABLES[PieceKind::Rook.array_idx()] = flatten(flip(ROOKS));
+        WHITE_TABLES[PieceKind::Queen.array_idx()] = flatten(flip(QUEENS));
+        WHITE_TABLES[PieceKind::King.array_idx()] = flatten(flip(KINGS));
     }
 }
 
