@@ -384,10 +384,18 @@ pub const fn queenside_castle_dest(player: Player) -> Square {
 }
 
 #[must_use]
-pub const fn kingside_required_not_attacked_squares(player: Player) -> Squares {
+pub const fn kingside_required_empty_and_not_attacked_squares(player: Player) -> Squares {
     match player {
-        Player::White => WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
-        Player::Black => BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+        Player::White => WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
+        Player::Black => BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
+    }
+}
+
+#[must_use]
+pub const fn queenside_required_empty_squares(player: Player) -> Squares {
+    match player {
+        Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES,
+        Player::Black => BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES,
     }
 }
 
@@ -443,14 +451,23 @@ pub const INIT_BLACK_KING: Square = E8;
 pub const BLACK_KINGSIDE_CASTLE_SQUARE: Square = G8;
 pub const BLACK_QUEENSIDE_CASTLE_SQUARE: Square = C8;
 
-pub const WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
-    Squares::from_bitboard(bitboard::known::WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
-pub const BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
-    Squares::from_bitboard(bitboard::known::BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
+const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(
+        bitboard::known::WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
+    );
+const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Squares =
+    Squares::from_bitboard(
+        bitboard::known::BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
+    );
 
-pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES);
+const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Squares =
+    Squares::from_bitboard(bitboard::known::BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES);
+
+const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
     Squares::from_bitboard(bitboard::known::WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
-pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
+const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Squares =
     Squares::from_bitboard(bitboard::known::BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES);
 
 #[cfg(test)]

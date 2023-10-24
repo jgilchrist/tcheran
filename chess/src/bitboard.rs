@@ -273,8 +273,12 @@ pub mod known {
     pub const INIT_BLACK_BISHOPS: Bitboard = Bitboard::new(C8.0.0 | F8.0.0);
     pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(A8.0.0 | H8.0.0);
 
-    pub const WHITE_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1.0.0 | G1.0.0);
-    pub const BLACK_KINGSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8.0.0 | G8.0.0);
+    pub const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1.0.0 | G1.0.0);
+    pub const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8.0.0 | G8.0.0);
+
+    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B1.0.0 | C1.0.0 | D1.0.0);
+    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B8.0.0 | C8.0.0 | D8.0.0);
+
 
     pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C1.0.0 | D1.0.0);
     pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C8.0.0 | D8.0.0);
