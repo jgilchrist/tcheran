@@ -102,6 +102,7 @@ impl Uci {
         match cmd {
             UciCommand::Uci => {
                 self.game = Game::new();
+
                 let version = crate::engine_version();
                 send_response(&UciResponse::Id(IdParam::Name(format!(
                     "engine ({version})"
