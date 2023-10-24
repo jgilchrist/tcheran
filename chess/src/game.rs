@@ -201,7 +201,7 @@ impl Game {
         false
     }
 
-    pub fn is_legal(&self, mv: &Move) -> bool {
+    fn is_legal(&self, mv: &Move) -> bool {
         !self.make_move(mv).unwrap().board.king_in_check(self.player)
     }
 

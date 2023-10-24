@@ -71,11 +71,13 @@ pub fn negamax(
     let mut number_of_legal_moves = 0;
 
     for mv in &moves {
-        if !game.is_legal(mv) {
+        let player = game.player;
+
+        let game_after_move = game.make_move(mv).unwrap();
+        if game_after_move.board.king_in_check(player) {
             continue;
         }
 
-        let game_after_move = game.make_move(mv).unwrap();
         number_of_legal_moves += 1;
 
         let move_score = -negamax(
