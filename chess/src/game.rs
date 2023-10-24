@@ -201,7 +201,7 @@ impl Game {
         false
     }
 
-    fn is_legal(&self, mv: &Move) -> bool {
+    pub fn is_legal(&self, mv: &Move) -> bool {
         let piece_to_move = self.board.player_piece_at(self.player, mv.src).unwrap();
 
         if piece_to_move == PieceKind::King {

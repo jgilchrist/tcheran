@@ -60,28 +60,21 @@ pub fn negamax(
         return Err(());
     }
 
-    let mut legal_moves = game.legal_moves();
+    // TODO: Generate only legal moves
+    let mut moves = game.pseudo_legal_moves();
 
-    if legal_moves.is_empty() {
-        pv.clear();
-
-        return if game.board.king_in_check(game.player) {
-            Ok(NegamaxEval::mated_in(plies))
-        } else if game.board.king_in_check(game.player.other()) {
-            Ok(NegamaxEval::mate_in(plies))
-        } else {
-            Ok(NegamaxEval::DRAW)
-        };
-    }
-
-    move_ordering::order_moves(game, &mut legal_moves, previous_best_move);
+    move_ordering::order_moves(game, &mut moves, previous_best_move);
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
     let mut best_eval = NegamaxEval::MIN;
+    let mut number_of_legal_moves = 0;
 
-    for mv in &legal_moves {
+    for mv in &moves {
+        if !game.is_legal(mv) { continue; }
+
         let game_after_move = game.make_move(mv).unwrap();
+        number_of_legal_moves += 1;
 
         let move_score = -negamax(
             &game_after_move,
@@ -124,6 +117,18 @@ pub fn negamax(
             pv.push(*mv);
             pv.extend_from_slice(&node_pv);
         }
+    }
+
+    if number_of_legal_moves == 0 {
+        pv.clear();
+
+        return if game.board.king_in_check(game.player) {
+            Ok(NegamaxEval::mated_in(plies))
+        } else if game.board.king_in_check(game.player.other()) {
+            Ok(NegamaxEval::mate_in(plies))
+        } else {
+            Ok(NegamaxEval::DRAW)
+        };
     }
 
     let tt_data = SearchTranspositionTableData {
