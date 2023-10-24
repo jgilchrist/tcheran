@@ -20,6 +20,9 @@ pub fn search(
     let mut overall_eval: Option<NegamaxEval> = None;
 
     for depth in 1..=MAX_SEARCH_DEPTH {
+        // TODO: Are we counting nodes searched at this depth?
+        state.nodes_visited = 0;
+
         let best_previous_root_move = state.best_pv.as_ref().and_then(|pv| pv.first().copied());
         let mut pv: Vec<Move> = Vec::new();
 
