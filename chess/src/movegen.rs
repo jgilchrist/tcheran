@@ -255,6 +255,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 mod tests {
     use super::*;
     use crate::square::Square;
+    use crate::squares::all::*;
 
     #[inline(always)]
     fn should_allow_move(fen: &str, squares: (Square, Square)) {

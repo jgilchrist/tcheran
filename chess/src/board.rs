@@ -12,6 +12,7 @@ use anyhow::Result;
 pub struct Board {
     pub white_pieces: PlayerPieces,
     pub black_pieces: PlayerPieces,
+    pub pieces: [Option<Piece>; Squares::N],
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
@@ -34,8 +35,8 @@ impl PlayerPieces {
 
 impl Board {
     #[must_use]
-    pub const fn start() -> Self {
-        Self {
+    pub fn start() -> Self {
+        let mut start = Self {
             white_pieces: PlayerPieces {
                 pawns: squares::INIT_WHITE_PAWNS,
                 knights: squares::INIT_WHITE_KNIGHTS,
@@ -52,7 +53,59 @@ impl Board {
                 queens: Squares::from_square(squares::INIT_BLACK_QUEEN),
                 king: Squares::from_square(squares::INIT_BLACK_KING),
             },
+            pieces: [None; Squares::N],
+        };
+
+        // TODO: Use a constant
+        for pawn in start.white_pieces.pawns {
+            start.pieces[pawn.array_idx()] = Some(Piece::new(Player::White, PieceKind::Pawn));
         }
+
+        for knight in start.white_pieces.knights {
+            start.pieces[knight.array_idx()] = Some(Piece::new(Player::White, PieceKind::Knight));
+        }
+
+        for bishop in start.white_pieces.bishops {
+            start.pieces[bishop.array_idx()] = Some(Piece::new(Player::White, PieceKind::Bishop));
+        }
+
+        for rook in start.white_pieces.rooks {
+            start.pieces[rook.array_idx()] = Some(Piece::new(Player::White, PieceKind::Rook));
+        }
+
+        for queen in start.white_pieces.queens {
+            start.pieces[queen.array_idx()] = Some(Piece::new(Player::White, PieceKind::Queen));
+        }
+
+        for king in start.white_pieces.king {
+            start.pieces[king.array_idx()] = Some(Piece::new(Player::White, PieceKind::King));
+        }
+
+        for pawn in start.black_pieces.pawns {
+            start.pieces[pawn.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Pawn));
+        }
+
+        for knight in start.black_pieces.knights {
+            start.pieces[knight.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Knight));
+        }
+
+        for bishop in start.black_pieces.bishops {
+            start.pieces[bishop.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Bishop));
+        }
+
+        for rook in start.black_pieces.rooks {
+            start.pieces[rook.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Rook));
+        }
+
+        for queen in start.black_pieces.queens {
+            start.pieces[queen.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Queen));
+        }
+
+        for king in start.black_pieces.king {
+            start.pieces[king.array_idx()] = Some(Piece::new(Player::Black, PieceKind::King));
+        }
+
+        start
     }
 
     #[must_use]
@@ -64,37 +117,11 @@ impl Board {
     }
 
     #[must_use]
-    pub fn player_piece_at(&self, player: Player, square: Square) -> Option<PieceKind> {
-        let player_pieces = self.player_pieces(player);
-
-        if player_pieces.pawns.contains(square) {
-            Some(PieceKind::Pawn)
-        } else if player_pieces.knights.contains(square) {
-            Some(PieceKind::Knight)
-        } else if player_pieces.bishops.contains(square) {
-            Some(PieceKind::Bishop)
-        } else if player_pieces.rooks.contains(square) {
-            Some(PieceKind::Rook)
-        } else if player_pieces.queens.contains(square) {
-            Some(PieceKind::Queen)
-        } else if player_pieces.king.contains(square) {
-            Some(PieceKind::King)
-        } else {
-            None
-        }
-    }
-
-    #[must_use]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
-        if let Some(white_piece_kind) = self.player_piece_at(Player::White, square) {
-            return Some(Piece::white(white_piece_kind));
+        // We know array_idx can only return up to Squares::N - 1
+        unsafe {
+            *self.pieces.get_unchecked(square.array_idx())
         }
-
-        if let Some(black_piece_kind) = self.player_piece_at(Player::Black, square) {
-            return Some(Piece::black(black_piece_kind));
-        }
-
-        None
     }
 
     #[inline]
@@ -126,12 +153,14 @@ impl Board {
         };
 
         self.squares_for_piece(piece).unset_inplace(square);
+        self.pieces[square.array_idx()] = None;
         true
     }
 
     #[inline]
     pub fn set_at(&mut self, square: Square, piece: Piece) {
         self.squares_for_piece(piece).set_inplace(square);
+        self.pieces[square.array_idx()] = Some(piece);
     }
 
     #[must_use]
@@ -248,6 +277,7 @@ impl TryFrom<[Option<Piece>; Squares::N]> for Board {
                 queens: black_queens,
                 king: black_king,
             },
+            pieces,
         })
     }
 }
