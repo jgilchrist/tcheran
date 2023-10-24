@@ -15,6 +15,9 @@ time-perft n:
 instruments-time-perft n:
 	cd engine && cargo instruments -t "time" --release -- perft {{n}}
 
+instruments-time-search:
+	cd engine && cargo instruments -t "time" --release --time-limit 60000
+
 compare-perft n BIN1 BIN2:
 	hyperfine '{{BIN1}} perft {{n}}' '{{BIN2}} perft {{n}}'
 
