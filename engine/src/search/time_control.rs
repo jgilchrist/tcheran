@@ -44,12 +44,13 @@ impl TimeControl {
             return Duration::from_millis(500);
         }
 
+        // Moderate time pressure - less than a minute.
         if time_remaining < Duration::from_secs(60) {
             return Duration::from_secs(1) + increment;
         }
 
         // Time pressure - we have less than two minutes.
-        if time_remaining < Duration::from_secs(60 * 2) {
+        if time_remaining < Duration::from_secs(60 * 3) {
             return Duration::from_secs(4) + increment;
         }
 
