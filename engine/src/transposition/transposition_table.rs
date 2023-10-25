@@ -4,20 +4,24 @@ use std::mem::size_of;
 use crate::search::NegamaxEval;
 use chess::zobrist::ZobristHash;
 
-#[derive(Debug, Clone)]
+pub trait TTOverwriteable {
+    fn should_overwrite_with(&self, new: &Self) -> bool;
+}
+
+#[derive(Debug, Clone, Eq, PartialEq)]
 pub enum NodeBound {
     Exact,
     Upper,
     Lower,
 }
 
-pub struct TranspositionTable<T: Clone> {
+pub struct TranspositionTable<T: Clone + TTOverwriteable> {
     data: Vec<Option<TranspositionTableEntry<T>>>,
     pub occupied: usize,
 }
 
 #[derive(Clone)]
-pub struct TranspositionTableEntry<T: Clone> {
+pub struct TranspositionTableEntry<T: Clone + TTOverwriteable> {
     pub key: ZobristHash,
     pub data: T,
 }
@@ -30,11 +34,23 @@ pub struct SearchTranspositionTableData {
     pub best_move: Option<Move>,
 }
 
+impl TTOverwriteable for SearchTranspositionTableData {
+    fn should_overwrite_with(&self, new: &Self) -> bool {
+        // If the new node is exact, always store it
+        if new.bound == NodeBound::Exact {
+            return true;
+        }
+
+        // We don't want to overwrite Exact nodes as we use them to retrieve the PV.
+        self.bound != NodeBound::Exact
+    }
+}
+
 pub type SearchTranspositionTable = TranspositionTable<SearchTranspositionTableData>;
 
 const TRANSPOSITION_TABLE_SIZE_POW_2: u32 = 8;
 
-impl<T: Clone> TranspositionTable<T> {
+impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     // TODO: Allow specifying the size
     pub fn new() -> Self {
         let size_of_entry = size_of::<T>();
@@ -67,17 +83,25 @@ impl<T: Clone> TranspositionTable<T> {
 
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
-            let existing_data = self.data.get_unchecked(idx);
-            if existing_data.is_none() {
+            let maybe_existing_data = self.data.get_unchecked(idx);
+            if maybe_existing_data.is_none() {
                 self.occupied += 1;
             }
-        }
 
-        // TODO: Right now, we always replace for simplicity
-        self.data[idx] = Some(TranspositionTableEntry {
-            key: key.clone(),
-            data,
-        });
+            if let Some(existing_data) = maybe_existing_data {
+                if existing_data.data.should_overwrite_with(&data) {
+                    self.data[idx] = Some(TranspositionTableEntry {
+                        key: key.clone(),
+                        data,
+                    });
+                }
+            } else {
+                self.data[idx] = Some(TranspositionTableEntry {
+                    key: key.clone(),
+                    data,
+                });
+            }
+        }
     }
 
     pub fn get(&self, key: &ZobristHash) -> Option<&T> {
