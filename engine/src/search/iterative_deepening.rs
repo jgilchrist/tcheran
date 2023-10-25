@@ -3,6 +3,7 @@ use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeControl;
 use crate::search::{negamax, SearchState};
 use crate::strategy::{Control, Reporter, SearchInfo, SearchScore, SearchStats};
+use crate::transposition::transposition_table::NodeBound::Exact;
 use crate::transposition::transposition_table::SearchTranspositionTable;
 use chess::game::Game;
 use chess::moves::Move;
@@ -26,15 +27,12 @@ pub fn search(
         // TODO: Are we counting nodes searched at this depth?
         state.nodes_visited = 0;
 
-        let mut pv: Vec<Move> = Vec::new();
-
         let Ok(eval) = negamax::negamax(
             game,
             NegamaxEval::MIN,
             NegamaxEval::MAX,
             depth,
             0,
-            &mut pv,
             &mut tt,
             time_control,
             state,
@@ -50,6 +48,8 @@ pub fn search(
         } else {
             SearchScore::Centipawns(eval.0)
         };
+
+        let pv = get_pv(game, &tt);
 
         let best_move = pv.first().unwrap();
 
@@ -72,4 +72,25 @@ pub fn search(
     }
 
     (overall_best_move.unwrap(), overall_eval.unwrap())
+}
+
+fn get_pv(game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
+    let mut current_position = game.clone();
+    let mut pv = Vec::new();
+
+    loop {
+        let Some(tt_entry) = tt.get(&current_position.zobrist) else {
+            break;
+        };
+
+        if tt_entry.bound != Exact {
+            panic!("non-exact bound")
+        }
+
+        let best_move_in_position = tt_entry.best_move.unwrap();
+        pv.push(best_move_in_position);
+        current_position = current_position.make_move(&best_move_in_position).unwrap();
+    }
+
+    pv
 }

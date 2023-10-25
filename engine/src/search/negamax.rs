@@ -14,7 +14,6 @@ pub fn negamax(
     beta: NegamaxEval,
     depth: u8,
     plies: u8,
-    pv: &mut Vec<Move>,
     tt: &mut SearchTranspositionTable,
     time_control: &TimeControl,
     state: &mut SearchState,
@@ -28,7 +27,6 @@ pub fn negamax(
     }
 
     if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
-        pv.clear();
         return Ok(NegamaxEval::DRAW);
     }
 
@@ -51,8 +49,6 @@ pub fn negamax(
 
         previous_best_move = tt_entry.best_move;
     }
-
-    let mut node_pv: Vec<Move> = vec![];
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
@@ -86,7 +82,6 @@ pub fn negamax(
             -alpha,
             depth - 1,
             plies + 1,
-            &mut node_pv,
             tt,
             time_control,
             state,
@@ -116,16 +111,10 @@ pub fn negamax(
         if move_score > alpha {
             alpha = move_score;
             tt_node_bound = NodeBound::Exact;
-
-            pv.clear();
-            pv.push(*mv);
-            pv.extend_from_slice(&node_pv);
         }
     }
 
     if number_of_legal_moves == 0 {
-        pv.clear();
-
         return if game.board.king_in_check(game.player) {
             Ok(NegamaxEval::mated_in(plies))
         } else if game.board.king_in_check(game.player.other()) {
