@@ -32,7 +32,7 @@ impl ZobristHash {
 
     #[allow(unused)]
     pub fn toggle_side_to_play(&mut self, player: Player) {
-        self.0 ^= side_to_play(player);
+        self.0 ^= side_to_play();
     }
 }
 
@@ -54,7 +54,7 @@ mod components {
 
     pub static mut NO_EN_PASSANT_SQUARE: ZobristComponent = 0;
 
-    pub static mut BLACK_TO_PLAY: ZobristComponent = 0;
+    pub static mut SIDE_TO_PLAY: ZobristComponent = 0;
 }
 
 pub fn init() {
@@ -89,7 +89,7 @@ pub fn init() {
     }
 
     unsafe {
-        components::BLACK_TO_PLAY = random.next_u64();
+        components::SIDE_TO_PLAY = random.next_u64();
     }
 }
 
@@ -171,7 +171,9 @@ pub fn hash(game: &Game) -> ZobristHash {
     hash ^= en_passant(game.en_passant_target);
 
     // Side to play
-    hash ^= side_to_play(game.player);
+    if game.player == Player::Black {
+        hash ^= side_to_play();
+    }
 
     ZobristHash(hash)
 }
@@ -191,9 +193,6 @@ fn en_passant(square: Option<Square>) -> ZobristComponent {
     }
 }
 
-fn side_to_play(player: Player) -> ZobristComponent {
-    match player {
-        Player::White => 0,
-        Player::Black => unsafe { components::BLACK_TO_PLAY },
-    }
+fn side_to_play() -> ZobristComponent {
+    unsafe { components::SIDE_TO_PLAY }
 }
