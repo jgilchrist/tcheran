@@ -6,13 +6,13 @@ use crate::transposition::transposition_table::{
 };
 use chess::{game::Game, moves::Move};
 
-use super::{move_ordering, negamax_eval::NegamaxEval, SearchState};
+use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
-    depth: u8,
+    mut depth: u8,
     plies: u8,
     tt: &mut SearchTranspositionTable,
     time_control: &TimeStrategy,
@@ -21,6 +21,15 @@ pub fn negamax(
 ) -> Result<NegamaxEval, ()> {
     let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
+
+    // Check extension: If we're about to finish searching, but we are in check, we
+    // should keep going.
+    if depth == 0 {
+        let in_check = game.board.king_in_check(game.player);
+        if in_check && depth < MAX_SEARCH_DEPTH {
+            depth += 1;
+        }
+    }
 
     if !is_root {
         state.nodes_visited += 1;
