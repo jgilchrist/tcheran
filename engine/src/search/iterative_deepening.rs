@@ -1,14 +1,12 @@
 use crate::options::EngineOptions;
 use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeControl;
-use crate::search::{negamax, SearchState};
+use crate::search::{negamax, SearchState, MAX_SEARCH_DEPTH};
 use crate::strategy::{Control, Reporter, SearchInfo, SearchScore, SearchStats};
 use crate::transposition::transposition_table::{NodeBound, SearchTranspositionTable};
 use chess::game::Game;
 use chess::moves::Move;
 use chess::util::nodes_per_second;
-
-const MAX_SEARCH_DEPTH: u8 = 100;
 
 pub fn search(
     game: &mut Game,

@@ -13,7 +13,10 @@ mod iterative_deepening;
 mod move_ordering;
 mod negamax;
 mod negamax_eval;
+mod quiescence;
 mod time_control;
+
+const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 
 pub struct SearchState {
     start_time: Option<Instant>,

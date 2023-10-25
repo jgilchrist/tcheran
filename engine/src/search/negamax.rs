@@ -1,4 +1,4 @@
-use crate::eval::{self};
+use crate::search::quiescence::quiescence;
 use crate::search::time_control::TimeControl;
 use crate::strategy::Control;
 use crate::transposition::transposition_table::{
@@ -31,8 +31,7 @@ pub fn negamax(
     }
 
     if depth == 0 {
-        let eval = eval::eval(game);
-        return Ok(NegamaxEval::from_eval(eval, game.player));
+        return quiescence(game, alpha, beta, plies, time_control, state, control);
     }
 
     let mut previous_best_move: Option<Move> = None;
