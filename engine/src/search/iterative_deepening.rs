@@ -49,7 +49,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(game, &tt);
+        let pv = get_pv(depth, game, &tt);
 
         let best_move = pv.first().unwrap();
 
@@ -74,11 +74,11 @@ pub fn search(
     (overall_best_move.unwrap(), overall_eval.unwrap())
 }
 
-fn get_pv(game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
+fn get_pv(depth: u8, game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
     let mut current_position = game.clone();
     let mut pv = Vec::new();
 
-    loop {
+    for _ in 0..depth {
         let Some(tt_entry) = tt.get(&current_position.zobrist) else {
             break;
         };
