@@ -1,11 +1,11 @@
+use chess::piece::Piece;
+use chess::player::Player;
 use chess::{
     game::Game,
     piece::PieceKind,
     square::{File, Rank},
     squares::Squares,
 };
-use chess::piece::Piece;
-use chess::player::Player;
 
 use super::Eval;
 
@@ -138,20 +138,20 @@ pub fn piece_square_tables(game: &Game) -> Eval {
         let maybe_piece = game.board.pieces[idx];
 
         if let Some(piece) = maybe_piece {
-            eval += piece_contribution(idx, &piece);
+            eval += piece_contribution(idx, piece);
         }
     }
 
     Eval(eval)
 }
 
-pub(crate) fn piece_square_tables_white(game: &Game) -> Eval {
+pub fn piece_square_tables_white(game: &Game) -> Eval {
     let mut eval = 0;
 
     for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
         if let Some(piece) = maybe_piece {
             if piece.player == Player::White {
-                eval += piece_contribution(idx, piece);
+                eval += piece_contribution(idx, *piece);
             }
         }
     }
@@ -159,13 +159,13 @@ pub(crate) fn piece_square_tables_white(game: &Game) -> Eval {
     Eval(eval)
 }
 
-pub(crate) fn piece_square_tables_black(game: &Game) -> Eval {
+pub fn piece_square_tables_black(game: &Game) -> Eval {
     let mut eval = 0;
 
     for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
         if let Some(piece) = maybe_piece {
             if piece.player == Player::Black {
-                eval += piece_contribution(idx, piece);
+                eval += piece_contribution(idx, *piece);
             }
         }
     }
@@ -174,7 +174,7 @@ pub(crate) fn piece_square_tables_black(game: &Game) -> Eval {
 }
 
 #[inline]
-fn piece_contribution(idx: usize, piece: &Piece) -> i32 {
+fn piece_contribution(idx: usize, piece: Piece) -> i32 {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
     unsafe {

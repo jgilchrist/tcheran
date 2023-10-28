@@ -83,9 +83,7 @@ fn get_pv(depth: u8, game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
             break;
         };
 
-        if tt_entry.bound != Exact {
-            panic!("non-exact bound")
-        }
+        assert!(!(tt_entry.bound != Exact), "non-exact bound");
 
         let best_move_in_position = tt_entry.best_move.unwrap();
         pv.push(best_move_in_position);
