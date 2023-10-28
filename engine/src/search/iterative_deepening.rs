@@ -7,6 +7,7 @@ use crate::transposition::transposition_table::NodeBound::Exact;
 use crate::transposition::transposition_table::SearchTranspositionTable;
 use chess::game::Game;
 use chess::moves::Move;
+use chess::util::nodes_per_second;
 
 const MAX_SEARCH_DEPTH: u8 = 100;
 
@@ -66,7 +67,7 @@ pub fn search(
             stats: SearchStats {
                 time: state.elapsed_time(),
                 nodes: state.nodes_visited,
-                nodes_per_second: state.nodes_per_second(),
+                nodes_per_second: nodes_per_second(state.nodes_visited, state.elapsed_time()),
             },
         });
     }

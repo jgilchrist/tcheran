@@ -23,6 +23,15 @@ pub struct GoCmdArguments {
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]
+pub enum DebugCommand {
+    Position,
+    Perft { depth: u8 },
+    PerftDiv { depth: u8 },
+    Move { mv: Move },
+    Eval,
+}
+
+#[derive(Debug, PartialEq, Eq, Clone)]
 pub enum UciCommand {
     Uci,
     Debug(bool),
@@ -42,6 +51,7 @@ pub enum UciCommand {
         moves: Vec<Move>,
     },
     Go(GoCmdArguments),
+    D(DebugCommand),
     Stop,
     PonderHit,
     Quit,

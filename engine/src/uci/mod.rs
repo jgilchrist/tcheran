@@ -1,14 +1,18 @@
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use anyhow::Result;
+use chess::perft;
+use chess::util::nodes_per_second;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
 use crate::strategy::{Clocks, GoArgs};
+use crate::uci::commands::DebugCommand;
 use crate::util::sync::LockLatch;
 use crate::{
+    eval,
     strategy::{self, Strategy},
     util::log::log,
 };
@@ -192,6 +196,55 @@ impl Uci {
                 }
                 self.control.stopped.wait();
             }
+            UciCommand::D(debug_cmd) => match debug_cmd {
+                DebugCommand::Position => {
+                    println!("{:?}", self.game.board);
+                    println!("FEN: {}", chess::fen::write(&self.game));
+                    println!();
+                }
+                DebugCommand::Move { mv } => {
+                    self.game = self.game.make_move(mv).unwrap();
+                    println!("{:?}", self.game.board);
+                    println!("FEN: {}", chess::fen::write(&self.game));
+                    println!();
+                }
+                DebugCommand::Perft { depth } => {
+                    let started_at = Instant::now();
+                    let result = perft::perft(*depth, &self.game);
+                    let finished_at = Instant::now();
+
+                    let time_taken = finished_at - started_at;
+                    let nodes_per_second =
+                        nodes_per_second(u32::try_from(result).unwrap(), time_taken);
+
+                    println!("positions: {result}");
+                    println!("time taken: {time_taken:?}");
+                    println!("nps: {nodes_per_second:?}");
+                    println!();
+                }
+                DebugCommand::PerftDiv { depth } => {
+                    let result = perft::perft_div(*depth, &self.game);
+
+                    for (mv, number_for_mv) in result {
+                        println!("{mv:?}: {number_for_mv}");
+                    }
+
+                    println!();
+                }
+                DebugCommand::Eval => {
+                    let eval_components = eval::eval_components(&self.game);
+
+                    println!("Eval: {}", eval_components.eval);
+                    println!("Components:");
+                    println!("  Material: {}", eval_components.material);
+                    println!(
+                        "  Piece square tables: {}",
+                        eval_components.piece_square_tables
+                    );
+                    println!("    White: {}", eval_components.piece_square_tables_white);
+                    println!("    Black: {}", eval_components.piece_square_tables_black);
+                }
+            },
             UciCommand::PonderHit => {}
             UciCommand::Quit => return Ok(ExecuteResult::Exit),
         }

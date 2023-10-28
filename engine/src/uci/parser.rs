@@ -1,4 +1,4 @@
-use crate::uci::commands::Position;
+use crate::uci::commands::{DebugCommand, Position};
 use anyhow::{bail, Result};
 use chess::{
     moves::Move,
@@ -317,6 +317,55 @@ fn cmd_stop(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::Stop, tag("stop"))(input)
 }
 
+fn cmd_d_pos(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("pos")(input)?;
+    Ok((input, UciCommand::D(DebugCommand::Position)))
+}
+
+fn cmd_d_move(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("move")(input)?;
+    let (input, _) = space1(input)?;
+    let (input, mv) = uci_move(input)?;
+
+    Ok((input, UciCommand::D(DebugCommand::Move { mv })))
+}
+
+fn cmd_d_perft(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("perft")(input)?;
+
+    let (input, _) = space1(input)?;
+    let (input, depth) = nom::character::complete::u8(input)?;
+
+    Ok((input, UciCommand::D(DebugCommand::Perft { depth })))
+}
+
+fn cmd_d_perft_div(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("perftdiv")(input)?;
+
+    let (input, _) = space1(input)?;
+    let (input, depth) = nom::character::complete::u8(input)?;
+
+    Ok((input, UciCommand::D(DebugCommand::PerftDiv { depth })))
+}
+
+fn cmd_d_eval(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("eval")(input)?;
+    Ok((input, UciCommand::D(DebugCommand::Eval)))
+}
+
+fn cmd_d(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("d")(input)?;
+    let (input, _) = space0(input)?;
+
+    alt((
+        cmd_d_pos,
+        cmd_d_move,
+        cmd_d_perft,
+        cmd_d_perft_div,
+        cmd_d_eval,
+    ))(input)
+}
+
 fn cmd_ponderhit(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::PonderHit, tag("ponderhit"))(input)
 }
@@ -339,6 +388,7 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
         cmd_go,
         cmd_stop,
         cmd_ponderhit,
+        cmd_d,
         cmd_quit,
     ))(input)?;
 
