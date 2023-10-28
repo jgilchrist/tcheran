@@ -173,27 +173,19 @@ impl Game {
     }
 
     #[must_use]
-    pub fn pseudo_legal_moves(&self) -> Vec<Move> {
+    pub fn moves(&self) -> Vec<Move> {
         generate_moves(self, &MoveTypes::ALL)
     }
 
     #[must_use]
-    pub fn pseudo_legal_moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
+    pub fn moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
         generate_moves(self, move_types)
     }
 
     #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&mut self) -> bool {
         if self.halfmove_clock >= 100 {
-            let mut moves = self.pseudo_legal_moves().into_iter().filter(|m| {
-                let player = self.player;
-                self.make_move(m);
-                let is_in_check = self.board.king_in_check(player);
-                self.undo_move();
-                !is_in_check
-            });
-
-            return moves.next().is_some();
+            return self.moves().first().is_some();
         }
 
         false

@@ -30,17 +30,10 @@ fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize 
     }
 
     let result = game
-        .pseudo_legal_moves()
+        .moves()
         .iter()
         .filter_map(|m| {
-            let player = game.player;
             game.make_move(m);
-
-            if game.board.king_in_check(player) {
-                game.undo_move();
-                return None;
-            }
-
             let result = perft(depth - 1, game, tt);
             game.undo_move();
 
