@@ -14,24 +14,20 @@ impl ZobristHash {
         Self(0)
     }
 
-    #[allow(unused)]
     pub fn toggle_piece_on_square(&mut self, square: Square, piece: Piece) {
         self.0 ^= piece_on_square(piece.player, piece.kind, square);
     }
 
-    #[allow(unused)]
     pub fn toggle_castle_rights(&mut self, player: Player, side: CastleRightsSide) {
         self.0 ^= castle_rights(player, side);
     }
 
-    #[allow(unused)]
     pub fn set_en_passant(&mut self, previous_square: Option<Square>, square: Option<Square>) {
         self.0 ^= en_passant(previous_square);
         self.0 ^= en_passant(square);
     }
 
-    #[allow(unused)]
-    pub fn toggle_side_to_play(&mut self, player: Player) {
+    pub fn toggle_side_to_play(&mut self) {
         self.0 ^= side_to_play();
     }
 }

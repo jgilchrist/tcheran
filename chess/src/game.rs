@@ -396,7 +396,7 @@ impl Game {
         let plies = self.plies + 1;
 
         let player = self.player.other();
-        zobrist.toggle_side_to_play(player);
+        zobrist.toggle_side_to_play();
 
         let mut history = self.history.clone();
         history.push(zobrist.clone());
