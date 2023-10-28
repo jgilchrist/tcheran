@@ -223,7 +223,7 @@ impl Game {
         let moved_piece = self.board.piece_at(from).unwrap();
         let maybe_captured_piece = self.board.piece_at(to);
 
-        let previous_en_passant_target = self.en_passant_target.clone();
+        let previous_en_passant_target = self.en_passant_target;
 
         // Capture the irreversible aspects of the position so that they can be restored
         // if we undo this move.

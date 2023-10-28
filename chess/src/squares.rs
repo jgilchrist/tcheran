@@ -117,10 +117,7 @@ impl Squares {
     #[inline(always)]
     #[must_use]
     pub fn single(&self) -> Square {
-        if self.count() != 1 {
-            panic!();
-        }
-        // assert_eq!(self.count(), 1);
+        assert_eq!(self.count(), 1);
         Square(self.0)
     }
 
