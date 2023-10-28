@@ -17,7 +17,18 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
         control: TCx,
         reporter: TRx,
     ) {
-        let mut moves = game.legal_moves();
+        let mut moves = game
+            .pseudo_legal_moves()
+            .into_iter()
+            .filter(|m| {
+                let player = game.player;
+                game.make_move(m);
+                let is_in_check = game.board.king_in_check(player);
+                game.undo_move();
+                !is_in_check
+            })
+            .collect::<Vec<_>>();
+
         moves.sort_unstable_by_key(|m| {
             game.make_move(m);
             let result = eval::eval(game);

@@ -179,14 +179,6 @@ impl Game {
     }
 
     #[must_use]
-    pub fn legal_moves(&mut self) -> Vec<Move> {
-        self.pseudo_legal_moves()
-            .into_iter()
-            .filter(|m| self.is_legal(m))
-            .collect()
-    }
-
-    #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         // TODO: Make sure that the order of checking checkmates vs. draws in search
         // won't cause us to detect a draw when we should have checkmate.
@@ -211,14 +203,6 @@ impl Game {
         }
 
         false
-    }
-
-    fn is_legal(&mut self, mv: &Move) -> bool {
-        let player = self.player;
-        self.make_move(mv);
-        let is_in_check = self.board.king_in_check(player);
-        self.undo_move();
-        !is_in_check
     }
 
     fn set_at(&mut self, sq: Square, piece: Piece) {
