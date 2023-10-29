@@ -415,20 +415,18 @@ impl Game {
 
         // Undo castling, if we castled
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            let our_rook = Piece::new(player, PieceKind::Rook);
-
             if to == squares::kingside_castle_dest(player) {
                 let rook_removed_square = squares::kingside_rook_start(player);
                 let rook_added_square = squares::kingside_rook_castle_end(player);
 
-                self.remove_at(rook_added_square);
-                self.set_at(rook_removed_square, our_rook);
+                let rook = self.remove_at(rook_added_square);
+                self.set_at(rook_removed_square, rook);
             } else if to == squares::queenside_castle_dest(player) {
                 let rook_removed_square = squares::queenside_rook_start(player);
                 let rook_added_square = squares::queenside_rook_castle_end(player);
 
-                self.remove_at(rook_added_square);
-                self.set_at(rook_removed_square, our_rook);
+                let rook = self.remove_at(rook_added_square);
+                self.set_at(rook_removed_square, rook);
             }
         }
 
