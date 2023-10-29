@@ -211,9 +211,8 @@ impl Uci {
                 DebugCommand::Perft { depth } => {
                     let started_at = Instant::now();
                     let result = perft::perft(*depth, &mut self.game);
-                    let finished_at = Instant::now();
+                    let time_taken = started_at.elapsed();
 
-                    let time_taken = finished_at - started_at;
                     let nodes_per_second =
                         nodes_per_second(u32::try_from(result).unwrap(), time_taken);
 
