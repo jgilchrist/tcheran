@@ -209,10 +209,11 @@ impl Game {
         self.zobrist.toggle_piece_on_square(sq, piece);
     }
 
-    fn remove_at(&mut self, sq: Square) {
+    fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_at(sq).unwrap();
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
+        removed_piece
     }
 
     pub fn make_move(&mut self, mv: &Move) {
@@ -293,21 +294,19 @@ impl Game {
         //
         // TODO: Collapse the queenside and kingside code paths into one here
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            let our_rook = Piece::new(player, PieceKind::Rook);
-
             // We're castling!
             if to == squares::kingside_castle_dest(player) {
                 let rook_remove_square = squares::kingside_rook_start(player);
                 let rook_add_square = squares::kingside_rook_castle_end(player);
 
-                self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, our_rook);
+                let rook = self.remove_at(rook_remove_square);
+                self.set_at(rook_add_square, rook);
             } else if to == squares::queenside_castle_dest(player) {
                 let rook_remove_square = squares::queenside_rook_start(player);
                 let rook_add_square = squares::queenside_rook_castle_end(player);
 
-                self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, our_rook);
+                let rook = self.remove_at(rook_remove_square);
+                self.set_at(rook_add_square, rook);
             }
         }
 
