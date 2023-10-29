@@ -17,7 +17,7 @@ struct Ctx {
 }
 
 pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
-    let mut attacks = Squares::none();
+    let mut attacks = Squares::NONE;
 
     let our_pieces = board.player_pieces(player);
     let their_pieces = board.player_pieces(player.other()).all();

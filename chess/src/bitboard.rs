@@ -11,19 +11,12 @@ impl Bitboard {
     const NOT_A_FILE: Self = squares::A_FILE.invert().0;
     const NOT_H_FILE: Self = squares::H_FILE.invert().0;
 
+    pub const EMPTY: Self = Self(0);
+    pub const FULL: Self = Self(u64::MAX);
+
     #[must_use]
     pub const fn new(bits: u64) -> Self {
         Self(bits)
-    }
-
-    #[must_use]
-    pub const fn empty() -> Self {
-        Self(0)
-    }
-
-    #[must_use]
-    pub const fn full() -> Self {
-        Self(u64::MAX)
     }
 
     #[inline(always)]
@@ -290,7 +283,7 @@ mod tests {
 
     #[test]
     fn test_empty_bitboard_display() {
-        let bitboard = Bitboard::empty();
+        let bitboard = Bitboard::EMPTY;
         let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(
@@ -300,7 +293,7 @@ mod tests {
 
     #[test]
     fn test_full_bitboard_display() {
-        let bitboard = Bitboard::full();
+        let bitboard = Bitboard::FULL;
         let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(

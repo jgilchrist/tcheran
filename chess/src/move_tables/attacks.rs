@@ -1,7 +1,7 @@
 use crate::{direction::Direction, player::Player, square::Square, squares::Squares};
 
 pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
-    let mut attacks = Squares::none();
+    let mut attacks = Squares::NONE;
 
     let pawn_move_direction = match player {
         Player::White => Direction::North,
@@ -27,7 +27,7 @@ pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
 }
 
 pub fn generate_knight_attacks(square: Square) -> Squares {
-    let mut attacks = Squares::none();
+    let mut attacks = Squares::NONE;
 
     // Going clockwise, starting at 12
     if let Some(nne) = square.north().and_then(|s| s.north_east()) {
@@ -74,7 +74,7 @@ pub fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
 }
 
 fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Squares) -> Squares {
-    let mut attacks = Squares::none();
+    let mut attacks = Squares::NONE;
 
     for direction in directions {
         let mut current_square = square;
@@ -95,7 +95,7 @@ fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Sq
 }
 
 pub fn generate_king_attacks(square: Square) -> Squares {
-    let mut attacks = Squares::none();
+    let mut attacks = Squares::NONE;
 
     for direction in Direction::ALL {
         if let Some(dst) = square.in_direction(*direction) {

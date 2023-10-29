@@ -13,7 +13,7 @@ pub fn generate_rook_occupancies(square: Square) -> Squares {
 }
 
 pub fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Squares {
-    let mut squares = Squares::none();
+    let mut squares = Squares::NONE;
 
     for direction in directions {
         let mut current_square = square;

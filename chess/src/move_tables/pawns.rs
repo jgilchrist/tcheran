@@ -2,8 +2,8 @@ use crate::{bitboard::Bitboard, player::Player, square::Square, squares::Squares
 
 use super::attacks;
 
-static mut WHITE_ATTACKS_TABLE: [Bitboard; Squares::N] = [Bitboard::empty(); Squares::N];
-static mut BLACK_ATTACKS_TABLE: [Bitboard; Squares::N] = [Bitboard::empty(); Squares::N];
+static mut WHITE_ATTACKS_TABLE: [Bitboard; Squares::N] = [Bitboard::EMPTY; Squares::N];
+static mut BLACK_ATTACKS_TABLE: [Bitboard; Squares::N] = [Bitboard::EMPTY; Squares::N];
 
 pub fn pawn_attacks(s: Square, player: Player) -> Squares {
     Squares(match player {
@@ -13,7 +13,7 @@ pub fn pawn_attacks(s: Square, player: Player) -> Squares {
 }
 
 pub fn init() {
-    for s in Squares::all() {
+    for s in Squares::ALL {
         let white_attacks = attacks::generate_pawn_attacks(s, Player::White);
         let black_attacks = attacks::generate_pawn_attacks(s, Player::Black);
 

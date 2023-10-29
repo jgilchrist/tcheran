@@ -49,6 +49,9 @@ impl<'a> IntoIterator for &'a Squares {
 impl Squares {
     pub const N: usize = File::N * Rank::N;
 
+    pub const NONE: Self = Self(Bitboard::EMPTY);
+    pub const ALL: Self = Self(Bitboard::FULL);
+
     #[must_use]
     pub const fn from_bitboard(bitboard: Bitboard) -> Self {
         Self(bitboard)
@@ -57,16 +60,6 @@ impl Squares {
     #[must_use]
     pub const fn from_square(square: Square) -> Self {
         Self(square.0)
-    }
-
-    #[must_use]
-    pub const fn none() -> Self {
-        Self(Bitboard::empty())
-    }
-
-    #[must_use]
-    pub const fn all() -> Self {
-        Self(Bitboard::full())
     }
 
     #[must_use]

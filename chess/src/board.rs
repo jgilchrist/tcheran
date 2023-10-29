@@ -222,19 +222,19 @@ impl TryFrom<[Option<Piece>; Squares::N]> for Board {
     type Error = anyhow::Error;
 
     fn try_from(pieces: [Option<Piece>; Squares::N]) -> Result<Self> {
-        let mut white_pawns = Squares::none();
-        let mut white_knights = Squares::none();
-        let mut white_bishops = Squares::none();
-        let mut white_rooks = Squares::none();
-        let mut white_queens = Squares::none();
-        let mut white_king = Squares::none();
+        let mut white_pawns = Squares::NONE;
+        let mut white_knights = Squares::NONE;
+        let mut white_bishops = Squares::NONE;
+        let mut white_rooks = Squares::NONE;
+        let mut white_queens = Squares::NONE;
+        let mut white_king = Squares::NONE;
 
-        let mut black_pawns = Squares::none();
-        let mut black_knights = Squares::none();
-        let mut black_bishops = Squares::none();
-        let mut black_rooks = Squares::none();
-        let mut black_queens = Squares::none();
-        let mut black_king = Squares::none();
+        let mut black_pawns = Squares::NONE;
+        let mut black_knights = Squares::NONE;
+        let mut black_bishops = Squares::NONE;
+        let mut black_rooks = Squares::NONE;
+        let mut black_queens = Squares::NONE;
+        let mut black_king = Squares::NONE;
 
         for (i, maybe_piece) in pieces.iter().enumerate() {
             if let Some(p) = maybe_piece {
