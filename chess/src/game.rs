@@ -1,5 +1,4 @@
 use crate::piece::Piece;
-use crate::squares::all::*;
 use crate::zobrist::ZobristHash;
 use crate::{
     board::Board,
@@ -252,6 +251,8 @@ impl Game {
             self.set_at(to, moved_piece);
         }
 
+        let pawn_move_direction = Direction::pawn_move_direction(self.player);
+
         // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
         // in which case we need to remove the captured pawn.
         //
@@ -271,37 +272,17 @@ impl Game {
 
                     // Definitely en-passant, as we made a capture but there was no piece on that square.
                     if !opponent_pieces.contains(to) {
-                        // Get the square that we need to remove the pawn from.
-                        let inverse_pawn_move_direction = match moved_piece.player {
-                            Player::White => Direction::South,
-                            Player::Black => Direction::North,
-                        };
-
-                        let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
+                        // Remove the piece behind the square the pawn just moved to
+                        let capture_square = to.in_direction(&!pawn_move_direction).unwrap();
                         self.remove_at(capture_square);
                     }
                 }
             }
         }
 
-        let pawn_move_direction = match self.player {
-            Player::White => Direction::North,
-            Player::Black => Direction::South,
-        };
-
-        let back_rank = match self.player {
-            Player::White => squares::RANK_2,
-            Player::Black => squares::RANK_7,
-        };
-
-        let double_push_rank = match self.player {
-            Player::White => squares::RANK_4,
-            Player::Black => squares::RANK_5,
-        };
-
         self.en_passant_target = if moved_piece.kind == PieceKind::Pawn
-            && back_rank.contains(from)
-            && double_push_rank.contains(to)
+            && squares::pawn_back_rank(self.player).contains(from)
+            && squares::pawn_double_push_rank(self.player).contains(to)
         {
             let to_square = Squares::from_square(to);
             let en_passant_attacker_squares = to_square.west() | to_square.east();
@@ -333,19 +314,13 @@ impl Game {
             // We're castling!
             if to == squares::kingside_castle_dest(moved_piece.player) {
                 let rook_remove_square = squares::kingside_rook_start(moved_piece.player);
-                let rook_add_square = match moved_piece.player {
-                    Player::White => F1,
-                    Player::Black => F8,
-                };
+                let rook_add_square = squares::kingside_rook_castle_end(moved_piece.player);
 
                 self.remove_at(rook_remove_square);
                 self.set_at(rook_add_square, our_rook);
             } else if to == squares::queenside_castle_dest(moved_piece.player) {
                 let rook_remove_square = squares::queenside_rook_start(moved_piece.player);
-                let rook_add_square = match moved_piece.player {
-                    Player::White => D1,
-                    Player::Black => D8,
-                };
+                let rook_add_square = squares::queenside_rook_castle_end(moved_piece.player);
 
                 self.remove_at(rook_remove_square);
                 self.set_at(rook_add_square, our_rook);
@@ -455,19 +430,13 @@ impl Game {
 
             if to == squares::kingside_castle_dest(moved_piece.player) {
                 let rook_removed_square = squares::kingside_rook_start(moved_piece.player);
-                let rook_added_square = match moved_piece.player {
-                    Player::White => F1,
-                    Player::Black => F8,
-                };
+                let rook_added_square = squares::kingside_rook_castle_end(moved_piece.player);
 
                 self.remove_at(rook_added_square);
                 self.set_at(rook_removed_square, our_rook);
             } else if to == squares::queenside_castle_dest(moved_piece.player) {
                 let rook_removed_square = squares::queenside_rook_start(moved_piece.player);
-                let rook_added_square = match moved_piece.player {
-                    Player::White => D1,
-                    Player::Black => D8,
-                };
+                let rook_added_square = squares::queenside_rook_castle_end(moved_piece.player);
 
                 self.remove_at(rook_added_square);
                 self.set_at(rook_removed_square, our_rook);
@@ -480,13 +449,9 @@ impl Game {
                 let pawn_attacks = move_tables::pawn_attacks(from, moved_piece.player);
 
                 if pawn_attacks.contains(to) {
-                    // Get the square that we need to remove the pawn from.
-                    let inverse_pawn_move_direction = match moved_piece.player {
-                        Player::White => Direction::South,
-                        Player::Black => Direction::North,
-                    };
-
-                    let capture_square = to.in_direction(&inverse_pawn_move_direction).unwrap();
+                    let capture_square = to
+                        .in_direction(&!Direction::pawn_move_direction(moved_piece.player))
+                        .unwrap();
                     self.set_at(
                         capture_square,
                         Piece::new(moved_piece.player.other(), PieceKind::Pawn),

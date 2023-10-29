@@ -376,10 +376,26 @@ pub const fn kingside_castle_dest(player: Player) -> Square {
 }
 
 #[must_use]
+pub const fn kingside_rook_castle_end(player: Player) -> Square {
+    match player {
+        Player::White => F1,
+        Player::Black => F8,
+    }
+}
+
+#[must_use]
 pub const fn queenside_castle_dest(player: Player) -> Square {
     match player {
         Player::White => WHITE_QUEENSIDE_CASTLE_SQUARE,
         Player::Black => BLACK_QUEENSIDE_CASTLE_SQUARE,
+    }
+}
+
+#[must_use]
+pub const fn queenside_rook_castle_end(player: Player) -> Square {
+    match player {
+        Player::White => D1,
+        Player::Black => D8,
     }
 }
 
@@ -424,6 +440,22 @@ pub const RANK_5: Squares = Squares::from_bitboard(bitboard::known::RANK_5);
 pub const RANK_6: Squares = Squares::from_bitboard(bitboard::known::RANK_6);
 pub const RANK_7: Squares = Squares::from_bitboard(bitboard::known::RANK_7);
 pub const RANK_8: Squares = Squares::from_bitboard(bitboard::known::RANK_8);
+
+#[must_use]
+pub const fn pawn_back_rank(player: Player) -> Squares {
+    match player {
+        Player::White => RANK_2,
+        Player::Black => RANK_7,
+    }
+}
+
+#[must_use]
+pub const fn pawn_double_push_rank(player: Player) -> Squares {
+    match player {
+        Player::White => RANK_4,
+        Player::Black => RANK_5,
+    }
+}
 
 pub const UP_DIAGONAL: Squares = Squares::from_bitboard(bitboard::known::UP_DIAGONAL);
 pub const DOWN_DIAGONAL: Squares = Squares::from_bitboard(bitboard::known::DOWN_DIAGONAL);
