@@ -236,7 +236,7 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn in_direction(&self, direction: &Direction) -> Option<Self> {
+    pub fn in_direction(&self, direction: Direction) -> Option<Self> {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),

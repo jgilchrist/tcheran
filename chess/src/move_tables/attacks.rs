@@ -8,7 +8,7 @@ pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
         Player::Black => Direction::South,
     };
 
-    let forward_one = square.in_direction(&pawn_move_direction);
+    let forward_one = square.in_direction(pawn_move_direction);
 
     // Capture
     let capture_left = forward_one.and_then(|s| s.west());
@@ -80,7 +80,7 @@ fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Sq
         let mut current_square = square;
 
         // Until we're off the board
-        while let Some(dst) = current_square.in_direction(direction) {
+        while let Some(dst) = current_square.in_direction(*direction) {
             current_square = dst;
             attacks |= dst;
 
@@ -98,7 +98,7 @@ pub fn generate_king_attacks(square: Square) -> Squares {
     let mut attacks = Squares::none();
 
     for direction in Direction::ALL {
-        if let Some(dst) = square.in_direction(direction) {
+        if let Some(dst) = square.in_direction(*direction) {
             attacks |= dst;
         }
     }

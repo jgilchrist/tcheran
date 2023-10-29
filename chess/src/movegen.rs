@@ -101,7 +101,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         let will_promote = !((will_promote_rank & start).is_empty());
 
         // Move forward by 1
-        let forward_one = start.in_direction(&pawn_move_direction);
+        let forward_one = start.in_direction(pawn_move_direction);
 
         if let Some(dst) = forward_one {
             if !ctx.all_pieces.contains(dst) {
@@ -133,7 +133,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     for start in pawns & back_rank {
         // Move forward by 2
-        let forward_one = start.in_direction(&pawn_move_direction);
+        let forward_one = start.in_direction(pawn_move_direction);
 
         if let Some(forward_one) = forward_one {
             if ctx.all_pieces.contains(forward_one) {
@@ -141,7 +141,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
                 continue;
             }
 
-            let forward_two = forward_one.in_direction(&pawn_move_direction);
+            let forward_two = forward_one.in_direction(pawn_move_direction);
 
             if let Some(forward_two) = forward_two {
                 if !ctx.all_pieces.contains(forward_two) {

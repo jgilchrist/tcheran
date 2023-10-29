@@ -260,7 +260,7 @@ impl Game {
         if let Some(en_passant_target) = self.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.in_direction(&!pawn_move_direction).unwrap();
+                let capture_square = to.in_direction(!pawn_move_direction).unwrap();
                 self.remove_at(capture_square);
             }
         }
@@ -275,7 +275,7 @@ impl Game {
             let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
 
             if en_passant_can_happen {
-                Some(from.in_direction(&pawn_move_direction).unwrap())
+                Some(from.in_direction(pawn_move_direction).unwrap())
             } else {
                 None
             }
@@ -436,7 +436,7 @@ impl Game {
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 let capture_square = to
-                    .in_direction(&!Direction::pawn_move_direction(player))
+                    .in_direction(!Direction::pawn_move_direction(player))
                     .unwrap();
                 self.set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
             }
