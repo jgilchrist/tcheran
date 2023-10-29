@@ -224,8 +224,6 @@ impl Game {
         let moved_piece = self.board.piece_at(from).unwrap();
         let maybe_captured_piece = self.board.piece_at(to);
 
-        let previous_en_passant_target = self.en_passant_target;
-
         // Capture the irreversible aspects of the position so that they can be restored
         // if we undo this move.
         let history = History {
@@ -265,14 +263,14 @@ impl Game {
             }
         }
 
-        self.en_passant_target = if moved_piece.kind == PieceKind::Pawn
+        let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
             && squares::pawn_back_rank(player).contains(from)
             && squares::pawn_double_push_rank(player).contains(to)
         {
             let to_square = Squares::from_square(to);
             let en_passant_attacker_squares = to_square.west() | to_square.east();
             let enemy_pawns = self.board.player_pieces(other_player).pawns;
-            let en_passant_can_happen = !(en_passant_attacker_squares & enemy_pawns).is_empty();
+            let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
                 Some(from.in_direction(pawn_move_direction).unwrap())
@@ -284,7 +282,8 @@ impl Game {
         };
 
         self.zobrist
-            .set_en_passant(previous_en_passant_target, self.en_passant_target);
+            .set_en_passant(self.en_passant_target, new_en_passant_target);
+        self.en_passant_target = new_en_passant_target;
 
         // If we just moved a king from its start square, we may have castled.
         //

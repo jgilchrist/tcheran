@@ -78,6 +78,11 @@ impl Squares {
     }
 
     #[must_use]
+    pub const fn any(&self) -> bool {
+        self.0.any()
+    }
+
+    #[must_use]
     pub const fn count(&self) -> u8 {
         self.0.count()
     }

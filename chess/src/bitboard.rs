@@ -27,6 +27,12 @@ impl Bitboard {
 
     #[inline(always)]
     #[must_use]
+    pub const fn any(&self) -> bool {
+        self.0 != 0
+    }
+
+    #[inline(always)]
+    #[must_use]
     pub const fn invert(&self) -> Self {
         Self(!self.0)
     }
