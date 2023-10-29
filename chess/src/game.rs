@@ -3,7 +3,7 @@ use crate::zobrist::ZobristHash;
 use crate::{
     board::Board,
     direction::Direction,
-    fen, move_tables,
+    fen,
     movegen::generate_moves,
     moves::Move,
     piece::PieceKind,
@@ -255,29 +255,13 @@ impl Game {
 
         let pawn_move_direction = Direction::pawn_move_direction(player);
 
-        // If we just moved a pawn diagonally, we need to double check whether it was en-passant,
-        // in which case we need to remove the captured pawn.
-        //
-        // PERF: It may be more performant to
-        // tell this function that the move was en-passant, but it loses the cleanliness of
-        // just telling the board the start and end destination for the piece.
-        //
-        // PERF: We only need to check mv.is_diagonal() if we moved from the rank where
-        // en-passant can happen which is likely a much cheaper check (just bitwise and).
+        // If we moved a pawn to the en passant target, this was an en passant capture, so we
+        // remove the captured pawn from the board.
         if let Some(en_passant_target) = self.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                let pawn_attacks = move_tables::pawn_attacks(from, player);
-
-                if pawn_attacks.contains(to) {
-                    let opponent_pieces = self.board.player_pieces(other_player).all();
-
-                    // Definitely en-passant, as we made a capture but there was no piece on that square.
-                    if !opponent_pieces.contains(to) {
-                        // Remove the piece behind the square the pawn just moved to
-                        let capture_square = to.in_direction(&!pawn_move_direction).unwrap();
-                        self.remove_at(capture_square);
-                    }
-                }
+                // Remove the piece behind the square the pawn just moved to
+                let capture_square = to.in_direction(&!pawn_move_direction).unwrap();
+                self.remove_at(capture_square);
             }
         }
 
@@ -451,14 +435,10 @@ impl Game {
         // Replace the pawn taken by en-passant capture
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                let pawn_attacks = move_tables::pawn_attacks(from, player);
-
-                if pawn_attacks.contains(to) {
-                    let capture_square = to
-                        .in_direction(&!Direction::pawn_move_direction(player))
-                        .unwrap();
-                    self.set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
-                }
+                let capture_square = to
+                    .in_direction(&!Direction::pawn_move_direction(player))
+                    .unwrap();
+                self.set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
             }
         }
 
