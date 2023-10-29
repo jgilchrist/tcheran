@@ -184,10 +184,24 @@ impl Game {
     }
 
     #[must_use]
-    pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
-        // TODO: Make sure that the order of checking checkmates vs. draws in search
-        // won't cause us to detect a draw when we should have checkmate.
-        self.halfmove_clock >= 100
+    pub fn is_stalemate_by_fifty_move_rule(&mut self) -> bool {
+        if self.halfmove_clock >= 100 {
+            let moves = self
+                .pseudo_legal_moves()
+                .into_iter()
+                .filter(|m| {
+                    let player = self.player;
+                    self.make_move(m);
+                    let is_in_check = self.board.king_in_check(player);
+                    self.undo_move();
+                    !is_in_check
+                })
+                .collect::<Vec<_>>();
+
+            return !moves.is_empty();
+        }
+
+        false
     }
 
     #[must_use]
