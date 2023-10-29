@@ -65,10 +65,6 @@ impl CastleRights {
         }
     }
 
-    pub fn remove_kingside_rights(&mut self) {
-        self.king_side = false;
-    }
-
     #[must_use]
     pub const fn without_queenside(&self) -> Self {
         Self {
@@ -77,8 +73,18 @@ impl CastleRights {
         }
     }
 
-    pub fn remove_queenside_rights(&mut self) {
-        self.queen_side = false;
+    pub fn can_castle_to_side(&self, side: CastleRightsSide) -> bool {
+        match side {
+            CastleRightsSide::Kingside => self.king_side,
+            CastleRightsSide::Queenside => self.queen_side,
+        }
+    }
+
+    pub fn remove_rights(&mut self, side: CastleRightsSide) {
+        match side {
+            CastleRightsSide::Kingside => self.king_side = false,
+            CastleRightsSide::Queenside => self.queen_side = false,
+        }
     }
 }
 
@@ -216,6 +222,24 @@ impl Game {
         removed_piece
     }
 
+    // PERF: Make fetching the castle rights for a player more efficient
+    fn try_remove_castle_rights(&mut self, player: Player, castle_rights_side: CastleRightsSide) {
+        let castle_rights = match player {
+            Player::White => &mut self.white_castle_rights,
+            Player::Black => &mut self.black_castle_rights,
+        };
+
+        // We don't want to modify anything if the castle rights on this side were already lost
+        if !castle_rights.can_castle_to_side(castle_rights_side) {
+            return;
+        }
+
+        castle_rights.remove_rights(castle_rights_side);
+
+        self.zobrist
+            .toggle_castle_rights(player, castle_rights_side);
+    }
+
     pub fn make_move(&mut self, mv: &Move) {
         let from = mv.src;
         let to = mv.dst;
@@ -310,48 +334,26 @@ impl Game {
             }
         }
 
-        let (castle_rights, other_player_castle_rights) = match player {
-            Player::White => (&mut self.white_castle_rights, &mut self.black_castle_rights),
-            Player::Black => (&mut self.black_castle_rights, &mut self.white_castle_rights),
-        };
-
+        // Check if we lost castle rights.
+        // If we moved the king, we lose all rights to castle.
+        // If we moved one of our rooks, we lose rights to castle on that side.
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            if castle_rights.king_side {
-                castle_rights.remove_kingside_rights();
-                self.zobrist
-                    .toggle_castle_rights(player, CastleRightsSide::Kingside);
-            }
-
-            if castle_rights.queen_side {
-                castle_rights.remove_queenside_rights();
-                self.zobrist
-                    .toggle_castle_rights(player, CastleRightsSide::Queenside);
-            }
+            self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
+            self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
         } else if moved_piece.kind == PieceKind::Rook {
-            if from == squares::kingside_rook_start(player) && castle_rights.king_side {
-                self.zobrist
-                    .toggle_castle_rights(player, CastleRightsSide::Kingside);
-                castle_rights.remove_kingside_rights();
-            } else if from == squares::queenside_rook_start(player) && castle_rights.queen_side {
-                castle_rights.remove_queenside_rights();
-                self.zobrist
-                    .toggle_castle_rights(player, CastleRightsSide::Queenside);
+            if from == squares::kingside_rook_start(player) {
+                self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
+            } else if from == squares::queenside_rook_start(player) {
+                self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
             }
         }
 
+        // Check if we removed our enemy's ability to castle, i.e. if we took one of their rooks
         if maybe_captured_piece.is_some() {
-            if to == squares::kingside_rook_start(other_player)
-                && other_player_castle_rights.king_side
-            {
-                other_player_castle_rights.remove_kingside_rights();
-                self.zobrist
-                    .toggle_castle_rights(other_player, CastleRightsSide::Kingside);
-            } else if to == squares::queenside_rook_start(other_player)
-                && other_player_castle_rights.queen_side
-            {
-                other_player_castle_rights.remove_queenside_rights();
-                self.zobrist
-                    .toggle_castle_rights(other_player, CastleRightsSide::Queenside);
+            if to == squares::kingside_rook_start(other_player) {
+                self.try_remove_castle_rights(other_player, CastleRightsSide::Kingside);
+            } else if to == squares::queenside_rook_start(other_player) {
+                self.try_remove_castle_rights(other_player, CastleRightsSide::Queenside);
             }
         }
 
