@@ -15,7 +15,7 @@ pub struct GoCmdArguments {
     pub winc: Option<u32>,
     pub binc: Option<u32>,
     pub movestogo: Option<u32>,
-    pub depth: Option<u32>,
+    pub depth: Option<u8>,
     pub nodes: Option<u32>,
     pub mate: Option<u32>,
     pub movetime: Option<u32>,

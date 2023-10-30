@@ -263,7 +263,7 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.movestogo = Some(movestogo);
                     })
                 }),
-                command_with_argument("depth", nom::character::complete::u32, |depth| {
+                command_with_argument("depth", nom::character::complete::u8, |depth| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.depth = Some(depth);
                     })

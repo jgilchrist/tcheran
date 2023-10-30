@@ -8,7 +8,7 @@ use chess::util::nodes_per_second;
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
-use crate::strategy::{Clocks, GoArgs};
+use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::uci::commands::DebugCommand;
 use crate::util::sync::LockLatch;
 use crate::{
@@ -162,11 +162,11 @@ impl Uci {
                 btime,
                 winc,
                 binc,
-                movestogo: _,
-                depth: _,
+                movestogo,
+                depth,
                 nodes: _,
                 mate: _,
-                movetime: _,
+                movetime,
                 infinite: _,
             }) => {
                 let strategy = self.strategy.clone();
@@ -175,18 +175,39 @@ impl Uci {
                 let control = self.control.clone();
                 let reporter = self.reporter.clone();
 
-                let args = GoArgs {
-                    clocks: Clocks {
-                        white_clock: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                        black_clock: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                        white_increment: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                        black_increment: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    },
+                let clocks = Clocks {
+                    white_clock: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    black_clock: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    white_increment: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    black_increment: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    moves_to_go: *movestogo,
                 };
+
+                let move_time = movetime.map(|t| Duration::from_millis(t.try_into().unwrap()));
+
+                // TODO: Improve errors if we get conflicting time control messaging here (e.g. movetime 100 infinite)
+                let mut time_control = TimeControl::Infinite;
+
+                if let Some(move_time) = move_time {
+                    time_control = TimeControl::ExactTime(move_time);
+                }
+
+                if wtime.is_some() && btime.is_some() {
+                    time_control = TimeControl::Clocks(clocks);
+                }
+
+                let search_restrictions = SearchRestrictions { depth: *depth };
 
                 std::thread::spawn(move || {
                     let mut s = strategy.lock().unwrap();
-                    s.go(&mut game, &args, &options, control, reporter);
+                    s.go(
+                        &mut game,
+                        &time_control,
+                        &search_restrictions,
+                        &options,
+                        control,
+                        reporter,
+                    );
                 });
             }
             UciCommand::Stop => {

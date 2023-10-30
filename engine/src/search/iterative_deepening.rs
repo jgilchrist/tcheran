@@ -1,8 +1,10 @@
 use crate::options::EngineOptions;
 use crate::search::negamax_eval::NegamaxEval;
-use crate::search::time_control::TimeControl;
+use crate::search::time_control::TimeStrategy;
 use crate::search::{negamax, SearchState, MAX_SEARCH_DEPTH};
-use crate::strategy::{Control, Reporter, SearchInfo, SearchScore, SearchStats};
+use crate::strategy::{
+    Control, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchStats,
+};
 use crate::transposition::transposition_table::{NodeBound, SearchTranspositionTable};
 use chess::game::Game;
 use chess::moves::Move;
@@ -11,16 +13,19 @@ use chess::util::nodes_per_second;
 pub fn search(
     game: &mut Game,
     tt: &mut SearchTranspositionTable,
+    search_restrictions: &SearchRestrictions,
     _options: &EngineOptions,
     state: &mut SearchState,
-    time_control: &TimeControl,
+    time_control: &TimeStrategy,
     control: &impl Control,
     reporter: &impl Reporter,
 ) -> (Move, NegamaxEval) {
     let mut overall_best_move: Option<Move> = None;
     let mut overall_eval: Option<NegamaxEval> = None;
 
-    for depth in 1..=MAX_SEARCH_DEPTH {
+    let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
+
+    for depth in 1..=max_search_depth {
         // TODO: Are we counting nodes searched at this depth?
         state.nodes_visited = 0;
 

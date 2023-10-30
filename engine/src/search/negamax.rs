@@ -1,5 +1,5 @@
 use crate::search::quiescence::quiescence;
-use crate::search::time_control::TimeControl;
+use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
 use crate::transposition::transposition_table::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData,
@@ -15,7 +15,7 @@ pub fn negamax(
     depth: u8,
     plies: u8,
     tt: &mut SearchTranspositionTable,
-    time_control: &TimeControl,
+    time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
 ) -> Result<NegamaxEval, ()> {

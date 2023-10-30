@@ -1,5 +1,5 @@
 use crate::eval::{self};
-use crate::search::time_control::TimeControl;
+use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
 use chess::game::Game;
 
@@ -10,7 +10,7 @@ pub fn quiescence(
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     plies: u8,
-    time_control: &TimeControl,
+    time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
 ) -> Result<NegamaxEval, ()> {

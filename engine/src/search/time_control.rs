@@ -1,41 +1,42 @@
-use crate::strategy::Clocks;
+use crate::strategy::{Clocks, TimeControl};
 use chess::game::Game;
 use chess::player::Player;
 use std::time::{Duration, Instant};
 
-// TODO: Handle increments
-
-pub struct TimeControl {
-    time_remaining: Option<Duration>,
-    increment: Option<Duration>,
+pub struct TimeStrategy {
+    player: Player,
+    time_control: TimeControl,
     stop_searching_at: Option<Instant>,
 }
 
-impl TimeControl {
-    pub fn new(game: &Game, clocks: &Clocks) -> Self {
-        let (time_remaining, increment) = match game.player {
-            Player::White => (clocks.white_clock, clocks.white_increment),
-            Player::Black => (clocks.black_clock, clocks.black_increment),
-        };
-
+impl TimeStrategy {
+    pub fn new(game: &Game, time_control: &TimeControl) -> Self {
         Self {
-            time_remaining,
-            increment,
+            time_control: time_control.clone(),
+            player: game.player,
             stop_searching_at: None,
         }
     }
 
     pub fn init(&mut self) {
-        let time_allotted_for_move = self.time_allotted();
-        self.stop_searching_at = Some(Instant::now() + time_allotted_for_move);
+        self.stop_searching_at = match self.time_control {
+            TimeControl::Infinite => None,
+            TimeControl::ExactTime(move_time) => Some(Instant::now() + move_time),
+            TimeControl::Clocks(ref clocks) => Some(Instant::now() + self.time_allotted(clocks)),
+        }
     }
 
     // TODO: Improve this - for now, it's super simple.
-    fn time_allotted(&self) -> Duration {
-        let increment = self.increment.unwrap_or_default();
+    fn time_allotted(&self, clocks: &Clocks) -> Duration {
+        let (time_remaining, increment) = match self.player {
+            Player::White => (clocks.white_clock, clocks.white_increment),
+            Player::Black => (clocks.black_clock, clocks.black_increment),
+        };
+
+        let increment = increment.unwrap_or_default();
 
         // If we don't have a time limit, spend a minute per move
-        let Some(time_remaining) = self.time_remaining else {
+        let Some(time_remaining) = time_remaining else {
             return Duration::from_secs(60);
         };
 
@@ -63,6 +64,9 @@ impl TimeControl {
     }
 
     pub fn should_stop(&self) -> bool {
-        Instant::now() > self.stop_searching_at.unwrap()
+        match self.stop_searching_at {
+            None => false,
+            Some(time_to_stop) => Instant::now() > time_to_stop,
+        }
     }
 }

@@ -2,7 +2,7 @@ use crate::options::EngineOptions;
 use chess::game::Game;
 use rand::prelude::SliceRandom;
 
-use super::{Control, GoArgs, Reporter, Strategy};
+use super::{Control, Reporter, SearchRestrictions, Strategy, TimeControl};
 
 #[derive(Default)]
 pub struct RandomMoveStrategy;
@@ -11,7 +11,8 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for RandomMoveStrategy {
     fn go(
         &mut self,
         game: &mut Game,
-        _args: &GoArgs,
+        _time_control: &TimeControl,
+        _restrictions: &SearchRestrictions,
         _options: &EngineOptions,
         control: TCx,
         reporter: TRx,

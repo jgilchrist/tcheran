@@ -3,8 +3,8 @@ use std::time::{Duration, Instant};
 use chess::{game::Game, moves::Move};
 
 use crate::options::EngineOptions;
-use crate::search::time_control::TimeControl;
-use crate::strategy::{Control, GoArgs};
+use crate::search::time_control::TimeStrategy;
+use crate::strategy::{Control, SearchRestrictions, TimeControl};
 use crate::{eval::Eval, strategy::Reporter};
 
 use crate::transposition::transposition_table::SearchTranspositionTable;
@@ -54,7 +54,8 @@ impl SearchState {
 pub fn search(
     game: &mut Game,
     tt: &mut SearchTranspositionTable,
-    args: &GoArgs,
+    time_control: &TimeControl,
+    search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
     control: &impl Control,
     reporter: &impl Reporter,
@@ -62,15 +63,16 @@ pub fn search(
     let mut state = SearchState::new();
     state.start_timer();
 
-    let mut time_control = TimeControl::new(game, &args.clocks);
-    time_control.init();
+    let mut time_strategy = TimeStrategy::new(game, time_control);
+    time_strategy.init();
 
     let (best_move, eval) = iterative_deepening::search(
         game,
         tt,
+        search_restrictions,
         options,
         &mut state,
-        &time_control,
+        &time_strategy,
         control,
         reporter,
     );

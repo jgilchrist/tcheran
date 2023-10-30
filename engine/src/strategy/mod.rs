@@ -9,7 +9,8 @@ pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
     fn go(
         &mut self,
         game: &mut Game,
-        args: &GoArgs,
+        time_control: &TimeControl,
+        search_restrictions: &SearchRestrictions,
         options: &EngineOptions,
         control: TCx,
         reporter: TRx,
@@ -21,15 +22,24 @@ pub enum SearchScore {
     Mate(i32),
 }
 
-pub struct GoArgs {
-    pub clocks: Clocks,
+pub struct SearchRestrictions {
+    pub depth: Option<u8>,
 }
 
+#[derive(Debug, Clone)]
+pub enum TimeControl {
+    Clocks(Clocks),
+    ExactTime(Duration),
+    Infinite,
+}
+
+#[derive(Debug, Clone)]
 pub struct Clocks {
     pub white_clock: Option<Duration>,
     pub black_clock: Option<Duration>,
     pub white_increment: Option<Duration>,
     pub black_increment: Option<Duration>,
+    pub moves_to_go: Option<u32>,
 }
 
 pub struct SearchInfo {
