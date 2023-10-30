@@ -1,6 +1,4 @@
-use std::{fs, io::Write, path::Path};
-
-const LOG_DIRECTORY: &str = "/tmp/chess_engine";
+use std::{fs, io::Write};
 
 #[must_use]
 pub fn log_file() -> String {
@@ -9,8 +7,10 @@ pub fn log_file() -> String {
 
 // FIXME: It's not ideal to open a handle to the file every time we want to write a line
 pub fn log<S: AsRef<str>>(s: S) {
-    fs::create_dir_all(LOG_DIRECTORY).expect("Unable to create log directory");
-    let path = Path::new(LOG_DIRECTORY).join(log_file());
+    let current_exe =
+        std::env::current_exe().expect("Unable to determine current executable directory");
+
+    let path = current_exe.with_extension("log");
 
     let mut f = fs::OpenOptions::new()
         .create(true)
