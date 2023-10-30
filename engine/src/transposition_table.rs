@@ -6,6 +6,7 @@ pub trait TTOverwriteable {
 
 pub struct TranspositionTable<T: Clone + TTOverwriteable> {
     data: Vec<Option<TranspositionTableEntry<T>>>,
+    pub generation: u8,
     pub occupied: usize,
     size: usize,
 }
@@ -22,6 +23,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
             data: vec![None; 0],
             occupied: 0,
             size: 0,
+            generation: 0,
         }
     }
 
@@ -37,6 +39,11 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         self.data = vec![None; number_of_entries];
         self.size = size_mb;
         self.occupied = 0;
+        self.generation = 0;
+    }
+
+    pub fn new_generation(&mut self) {
+        self.generation += 1;
     }
 
     #[allow(clippy::cast_possible_truncation)]

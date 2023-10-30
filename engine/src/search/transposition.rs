@@ -16,6 +16,7 @@ pub struct SearchTranspositionTableData {
     pub bound: NodeBound,
     pub eval: Eval,
     pub depth: u8,
+    pub age: u8,
     pub best_move: Option<TTMove>,
 }
 
@@ -46,13 +47,17 @@ impl TTMove {
 
 impl TTOverwriteable for SearchTranspositionTableData {
     fn should_overwrite_with(&self, new: &Self) -> bool {
-        // Always store new PV nodes
+        // Always prioritise results from new searches
+        if new.age != self.age {
+            return true;
+        }
+
+        // If the new node is exact, always store it
         if new.bound == NodeBound::Exact {
             return true;
         }
 
-        // Try to keep old 'exact' nodes over new bound nodes
-        // TODO: Don't keep exact nodes from previous searches
+        // Don't overwrite exact nodes
         self.bound != NodeBound::Exact
     }
 }

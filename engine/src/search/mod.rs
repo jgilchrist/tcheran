@@ -45,6 +45,8 @@ pub fn search(
     let mut time_strategy = TimeStrategy::new(&game.game, time_control);
     time_strategy.init();
 
+    tt.new_generation();
+
     let (best_move, eval) = iterative_deepening::search(
         game,
         tt,

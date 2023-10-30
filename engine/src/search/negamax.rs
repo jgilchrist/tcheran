@@ -114,6 +114,7 @@ pub fn negamax(
                 eval: move_score,
                 best_move: None,
                 depth,
+                age: tt.generation,
             };
 
             tt.insert(&game.zobrist(), tt_data);
@@ -131,6 +132,7 @@ pub fn negamax(
         bound: tt_node_bound,
         eval: alpha,
         best_move: best_move.map(|m| TTMove::from_move(&m)),
+        age: tt.generation,
         depth,
     };
 
