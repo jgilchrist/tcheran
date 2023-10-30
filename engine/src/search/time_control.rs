@@ -39,6 +39,11 @@ impl TimeControl {
             return Duration::from_secs(60);
         };
 
+        // About to lose on time
+        if time_remaining < Duration::from_secs(1) {
+            return Duration::from_millis(100);
+        }
+
         // Extreme time pressure - start blitzing
         if time_remaining < Duration::from_secs(2) {
             return Duration::from_millis(500);
