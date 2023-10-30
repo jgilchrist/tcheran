@@ -8,10 +8,3 @@ rust-version.workspace = true
 anyhow = { workspace = true }
 nom = { workspace = true }
 rand = { workspace = true }
-
-[dev-dependencies]
-criterion = { version = "0.5.1", features = ["html_reports"] }
-
-[[bench]]
-name = "benches"
-harness = false
