@@ -3,8 +3,7 @@ use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeControl;
 use crate::search::{negamax, SearchState};
 use crate::strategy::{Control, Reporter, SearchInfo, SearchScore, SearchStats};
-use crate::transposition::transposition_table::NodeBound::Exact;
-use crate::transposition::transposition_table::SearchTranspositionTable;
+use crate::transposition::transposition_table::{NodeBound, SearchTranspositionTable};
 use chess::game::Game;
 use chess::moves::Move;
 use chess::util::nodes_per_second;
@@ -84,7 +83,11 @@ fn get_pv(depth: u8, game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
             break;
         };
 
-        assert!(!(tt_entry.bound != Exact), "non-exact bound");
+        if tt_entry.bound != NodeBound::Exact {
+            // TODO: Log this to a file
+            assert!(!pv.is_empty());
+            return pv;
+        }
 
         let best_move_in_position = tt_entry.best_move.unwrap();
         pv.push(best_move_in_position);
