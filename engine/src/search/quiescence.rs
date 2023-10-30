@@ -45,33 +45,23 @@ pub fn quiescence(
 
     let mut moves = game.pseudo_legal_moves();
 
+    // Only look at captures
+    moves.retain(|m| game.board.piece_at(m.dst).is_some());
+
     move_ordering::order_moves(game, &mut moves, None);
 
     let mut best_eval = NegamaxEval::MIN;
-    let mut number_of_legal_moves = 0;
 
     for mv in &moves {
         let player = game.player;
 
         // First, check if the move is legal.
-        // We need to make sure we count the total number of leval moves here so that we can use
-        // it for win/draw detection below.
         game.make_move(mv);
+
         if game.board.king_in_check(player) {
             game.undo_move();
             continue;
         }
-
-        number_of_legal_moves += 1;
-        game.undo_move();
-
-        // If this isn't a capture, continue
-        // PERF: We can instead have the move generator generate only captures
-        // although we'll need to check if we can still do win/draw detection.
-        if game.board.piece_at(mv.dst).is_none() {
-            continue;
-        }
-        game.make_move(mv);
 
         let move_score = -quiescence(game, -beta, -alpha, plies + 1, time_control, state, control)?;
 
@@ -90,16 +80,6 @@ pub fn quiescence(
         if move_score > alpha {
             alpha = move_score;
         }
-    }
-
-    if number_of_legal_moves == 0 {
-        return if game.board.king_in_check(game.player) {
-            Ok(NegamaxEval::mated_in(plies))
-        } else if game.board.king_in_check(game.player.other()) {
-            Ok(NegamaxEval::mate_in(plies))
-        } else {
-            Ok(NegamaxEval::DRAW)
-        };
     }
 
     Ok(alpha)
