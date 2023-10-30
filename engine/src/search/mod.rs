@@ -7,6 +7,7 @@ use crate::search::time_control::TimeControl;
 use crate::strategy::{Control, GoArgs};
 use crate::{eval::Eval, strategy::Reporter};
 
+use crate::transposition::transposition_table::SearchTranspositionTable;
 pub use negamax_eval::NegamaxEval;
 
 mod iterative_deepening;
@@ -52,6 +53,7 @@ impl SearchState {
 
 pub fn search(
     game: &mut Game,
+    tt: &mut SearchTranspositionTable,
     args: &GoArgs,
     options: &EngineOptions,
     control: &impl Control,
@@ -63,8 +65,15 @@ pub fn search(
     let mut time_control = TimeControl::new(game, &args.clocks);
     time_control.init();
 
-    let (best_move, eval) =
-        iterative_deepening::search(game, options, &mut state, &time_control, control, reporter);
+    let (best_move, eval) = iterative_deepening::search(
+        game,
+        tt,
+        options,
+        &mut state,
+        &time_control,
+        control,
+        reporter,
+    );
 
     (best_move, eval.to_eval(game.player))
 }

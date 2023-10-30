@@ -10,6 +10,7 @@ use chess::util::nodes_per_second;
 
 pub fn search(
     game: &mut Game,
+    tt: &mut SearchTranspositionTable,
     _options: &EngineOptions,
     state: &mut SearchState,
     time_control: &TimeControl,
@@ -18,8 +19,6 @@ pub fn search(
 ) -> (Move, NegamaxEval) {
     let mut overall_best_move: Option<Move> = None;
     let mut overall_eval: Option<NegamaxEval> = None;
-
-    let mut tt = SearchTranspositionTable::new();
 
     for depth in 1..=MAX_SEARCH_DEPTH {
         // TODO: Are we counting nodes searched at this depth?
@@ -31,7 +30,7 @@ pub fn search(
             NegamaxEval::MAX,
             depth,
             0,
-            &mut tt,
+            tt,
             time_control,
             state,
             control,
@@ -47,7 +46,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game, &tt);
+        let pv = get_pv(depth, game, tt);
 
         let best_move = pv.first().unwrap();
 
