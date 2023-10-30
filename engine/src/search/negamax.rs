@@ -51,7 +51,10 @@ pub fn negamax(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if state.nodes_visited % 10000 == 0 && (time_control.should_stop() || control.should_stop()) {
+    if !is_root
+        && state.nodes_visited % 10000 == 0
+        && (time_control.should_stop() || control.should_stop())
+    {
         return Err(());
     }
 
