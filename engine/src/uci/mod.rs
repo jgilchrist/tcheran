@@ -195,6 +195,11 @@ impl Uci {
                     *stop = true;
                 }
                 self.control.stopped.wait();
+                self.control.stopped = Arc::new(LockLatch::new());
+                {
+                    let mut stop = self.control.stop.lock().unwrap();
+                    *stop = false;
+                }
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::Position => {
