@@ -62,6 +62,16 @@ pub trait Control {
     fn should_stop(&self) -> bool;
 }
 
+pub struct NullControl;
+
+impl Control for NullControl {
+    fn stop(&self) {}
+
+    fn should_stop(&self) -> bool {
+        false
+    }
+}
+
 pub trait Reporter {
     fn generic_report(&self, s: &str);
 
@@ -69,6 +79,18 @@ pub trait Reporter {
     fn report_search_stats(&self, stats: SearchStats);
 
     fn best_move(&self, mv: Move);
+}
+
+pub struct NullReporter;
+
+impl Reporter for NullReporter {
+    fn generic_report(&self, _: &str) {}
+
+    fn report_search_progress(&self, _: SearchInfo) {}
+
+    fn report_search_stats(&self, _: SearchStats) {}
+
+    fn best_move(&self, _: Move) {}
 }
 
 mod main;

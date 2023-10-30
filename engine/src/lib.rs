@@ -18,8 +18,8 @@ pub mod strategy;
 pub mod uci;
 pub mod util;
 
-mod search;
-mod transposition;
+pub mod search;
+pub mod transposition;
 
 pub use eval::eval;
 
