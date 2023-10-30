@@ -73,6 +73,7 @@ impl CastleRights {
         }
     }
 
+    #[must_use]
     pub fn can_castle_to_side(&self, side: CastleRightsSide) -> bool {
         match side {
             CastleRightsSide::Kingside => self.king_side,
@@ -186,19 +187,15 @@ impl Game {
     #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&mut self) -> bool {
         if self.halfmove_clock >= 100 {
-            let moves = self
-                .pseudo_legal_moves()
-                .into_iter()
-                .filter(|m| {
-                    let player = self.player;
-                    self.make_move(m);
-                    let is_in_check = self.board.king_in_check(player);
-                    self.undo_move();
-                    !is_in_check
-                })
-                .collect::<Vec<_>>();
+            let mut moves = self.pseudo_legal_moves().into_iter().filter(|m| {
+                let player = self.player;
+                self.make_move(m);
+                let is_in_check = self.board.king_in_check(player);
+                self.undo_move();
+                !is_in_check
+            });
 
-            return !moves.is_empty();
+            return moves.next().is_some();
         }
 
         false
