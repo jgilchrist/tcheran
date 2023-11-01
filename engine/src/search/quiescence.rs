@@ -2,6 +2,7 @@ use crate::eval::{self};
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
 use chess::game::Game;
+use chess::movegen::MoveTypes;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};
 
@@ -43,10 +44,7 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = game.pseudo_legal_moves();
-
-    // Only look at captures
-    moves.retain(|m| game.board.piece_at(m.dst).is_some());
+    let mut moves = game.pseudo_legal_moves_with_type(&MoveTypes::CAPTURES_ONLY);
 
     move_ordering::order_moves(game, &mut moves, None);
 

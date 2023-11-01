@@ -8,7 +8,6 @@ use crate::{
 struct Ctx {
     all_pieces: Bitboard,
     their_pieces: Bitboard,
-    enemy_or_empty: Bitboard,
 }
 
 pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
@@ -67,33 +66,55 @@ pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> B
     attackers
 }
 
-pub fn generate_moves(game: &Game) -> Vec<Move> {
+pub struct MoveTypes {
+    pub quiet: bool,
+    pub captures: bool,
+    pub promotions: bool,
+    pub castles: bool,
+}
+
+impl MoveTypes {
+    pub const ALL: Self = Self {
+        quiet: true,
+        captures: true,
+        promotions: true,
+        castles: true,
+    };
+
+    pub const CAPTURES_ONLY: Self = Self {
+        captures: true,
+
+        quiet: false,
+        promotions: false,
+        castles: false,
+    };
+}
+
+pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
     let ctx = get_ctx(game);
 
     let mut moves: Vec<Move> = Vec::with_capacity(64);
-    generate_pawn_moves(&mut moves, game, &ctx);
-    generate_knight_moves(&mut moves, game, &ctx);
-    generate_bishop_moves(&mut moves, game, &ctx);
-    generate_rook_moves(&mut moves, game, &ctx);
-    generate_queen_moves(&mut moves, game, &ctx);
-    generate_king_moves(&mut moves, game, &ctx);
+    generate_pawn_moves(&mut moves, game, move_types, &ctx);
+    generate_knight_moves(&mut moves, game, move_types, &ctx);
+    generate_bishop_moves(&mut moves, game, move_types, &ctx);
+    generate_rook_moves(&mut moves, game, move_types, &ctx);
+    generate_queen_moves(&mut moves, game, move_types, &ctx);
+    generate_king_moves(&mut moves, game, move_types, &ctx);
     moves
 }
 
 fn get_ctx(game: &Game) -> Ctx {
     let our_pieces = game.board.player_pieces(game.player).all();
-    let enemy_or_empty = our_pieces.invert();
     let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces | their_pieces;
 
     Ctx {
         all_pieces,
         their_pieces,
-        enemy_or_empty,
     }
 }
 
-fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let pawns = game.board.player_pieces(game.player).pawns;
 
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
@@ -116,184 +137,248 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         .in_direction(!pawn_move_direction)
         .in_direction(Direction::East);
 
-    // Push: All pawns with an empty square in front of them can move forward
-    for pawn in non_promoting_pawns & !pawn_move_blockers {
-        let forward_one = pawn.in_direction(pawn_move_direction);
-        moves.push(Move::new(pawn, forward_one));
-    }
+    if move_types.quiet {
+        // Push: All pawns with an empty square in front of them can move forward
+        for pawn in non_promoting_pawns & !pawn_move_blockers {
+            let forward_one = pawn.in_direction(pawn_move_direction);
+            moves.push(Move::new(pawn, forward_one));
+        }
 
-    // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
-    for pawn in non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
-        let forward_two = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(pawn_move_direction);
+        // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
+        for pawn in non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
+            let forward_two = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(pawn_move_direction);
 
-        moves.push(Move::new(pawn, forward_two));
-    }
-
-    // Non-promoting captures: All pawns can capture diagonally
-    for pawn in non_promoting_pawns & capturable_pieces_left {
-        let capture_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::East);
-
-        moves.push(Move::new(pawn, capture_square));
-    }
-
-    for pawn in non_promoting_pawns & capturable_pieces_right {
-        let capture_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::West);
-
-        moves.push(Move::new(pawn, capture_square));
-    }
-
-    // En-passant capture: Pawns either side of the en-passant pawn can capture
-    if let Some(en_passant_target) = game.en_passant_target {
-        let capture_squares = move_tables::pawn_attacks(en_passant_target, game.player.other());
-
-        for potential_en_passant_capture_start in capture_squares & non_promoting_pawns {
-            moves.push(Move::new(
-                potential_en_passant_capture_start,
-                en_passant_target,
-            ));
+            moves.push(Move::new(pawn, forward_two));
         }
     }
 
-    // Promotion push: Pawns on the enemy's start rank will promote when pushing
-    for pawn in promoting_pawns & !pawn_move_blockers {
-        let forward_one = pawn.in_direction(pawn_move_direction);
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+    if move_types.captures {
+        // Non-promoting captures: All pawns can capture diagonally
+        for pawn in non_promoting_pawns & capturable_pieces_left {
+            let capture_square = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(Direction::East);
+
+            moves.push(Move::new(pawn, capture_square));
+        }
+
+        for pawn in non_promoting_pawns & capturable_pieces_right {
+            let capture_square = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(Direction::West);
+
+            moves.push(Move::new(pawn, capture_square));
+        }
+
+        // En-passant capture: Pawns either side of the en-passant pawn can capture
+        if let Some(en_passant_target) = game.en_passant_target {
+            let capture_squares = move_tables::pawn_attacks(en_passant_target, game.player.other());
+
+            for potential_en_passant_capture_start in capture_squares & non_promoting_pawns {
+                moves.push(Move::new(
+                    potential_en_passant_capture_start,
+                    en_passant_target,
+                ));
+            }
         }
     }
 
-    // Promotion capture: Pawns on the enemy's start rank will promote when capturing
-    for pawn in promoting_pawns & capturable_pieces_left {
-        let capture_left_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::East);
-
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(
-                pawn,
-                capture_left_square,
-                *promotion,
-            ));
+    if move_types.promotions {
+        // Promotion push: Pawns on the enemy's start rank will promote when pushing
+        for pawn in promoting_pawns & !pawn_move_blockers {
+            let forward_one = pawn.in_direction(pawn_move_direction);
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+            }
         }
     }
 
-    for pawn in promoting_pawns & capturable_pieces_right {
-        let capture_right_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::West);
+    if move_types.captures {
+        // Promotion capture: Pawns on the enemy's start rank will promote when capturing
+        for pawn in promoting_pawns & capturable_pieces_left {
+            let capture_left_square = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(Direction::East);
 
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(
-                pawn,
-                capture_right_square,
-                *promotion,
-            ));
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(
+                    pawn,
+                    capture_left_square,
+                    *promotion,
+                ));
+            }
+        }
+
+        for pawn in promoting_pawns & capturable_pieces_right {
+            let capture_right_square = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(Direction::West);
+
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(
+                    pawn,
+                    capture_right_square,
+                    *promotion,
+                ));
+            }
         }
     }
 }
 
-fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let knights = game.board.player_pieces(game.player).knights;
 
     for knight in knights {
-        let destinations = move_tables::knight_attacks(knight) & ctx.enemy_or_empty;
+        let destinations = move_tables::knight_attacks(knight);
+        let move_destinations = destinations & !ctx.all_pieces;
+        let capture_destinations = destinations & ctx.their_pieces;
 
-        for dst in destinations {
-            moves.push(Move::new(knight, dst));
+        if move_types.quiet {
+            for dst in move_destinations {
+                moves.push(Move::new(knight, dst));
+            }
+        }
+
+        if move_types.captures {
+            for dst in capture_destinations {
+                moves.push(Move::new(knight, dst));
+            }
         }
     }
 }
 
-fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let bishops = game.board.player_pieces(game.player).bishops;
 
     for bishop in bishops {
-        let destinations = move_tables::bishop_attacks(bishop, ctx.all_pieces) & ctx.enemy_or_empty;
+        let destinations = move_tables::bishop_attacks(bishop, ctx.all_pieces);
+        let move_destinations = destinations & !ctx.all_pieces;
+        let capture_destinations = destinations & ctx.their_pieces;
 
-        for dst in destinations {
-            moves.push(Move::new(bishop, dst));
+        if move_types.quiet {
+            for dst in move_destinations {
+                moves.push(Move::new(bishop, dst));
+            }
+        }
+
+        if move_types.captures {
+            for dst in capture_destinations {
+                moves.push(Move::new(bishop, dst));
+            }
         }
     }
 }
 
-fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let rooks = game.board.player_pieces(game.player).rooks;
 
     for rook in rooks {
-        let destinations = move_tables::rook_attacks(rook, ctx.all_pieces) & ctx.enemy_or_empty;
+        let destinations = move_tables::rook_attacks(rook, ctx.all_pieces);
+        let move_destinations = destinations & !ctx.all_pieces;
+        let capture_destinations = destinations & ctx.their_pieces;
 
-        for dst in destinations {
-            moves.push(Move::new(rook, dst));
+        if move_types.quiet {
+            for dst in move_destinations {
+                moves.push(Move::new(rook, dst));
+            }
+        }
+
+        if move_types.captures {
+            for dst in capture_destinations {
+                moves.push(Move::new(rook, dst));
+            }
         }
     }
 }
 
-fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let queens = game.board.player_pieces(game.player).queens;
 
     for queen in queens {
-        let destinations = move_tables::queen_attacks(queen, ctx.all_pieces) & ctx.enemy_or_empty;
+        let destinations = move_tables::queen_attacks(queen, ctx.all_pieces);
+        let move_destinations = destinations & !ctx.all_pieces;
+        let capture_destinations = destinations & ctx.their_pieces;
 
-        for dst in destinations {
-            moves.push(Move::new(queen, dst));
+        if move_types.quiet {
+            for dst in move_destinations {
+                moves.push(Move::new(queen, dst));
+            }
+        }
+
+        if move_types.captures {
+            for dst in capture_destinations {
+                moves.push(Move::new(queen, dst));
+            }
         }
     }
 }
 
-fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let king = game.board.player_pieces(game.player).king.single();
 
-    let destinations = move_tables::king_attacks(king) & ctx.enemy_or_empty;
+    let destinations = move_tables::king_attacks(king);
+    let move_destinations = destinations & !ctx.all_pieces;
+    let capture_destinations = destinations & ctx.their_pieces;
 
-    for dst in destinations {
-        moves.push(Move::new(king, dst));
+    if move_types.quiet {
+        for dst in move_destinations {
+            moves.push(Move::new(king, dst));
+        }
     }
 
-    let king_start_square = squares::king_start(game.player);
+    if move_types.captures {
+        for dst in capture_destinations {
+            moves.push(Move::new(king, dst));
+        }
+    }
 
-    if king == king_start_square {
-        let castle_rights_for_player = match game.player {
-            Player::White => game.white_castle_rights,
-            Player::Black => game.black_castle_rights,
-        };
+    if move_types.castles {
+        let king_start_square = squares::king_start(game.player);
 
-        if castle_rights_for_player.can_castle() {
-            let their_attacks = generate_all_attacks(&game.board, game.player.other());
+        if king == king_start_square {
+            let castle_rights_for_player = match game.player {
+                Player::White => game.white_castle_rights,
+                Player::Black => game.black_castle_rights,
+            };
 
-            if !their_attacks.contains(king) {
-                if castle_rights_for_player.king_side {
-                    let kingside_required_empty_and_not_attacked_squares =
-                        bitboards::kingside_required_empty_and_not_attacked_squares(game.player);
+            if castle_rights_for_player.can_castle() {
+                let their_attacks = generate_all_attacks(&game.board, game.player.other());
 
-                    let pieces_in_the_way =
-                        kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
-                    let attacked_squares =
-                        kingside_required_empty_and_not_attacked_squares & their_attacks;
-                    let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+                if !their_attacks.contains(king) {
+                    if castle_rights_for_player.king_side {
+                        let kingside_required_empty_and_not_attacked_squares =
+                            bitboards::kingside_required_empty_and_not_attacked_squares(
+                                game.player,
+                            );
 
-                    if squares_preventing_castling.is_empty() {
-                        moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+                        let pieces_in_the_way =
+                            kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
+                        let attacked_squares =
+                            kingside_required_empty_and_not_attacked_squares & their_attacks;
+                        let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+
+                        if squares_preventing_castling.is_empty() {
+                            moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+                        }
                     }
-                }
 
-                if castle_rights_for_player.queen_side {
-                    let queenside_required_empty_squares =
-                        bitboards::queenside_required_empty_squares(game.player);
-                    let queenside_required_not_attacked_squares =
-                        bitboards::queenside_required_not_attacked_squares(game.player);
+                    if castle_rights_for_player.queen_side {
+                        let queenside_required_empty_squares =
+                            bitboards::queenside_required_empty_squares(game.player);
+                        let queenside_required_not_attacked_squares =
+                            bitboards::queenside_required_not_attacked_squares(game.player);
 
-                    let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
-                    let attacked_squares = queenside_required_not_attacked_squares & their_attacks;
-                    let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+                        let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
+                        let attacked_squares =
+                            queenside_required_not_attacked_squares & their_attacks;
+                        let squares_preventing_castling = pieces_in_the_way | attacked_squares;
 
-                    if squares_preventing_castling.is_empty() {
-                        moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
+                        if squares_preventing_castling.is_empty() {
+                            moves
+                                .push(Move::new(king, squares::queenside_castle_dest(game.player)));
+                        }
                     }
                 }
             }

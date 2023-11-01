@@ -1,4 +1,5 @@
 use crate::bitboard::bitboards;
+use crate::movegen::MoveTypes;
 use crate::piece::Piece;
 use crate::square::squares;
 use crate::zobrist::ZobristHash;
@@ -173,7 +174,12 @@ impl Game {
 
     #[must_use]
     pub fn pseudo_legal_moves(&self) -> Vec<Move> {
-        generate_moves(self)
+        generate_moves(self, &MoveTypes::ALL)
+    }
+
+    #[must_use]
+    pub fn pseudo_legal_moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
+        generate_moves(self, move_types)
     }
 
     #[must_use]
