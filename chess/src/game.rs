@@ -29,11 +29,9 @@ impl CastleRightsSide {
     pub const N: usize = 2;
 
     #[must_use]
+    #[inline]
     pub fn array_idx(&self) -> usize {
-        match self {
-            Self::Kingside => 0,
-            Self::Queenside => 1,
-        }
+        *self as usize
     }
 }
 

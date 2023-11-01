@@ -23,20 +23,14 @@ impl PieceKind {
     ];
 
     #[must_use]
+    #[inline]
     pub fn array_idx(&self) -> usize {
-        match self {
-            Self::Pawn => 0,
-            Self::Knight => 1,
-            Self::Bishop => 2,
-            Self::Rook => 3,
-            Self::Queen => 4,
-            Self::King => 5,
-        }
+        *self as usize
     }
 
     #[must_use]
     #[inline]
-    pub fn value_of(p: Self) -> i32 {
+    pub const fn value_of(p: Self) -> i32 {
         match p {
             Self::Pawn => 100,
             Self::Knight | Self::Bishop => 300,
