@@ -3,23 +3,26 @@ _default: list
 list:
 	@just --list
 
+################################### Basics ####################################
+
 build:
 	@cargo build --release
 
 run:
-	@cargo run --bin engine
+	@cargo run --release
+
+################################## Tests ######################################
 
 test:
 	@cargo test
 
 test-perft:
-	@cargo test --release perft -- --include-ignored
+	@cargo test --release --package chess perft -- --include-ignored
 
 test-perft-tt:
-	@cargo test --release perft_tt -- --include-ignored
+	@cargo test --release --package engine perft_tt -- --include-ignored
 
-time-perft n:
-	cargo build --release && time ./target/release/engine perft {{n}}
+############################### Profiling #####################################
 
 instruments-time-perft n:
 	cd engine && cargo instruments -t "time" --release -- perft {{n}}
@@ -27,8 +30,7 @@ instruments-time-perft n:
 instruments-time-search:
 	cd engine && cargo instruments -t "time" --release --time-limit 60000
 
-compare-perft n BIN1 BIN2:
-	hyperfine '{{BIN1}} perft {{n}}' '{{BIN2}} perft {{n}}'
+################################# Misc #######################################
 
 copy-bin name:
 	cargo build --release
