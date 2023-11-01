@@ -11,7 +11,7 @@ use super::Eval;
 
 type PieceValueTableDefinition = [[i32; File::N]; Rank::N];
 type PieceValueTable = [i32; Squares::N];
-type PieceValueTables = [PieceValueTable; PieceKind::N];
+type PieceValueTables = [[PieceValueTable; PieceKind::N]; Player::N];
 
 #[rustfmt::skip]
 mod tables {
@@ -87,8 +87,17 @@ mod tables {
 
     // These need to be initialised when we start up, since they can
     // be derived from the white tables.
-    pub static mut WHITE_TABLES: PieceValueTables = [[0; Squares::N]; PieceKind::N];
-    pub static mut BLACK_TABLES: PieceValueTables = [[0; Squares::N]; PieceKind::N];
+    pub static mut TABLES: PieceValueTables = [[[0; Squares::N]; PieceKind::N]; Player::N];
+    
+    pub fn negate(t: PieceValueTable) -> PieceValueTable {
+        let mut new_table: PieceValueTable = [0; Squares::N];
+
+        for i in 0..Squares::N {
+            new_table[i] = -t[i];
+        }
+
+        new_table
+    }
 
     pub fn flip(t: PieceValueTableDefinition) -> PieceValueTableDefinition {
         let mut new_table: PieceValueTableDefinition = Default::default();
@@ -115,19 +124,19 @@ pub fn init() {
     use tables::*;
 
     unsafe {
-        BLACK_TABLES[PieceKind::Pawn.array_idx()] = flatten(PAWNS);
-        BLACK_TABLES[PieceKind::Knight.array_idx()] = flatten(KNIGHTS);
-        BLACK_TABLES[PieceKind::Bishop.array_idx()] = flatten(BISHOPS);
-        BLACK_TABLES[PieceKind::Rook.array_idx()] = flatten(ROOKS);
-        BLACK_TABLES[PieceKind::Queen.array_idx()] = flatten(QUEENS);
-        BLACK_TABLES[PieceKind::King.array_idx()] = flatten(KINGS);
+        TABLES[Player::Black.array_idx()][PieceKind::Pawn.array_idx()] = negate(flatten(PAWNS));
+        TABLES[Player::Black.array_idx()][PieceKind::Knight.array_idx()] = negate(flatten(KNIGHTS));
+        TABLES[Player::Black.array_idx()][PieceKind::Bishop.array_idx()] = negate(flatten(BISHOPS));
+        TABLES[Player::Black.array_idx()][PieceKind::Rook.array_idx()] = negate(flatten(ROOKS));
+        TABLES[Player::Black.array_idx()][PieceKind::Queen.array_idx()] = negate(flatten(QUEENS));
+        TABLES[Player::Black.array_idx()][PieceKind::King.array_idx()] = negate(flatten(KINGS));
 
-        WHITE_TABLES[PieceKind::Pawn.array_idx()] = flatten(flip(PAWNS));
-        WHITE_TABLES[PieceKind::Knight.array_idx()] = flatten(flip(KNIGHTS));
-        WHITE_TABLES[PieceKind::Bishop.array_idx()] = flatten(flip(BISHOPS));
-        WHITE_TABLES[PieceKind::Rook.array_idx()] = flatten(flip(ROOKS));
-        WHITE_TABLES[PieceKind::Queen.array_idx()] = flatten(flip(QUEENS));
-        WHITE_TABLES[PieceKind::King.array_idx()] = flatten(flip(KINGS));
+        TABLES[Player::White.array_idx()][PieceKind::Pawn.array_idx()] = flatten(flip(PAWNS));
+        TABLES[Player::White.array_idx()][PieceKind::Knight.array_idx()] = flatten(flip(KNIGHTS));
+        TABLES[Player::White.array_idx()][PieceKind::Bishop.array_idx()] = flatten(flip(BISHOPS));
+        TABLES[Player::White.array_idx()][PieceKind::Rook.array_idx()] = flatten(flip(ROOKS));
+        TABLES[Player::White.array_idx()][PieceKind::Queen.array_idx()] = flatten(flip(QUEENS));
+        TABLES[Player::White.array_idx()][PieceKind::King.array_idx()] = flatten(flip(KINGS));
     }
 }
 
@@ -177,10 +186,5 @@ pub fn piece_square_tables_black(game: &Game) -> Eval {
 fn piece_contribution(idx: usize, piece: Piece) -> i32 {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
-    unsafe {
-        match piece.player {
-            Player::White => tables::WHITE_TABLES[piece.kind.array_idx()][idx],
-            Player::Black => -tables::BLACK_TABLES[piece.kind.array_idx()][idx],
-        }
-    }
+    unsafe { tables::TABLES[piece.player.array_idx()][piece.kind.array_idx()][idx] }
 }
