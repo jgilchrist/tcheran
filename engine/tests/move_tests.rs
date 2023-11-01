@@ -1,7 +1,7 @@
 use chess::game::Game;
 use chess::moves::Move;
 use chess::player::Player;
-use chess::squares::all::*;
+use chess::square::squares::all::*;
 use engine::eval::Eval;
 use engine::options::EngineOptions;
 use engine::search::{search, NegamaxEval};

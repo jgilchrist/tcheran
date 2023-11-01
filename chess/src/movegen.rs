@@ -1,23 +1,19 @@
+use crate::bitboard::{bitboards, Bitboard};
+use crate::square::squares;
 use crate::{
-    board::Board,
-    direction::Direction,
-    game::Game,
-    move_tables,
-    moves::Move,
-    piece::PromotionPieceKind,
-    player::Player,
-    squares::{self, Squares},
+    board::Board, direction::Direction, game::Game, move_tables, moves::Move,
+    piece::PromotionPieceKind, player::Player,
 };
 
 struct Ctx {
-    all_pieces: Squares,
-    their_pieces: Squares,
-    their_attacks: Squares,
-    enemy_or_empty: Squares,
+    all_pieces: Bitboard,
+    their_pieces: Bitboard,
+    their_attacks: Bitboard,
+    enemy_or_empty: Bitboard,
 }
 
-pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
-    let mut attacks = Squares::NONE;
+pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
+    let mut attacks = Bitboard::EMPTY;
 
     let our_pieces = board.player_pieces(player);
     let their_pieces = board.player_pieces(player.other()).all();
@@ -82,8 +78,8 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let pawns = game.board.player_pieces(game.player).pawns;
 
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
-    let back_rank = squares::pawn_back_rank(game.player);
-    let will_promote_rank = squares::pawn_back_rank(game.player.other());
+    let back_rank = bitboards::pawn_back_rank(game.player);
+    let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
     for start in pawns {
         let will_promote = !((will_promote_rank & start).is_empty());
@@ -208,7 +204,7 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
         if castle_rights_for_player.can_castle() {
             if castle_rights_for_player.king_side {
                 let kingside_required_empty_and_not_attacked_squares =
-                    squares::kingside_required_empty_and_not_attacked_squares(game.player);
+                    bitboards::kingside_required_empty_and_not_attacked_squares(game.player);
 
                 let pieces_in_the_way =
                     kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
@@ -223,9 +219,9 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
             if castle_rights_for_player.queen_side {
                 let queenside_required_empty_squares =
-                    squares::queenside_required_empty_squares(game.player);
+                    bitboards::queenside_required_empty_squares(game.player);
                 let queenside_required_not_attacked_squares =
-                    squares::queenside_required_not_attacked_squares(game.player);
+                    bitboards::queenside_required_not_attacked_squares(game.player);
 
                 let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
                 let attacked_squares = queenside_required_not_attacked_squares & ctx.their_attacks;
@@ -242,8 +238,8 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::square::squares::all::*;
     use crate::square::Square;
-    use crate::squares::all::*;
 
     #[inline(always)]
     fn should_allow_move(fen: &str, squares: (Square, Square)) {

@@ -9,7 +9,6 @@ use crate::{
     piece::Piece,
     player::Player,
     square::{File, Rank, Square},
-    squares::Squares,
 };
 
 use nom::sequence::terminated;
@@ -88,9 +87,9 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
             all_pieces.extend(line7.0);
             all_pieces.extend(line8.0);
 
-            assert_eq!(all_pieces.len(), Squares::N);
+            assert_eq!(all_pieces.len(), Square::N);
 
-            let pieces_array: [Option<Piece>; Squares::N] = all_pieces.try_into().unwrap();
+            let pieces_array: [Option<Piece>; Square::N] = all_pieces.try_into().unwrap();
 
             pieces_array.try_into().unwrap()
         },

@@ -1,16 +1,16 @@
 use chess::piece::Piece;
 use chess::player::Player;
+use chess::square::Square;
 use chess::{
     game::Game,
     piece::PieceKind,
     square::{File, Rank},
-    squares::Squares,
 };
 
 use super::Eval;
 
 type PieceValueTableDefinition = [[i32; File::N]; Rank::N];
-type PieceValueTable = [i32; Squares::N];
+type PieceValueTable = [i32; Square::N];
 type PieceValueTables = [[PieceValueTable; PieceKind::N]; Player::N];
 
 #[rustfmt::skip]
@@ -87,12 +87,12 @@ mod tables {
 
     // These need to be initialised when we start up, since they can
     // be derived from the white tables.
-    pub static mut TABLES: PieceValueTables = [[[0; Squares::N]; PieceKind::N]; Player::N];
+    pub static mut TABLES: PieceValueTables = [[[0; Square::N]; PieceKind::N]; Player::N];
     
     pub fn negate(t: PieceValueTable) -> PieceValueTable {
-        let mut new_table: PieceValueTable = [0; Squares::N];
+        let mut new_table: PieceValueTable = [0; Square::N];
 
-        for i in 0..Squares::N {
+        for i in 0..Square::N {
             new_table[i] = -t[i];
         }
 
@@ -110,9 +110,9 @@ mod tables {
     }
 
     pub fn flatten(definition: PieceValueTableDefinition) -> PieceValueTable {
-        let mut new_table: PieceValueTable = [0; Squares::N];
+        let mut new_table: PieceValueTable = [0; Square::N];
 
-        for i in 0..Squares::N {
+        for i in 0..Square::N {
             new_table[i] = definition[i / File::N][i % Rank::N];
         }
 
@@ -143,7 +143,7 @@ pub fn init() {
 pub fn piece_square_tables(game: &Game) -> Eval {
     let mut eval = 0;
 
-    for idx in 0..Squares::N {
+    for idx in 0..Square::N {
         let maybe_piece = game.board.pieces[idx];
 
         if let Some(piece) = maybe_piece {

@@ -2,7 +2,6 @@ use crate::game::{CastleRightsSide, Game};
 use crate::piece::{Piece, PieceKind};
 use crate::player::Player;
 use crate::square::Square;
-use crate::squares::Squares;
 use rand::prelude::*;
 
 #[derive(Debug, Clone, Eq, PartialEq)]
@@ -38,15 +37,14 @@ mod components {
     use super::*;
     use crate::piece::PieceKind;
     use crate::player::Player;
-    use crate::squares::Squares;
 
-    pub static mut PIECE_SQUARE: [[[ZobristComponent; PieceKind::N]; Squares::N]; Player::N] =
-        [[[0; PieceKind::N]; Squares::N]; Player::N];
+    pub static mut PIECE_SQUARE: [[[ZobristComponent; PieceKind::N]; Square::N]; Player::N] =
+        [[[0; PieceKind::N]; Square::N]; Player::N];
 
     pub static mut CASTLING: [[ZobristComponent; CastleRightsSide::N]; Player::N] =
         [[0; CastleRightsSide::N]; Player::N];
 
-    pub static mut EN_PASSANT_SQUARE: [ZobristComponent; Squares::N] = [0; Squares::N];
+    pub static mut EN_PASSANT_SQUARE: [ZobristComponent; Square::N] = [0; Square::N];
 
     pub static mut NO_EN_PASSANT_SQUARE: ZobristComponent = 0;
 
@@ -59,7 +57,7 @@ pub fn init() {
     let mut random = thread_rng();
 
     for player in 0..Player::N {
-        for square in 0..Squares::N {
+        for square in 0..Square::N {
             for piece in 0..PieceKind::N {
                 unsafe {
                     components::PIECE_SQUARE[player][square][piece] = random.next_u64();
@@ -74,7 +72,7 @@ pub fn init() {
         }
     }
 
-    for square in 0..Squares::N {
+    for square in 0..Square::N {
         unsafe {
             components::EN_PASSANT_SQUARE[square] = random.next_u64();
         }

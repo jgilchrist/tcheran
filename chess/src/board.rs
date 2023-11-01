@@ -3,32 +3,32 @@ use crate::{
     piece::{Piece, PieceKind},
     player::Player,
     square::Square,
-    squares::{self, Squares},
 };
 
+use crate::bitboard::{bitboards, Bitboard};
 use color_eyre::Result;
 
 #[derive(Clone, Copy)]
 pub struct Board {
     pub white_pieces: PlayerPieces,
     pub black_pieces: PlayerPieces,
-    pub pieces: [Option<Piece>; Squares::N],
+    pub pieces: [Option<Piece>; Square::N],
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
 #[derive(Clone, Copy)]
 pub struct PlayerPieces {
-    pub pawns: Squares,
-    pub knights: Squares,
-    pub bishops: Squares,
-    pub rooks: Squares,
-    pub queens: Squares,
-    pub king: Squares,
+    pub pawns: Bitboard,
+    pub knights: Bitboard,
+    pub bishops: Bitboard,
+    pub rooks: Bitboard,
+    pub queens: Bitboard,
+    pub king: Bitboard,
 }
 
 impl PlayerPieces {
-    pub(crate) fn all(&self) -> Squares {
+    pub(crate) fn all(&self) -> Bitboard {
         self.pawns | self.knights | self.bishops | self.rooks | self.queens | self.king
     }
 }
@@ -38,22 +38,22 @@ impl Board {
     pub fn start() -> Self {
         let mut start = Self {
             white_pieces: PlayerPieces {
-                pawns: squares::INIT_WHITE_PAWNS,
-                knights: squares::INIT_WHITE_KNIGHTS,
-                bishops: squares::INIT_WHITE_BISHOPS,
-                rooks: squares::INIT_WHITE_ROOKS,
-                queens: Squares::from_square(squares::INIT_WHITE_QUEEN),
-                king: Squares::from_square(squares::INIT_WHITE_KING),
+                pawns: bitboards::INIT_WHITE_PAWNS,
+                knights: bitboards::INIT_WHITE_KNIGHTS,
+                bishops: bitboards::INIT_WHITE_BISHOPS,
+                rooks: bitboards::INIT_WHITE_ROOKS,
+                queens: bitboards::INIT_WHITE_QUEEN,
+                king: bitboards::INIT_WHITE_KING,
             },
             black_pieces: PlayerPieces {
-                pawns: squares::INIT_BLACK_PAWNS,
-                knights: squares::INIT_BLACK_KNIGHTS,
-                bishops: squares::INIT_BLACK_BISHOPS,
-                rooks: squares::INIT_BLACK_ROOKS,
-                queens: Squares::from_square(squares::INIT_BLACK_QUEEN),
-                king: Squares::from_square(squares::INIT_BLACK_KING),
+                pawns: bitboards::INIT_BLACK_PAWNS,
+                knights: bitboards::INIT_BLACK_KNIGHTS,
+                bishops: bitboards::INIT_BLACK_BISHOPS,
+                rooks: bitboards::INIT_BLACK_ROOKS,
+                queens: bitboards::INIT_BLACK_QUEEN,
+                king: bitboards::INIT_BLACK_KING,
             },
-            pieces: [None; Squares::N],
+            pieces: [None; Square::N],
         };
 
         // TODO: Use a constant
@@ -118,7 +118,7 @@ impl Board {
 
     #[must_use]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
-        // We know array_idx can only return up to Squares::N - 1
+        // We know array_idx can only return up to Square::N - 1
         unsafe { *self.pieces.get_unchecked(square.array_idx()) }
     }
 
@@ -131,7 +131,7 @@ impl Board {
     }
 
     #[inline]
-    fn squares_for_piece(&mut self, piece: Piece) -> &mut Squares {
+    fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
         let player_pieces = self.player_pieces_for(piece.player);
 
         match piece.kind {
@@ -218,23 +218,23 @@ impl std::fmt::Debug for Board {
     }
 }
 
-impl TryFrom<[Option<Piece>; Squares::N]> for Board {
+impl TryFrom<[Option<Piece>; Square::N]> for Board {
     type Error = color_eyre::eyre::Error;
 
-    fn try_from(pieces: [Option<Piece>; Squares::N]) -> Result<Self> {
-        let mut white_pawns = Squares::NONE;
-        let mut white_knights = Squares::NONE;
-        let mut white_bishops = Squares::NONE;
-        let mut white_rooks = Squares::NONE;
-        let mut white_queens = Squares::NONE;
-        let mut white_king = Squares::NONE;
+    fn try_from(pieces: [Option<Piece>; Square::N]) -> Result<Self> {
+        let mut white_pawns = Bitboard::EMPTY;
+        let mut white_knights = Bitboard::EMPTY;
+        let mut white_bishops = Bitboard::EMPTY;
+        let mut white_rooks = Bitboard::EMPTY;
+        let mut white_queens = Bitboard::EMPTY;
+        let mut white_king = Bitboard::EMPTY;
 
-        let mut black_pawns = Squares::NONE;
-        let mut black_knights = Squares::NONE;
-        let mut black_bishops = Squares::NONE;
-        let mut black_rooks = Squares::NONE;
-        let mut black_queens = Squares::NONE;
-        let mut black_king = Squares::NONE;
+        let mut black_pawns = Bitboard::EMPTY;
+        let mut black_knights = Bitboard::EMPTY;
+        let mut black_bishops = Bitboard::EMPTY;
+        let mut black_rooks = Bitboard::EMPTY;
+        let mut black_queens = Bitboard::EMPTY;
+        let mut black_king = Bitboard::EMPTY;
 
         for (i, maybe_piece) in pieces.iter().enumerate() {
             if let Some(p) = maybe_piece {

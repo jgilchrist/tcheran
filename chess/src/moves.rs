@@ -63,7 +63,8 @@ impl std::fmt::Display for Move {
 
 pub mod known {
     use super::Move;
-    use crate::{player::Player, squares};
+    use crate::player::Player;
+    use crate::square::squares;
 
     #[must_use]
     pub const fn kingside_castle_move(player: Player) -> &'static Move {

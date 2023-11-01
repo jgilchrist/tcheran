@@ -1,19 +1,19 @@
+use crate::bitboard::Bitboard;
 use crate::{
     direction::Direction,
     square::{File, Rank, Square},
-    squares::Squares,
 };
 
-pub fn generate_bishop_occupancies(square: Square) -> Squares {
+pub fn generate_bishop_occupancies(square: Square) -> Bitboard {
     generate_sliding_occupancies(square, Direction::DIAGONAL)
 }
 
-pub fn generate_rook_occupancies(square: Square) -> Squares {
+pub fn generate_rook_occupancies(square: Square) -> Bitboard {
     generate_sliding_occupancies(square, Direction::CARDINAL)
 }
 
-pub fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Squares {
-    let mut squares = Squares::NONE;
+pub fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Bitboard {
+    let mut squares = Bitboard::EMPTY;
 
     for direction in directions {
         let mut current_square = square;

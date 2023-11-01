@@ -1,16 +1,10 @@
+use crate::bitboard::bitboards;
 use crate::piece::Piece;
+use crate::square::squares;
 use crate::zobrist::ZobristHash;
 use crate::{
-    board::Board,
-    direction::Direction,
-    fen,
-    movegen::generate_moves,
-    moves::Move,
-    piece::PieceKind,
-    player::Player,
-    square::Square,
-    squares::{self, Squares},
-    zobrist,
+    board::Board, direction::Direction, fen, movegen::generate_moves, moves::Move,
+    piece::PieceKind, player::Player, square::Square, zobrist,
 };
 use color_eyre::Result;
 
@@ -298,11 +292,10 @@ impl Game {
         }
 
         let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
-            && squares::pawn_back_rank(player).contains(from)
-            && squares::pawn_double_push_rank(player).contains(to)
+            && bitboards::pawn_back_rank(player).contains(from)
+            && bitboards::pawn_double_push_rank(player).contains(to)
         {
-            let to_square = Squares::from_square(to);
-            let en_passant_attacker_squares = to_square.west() | to_square.east();
+            let en_passant_attacker_squares = to.0.west() | to.0.east();
             let enemy_pawns = self.board.player_pieces(other_player).pawns;
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 

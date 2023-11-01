@@ -1,7 +1,8 @@
-use crate::{direction::Direction, player::Player, square::Square, squares::Squares};
+use crate::bitboard::Bitboard;
+use crate::{direction::Direction, player::Player, square::Square};
 
-pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
-    let mut attacks = Squares::NONE;
+pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
+    let mut attacks = Bitboard::EMPTY;
 
     let pawn_move_direction = match player {
         Player::White => Direction::North,
@@ -26,8 +27,8 @@ pub fn generate_pawn_attacks(square: Square, player: Player) -> Squares {
     attacks
 }
 
-pub fn generate_knight_attacks(square: Square) -> Squares {
-    let mut attacks = Squares::NONE;
+pub fn generate_knight_attacks(square: Square) -> Bitboard {
+    let mut attacks = Bitboard::EMPTY;
 
     // Going clockwise, starting at 12
     if let Some(nne) = square.north().and_then(|s| s.north_east()) {
@@ -65,16 +66,20 @@ pub fn generate_knight_attacks(square: Square) -> Squares {
     attacks
 }
 
-pub fn generate_bishop_attacks(square: Square, pieces: Squares) -> Squares {
+pub fn generate_bishop_attacks(square: Square, pieces: Bitboard) -> Bitboard {
     generate_sliding_attacks(square, Direction::DIAGONAL, pieces)
 }
 
-pub fn generate_rook_attacks(square: Square, pieces: Squares) -> Squares {
+pub fn generate_rook_attacks(square: Square, pieces: Bitboard) -> Bitboard {
     generate_sliding_attacks(square, Direction::CARDINAL, pieces)
 }
 
-fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Squares) -> Squares {
-    let mut attacks = Squares::NONE;
+fn generate_sliding_attacks(
+    square: Square,
+    directions: &[Direction],
+    pieces: Bitboard,
+) -> Bitboard {
+    let mut attacks = Bitboard::EMPTY;
 
     for direction in directions {
         let mut current_square = square;
@@ -94,8 +99,8 @@ fn generate_sliding_attacks(square: Square, directions: &[Direction], pieces: Sq
     attacks
 }
 
-pub fn generate_king_attacks(square: Square) -> Squares {
-    let mut attacks = Squares::NONE;
+pub fn generate_king_attacks(square: Square) -> Bitboard {
+    let mut attacks = Bitboard::EMPTY;
 
     for direction in Direction::ALL {
         if let Some(dst) = square.in_direction(*direction) {
