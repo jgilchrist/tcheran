@@ -15,6 +15,9 @@ test:
 test-perft:
 	@cargo test --release perft -- --include-ignored
 
+test-perft-tt:
+	@cargo test --release perft_tt -- --include-ignored
+
 time-perft n:
 	cargo build --release && time ./target/release/engine perft {{n}}
 
