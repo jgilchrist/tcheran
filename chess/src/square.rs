@@ -43,18 +43,10 @@ impl File {
         }
     }
 
+    #[inline(always)]
     #[must_use]
     pub const fn idx(&self) -> u8 {
-        match self {
-            Self::A => 0,
-            Self::B => 1,
-            Self::C => 2,
-            Self::D => 3,
-            Self::E => 4,
-            Self::F => 5,
-            Self::G => 6,
-            Self::H => 7,
-        }
+        *self as u8
     }
 
     #[must_use]
@@ -111,6 +103,7 @@ impl Rank {
     pub const N: usize = 8;
 
     #[must_use]
+    #[inline]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
@@ -128,17 +121,9 @@ impl Rank {
     }
 
     #[must_use]
+    #[inline]
     pub const fn idx(&self) -> u8 {
-        match self {
-            Self::R1 => 0,
-            Self::R2 => 1,
-            Self::R3 => 2,
-            Self::R4 => 3,
-            Self::R5 => 4,
-            Self::R6 => 5,
-            Self::R7 => 6,
-            Self::R8 => 7,
-        }
+        *self as u8
     }
 
     #[must_use]
@@ -207,11 +192,13 @@ impl Square {
         Self::from_array_index(idx)
     }
 
+    #[inline(always)]
     #[must_use]
     pub const fn idx(&self) -> u8 {
         self.0.trailing_zeros()
     }
 
+    #[inline(always)]
     #[must_use]
     pub const fn array_idx(&self) -> usize {
         self.idx() as usize
