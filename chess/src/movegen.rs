@@ -53,8 +53,7 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Squares {
 pub fn generate_moves(game: &Game) -> Vec<Move> {
     let ctx = get_ctx(game);
 
-    // PERF: Allocate this Vec with an initial capacity
-    let mut moves: Vec<Move> = vec![];
+    let mut moves: Vec<Move> = Vec::with_capacity(64);
     generate_pawn_moves(&mut moves, game, &ctx);
     generate_knight_moves(&mut moves, game, &ctx);
     generate_bishop_moves(&mut moves, game, &ctx);
