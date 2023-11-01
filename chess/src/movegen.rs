@@ -81,20 +81,9 @@ fn get_ctx(game: &Game) -> Ctx {
 fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let pawns = game.board.player_pieces(game.player).pawns;
 
-    let pawn_move_direction = match game.player {
-        Player::White => Direction::North,
-        Player::Black => Direction::South,
-    };
-
-    let back_rank = match game.player {
-        Player::White => squares::RANK_2,
-        Player::Black => squares::RANK_7,
-    };
-
-    let will_promote_rank = match game.player {
-        Player::White => squares::RANK_7,
-        Player::Black => squares::RANK_2,
-    };
+    let pawn_move_direction = Direction::pawn_move_direction(game.player);
+    let back_rank = squares::pawn_back_rank(game.player);
+    let will_promote_rank = squares::pawn_back_rank(game.player.other());
 
     for start in pawns {
         let will_promote = !((will_promote_rank & start).is_empty());
