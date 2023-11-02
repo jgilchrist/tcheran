@@ -24,6 +24,12 @@ pub fn negamax(
     let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
 
+    // Keep track of whether we're doing a full search. If we raised alpha at this node, we've found
+    // a new PV (or re-confirmed the PV we found at a previous search depth) - so for the remainder
+    // of moves we search, we just need to check that they're worse. We can do this with more restrictive
+    // alpha & beta bounds, and thus search less of the tree.
+    let mut full_pv_search = true;
+
     // Check extension: If we're about to finish searching, but we are in check, we
     // should keep going.
     if depth == 0 {
@@ -88,17 +94,52 @@ pub fn negamax(
     for mv in &moves {
         game.make_move(mv);
 
-        let move_score = -negamax(
-            game,
-            -beta,
-            -alpha,
-            depth - 1,
-            plies + 1,
-            tt,
-            time_control,
-            state,
-            control,
-        )?;
+        let move_score = if full_pv_search {
+            -negamax(
+                game,
+                -beta,
+                -alpha,
+                depth - 1,
+                plies + 1,
+                tt,
+                time_control,
+                state,
+                control,
+            )?
+        } else {
+            // We already found a good move (i.e. we raised alpha).
+            // Now, we just need to prove that the other moves are worse.
+            // We search them with a reduced window to prove that they are at least worse.
+            let pvs_score = -negamax(
+                game,
+                -alpha - Eval(1),
+                -alpha,
+                depth - 1,
+                plies + 1,
+                tt,
+                time_control,
+                state,
+                control,
+            )?;
+
+            // Turns out the move we just searched could be better than our current PV, so we re-search
+            // with the normal alpha/beta bounds.
+            if pvs_score > alpha && pvs_score < beta {
+                -negamax(
+                    game,
+                    -beta,
+                    -alpha,
+                    depth - 1,
+                    plies + 1,
+                    tt,
+                    time_control,
+                    state,
+                    control,
+                )?
+            } else {
+                pvs_score
+            }
+        };
 
         game.undo_move();
 
@@ -125,6 +166,10 @@ pub fn negamax(
         if move_score > alpha {
             alpha = move_score;
             tt_node_bound = NodeBound::Exact;
+
+            // We've found a PV move, so we can try and prove that the rest of the moves in this
+            // position are worse.
+            full_pv_search = false;
         }
     }
 
