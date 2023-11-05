@@ -9,13 +9,13 @@
     clippy::missing_const_for_fn
 )]
 
-use anyhow::Result;
+use color_eyre::Result;
 use engine::util::log::log;
 
 mod cli {
-    use anyhow::Result;
     use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
+    use color_eyre::Result;
     use engine::{
         strategy::KnownStrategy,
         uci::{self},
@@ -75,6 +75,8 @@ mod cli {
 }
 
 fn main() -> Result<()> {
+    color_eyre::install()?;
+
     std::panic::set_hook(Box::new(|info| {
         println!("{info}");
         log(format!("{info:?}"));

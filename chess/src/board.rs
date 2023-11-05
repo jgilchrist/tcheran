@@ -6,7 +6,7 @@ use crate::{
     squares::{self, Squares},
 };
 
-use anyhow::Result;
+use color_eyre::Result;
 
 #[derive(Clone, Copy)]
 pub struct Board {
@@ -219,7 +219,7 @@ impl std::fmt::Debug for Board {
 }
 
 impl TryFrom<[Option<Piece>; Squares::N]> for Board {
-    type Error = anyhow::Error;
+    type Error = color_eyre::eyre::Error;
 
     fn try_from(pieces: [Option<Piece>; Squares::N]) -> Result<Self> {
         let mut white_pawns = Squares::NONE;

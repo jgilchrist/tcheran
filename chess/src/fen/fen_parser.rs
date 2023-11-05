@@ -1,6 +1,7 @@
+use color_eyre::eyre::bail;
 use std::collections::HashSet;
 
-use anyhow::{bail, Result};
+use color_eyre::Result;
 
 use crate::{
     board::Board,

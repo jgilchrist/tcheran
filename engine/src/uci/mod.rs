@@ -1,11 +1,12 @@
+use color_eyre::eyre::Context;
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use anyhow::Result;
 use chess::perft;
 use chess::util::nodes_per_second;
 use chess::{game::Game, moves::Move};
+use color_eyre::Result;
 
 use crate::options::EngineOptions;
 use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
@@ -145,7 +146,7 @@ impl Uci {
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
                     commands::Position::StartPos => Game::new(),
-                    commands::Position::Fen(fen) => Game::from_fen(fen).unwrap(),
+                    commands::Position::Fen(fen) => Game::from_fen(fen)?,
                 };
 
                 for mv in moves {
@@ -288,7 +289,10 @@ impl Uci {
 
             match command {
                 Ok(ref c) => {
-                    let execute_result = self.execute(c)?;
+                    let execute_result = self
+                        .execute(c)
+                        .wrap_err_with(|| format!("Failed to run UCI command: {line}"))?;
+
                     if execute_result == ExecuteResult::Exit {
                         break;
                     }

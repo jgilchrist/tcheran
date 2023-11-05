@@ -1,5 +1,5 @@
 use crate::options::EngineOptions;
-use anyhow::Result;
+use color_eyre::Result;
 
 #[derive(Debug)]
 #[allow(unused)]

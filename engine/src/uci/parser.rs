@@ -1,10 +1,10 @@
 use crate::uci::commands::{DebugCommand, Position};
-use anyhow::{bail, Result};
 use chess::{
     moves::Move,
     piece::PromotionPieceKind,
     square::{File, Rank, Square},
 };
+use color_eyre::{eyre::bail, Result};
 use nom::bytes::complete::take_until;
 use nom::combinator::rest;
 use nom::{

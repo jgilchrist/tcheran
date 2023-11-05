@@ -12,7 +12,7 @@ use crate::{
     squares::{self, Squares},
     zobrist,
 };
-use anyhow::Result;
+use color_eyre::Result;
 
 #[derive(Debug)]
 pub enum MoveError {
