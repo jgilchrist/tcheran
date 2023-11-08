@@ -2,14 +2,11 @@ use crate::{bitboard::Bitboard, player::Player, square::Square};
 
 use super::attacks;
 
-static mut WHITE_ATTACKS_TABLE: [Bitboard; Square::N] = [Bitboard::EMPTY; Square::N];
-static mut BLACK_ATTACKS_TABLE: [Bitboard; Square::N] = [Bitboard::EMPTY; Square::N];
+static mut ATTACKS_TABLE: [[Bitboard; Square::N]; Player::N] =
+    [[Bitboard::EMPTY; Square::N]; Player::N];
 
 pub fn pawn_attacks(s: Square, player: Player) -> Bitboard {
-    match player {
-        Player::White => unsafe { WHITE_ATTACKS_TABLE[s.idx() as usize] },
-        Player::Black => unsafe { BLACK_ATTACKS_TABLE[s.idx() as usize] },
-    }
+    unsafe { ATTACKS_TABLE[player.array_idx()][s.idx() as usize] }
 }
 
 pub fn init() {
@@ -18,8 +15,8 @@ pub fn init() {
         let black_attacks = attacks::generate_pawn_attacks(s, Player::Black);
 
         unsafe {
-            WHITE_ATTACKS_TABLE[s.idx() as usize] = white_attacks;
-            BLACK_ATTACKS_TABLE[s.idx() as usize] = black_attacks;
+            ATTACKS_TABLE[Player::White.array_idx()][s.idx() as usize] = white_attacks;
+            ATTACKS_TABLE[Player::Black.array_idx()][s.idx() as usize] = black_attacks;
         }
     }
 }
