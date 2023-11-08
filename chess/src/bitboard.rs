@@ -14,6 +14,7 @@ impl Bitboard {
     pub const EMPTY: Self = Self(0);
     pub const FULL: Self = Self(u64::MAX);
 
+    #[inline(always)]
     #[must_use]
     pub const fn new(bits: u64) -> Self {
         Self(bits)
@@ -62,6 +63,7 @@ impl Bitboard {
         Self((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
+    #[inline(always)]
     #[must_use]
     pub fn pop_lsb_inplace(&mut self) -> Self {
         let lsb = self.lsb();
@@ -80,12 +82,14 @@ impl Bitboard {
     }
 
     #[must_use]
+    #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
     pub const fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
     #[must_use]
+    #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
     pub const fn trailing_zeros(&self) -> u8 {
         self.0.trailing_zeros() as u8
