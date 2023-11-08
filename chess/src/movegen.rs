@@ -141,20 +141,44 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
         .in_direction(!pawn_move_direction)
         .in_direction(Direction::East);
 
-    if move_types.quiet {
-        // Push: All pawns with an empty square in front of them can move forward
-        for pawn in non_promoting_pawns & !pawn_move_blockers {
-            let forward_one = pawn.in_direction(pawn_move_direction);
-            moves.push(Move::new(pawn, forward_one));
+    if move_types.captures {
+        // Promotion capture: Pawns on the enemy's start rank will promote when capturing
+        for pawn in promoting_pawns & capturable_pieces_left {
+            let capture_left_square = pawn
+                .in_direction(pawn_move_direction)
+                .in_direction(Direction::East);
+
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(
+                    pawn,
+                    capture_left_square,
+                    *promotion,
+                ));
+            }
         }
 
-        // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
-        for pawn in non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
-            let forward_two = pawn
+        for pawn in promoting_pawns & capturable_pieces_right {
+            let capture_right_square = pawn
                 .in_direction(pawn_move_direction)
-                .in_direction(pawn_move_direction);
+                .in_direction(Direction::West);
 
-            moves.push(Move::new(pawn, forward_two));
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(
+                    pawn,
+                    capture_right_square,
+                    *promotion,
+                ));
+            }
+        }
+    }
+
+    if move_types.promotions {
+        // Promotion push: Pawns on the enemy's start rank will promote when pushing
+        for pawn in promoting_pawns & !pawn_move_blockers {
+            let forward_one = pawn.in_direction(pawn_move_direction);
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+            }
         }
     }
 
@@ -189,44 +213,20 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
         }
     }
 
-    if move_types.promotions {
-        // Promotion push: Pawns on the enemy's start rank will promote when pushing
-        for pawn in promoting_pawns & !pawn_move_blockers {
+    if move_types.quiet {
+        // Push: All pawns with an empty square in front of them can move forward
+        for pawn in non_promoting_pawns & !pawn_move_blockers {
             let forward_one = pawn.in_direction(pawn_move_direction);
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
-            }
-        }
-    }
-
-    if move_types.captures {
-        // Promotion capture: Pawns on the enemy's start rank will promote when capturing
-        for pawn in promoting_pawns & capturable_pieces_left {
-            let capture_left_square = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::East);
-
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(
-                    pawn,
-                    capture_left_square,
-                    *promotion,
-                ));
-            }
+            moves.push(Move::new(pawn, forward_one));
         }
 
-        for pawn in promoting_pawns & capturable_pieces_right {
-            let capture_right_square = pawn
+        // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
+        for pawn in non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
+            let forward_two = pawn
                 .in_direction(pawn_move_direction)
-                .in_direction(Direction::West);
+                .in_direction(pawn_move_direction);
 
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(
-                    pawn,
-                    capture_right_square,
-                    *promotion,
-                ));
-            }
+            moves.push(Move::new(pawn, forward_two));
         }
     }
 }
@@ -239,14 +239,14 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTy
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
-        if move_types.quiet {
-            for dst in move_destinations {
+        if move_types.captures {
+            for dst in capture_destinations {
                 moves.push(Move::new(knight, dst));
             }
         }
 
-        if move_types.captures {
-            for dst in capture_destinations {
+        if move_types.quiet {
+            for dst in move_destinations {
                 moves.push(Move::new(knight, dst));
             }
         }
@@ -261,14 +261,14 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTy
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
-        if move_types.quiet {
-            for dst in move_destinations {
+        if move_types.captures {
+            for dst in capture_destinations {
                 moves.push(Move::new(bishop, dst));
             }
         }
 
-        if move_types.captures {
-            for dst in capture_destinations {
+        if move_types.quiet {
+            for dst in move_destinations {
                 moves.push(Move::new(bishop, dst));
             }
         }
@@ -283,14 +283,14 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
-        if move_types.quiet {
-            for dst in move_destinations {
+        if move_types.captures {
+            for dst in capture_destinations {
                 moves.push(Move::new(rook, dst));
             }
         }
 
-        if move_types.captures {
-            for dst in capture_destinations {
+        if move_types.quiet {
+            for dst in move_destinations {
                 moves.push(Move::new(rook, dst));
             }
         }
@@ -305,14 +305,14 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTyp
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
-        if move_types.quiet {
-            for dst in move_destinations {
+        if move_types.captures {
+            for dst in capture_destinations {
                 moves.push(Move::new(queen, dst));
             }
         }
 
-        if move_types.captures {
-            for dst in capture_destinations {
+        if move_types.quiet {
+            for dst in move_destinations {
                 moves.push(Move::new(queen, dst));
             }
         }
@@ -325,18 +325,6 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
     let destinations = move_tables::king_attacks(king);
     let move_destinations = destinations & !ctx.all_pieces;
     let capture_destinations = destinations & ctx.their_pieces;
-
-    if move_types.quiet {
-        for dst in move_destinations {
-            moves.push(Move::new(king, dst));
-        }
-    }
-
-    if move_types.captures {
-        for dst in capture_destinations {
-            moves.push(Move::new(king, dst));
-        }
-    }
 
     if move_types.castles {
         let king_start_square = squares::king_start(game.player);
@@ -386,6 +374,18 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
                     }
                 }
             }
+        }
+    }
+
+    if move_types.captures {
+        for dst in capture_destinations {
+            moves.push(Move::new(king, dst));
+        }
+    }
+
+    if move_types.quiet {
+        for dst in move_destinations {
+            moves.push(Move::new(king, dst));
         }
     }
 }
