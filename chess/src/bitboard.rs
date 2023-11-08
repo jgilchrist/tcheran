@@ -261,6 +261,14 @@ impl std::ops::BitOrAssign<Square> for Bitboard {
     }
 }
 
+impl std::ops::Not for Bitboard {
+    type Output = Self;
+
+    fn not(self) -> Self::Output {
+        self.invert()
+    }
+}
+
 impl std::fmt::Debug for Bitboard {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(
