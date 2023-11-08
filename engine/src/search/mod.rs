@@ -42,6 +42,7 @@ impl SearchState {
         self.start_time = Some(Instant::now());
     }
 
+    #[must_use]
     pub fn elapsed_time(&self) -> Duration {
         let Some(t) = self.start_time else {
             panic!("Tried to fetch search's elapsed time without a start time.")

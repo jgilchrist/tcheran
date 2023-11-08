@@ -25,16 +25,19 @@ impl NegamaxEval {
 
     const MATE: i32 = 32000;
 
+    #[must_use]
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i32::from(ply))
     }
 
+    #[must_use]
     pub fn mated_in(ply: u8) -> Self {
         Self(-Self::MATE + i32::from(ply))
     }
 
     // TODO: We say 'any rating within 100 of 32000 is still mate in x moves'
     // Can we make this less arbitrary?
+    #[must_use]
     pub fn is_mate_in_moves(self) -> Option<i32> {
         if self.0 > 32000 - 100 {
             return Some((Self::MATE - self.0 + 1) / 2);
@@ -51,6 +54,7 @@ impl NegamaxEval {
     // 'maximise' its score. However, this means when we report the eval, it will be reversed
     // if we're playing as black since we need the scores to be positive if black is winning.
     // When reporting this back, we'll want to normalise back to + = white winning.
+    #[must_use]
     pub fn to_eval(self, player: Player) -> Eval {
         match player {
             Player::White => Eval(self.0),
@@ -58,6 +62,7 @@ impl NegamaxEval {
         }
     }
 
+    #[must_use]
     pub fn from_eval(eval: Eval, player: Player) -> Self {
         match player {
             Player::White => Self(eval.0),

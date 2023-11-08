@@ -10,6 +10,7 @@ struct Ctx {
     their_pieces: Bitboard,
 }
 
+#[must_use]
 pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
 
@@ -44,6 +45,7 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     attacks
 }
 
+#[must_use]
 pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> Bitboard {
     let mut attackers = Bitboard::EMPTY;
     let our_pieces = board.player_pieces(player);
@@ -66,6 +68,7 @@ pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> B
     attackers
 }
 
+#[allow(clippy::struct_excessive_bools)]
 pub struct MoveTypes {
     pub quiet: bool,
     pub captures: bool,
@@ -90,6 +93,7 @@ impl MoveTypes {
     };
 }
 
+#[must_use]
 pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
     let ctx = get_ctx(game);
 

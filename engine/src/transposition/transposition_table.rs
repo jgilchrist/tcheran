@@ -48,13 +48,11 @@ impl TTOverwriteable for SearchTranspositionTableData {
 
 pub type SearchTranspositionTable = TranspositionTable<SearchTranspositionTableData>;
 
-const TRANSPOSITION_TABLE_SIZE_POW_2: u32 = 8;
-
 impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     // TODO: Allow specifying the size
-    pub fn new() -> Self {
+    pub fn new(size_pow_2: u32) -> Self {
         let size_of_entry = size_of::<T>();
-        let total_size_in_bytes = 2usize.pow(TRANSPOSITION_TABLE_SIZE_POW_2) * 1024 * 1024;
+        let total_size_in_bytes = 2usize.pow(size_pow_2) * 1024 * 1024;
         let number_of_entries = total_size_in_bytes / size_of_entry;
 
         Self {
@@ -72,6 +70,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     #[allow(clippy::cast_precision_loss)] // This is just an approximation, so a loss of precision is fine
     #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::cast_sign_loss)]
+    #[must_use]
     pub fn occupancy(&self) -> usize {
         let decimal = self.occupied as f32 / self.data.len() as f32;
         let permille = decimal * 1000.0;
@@ -104,6 +103,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         }
     }
 
+    #[must_use]
     pub fn get(&self, key: &ZobristHash) -> Option<&T> {
         let idx = self.get_entry_idx(key);
 

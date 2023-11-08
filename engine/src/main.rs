@@ -65,7 +65,11 @@ mod cli {
                 uci::uci(strategy)
             }
             Commands::Perft { depth, fen } => {
-                let mut game = fen.map_or_else(Game::default, |fen| Game::from_fen(&fen).unwrap());
+                let mut game = match fen {
+                    Some(fen) => Game::from_fen(&fen)?,
+                    None => Game::default(),
+                };
+
                 let result = perft::perft(depth, &mut game);
                 println!("{result}");
                 Ok(())

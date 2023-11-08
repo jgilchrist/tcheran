@@ -62,7 +62,7 @@ fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize 
 fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
     engine::init();
 
-    let mut tt = PerftTranspositionTable::new();
+    let mut tt = PerftTranspositionTable::new(8);
 
     let mut game = Game::from_fen(fen).unwrap();
     let actual_positions = perft(depth, &mut game, &mut tt);

@@ -12,7 +12,7 @@ fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, Eval) {
     engine::init();
     let mut game = Game::from_fen(fen).unwrap();
 
-    let mut tt = SearchTranspositionTable::new();
+    let mut tt = SearchTranspositionTable::new(8);
 
     let (best_move, eval) = search(
         &mut game,

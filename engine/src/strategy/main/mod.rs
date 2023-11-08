@@ -13,7 +13,7 @@ pub struct MainStrategy {
 impl Default for MainStrategy {
     fn default() -> Self {
         Self {
-            tt: SearchTranspositionTable::new(),
+            tt: SearchTranspositionTable::new(8),
         }
     }
 }
