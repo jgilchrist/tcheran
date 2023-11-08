@@ -100,57 +100,100 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let back_rank = bitboards::pawn_back_rank(game.player);
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
-    for start in pawns {
-        let will_promote = !((will_promote_rank & start).is_empty());
+    let non_promoting_pawns = pawns & !will_promote_rank;
+    let promoting_pawns = pawns & will_promote_rank;
 
-        // Move forward by 1
-        let forward_one = start.in_direction_maybe(pawn_move_direction);
+    let pawn_move_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
+    let double_push_blockers = pawn_move_blockers.in_direction(!pawn_move_direction);
 
-        if let Some(dst) = forward_one {
-            if !ctx.all_pieces.contains(dst) {
-                if will_promote {
-                    for promotion in PromotionPieceKind::ALL {
-                        moves.push(Move::new_with_promotion(start, dst, *promotion));
-                    }
-                } else {
-                    moves.push(Move::new(start, dst));
-                }
-            }
-        }
+    let capturable_pieces_left = ctx
+        .their_pieces
+        .in_direction(!pawn_move_direction)
+        .in_direction(Direction::West);
 
-        // Capture
-        let attacks = move_tables::pawn_attacks(start, game.player);
+    let capturable_pieces_right = ctx
+        .their_pieces
+        .in_direction(!pawn_move_direction)
+        .in_direction(Direction::East);
 
-        for dst in attacks {
-            if ctx.their_pieces.contains(dst) || game.en_passant_target == Some(dst) {
-                if will_promote {
-                    for promotion in PromotionPieceKind::ALL {
-                        moves.push(Move::new_with_promotion(start, dst, *promotion));
-                    }
-                } else {
-                    moves.push(Move::new(start, dst));
-                }
-            }
+    // Push: All pawns with an empty square in front of them can move forward
+    for pawn in non_promoting_pawns & !pawn_move_blockers {
+        let forward_one = pawn.in_direction(pawn_move_direction);
+        moves.push(Move::new(pawn, forward_one));
+    }
+
+    // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
+    for pawn in non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
+        let forward_two = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(pawn_move_direction);
+
+        moves.push(Move::new(pawn, forward_two));
+    }
+
+    // Non-promoting captures: All pawns can capture diagonally
+    for pawn in non_promoting_pawns & capturable_pieces_left {
+        let capture_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::East);
+
+        moves.push(Move::new(pawn, capture_square));
+    }
+
+    for pawn in non_promoting_pawns & capturable_pieces_right {
+        let capture_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::West);
+
+        moves.push(Move::new(pawn, capture_square));
+    }
+
+    // En-passant capture: Pawns either side of the en-passant pawn can capture
+    if let Some(en_passant_target) = game.en_passant_target {
+        let capture_squares = move_tables::pawn_attacks(en_passant_target, game.player.other());
+
+        for potential_en_passant_capture_start in capture_squares & non_promoting_pawns {
+            moves.push(Move::new(
+                potential_en_passant_capture_start,
+                en_passant_target,
+            ));
         }
     }
 
-    for start in pawns & back_rank {
-        // Move forward by 2
-        let forward_one = start.in_direction_maybe(pawn_move_direction);
+    // Promotion push: Pawns on the enemy's start rank will promote when pushing
+    for pawn in promoting_pawns & !pawn_move_blockers {
+        let forward_one = pawn.in_direction(pawn_move_direction);
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+        }
+    }
 
-        if let Some(forward_one) = forward_one {
-            if ctx.all_pieces.contains(forward_one) {
-                // Cannot jump over pieces
-                continue;
-            }
+    // Promotion capture: Pawns on the enemy's start rank will promote when capturing
+    for pawn in promoting_pawns & capturable_pieces_left {
+        let capture_left_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::East);
 
-            let forward_two = forward_one.in_direction_maybe(pawn_move_direction);
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(
+                pawn,
+                capture_left_square,
+                *promotion,
+            ));
+        }
+    }
 
-            if let Some(forward_two) = forward_two {
-                if !ctx.all_pieces.contains(forward_two) {
-                    moves.push(Move::new(start, forward_two));
-                }
-            }
+    for pawn in promoting_pawns & capturable_pieces_right {
+        let capture_right_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::West);
+
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(
+                pawn,
+                capture_right_square,
+                *promotion,
+            ));
         }
     }
 }
