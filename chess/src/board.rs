@@ -163,11 +163,9 @@ impl Board {
 
     #[must_use]
     pub fn king_in_check(&self, player: Player) -> bool {
-        let enemy_attacks = movegen::generate_all_attacks(self, player.other());
-
         let king = self.player_pieces(player).king.single();
-
-        enemy_attacks.contains(king)
+        let enemy_attackers = movegen::generate_attackers_of(self, player, king);
+        enemy_attackers.any()
     }
 }
 

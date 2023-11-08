@@ -1,5 +1,5 @@
 use crate::bitboard::{bitboards, Bitboard};
-use crate::square::squares;
+use crate::square::{squares, Square};
 use crate::{
     board::Board, direction::Direction, game::Game, move_tables, moves::Move,
     piece::PromotionPieceKind, player::Player,
@@ -43,6 +43,28 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     }
 
     attacks
+}
+
+pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> Bitboard {
+    let mut attackers = Bitboard::EMPTY;
+    let our_pieces = board.player_pieces(player);
+    let their_pieces = board.player_pieces(player.other());
+    let all_pieces = our_pieces.all() | their_pieces.all();
+
+    // Pawns: A square is attacked by pawns in the same positions as a pawn could capture if it was on
+    // that square
+    attackers |= move_tables::pawn_attacks(square, player) & their_pieces.pawns;
+
+    // Knights: A square is attacked by any squares a knight could reach if it were on that square
+    attackers |= move_tables::knight_attacks(square) & their_pieces.knights;
+
+    // Sliders: A square is attacked by any squares a
+    attackers |= move_tables::bishop_attacks(square, all_pieces) & their_pieces.bishops;
+    attackers |= move_tables::rook_attacks(square, all_pieces) & their_pieces.rooks;
+    attackers |= move_tables::queen_attacks(square, all_pieces) & their_pieces.queens;
+    attackers |= move_tables::king_attacks(square) & their_pieces.king;
+
+    attackers
 }
 
 pub fn generate_moves(game: &Game) -> Vec<Move> {
