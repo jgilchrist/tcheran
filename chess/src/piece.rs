@@ -49,10 +49,11 @@ impl PieceKind {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PromotionPieceKind {
+    // Ordered in preference-order (i.e. we'll most likely want to promote to a queen)
+    Queen,
+    Rook,
     Knight,
     Bishop,
-    Rook,
-    Queen,
 }
 
 impl PromotionPieceKind {
