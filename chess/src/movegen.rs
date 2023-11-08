@@ -8,7 +8,6 @@ use crate::{
 struct Ctx {
     all_pieces: Bitboard,
     their_pieces: Bitboard,
-    their_attacks: Bitboard,
     enemy_or_empty: Bitboard,
 }
 
@@ -63,13 +62,11 @@ fn get_ctx(game: &Game) -> Ctx {
     let our_pieces = game.board.player_pieces(game.player).all();
     let enemy_or_empty = our_pieces.invert();
     let their_pieces = game.board.player_pieces(game.player.other()).all();
-    let their_attacks = generate_all_attacks(&game.board, game.player.other());
     let all_pieces = our_pieces | their_pieces;
 
     Ctx {
         all_pieces,
         their_pieces,
-        their_attacks,
         enemy_or_empty,
     }
 }
@@ -195,40 +192,44 @@ fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
 
     let king_start_square = squares::king_start(game.player);
 
-    if king == king_start_square && !ctx.their_attacks.contains(king) {
+    if king == king_start_square {
         let castle_rights_for_player = match game.player {
             Player::White => game.white_castle_rights,
             Player::Black => game.black_castle_rights,
         };
 
         if castle_rights_for_player.can_castle() {
-            if castle_rights_for_player.king_side {
-                let kingside_required_empty_and_not_attacked_squares =
-                    bitboards::kingside_required_empty_and_not_attacked_squares(game.player);
+            let their_attacks = generate_all_attacks(&game.board, game.player.other());
 
-                let pieces_in_the_way =
-                    kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
-                let attacked_squares =
-                    kingside_required_empty_and_not_attacked_squares & ctx.their_attacks;
-                let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+            if !their_attacks.contains(king) {
+                if castle_rights_for_player.king_side {
+                    let kingside_required_empty_and_not_attacked_squares =
+                        bitboards::kingside_required_empty_and_not_attacked_squares(game.player);
 
-                if squares_preventing_castling.is_empty() {
-                    moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+                    let pieces_in_the_way =
+                        kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
+                    let attacked_squares =
+                        kingside_required_empty_and_not_attacked_squares & their_attacks;
+                    let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+
+                    if squares_preventing_castling.is_empty() {
+                        moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+                    }
                 }
-            }
 
-            if castle_rights_for_player.queen_side {
-                let queenside_required_empty_squares =
-                    bitboards::queenside_required_empty_squares(game.player);
-                let queenside_required_not_attacked_squares =
-                    bitboards::queenside_required_not_attacked_squares(game.player);
+                if castle_rights_for_player.queen_side {
+                    let queenside_required_empty_squares =
+                        bitboards::queenside_required_empty_squares(game.player);
+                    let queenside_required_not_attacked_squares =
+                        bitboards::queenside_required_not_attacked_squares(game.player);
 
-                let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
-                let attacked_squares = queenside_required_not_attacked_squares & ctx.their_attacks;
-                let squares_preventing_castling = pieces_in_the_way | attacked_squares;
+                    let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
+                    let attacked_squares = queenside_required_not_attacked_squares & their_attacks;
+                    let squares_preventing_castling = pieces_in_the_way | attacked_squares;
 
-                if squares_preventing_castling.is_empty() {
-                    moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
+                    if squares_preventing_castling.is_empty() {
+                        moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
+                    }
                 }
             }
         }
