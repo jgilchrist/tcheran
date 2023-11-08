@@ -225,7 +225,22 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn in_direction(&self, direction: Direction) -> Option<Self> {
+    pub fn in_direction_maybe(&self, direction: Direction) -> Option<Self> {
+        match direction {
+            Direction::North => self.north_maybe(),
+            Direction::NorthEast => self.north_east_maybe(),
+            Direction::East => self.east_maybe(),
+            Direction::SouthEast => self.south_east_maybe(),
+            Direction::South => self.south_maybe(),
+            Direction::SouthWest => self.south_west_maybe(),
+            Direction::West => self.west_maybe(),
+            Direction::NorthWest => self.north_west_maybe(),
+        }
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -240,50 +255,98 @@ impl Square {
 
     #[inline(always)]
     #[must_use]
-    pub fn north(&self) -> Option<Self> {
+    pub fn north_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south(&self) -> Option<Self> {
+    pub fn north(&self) -> Self {
+        Self(self.0.north())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn south_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn east(&self) -> Option<Self> {
+    pub fn south(&self) -> Self {
+        Self(self.0.south())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_east(&self) -> Option<Self> {
+    pub fn east(&self) -> Self {
+        Self(self.0.east())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn north_east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_east(&self) -> Option<Self> {
+    pub fn north_east(&self) -> Self {
+        Self(self.0.north_east())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn south_east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_east())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn west(&self) -> Option<Self> {
+    pub fn south_east(&self) -> Self {
+        Self(self.0.south_east())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.west())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn south_west(&self) -> Option<Self> {
+    pub fn west(&self) -> Self {
+        Self(self.0.west())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn south_west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_west())
     }
 
     #[inline(always)]
     #[must_use]
-    pub fn north_west(&self) -> Option<Self> {
+    pub fn south_west(&self) -> Self {
+        Self(self.0.south_west())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn north_west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_west())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn north_west(&self) -> Self {
+        Self(self.0.north_west())
     }
 }
 
