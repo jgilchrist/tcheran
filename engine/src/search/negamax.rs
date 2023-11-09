@@ -118,7 +118,6 @@ pub fn negamax(
 
             tt.insert(&game.zobrist, tt_data);
 
-            state.beta_cutoffs += 1;
             return Ok(beta);
         }
 

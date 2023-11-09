@@ -71,7 +71,6 @@ pub fn quiescence(
 
         // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
-            state.beta_cutoffs += 1;
             return Ok(beta);
         }
 
