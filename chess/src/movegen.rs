@@ -84,11 +84,11 @@ impl MoveTypes {
         castles: true,
     };
 
-    pub const CAPTURES_ONLY: Self = Self {
+    pub const QUIESCENCE: Self = Self {
         captures: true,
+        promotions: true,
 
         quiet: false,
-        promotions: false,
         castles: false,
     };
 }

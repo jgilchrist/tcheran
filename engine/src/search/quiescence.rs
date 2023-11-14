@@ -44,7 +44,7 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = game.pseudo_legal_moves_with_type(&MoveTypes::CAPTURES_ONLY);
+    let mut moves = game.pseudo_legal_moves_with_type(&MoveTypes::QUIESCENCE);
 
     move_ordering::order_moves(game, &mut moves, None);
 
