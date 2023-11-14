@@ -37,4 +37,14 @@ copy-bin name:
 	cp target/release/engine bins/{{name}}
 
 playoff name1 name2 concurrency:
-	cutechess-cli -engine name="{{name1}}" cmd="./bins/{{name1}}" -engine name="{{name2}}" cmd="./bins/{{name2}}" -each proto=uci tc=8+0.2 -rounds 100 -concurrency {{concurrency}}
+	cutechess-cli \
+		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
+		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
+		-openings file=etc/openings.bin plies=4 \
+		-ratinginterval 5 \
+		-concurrency {{concurrency}} \
+		-rounds 100 \
+		-each \
+			proto=uci \
+			tc=8+0.2 \
+			restart=on
