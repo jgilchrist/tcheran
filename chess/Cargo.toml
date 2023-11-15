@@ -9,5 +9,8 @@ color-eyre = { workspace = true }
 nom = { workspace = true }
 rand = { workspace = true }
 
+[dev-dependencies]
+spectral = "0.6.0"
+
 [lints]
 workspace = true
