@@ -11,6 +11,13 @@ pub enum PieceKind {
 }
 
 impl PieceKind {
+    #[must_use]
+    pub fn is_slider(&self) -> bool {
+        matches!(*self, Self::Bishop | Self::Rook | Self::Queen)
+    }
+}
+
+impl PieceKind {
     pub const N: usize = 6;
 
     pub const ALL: &'static [Self; Self::N] = &[
