@@ -1,19 +1,19 @@
+//! The standard `Eval` struct contains a value that is always from white's
+//! perspective - i.e. positive if white is winning and negative if black is
+//! winning.
+//! When running a negamax search, in order for the same code to work for both
+//! players, we need both players to try 'maximising' their score - so when black
+//! is playing, we need positive values when black is winning.
+//! However, when reporting results from Negamax, it can be confusing to see
+//! evaluation numbers that are positive when black is winning.
+//! `NegamaxEval` represents an evaluation from the perspective of a particular
+//! player to avoid issues here. It can be easily constructed from an `Eval`
+//! (by supplying the player whose perspective it will be from) and can easily
+//! be turned back into an `Eval` for reporting or storage.
+//!
 use chess::player::Player;
 
 use crate::eval::Eval;
-
-/// The standard `Eval` struct contains a value that is always from white's
-/// perspective - i.e. positive if white is winning and negative if black is
-/// winning.
-/// When running a negamax search, in order for the same code to work for both
-/// players, we need both players to try 'maximising' their score - so when black
-/// is playing, we need positive values when black is winning.
-/// However, when reporting results from Negamax, it can be confusing to see
-/// evaluation numbers that are positive when black is winning.
-/// `NegamaxEval` represents an evaluation from the perspective of a particular
-/// player to avoid issues here. It can be easily constructed from an `Eval`
-/// (by supplying the player whose perspective it will be from) and can easily
-/// be turned back into an `Eval` for reporting or storage.
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct NegamaxEval(pub i32);

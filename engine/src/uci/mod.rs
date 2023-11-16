@@ -1,3 +1,5 @@
+//! Implementation of the Universal Chess Interface (UCI) protocol
+
 use color_eyre::eyre::Context;
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
@@ -30,7 +32,6 @@ pub mod parser;
 #[allow(unused)]
 pub mod responses;
 
-/// Implementation of the Universal Chess Interface (UCI) protocol
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
