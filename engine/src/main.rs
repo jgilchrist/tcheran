@@ -1,14 +1,3 @@
-#![warn(clippy::pedantic, clippy::nursery)]
-#![allow(
-    clippy::wildcard_imports,
-    clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
-    clippy::option_if_let_else,
-    clippy::module_name_repetitions,
-    clippy::inline_always,
-    clippy::missing_const_for_fn
-)]
-
 use color_eyre::Result;
 use engine::util::log::log;
 

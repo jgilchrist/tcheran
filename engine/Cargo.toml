@@ -19,3 +19,6 @@ path = "src/lib.rs"
 [[bin]]
 name = "engine"
 path = "src/main.rs"
+
+[lints]
+workspace = true

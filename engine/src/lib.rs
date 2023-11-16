@@ -1,17 +1,3 @@
-#![warn(clippy::pedantic, clippy::nursery)]
-#![allow(
-    incomplete_features,
-    clippy::wildcard_imports,
-    clippy::missing_errors_doc,
-    clippy::missing_panics_doc,
-    clippy::option_if_let_else,
-    clippy::module_name_repetitions,
-    clippy::inline_always,
-    clippy::missing_const_for_fn,
-    clippy::too_many_arguments,
-    clippy::too_many_lines
-)]
-
 pub mod eval;
 pub mod options;
 pub mod strategy;

@@ -8,3 +8,6 @@ rust-version.workspace = true
 color-eyre = { workspace = true }
 nom = { workspace = true }
 rand = { workspace = true }
+
+[lints]
+workspace = true
