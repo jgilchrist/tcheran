@@ -1,8 +1,9 @@
 use crate::bitboard::{bitboards, Bitboard};
+use crate::movegen::tables;
 use crate::square::{squares, Square};
 use crate::{
-    board::Board, direction::Direction, game::Game, move_tables, moves::Move,
-    piece::PromotionPieceKind, player::Player,
+    board::Board, direction::Direction, game::Game, moves::Move, piece::PromotionPieceKind,
+    player::Player,
 };
 
 struct Ctx {
@@ -19,27 +20,27 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     let all_pieces = our_pieces.all() | their_pieces;
 
     for pawn in our_pieces.pawns {
-        attacks |= move_tables::pawn_attacks(pawn, player);
+        attacks |= tables::pawn_attacks(pawn, player);
     }
 
     for knight in our_pieces.knights {
-        attacks |= move_tables::knight_attacks(knight);
+        attacks |= tables::knight_attacks(knight);
     }
 
     for bishop in our_pieces.bishops {
-        attacks |= move_tables::bishop_attacks(bishop, all_pieces);
+        attacks |= tables::bishop_attacks(bishop, all_pieces);
     }
 
     for rook in our_pieces.rooks {
-        attacks |= move_tables::rook_attacks(rook, all_pieces);
+        attacks |= tables::rook_attacks(rook, all_pieces);
     }
 
     for queen in our_pieces.queens {
-        attacks |= move_tables::queen_attacks(queen, all_pieces);
+        attacks |= tables::queen_attacks(queen, all_pieces);
     }
 
     for king in our_pieces.king {
-        attacks |= move_tables::king_attacks(king);
+        attacks |= tables::king_attacks(king);
     }
 
     attacks
@@ -54,16 +55,16 @@ pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> B
 
     // Pawns: A square is attacked by pawns in the same positions as a pawn could capture if it was on
     // that square
-    attackers |= move_tables::pawn_attacks(square, player) & their_pieces.pawns;
+    attackers |= tables::pawn_attacks(square, player) & their_pieces.pawns;
 
     // Knights: A square is attacked by any squares a knight could reach if it were on that square
-    attackers |= move_tables::knight_attacks(square) & their_pieces.knights;
+    attackers |= tables::knight_attacks(square) & their_pieces.knights;
 
     // Sliders: A square is attacked by any squares a
-    attackers |= move_tables::bishop_attacks(square, all_pieces) & their_pieces.bishops;
-    attackers |= move_tables::rook_attacks(square, all_pieces) & their_pieces.rooks;
-    attackers |= move_tables::queen_attacks(square, all_pieces) & their_pieces.queens;
-    attackers |= move_tables::king_attacks(square) & their_pieces.king;
+    attackers |= tables::bishop_attacks(square, all_pieces) & their_pieces.bishops;
+    attackers |= tables::rook_attacks(square, all_pieces) & their_pieces.rooks;
+    attackers |= tables::queen_attacks(square, all_pieces) & their_pieces.queens;
+    attackers |= tables::king_attacks(square) & their_pieces.king;
 
     attackers
 }
@@ -202,7 +203,7 @@ fn generate_pawn_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
 
         // En-passant capture: Pawns either side of the en-passant pawn can capture
         if let Some(en_passant_target) = game.en_passant_target {
-            let capture_squares = move_tables::pawn_attacks(en_passant_target, game.player.other());
+            let capture_squares = tables::pawn_attacks(en_passant_target, game.player.other());
 
             for potential_en_passant_capture_start in capture_squares & non_promoting_pawns {
                 moves.push(Move::new(
@@ -235,7 +236,7 @@ fn generate_knight_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTy
     let knights = game.board.player_pieces(game.player).knights;
 
     for knight in knights {
-        let destinations = move_tables::knight_attacks(knight);
+        let destinations = tables::knight_attacks(knight);
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
@@ -257,7 +258,7 @@ fn generate_bishop_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTy
     let bishops = game.board.player_pieces(game.player).bishops;
 
     for bishop in bishops {
-        let destinations = move_tables::bishop_attacks(bishop, ctx.all_pieces);
+        let destinations = tables::bishop_attacks(bishop, ctx.all_pieces);
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
@@ -279,7 +280,7 @@ fn generate_rook_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveType
     let rooks = game.board.player_pieces(game.player).rooks;
 
     for rook in rooks {
-        let destinations = move_tables::rook_attacks(rook, ctx.all_pieces);
+        let destinations = tables::rook_attacks(rook, ctx.all_pieces);
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
@@ -301,7 +302,7 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTyp
     let queens = game.board.player_pieces(game.player).queens;
 
     for queen in queens {
-        let destinations = move_tables::queen_attacks(queen, ctx.all_pieces);
+        let destinations = tables::queen_attacks(queen, ctx.all_pieces);
         let move_destinations = destinations & !ctx.all_pieces;
         let capture_destinations = destinations & ctx.their_pieces;
 
@@ -322,7 +323,7 @@ fn generate_queen_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTyp
 fn generate_king_moves(moves: &mut Vec<Move>, game: &Game, move_types: &MoveTypes, ctx: &Ctx) {
     let king = game.board.player_pieces(game.player).king.single();
 
-    let destinations = move_tables::king_attacks(king);
+    let destinations = tables::king_attacks(king);
     let move_destinations = destinations & !ctx.all_pieces;
     let capture_destinations = destinations & ctx.their_pieces;
 

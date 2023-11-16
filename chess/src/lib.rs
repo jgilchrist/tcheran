@@ -9,12 +9,11 @@ pub mod piece;
 pub mod player;
 pub mod square;
 
-mod move_tables;
 pub mod movegen;
 pub mod util;
 pub mod zobrist;
 
 pub fn init() {
-    move_tables::init();
+    movegen::init();
     zobrist::init();
 }
