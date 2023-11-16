@@ -4,11 +4,6 @@ members = [
     "engine",
 ]
 
-default-members = [
-    "chess",
-    "engine",
-]
-
 resolver = "2"
 
 [workspace.package]
