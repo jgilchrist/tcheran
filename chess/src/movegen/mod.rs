@@ -1,5 +1,6 @@
 pub(crate) mod attackers;
 mod gen;
+mod pins;
 mod tables;
 
 pub use attackers::generate_attackers_of;
