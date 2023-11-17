@@ -3,8 +3,8 @@ use crate::moves::Move;
 
 #[must_use]
 pub fn perft(depth: u8, game: &mut Game) -> usize {
-    if depth == 0 {
-        return 1;
+    if depth == 1 {
+        return game.moves().len();
     }
 
     game.moves()
