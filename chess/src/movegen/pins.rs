@@ -43,7 +43,6 @@ mod tests {
     use super::*;
     use crate::game::Game;
     use crate::square::squares::all::*;
-    use spectral::assert_that;
 
     fn pin_test(fen: &'static str, expected_pinned: Bitboard, expected_pinners: Bitboard) {
         crate::init();
@@ -52,8 +51,8 @@ mod tests {
         let king_square = game.board.player_pieces(game.player).king.single();
         let (pinned, pinners) = get_pins(&game.board, game.player, king_square);
 
-        assert_that(&pinned).is_equal_to(expected_pinned);
-        assert_that(&pinners).is_equal_to(expected_pinners);
+        assert_eq!(pinned, expected_pinned);
+        assert_eq!(pinners, expected_pinners);
     }
 
     #[test]

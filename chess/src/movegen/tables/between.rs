@@ -91,7 +91,6 @@ pub fn init() {
 mod tests {
     use super::*;
     use crate::square::squares::all::*;
-    use spectral::assert_that;
 
     #[test]
     fn test_between_on_rank() {
@@ -126,6 +125,6 @@ mod tests {
     #[test]
     fn test_between_on_diagonal_descending() {
         init();
-        assert_that(&between(A8, H1)).is_equal_to(B7 | C6 | D5 | E4 | F3 | G2);
+        assert_eq!(between(A8, H1), B7 | C6 | D5 | E4 | F3 | G2);
     }
 }

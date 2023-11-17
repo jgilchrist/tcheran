@@ -1,14 +1,13 @@
 use chess::fen::START_POS;
 use chess::game::Game;
 use chess::perft::perft;
-use spectral::prelude::*;
 
 fn test_perft(fen: &str, depth: u8, expected_positions: usize) {
     chess::init();
     let mut game = Game::from_fen(fen).unwrap();
     let actual_positions = perft(depth, &mut game);
 
-    assert_that(&actual_positions).is_equal_to(expected_positions);
+    assert_eq!(expected_positions, actual_positions);
 }
 
 #[test]
