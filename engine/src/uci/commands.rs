@@ -40,11 +40,6 @@ pub enum UciCommand {
         name: String,
         value: String,
     },
-    Register {
-        later: bool,
-        name: String,
-        code: String,
-    },
     UciNewGame,
     Position {
         position: Position,

@@ -162,20 +162,6 @@ fn cmd_setoption(input: &str) -> IResult<&str, UciCommand> {
     ))
 }
 
-fn cmd_register(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("register")(input)?;
-
-    // TODO: Parse out 'register' arguments
-    Ok((
-        input,
-        UciCommand::Register {
-            later: false,
-            name: String::new(),
-            code: String::new(),
-        },
-    ))
-}
-
 fn cmd_ucinewgame(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::UciNewGame, tag("ucinewgame"))(input)
 }
@@ -382,7 +368,6 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
         cmd_debug,
         cmd_isready,
         cmd_setoption,
-        cmd_register,
         cmd_ucinewgame,
         cmd_position,
         cmd_go,

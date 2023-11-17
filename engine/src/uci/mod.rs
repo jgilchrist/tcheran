@@ -135,11 +135,6 @@ impl Uci {
                     }
                 };
             }
-            UciCommand::Register {
-                later: _,
-                name: _,
-                code: _,
-            } => {}
             UciCommand::UciNewGame => {
                 self.game = Game::new();
                 log(format!("{:?}", self.game.board));

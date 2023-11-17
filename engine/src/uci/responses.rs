@@ -18,20 +18,6 @@ pub(super) enum IdParam {
     Author(&'static str),
 }
 
-#[derive(Debug)]
-pub(super) enum CopyProtectionStatus {
-    Checking,
-    Ok,
-    Error,
-}
-
-#[derive(Debug)]
-pub(super) enum RegistrationStatus {
-    Checking,
-    Ok,
-    Error,
-}
-
 #[derive(Debug, Default)]
 pub(crate) struct InfoFields {
     pub(super) depth: Option<u8>,
@@ -61,8 +47,6 @@ pub(super) enum UciResponse {
         mv: Move,
         ponder: Option<Move>,
     },
-    CopyProtection(CopyProtectionStatus),
-    Registration(RegistrationStatus),
     Info(InfoFields),
     Option {
         name: &'static str,
@@ -88,8 +72,6 @@ impl UciResponse {
                 mv,
                 ponder: _ponder,
             } => format!("bestmove {}", mv.notation()),
-            Self::CopyProtection(_status) => todo!(),
-            Self::Registration(_status) => todo!(),
             Self::Info(InfoFields {
                 depth,
                 seldepth,
