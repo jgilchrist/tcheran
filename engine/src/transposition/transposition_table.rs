@@ -124,3 +124,9 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         None
     }
 }
+
+impl<T: Clone + TTOverwriteable> Default for TranspositionTable<T> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
