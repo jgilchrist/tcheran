@@ -8,7 +8,6 @@ pub mod perft;
 pub mod piece;
 pub mod player;
 pub mod square;
-// pub mod squares;
 
 mod move_tables;
 pub mod movegen;
