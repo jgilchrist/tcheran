@@ -244,11 +244,14 @@ impl Uci {
                 }
                 DebugCommand::PerftDiv { depth } => {
                     let result = perft::perft_div(*depth, &mut self.game);
+                    let mut total = 0;
 
                     for (mv, number_for_mv) in result {
                         println!("{mv:?}: {number_for_mv}");
+                        total += number_for_mv;
                     }
 
+                    println!("total: {total}");
                     println!();
                 }
                 DebugCommand::Eval => {
