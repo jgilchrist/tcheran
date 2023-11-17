@@ -12,14 +12,15 @@ fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, Eval) {
     engine::init();
     let mut game = Game::from_fen(fen).unwrap();
 
-    let mut tt = SearchTranspositionTable::new(8);
+    let mut tt = SearchTranspositionTable::new();
+    tt.resize(128);
 
     let (best_move, eval) = search(
         &mut game,
         &mut tt,
         &TimeControl::Infinite,
         &SearchRestrictions { depth: Some(depth) },
-        &EngineOptions {},
+        &EngineOptions::default(),
         &NullControl,
         &NullReporter,
     );

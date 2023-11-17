@@ -18,6 +18,7 @@ pub enum NodeBound {
 pub struct TranspositionTable<T: Clone + TTOverwriteable> {
     data: Vec<Option<TranspositionTableEntry<T>>>,
     pub occupied: usize,
+    size: usize,
 }
 
 #[derive(Clone)]
@@ -43,16 +44,26 @@ impl TTOverwriteable for SearchTranspositionTableData {
 pub type SearchTranspositionTable = TranspositionTable<SearchTranspositionTableData>;
 
 impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
-    // TODO: Allow specifying the size
-    pub fn new(size_pow_2: u32) -> Self {
+    pub fn new() -> Self {
+        Self {
+            data: vec![None; 0],
+            occupied: 0,
+            size: 0,
+        }
+    }
+
+    pub fn resize(&mut self, size_mb: usize) {
+        if self.size == size_mb {
+            return;
+        }
+
         let size_of_entry = size_of::<T>();
-        let total_size_in_bytes = 2usize.pow(size_pow_2) * 1024 * 1024;
+        let total_size_in_bytes = size_mb * 1024 * 1024;
         let number_of_entries = total_size_in_bytes / size_of_entry;
 
-        Self {
-            data: vec![None; number_of_entries],
-            occupied: 0,
-        }
+        self.data = vec![None; number_of_entries];
+        self.size = size_mb;
+        self.occupied = 0;
     }
 
     #[allow(clippy::cast_possible_truncation)]

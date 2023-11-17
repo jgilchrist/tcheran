@@ -1,6 +1,6 @@
 //! Implementation of the Universal Chess Interface (UCI) protocol
 
-use color_eyre::eyre::Context;
+use color_eyre::eyre::{bail, Context};
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
@@ -13,6 +13,7 @@ use color_eyre::Result;
 use crate::options::EngineOptions;
 use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::uci::commands::DebugCommand;
+use crate::uci::options::{HashOption, UciOption};
 use crate::util::sync::LockLatch;
 use crate::{
     eval,
@@ -31,7 +32,6 @@ mod options;
 pub mod parser;
 #[allow(unused)]
 pub mod responses;
-
 
 // TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
@@ -117,6 +117,7 @@ impl Uci {
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
 
                 // Options
+                send_response(&UciResponse::option::<HashOption>());
 
                 send_response(&UciResponse::UciOk);
             }
@@ -124,16 +125,13 @@ impl Uci {
                 self.debug = *on;
             }
             UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
-            #[allow(clippy::match_single_binding)]
-            UciCommand::SetOption {
-                name,
-                value: _value,
-            } => {
+            UciCommand::SetOption { name, value } => {
                 match name.as_str() {
+                    HashOption::NAME => HashOption::set(&mut self.options, value),
                     _ => {
-                        println!("Unknown option: {name}");
+                        bail!("Unknown option: {name}")
                     }
-                };
+                }?;
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
@@ -316,6 +314,9 @@ fn send_response(response: &UciResponse) {
 }
 
 pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
+    let mut options = EngineOptions::default();
+    HashOption::set_default(&mut options)?;
+
     let mut uci = Uci {
         strategy: Arc::new(Mutex::new(strategy)),
         control: UciControl {
@@ -325,7 +326,7 @@ pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
         reporter: UciReporter {},
         debug: false,
         game: Game::new(),
-        options: EngineOptions::default(),
+        options,
     };
 
     uci.main_loop()

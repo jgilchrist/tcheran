@@ -1,7 +1,7 @@
+use std::fmt::Write;
 use std::time::Duration;
 
-use crate::uci::options;
-use crate::uci::options::UciOptionType;
+use crate::uci::options::{UciOption, UciOptionType};
 use chess::moves::Move;
 
 #[derive(Debug)]
@@ -50,15 +50,18 @@ pub(super) enum UciResponse {
     Info(InfoFields),
     Option {
         name: &'static str,
-        r#type: options::UciOptionType,
-        default: &'static str,
-        min: Option<String>,
-        max: Option<String>,
-        var: Option<String>,
+        def: UciOptionType,
     },
 }
 
 impl UciResponse {
+    pub(super) fn option<T: UciOption>() -> Self {
+        Self::Option {
+            name: T::NAME,
+            def: T::DEF,
+        }
+    }
+
     pub(super) fn as_string(&self) -> String {
         match self {
             Self::Id(i) => match i {
@@ -143,33 +146,46 @@ impl UciResponse {
 
                 response
             }
-            Self::Option {
-                name,
-                r#type: typ,
-                default,
-                min,
-                max,
-                var,
-            } => {
-                let type_str = match typ {
-                    UciOptionType::Check => "check",
-                    UciOptionType::Spin => "spin",
-                    UciOptionType::Combo => "combo",
-                    UciOptionType::String => "string",
+            Self::Option { name, def } => {
+                let mut response = format!("option name {name}");
+
+                let type_str = match def {
+                    UciOptionType::Check { .. } => "check",
+                    UciOptionType::Spin { .. } => "spin",
+                    UciOptionType::Combo { .. } => "combo",
+                    UciOptionType::String { .. } => "string",
                     UciOptionType::Button => "button",
                 };
 
-                if min.is_some() {
-                    todo!();
-                }
-                if max.is_some() {
-                    todo!();
-                }
-                if var.is_some() {
-                    todo!();
-                }
+                response.push_str(&format!(" type {type_str}"));
 
-                format!("option name {name} type {type_str} default {default}")
+                let default_str = match def {
+                    UciOptionType::Check { default } => format!(" default {default}"),
+                    UciOptionType::Spin { default, .. } => format!(" default {default}"),
+                    UciOptionType::Combo { default, .. } | UciOptionType::String { default } => {
+                        format!(" default {default}")
+                    }
+                    UciOptionType::Button => String::new(),
+                };
+
+                response.push_str(&default_str);
+
+                let args_str = match def {
+                    UciOptionType::Spin { min, max, .. } => format!(" min {min} max {max}"),
+                    UciOptionType::Combo { ref values, .. } => {
+                        values.iter().fold(String::new(), |mut out, v| {
+                            let _ = write!(out, " var {v}");
+                            out
+                        })
+                    }
+                    UciOptionType::Check { .. }
+                    | UciOptionType::String { .. }
+                    | UciOptionType::Button => String::new(),
+                };
+
+                response.push_str(&args_str);
+
+                response
             }
         }
     }

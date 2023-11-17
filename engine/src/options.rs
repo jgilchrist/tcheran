@@ -1,2 +1,4 @@
 #[derive(Debug, Clone, Default)]
-pub struct EngineOptions {}
+pub struct EngineOptions {
+    pub hash_size: usize,
+}
