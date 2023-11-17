@@ -44,6 +44,7 @@ playoff name1 name2 concurrency openingsfile:
 		-ratinginterval 5 \
 		-concurrency {{concurrency}} \
 		-rounds 100 \
+		-pgnout {{name1}}-{{name2}}.pgn \
 		-each \
 			proto=uci \
 			tc=8+0.2 \
