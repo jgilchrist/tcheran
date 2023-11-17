@@ -30,7 +30,16 @@ pub fn perft(depth: u8, game: &mut Game) -> usize {
 #[must_use]
 pub fn perft_div(depth: u8, game: &mut Game) -> Vec<(Move, usize)> {
     let root_moves = game.pseudo_legal_moves();
+
     let mut perft_for_moves: Vec<(Move, usize)> = vec![];
+
+    if depth == 1 {
+        for mv in root_moves {
+            perft_for_moves.push((mv, 1));
+        }
+
+        return perft_for_moves;
+    }
 
     for mv in &root_moves {
         let player = game.player;
@@ -41,14 +50,9 @@ pub fn perft_div(depth: u8, game: &mut Game) -> Vec<(Move, usize)> {
             continue;
         }
 
-        let number_for_mv = if depth == 1 {
-            1
-        } else {
-            perft(depth - 1, game)
-        };
+        let number_for_mv = perft(depth - 1, game);
 
         game.undo_move();
-
         perft_for_moves.push((*mv, number_for_mv));
     }
 
