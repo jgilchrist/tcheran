@@ -18,7 +18,7 @@ This engine can be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot
     * Zobrist hashing
 
 * Move generation
-    * Pseudo-legal move generation
+    * Fully legal move generation
     * Fancy Magic bitboards
 
 * Search
