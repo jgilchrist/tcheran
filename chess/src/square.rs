@@ -11,7 +11,7 @@ pub const FILES: [File; File::N] = [
     File::H,
 ];
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Ord, PartialOrd)]
 pub enum File {
     A,
     B,
@@ -62,6 +62,11 @@ impl File {
             Self::H => "h",
         }
     }
+
+    #[must_use]
+    pub fn on_edge(&self) -> bool {
+        matches!(self, Self::A | Self::H)
+    }
 }
 
 impl std::fmt::Debug for File {
@@ -87,7 +92,7 @@ pub const RANKS: [Rank; Rank::N] = [
     Rank::R8,
 ];
 
-#[derive(PartialEq, Eq, Clone, Copy)]
+#[derive(PartialEq, Eq, Clone, Copy, Ord, PartialOrd)]
 pub enum Rank {
     R1,
     R2,
@@ -139,6 +144,11 @@ impl Rank {
             Self::R8 => "8",
         }
     }
+
+    #[must_use]
+    pub fn on_edge(&self) -> bool {
+        matches!(self, Self::R1 | Self::R8)
+    }
 }
 
 impl std::fmt::Debug for Rank {
@@ -164,7 +174,8 @@ impl Square {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
-    fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
+    #[must_use]
+    pub fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
         match bitboard.count() {
             0 => None,
             1 => Some(Self(bitboard)),
@@ -347,6 +358,12 @@ impl Square {
     #[must_use]
     pub fn north_west(&self) -> Self {
         Self(self.0.north_west())
+    }
+
+    #[inline(always)]
+    #[must_use]
+    pub fn on_edge(&self) -> bool {
+        self.rank().on_edge() || self.file().on_edge()
     }
 }
 
