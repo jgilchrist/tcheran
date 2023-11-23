@@ -317,9 +317,6 @@ fn send_response(response: &UciResponse) {
 }
 
 pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
-    let mut options = EngineOptions::default();
-    HashOption::set_default(&mut options)?;
-
     let mut uci = Uci {
         strategy: Arc::new(Mutex::new(strategy)),
         control: UciControl {
@@ -329,7 +326,7 @@ pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
         reporter: UciReporter {},
         debug: false,
         game: Game::new(),
-        options,
+        options: EngineOptions::default(),
     };
 
     uci.main_loop()

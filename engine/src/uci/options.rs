@@ -27,7 +27,6 @@ pub trait UciOption {
     const DEF: UciOptionType;
 
     fn set(options: &mut EngineOptions, value: &str) -> Result<()>;
-    fn set_default(options: &mut EngineOptions) -> Result<()>;
 }
 
 pub struct HashOption;
@@ -35,7 +34,7 @@ pub struct HashOption;
 impl UciOption for HashOption {
     const NAME: &'static str = "Hash";
     const DEF: UciOptionType = UciOptionType::Spin {
-        default: 256,
+        default: crate::options::defaults::HASH_SIZE,
         min: 0,
         max: 1024,
     };
@@ -43,15 +42,6 @@ impl UciOption for HashOption {
     fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
         let hash_size = value.parse::<usize>()?;
         options.hash_size = hash_size;
-        Ok(())
-    }
-
-    fn set_default(options: &mut EngineOptions) -> Result<()> {
-        let UciOptionType::Spin { default, .. } = Self::DEF else {
-            panic!();
-        };
-
-        options.hash_size = default;
         Ok(())
     }
 }
