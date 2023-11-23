@@ -36,8 +36,15 @@ pub struct SearchTranspositionTableData {
 }
 
 impl TTOverwriteable for SearchTranspositionTableData {
-    fn should_overwrite_with(&self, _new: &Self) -> bool {
-        true
+    fn should_overwrite_with(&self, new: &Self) -> bool {
+        // Always store new PV nodes
+        if new.bound == NodeBound::Exact {
+            return true;
+        }
+
+        // Try to keep old 'exact' nodes over new bound nodes
+        // TODO: Don't keep exact nodes from previous searches
+        self.bound != NodeBound::Exact
     }
 }
 
