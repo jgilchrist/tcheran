@@ -24,6 +24,7 @@ pub fn search(
     let mut overall_eval: Option<NegamaxEval> = None;
 
     let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
+    state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
         // TODO: Are we counting nodes searched at this depth?
