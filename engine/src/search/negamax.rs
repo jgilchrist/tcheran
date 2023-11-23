@@ -35,7 +35,7 @@ pub fn negamax(
         state.nodes_visited += 1;
     }
 
-    if !is_root && (game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule()) {
+    if !is_root && (game.is_repeated_position() || game.is_stalemate_by_fifty_move_rule()) {
         return Ok(NegamaxEval::DRAW);
     }
 

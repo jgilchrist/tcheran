@@ -192,6 +192,12 @@ impl Game {
     }
 
     #[must_use]
+    pub fn is_repeated_position(&self) -> bool {
+        // PERF: We only need to search up to the last irreversible move
+        self.history.iter().rev().any(|h| h.zobrist == self.zobrist)
+    }
+
+    #[must_use]
     pub fn is_stalemate_by_repetition(&self) -> bool {
         // PERF: We only need to search up to the last irreversible move
         let mut count = 0;

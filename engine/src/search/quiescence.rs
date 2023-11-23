@@ -23,7 +23,7 @@ pub fn quiescence(
         return Ok(NegamaxEval::from_eval(eval, game.player));
     }
 
-    if game.is_stalemate_by_repetition() || game.is_stalemate_by_fifty_move_rule() {
+    if game.is_repeated_position() || game.is_stalemate_by_fifty_move_rule() {
         return Ok(NegamaxEval::DRAW);
     }
 
