@@ -51,15 +51,7 @@ pub fn quiescence(
     let mut best_eval = NegamaxEval::MIN;
 
     for mv in &moves {
-        let player = game.player;
-
-        // First, check if the move is legal.
         game.make_move(mv);
-
-        if game.board.king_in_check(player) {
-            game.undo_move();
-            continue;
-        }
 
         let move_score = -quiescence(game, -beta, -alpha, plies + 1, time_control, state, control)?;
 
