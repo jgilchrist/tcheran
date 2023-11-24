@@ -44,14 +44,16 @@ pub struct TTMove {
 }
 
 impl TTMove {
-    pub fn from_move(mv: &Move) -> TTMove {
-        TTMove {
+    #[must_use]
+    pub fn from_move(mv: &Move) -> Self {
+        Self {
             start_square_idx: mv.src.idx(),
             end_square_idx: mv.dst.idx(),
             promotion: mv.promotion,
         }
     }
 
+    #[must_use]
     pub fn to_move(&self) -> Move {
         Move {
             src: Square::from_index(self.start_square_idx),

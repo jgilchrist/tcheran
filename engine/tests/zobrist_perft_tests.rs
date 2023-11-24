@@ -31,12 +31,11 @@ fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize 
     let result = game
         .moves()
         .iter()
-        .filter_map(|m| {
+        .map(|m| {
             game.make_move(m);
             let result = perft(depth - 1, game, tt);
             game.undo_move();
-
-            Some(result)
+            result
         })
         .sum();
 
@@ -84,13 +83,13 @@ fn perft_tt_startpos_3() {
 #[test]
 #[ignore]
 fn perft_tt_startpos_4() {
-    test_perft_with_tt(START_POS, 4, 197281);
+    test_perft_with_tt(START_POS, 4, 197_281);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_startpos_5() {
-    test_perft_with_tt(START_POS, 5, 4865609);
+    test_perft_with_tt(START_POS, 5, 4_865_609);
 }
 
 const KIWIPETE_POS: &str = "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1";
@@ -116,13 +115,13 @@ fn perft_tt_kiwipete_3() {
 #[test]
 #[ignore]
 fn perft_tt_kiwipete_4() {
-    test_perft_with_tt(KIWIPETE_POS, 4, 4085603);
+    test_perft_with_tt(KIWIPETE_POS, 4, 4_085_603);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_kiwipete_5() {
-    test_perft_with_tt(KIWIPETE_POS, 5, 193690690);
+    test_perft_with_tt(KIWIPETE_POS, 5, 193_690_690);
 }
 
 const CHESSPROGRAMMING_WIKI_POS3: &str = "8/2p5/3p4/KP5r/1R3p1k/8/4P1P1/8 w - - 0 1";
@@ -154,7 +153,7 @@ fn perft_tt_chessprogramming_pos3_4() {
 #[test]
 #[ignore]
 fn perft_tt_chessprogramming_pos3_5() {
-    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS3, 5, 674624);
+    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS3, 5, 674_624);
 }
 
 const CHESSPROGRAMMING_WIKI_POS4: &str =
@@ -181,13 +180,13 @@ fn perft_tt_chessprogramming_pos4_3() {
 #[test]
 #[ignore]
 fn perft_tt_chessprogramming_pos4_4() {
-    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS4, 4, 422333);
+    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS4, 4, 422_333);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_chessprogramming_pos4_5() {
-    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS4, 5, 15833292);
+    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS4, 5, 15_833_292);
 }
 
 const CHESSPROGRAMMING_WIKI_POS5: &str =
@@ -214,13 +213,13 @@ fn perft_tt_chessprogramming_pos5_3() {
 #[test]
 #[ignore]
 fn perft_tt_chessprogramming_pos5_4() {
-    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS5, 4, 2103487);
+    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS5, 4, 2_103_487);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_chessprogramming_pos5_5() {
-    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS5, 5, 89941194);
+    test_perft_with_tt(CHESSPROGRAMMING_WIKI_POS5, 5, 89_941_194);
 }
 
 // Extra perft tests positions taken from https://gist.github.com/peterellisjones/8c46c28141c162d1d8a0f0badbc9cff9
@@ -306,61 +305,61 @@ fn perft_tt_gist_9() {
 #[test]
 #[ignore]
 fn perft_tt_gist_10() {
-    test_perft_with_tt("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1", 6, 1134888);
+    test_perft_with_tt("3k4/3p4/8/K1P4r/8/8/8/8 b - - 0 1", 6, 1_134_888);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_11() {
-    test_perft_with_tt("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1", 6, 1015133);
+    test_perft_with_tt("8/8/4k3/8/2p5/8/B2P2K1/8 w - - 0 1", 6, 1_015_133);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_12() {
-    test_perft_with_tt("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1", 6, 1440467);
+    test_perft_with_tt("8/8/1k6/2b5/2pP4/8/5K2/8 b - d3 0 1", 6, 1_440_467);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_13() {
-    test_perft_with_tt("5k2/8/8/8/8/8/8/4K2R w K - 0 1", 6, 661072);
+    test_perft_with_tt("5k2/8/8/8/8/8/8/4K2R w K - 0 1", 6, 661_072);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_14() {
-    test_perft_with_tt("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1", 6, 803711);
+    test_perft_with_tt("3k4/8/8/8/8/8/8/R3K3 w Q - 0 1", 6, 803_711);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_15() {
-    test_perft_with_tt("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1", 4, 1274206);
+    test_perft_with_tt("r3k2r/1b4bq/8/8/8/8/7B/R3K2R w KQkq - 0 1", 4, 1_274_206);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_16() {
-    test_perft_with_tt("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1", 4, 1720476);
+    test_perft_with_tt("r3k2r/8/3Q4/8/8/5q2/8/R3K2R b KQkq - 0 1", 4, 1_720_476);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_17() {
-    test_perft_with_tt("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1", 6, 3821001);
+    test_perft_with_tt("2K2r2/4P3/8/8/8/8/8/3k4 w - - 0 1", 6, 3_821_001);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_18() {
-    test_perft_with_tt("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1", 5, 1004658);
+    test_perft_with_tt("8/8/1P2K3/8/2n5/1q6/8/5k2 b - - 0 1", 5, 1_004_658);
 }
 
 #[test]
 #[ignore]
 fn perft_tt_gist_19() {
-    test_perft_with_tt("4k3/1P6/8/8/8/8/K7/8 w - - 0 1", 6, 217342);
+    test_perft_with_tt("4k3/1P6/8/8/8/8/K7/8 w - - 0 1", 6, 217_342);
 }
 
 #[test]
@@ -378,7 +377,7 @@ fn perft_tt_gist_21() {
 #[test]
 #[ignore]
 fn perft_tt_gist_22() {
-    test_perft_with_tt("8/k1P5/8/1K6/8/8/8/8 w - - 0 1", 7, 567584);
+    test_perft_with_tt("8/k1P5/8/1K6/8/8/8/8 w - - 0 1", 7, 567_584);
 }
 
 #[test]
