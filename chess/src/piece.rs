@@ -112,4 +112,12 @@ impl Piece {
     pub const fn black(kind: PieceKind) -> Self {
         Self::new(Player::Black, kind)
     }
+
+    #[must_use]
+    pub fn value(&self) -> i16 {
+        match self.player {
+            Player::White => self.kind.value(),
+            Player::Black => -self.kind.value(),
+        }
+    }
 }

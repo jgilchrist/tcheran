@@ -1,5 +1,5 @@
+use crate::game::EngineGame;
 use crate::options::EngineOptions;
-use chess::game::Game;
 
 use crate::search;
 use crate::transposition::transposition_table::SearchTranspositionTable;
@@ -21,7 +21,7 @@ impl Default for MainStrategy {
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for MainStrategy {
     fn go(
         &mut self,
-        game: &mut Game,
+        game: &mut EngineGame,
         time_control: &TimeControl,
         restrictions: &SearchRestrictions,
         options: &EngineOptions,

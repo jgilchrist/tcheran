@@ -5,11 +5,12 @@ use std::io::BufRead;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use chess::moves::Move;
 use chess::perft;
 use chess::util::nodes_per_second;
-use chess::{game::Game, moves::Move};
 use color_eyre::Result;
 
+use crate::game::EngineGame;
 use crate::options::EngineOptions;
 use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::uci::commands::DebugCommand;
@@ -97,7 +98,7 @@ pub struct Uci {
     control: UciControl,
     reporter: UciReporter,
     debug: bool,
-    game: Game,
+    game: EngineGame,
     options: EngineOptions,
 }
 
@@ -108,7 +109,7 @@ impl Uci {
     fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult> {
         match cmd {
             UciCommand::Uci => {
-                self.game = Game::new();
+                self.game = EngineGame::new();
 
                 let version = crate::engine_version();
                 send_response(&UciResponse::Id(IdParam::Name(format!(
@@ -134,13 +135,13 @@ impl Uci {
                 }?;
             }
             UciCommand::UciNewGame => {
-                self.game = Game::new();
-                log(format!("{:?}", self.game.board));
+                self.game = EngineGame::new();
+                log(format!("{:?}", self.game.game.board));
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
-                    commands::Position::StartPos => Game::new(),
-                    commands::Position::Fen(fen) => Game::from_fen(fen)?,
+                    commands::Position::StartPos => EngineGame::new(),
+                    commands::Position::Fen(fen) => EngineGame::from_fen(fen)?,
                 };
 
                 for mv in moves {
@@ -148,7 +149,7 @@ impl Uci {
                 }
 
                 self.game = game;
-                log(format!("{:?}", self.game.board));
+                log(format!("{:?}", self.game.game.board));
             }
             UciCommand::Go(GoCmdArguments {
                 searchmoves: _,
@@ -219,19 +220,19 @@ impl Uci {
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::Position => {
-                    println!("{:?}", self.game.board);
-                    println!("FEN: {}", chess::fen::write(&self.game));
+                    println!("{:?}", self.game.game.board);
+                    println!("FEN: {}", chess::fen::write(&self.game.game));
                     println!();
                 }
                 DebugCommand::Move { mv } => {
                     self.game.make_move(mv);
-                    println!("{:?}", self.game.board);
-                    println!("FEN: {}", chess::fen::write(&self.game));
+                    println!("{:?}", self.game.game.board);
+                    println!("FEN: {}", chess::fen::write(&self.game.game));
                     println!();
                 }
                 DebugCommand::Perft { depth } => {
                     let started_at = Instant::now();
-                    let result = perft::perft(*depth, &mut self.game);
+                    let result = perft::perft(*depth, &mut self.game.game);
                     let time_taken = started_at.elapsed();
 
                     let nodes_per_second =
@@ -243,7 +244,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::PerftDiv { depth } => {
-                    let result = perft::perft_div(*depth, &mut self.game);
+                    let result = perft::perft_div(*depth, &mut self.game.game);
                     let mut total = 0;
 
                     for (mv, number_for_mv) in result {
@@ -255,7 +256,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Eval => {
-                    let eval_components = eval::eval_components(&self.game);
+                    let eval_components = eval::eval_components(&self.game.game);
 
                     println!("Eval: {}", eval_components.eval);
                     println!("Components:");
@@ -325,7 +326,7 @@ pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
         },
         reporter: UciReporter {},
         debug: false,
-        game: Game::new(),
+        game: EngineGame::new(),
         options: EngineOptions::default(),
     };
 

@@ -140,51 +140,57 @@ pub fn init() {
     }
 }
 
+#[must_use]
 pub fn piece_square_tables(game: &Game) -> Eval {
-    let mut eval = 0;
+    let mut eval = Eval(0);
 
     for idx in 0..Square::N {
         let maybe_piece = game.board.pieces[idx];
 
         if let Some(piece) = maybe_piece {
-            eval += piece_contribution(idx, piece);
+            eval += piece_contribution(Square::from_array_index(idx), piece);
         }
     }
 
-    Eval(eval)
+    eval
 }
 
+#[must_use]
 pub fn piece_square_tables_white(game: &Game) -> Eval {
-    let mut eval = 0;
+    let mut eval = Eval(0);
 
     for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
         if let Some(piece) = maybe_piece {
             if piece.player == Player::White {
-                eval += piece_contribution(idx, *piece);
+                eval += piece_contribution(Square::from_array_index(idx), *piece);
             }
         }
     }
 
-    Eval(eval)
+    eval
 }
 
+#[must_use]
 pub fn piece_square_tables_black(game: &Game) -> Eval {
-    let mut eval = 0;
+    let mut eval = Eval(0);
 
     for (idx, maybe_piece) in game.board.pieces.iter().enumerate() {
         if let Some(piece) = maybe_piece {
             if piece.player == Player::Black {
-                eval += piece_contribution(idx, *piece);
+                eval += piece_contribution(Square::from_array_index(idx), *piece);
             }
         }
     }
 
-    Eval(eval)
+    eval
 }
 
 #[inline]
-fn piece_contribution(idx: usize, piece: Piece) -> i16 {
+#[must_use]
+pub fn piece_contribution(square: Square, piece: Piece) -> Eval {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
-    unsafe { tables::TABLES[piece.player.array_idx()][piece.kind.array_idx()][idx] }
+    Eval(unsafe {
+        tables::TABLES[piece.player.array_idx()][piece.kind.array_idx()][square.array_idx()]
+    })
 }

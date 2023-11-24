@@ -1,3 +1,4 @@
+use crate::game::EngineGame;
 use crate::options::EngineOptions;
 use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeStrategy;
@@ -11,7 +12,7 @@ use chess::moves::Move;
 use chess::util::nodes_per_second;
 
 pub fn search(
-    game: &mut Game,
+    game: &mut EngineGame,
     tt: &mut SearchTranspositionTable,
     search_restrictions: &SearchRestrictions,
     _options: &EngineOptions,
@@ -52,7 +53,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game, tt);
+        let pv = get_pv(depth, game.game.clone(), tt);
 
         let best_move = pv.first().unwrap();
 
@@ -77,8 +78,8 @@ pub fn search(
     (overall_best_move.unwrap(), overall_eval.unwrap())
 }
 
-fn get_pv(depth: u8, game: &Game, tt: &SearchTranspositionTable) -> Vec<Move> {
-    let mut current_position = game.clone();
+fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {
+    let mut current_position = game;
     let mut pv = Vec::new();
 
     for _ in 0..depth {

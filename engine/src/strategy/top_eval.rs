@@ -1,6 +1,4 @@
-use chess::game::Game;
-
-use crate::eval;
+use crate::game::EngineGame;
 use crate::options::EngineOptions;
 
 use super::{Control, Reporter, SearchRestrictions, Strategy, TimeControl};
@@ -11,7 +9,7 @@ pub struct TopEvalStrategy;
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
     fn go(
         &mut self,
-        game: &mut Game,
+        game: &mut EngineGame,
         _time_control: &TimeControl,
         _restrictions: &SearchRestrictions,
         _options: &EngineOptions,
@@ -22,7 +20,7 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
 
         moves.sort_unstable_by_key(|m| {
             game.make_move(m);
-            let result = eval::eval(game);
+            let result = game.eval;
             game.undo_move();
             result
         });

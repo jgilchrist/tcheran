@@ -1,13 +1,12 @@
-use crate::eval::{self};
+use crate::game::EngineGame;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
-use chess::game::Game;
 use chess::movegen::MoveTypes;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
-    game: &mut Game,
+    game: &mut EngineGame,
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     plies: u8,
@@ -19,8 +18,7 @@ pub fn quiescence(
     state.nodes_visited += 1;
 
     if plies == MAX_SEARCH_DEPTH {
-        let eval = eval::eval(game);
-        return Ok(NegamaxEval::from_eval(eval, game.player));
+        return Ok(NegamaxEval::from_eval(game.eval, game.player()));
     }
 
     if game.is_repeated_position() || game.is_stalemate_by_fifty_move_rule() {
@@ -33,8 +31,7 @@ pub fn quiescence(
         return Err(());
     }
 
-    let raw_eval = eval::eval(game);
-    let eval = NegamaxEval::from_eval(raw_eval, game.player);
+    let eval = NegamaxEval::from_eval(game.eval, game.player());
 
     if eval >= beta {
         return Ok(beta);
@@ -46,7 +43,7 @@ pub fn quiescence(
 
     let mut moves = game.moves_with_type(&MoveTypes::QUIESCENCE);
 
-    move_ordering::order_moves(game, &mut moves, None);
+    move_ordering::order_moves(&game.game, &mut moves, None);
 
     let mut best_eval = NegamaxEval::MIN;
 

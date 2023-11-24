@@ -1,14 +1,15 @@
 use std::time::Duration;
 
+use crate::game::EngineGame;
 use crate::options::EngineOptions;
-use chess::{game::Game, moves::Move};
+use chess::moves::Move;
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
 
 pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
     fn go(
         &mut self,
-        game: &mut Game,
+        game: &mut EngineGame,
         time_control: &TimeControl,
         search_restrictions: &SearchRestrictions,
         options: &EngineOptions,

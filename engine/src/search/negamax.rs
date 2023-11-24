@@ -1,15 +1,16 @@
+use crate::game::EngineGame;
 use crate::search::quiescence::quiescence;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
 use crate::transposition::transposition_table::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
-use chess::{game::Game, moves::Move};
+use chess::moves::Move;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
-    game: &mut Game,
+    game: &mut EngineGame,
     mut alpha: NegamaxEval,
     beta: NegamaxEval,
     mut depth: u8,
@@ -25,7 +26,7 @@ pub fn negamax(
     // Check extension: If we're about to finish searching, but we are in check, we
     // should keep going.
     if depth == 0 {
-        let in_check = game.board.king_in_check(game.player);
+        let in_check = game.is_king_in_check();
         if in_check && depth < MAX_SEARCH_DEPTH {
             depth += 1;
         }
@@ -45,7 +46,7 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = tt.get(&game.zobrist) {
+    if let Some(tt_entry) = tt.get(&game.zobrist()) {
         if !is_root && tt_entry.depth > depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval),
@@ -70,16 +71,14 @@ pub fn negamax(
     let mut moves = game.moves();
 
     if moves.is_empty() {
-        return if game.board.king_in_check(game.player) {
-            Ok(NegamaxEval::mated_in(plies))
-        } else if game.board.king_in_check(game.player.other()) {
-            Ok(NegamaxEval::mate_in(plies))
+        return Ok(if game.is_king_in_check() {
+            NegamaxEval::mated_in(plies)
         } else {
-            Ok(NegamaxEval::DRAW)
-        };
+            NegamaxEval::DRAW
+        });
     }
 
-    move_ordering::order_moves(game, &mut moves, previous_best_move);
+    move_ordering::order_moves(&game.game, &mut moves, previous_best_move);
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
@@ -116,7 +115,7 @@ pub fn negamax(
                 depth,
             };
 
-            tt.insert(&game.zobrist, tt_data);
+            tt.insert(&game.zobrist(), tt_data);
 
             return Ok(beta);
         }
@@ -134,7 +133,7 @@ pub fn negamax(
         depth,
     };
 
-    tt.insert(&game.zobrist, tt_data);
+    tt.insert(&game.zobrist(), tt_data);
 
     Ok(alpha)
 }

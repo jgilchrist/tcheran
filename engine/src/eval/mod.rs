@@ -1,5 +1,5 @@
 mod material_diff;
-mod piece_square_tables;
+pub mod piece_square_tables;
 
 use chess::game::Game;
 
@@ -18,11 +18,23 @@ impl std::ops::Add for Eval {
     }
 }
 
+impl std::ops::AddAssign for Eval {
+    fn add_assign(&mut self, rhs: Self) {
+        self.0 += rhs.0;
+    }
+}
+
 impl std::ops::Sub for Eval {
     type Output = Self;
 
     fn sub(self, rhs: Self) -> Self::Output {
         Self(self.0 - rhs.0)
+    }
+}
+
+impl std::ops::SubAssign for Eval {
+    fn sub_assign(&mut self, rhs: Self) {
+        self.0 -= rhs.0;
     }
 }
 
