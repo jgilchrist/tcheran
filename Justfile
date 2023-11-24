@@ -41,7 +41,7 @@ playoff name1 name2 concurrency openingsfile:
 		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
 		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
 		-openings file={{openingsfile}} \
-		-ratinginterval 5 \
+		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds 1000 -games 2 -repeat \
 		-pgnout ./bins/{{name1}}-vs-{{name2}}.pgn \
