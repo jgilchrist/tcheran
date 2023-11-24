@@ -45,6 +45,7 @@ playoff name1 name2 concurrency openingsfile:
 		-concurrency {{concurrency}} \
 		-rounds 1000 -games 2 -repeat \
 		-pgnout ./bins/{{name1}}-vs-{{name2}}.pgn \
+		-sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
 			tc=8+0.2 \
