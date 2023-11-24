@@ -16,29 +16,29 @@ use chess::player::Player;
 use crate::eval::Eval;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct NegamaxEval(pub i32);
+pub struct NegamaxEval(pub i16);
 
 impl NegamaxEval {
-    pub(crate) const MAX: Self = Self(i32::MAX);
-    pub(crate) const MIN: Self = Self(i32::MIN);
+    pub(crate) const MAX: Self = Self(i16::MAX);
+    pub(crate) const MIN: Self = Self(i16::MIN);
     pub(crate) const DRAW: Self = Self(0);
 
-    const MATE: i32 = 32000;
+    const MATE: i16 = 32000;
 
     #[must_use]
     pub fn mate_in(ply: u8) -> Self {
-        Self(Self::MATE - i32::from(ply))
+        Self(Self::MATE - i16::from(ply))
     }
 
     #[must_use]
     pub fn mated_in(ply: u8) -> Self {
-        Self(-Self::MATE + i32::from(ply))
+        Self(-Self::MATE + i16::from(ply))
     }
 
     // TODO: We say 'any rating within 100 of 32000 is still mate in x moves'
     // Can we make this less arbitrary?
     #[must_use]
-    pub fn is_mate_in_moves(self) -> Option<i32> {
+    pub fn is_mate_in_moves(self) -> Option<i16> {
         if self.0 > 32000 - 100 {
             return Some((Self::MATE - self.0 + 1) / 2);
         }
@@ -87,10 +87,10 @@ impl std::ops::Sub for NegamaxEval {
     }
 }
 
-impl std::ops::Mul<i32> for NegamaxEval {
+impl std::ops::Mul<i16> for NegamaxEval {
     type Output = Self;
 
-    fn mul(self, rhs: i32) -> Self::Output {
+    fn mul(self, rhs: i16) -> Self::Output {
         Self(self.0 * rhs)
     }
 }

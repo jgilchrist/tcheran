@@ -37,7 +37,7 @@ impl PieceKind {
 
     #[must_use]
     #[inline]
-    pub const fn value_of(p: Self) -> i32 {
+    pub const fn value_of(p: Self) -> i16 {
         match p {
             Self::Pawn => 100,
             Self::Knight | Self::Bishop => 300,
@@ -49,7 +49,7 @@ impl PieceKind {
 
     #[inline]
     #[must_use]
-    pub fn value(&self) -> i32 {
+    pub fn value(&self) -> i16 {
         Self::value_of(*self)
     }
 }

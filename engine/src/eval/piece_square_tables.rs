@@ -9,8 +9,8 @@ use chess::{
 
 use super::Eval;
 
-type PieceValueTableDefinition = [[i32; File::N]; Rank::N];
-type PieceValueTable = [i32; Square::N];
+type PieceValueTableDefinition = [[i16; File::N]; Rank::N];
+type PieceValueTable = [i16; Square::N];
 type PieceValueTables = [[PieceValueTable; PieceKind::N]; Player::N];
 
 #[rustfmt::skip]
@@ -183,7 +183,7 @@ pub fn piece_square_tables_black(game: &Game) -> Eval {
 }
 
 #[inline]
-fn piece_contribution(idx: usize, piece: Piece) -> i32 {
+fn piece_contribution(idx: usize, piece: Piece) -> i16 {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
     unsafe { tables::TABLES[piece.player.array_idx()][piece.kind.array_idx()][idx] }

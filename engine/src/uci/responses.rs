@@ -6,8 +6,8 @@ use chess::moves::Move;
 
 #[derive(Debug)]
 pub(super) enum InfoScore {
-    Centipawns(i32),
-    Mate(i32),
+    Centipawns(i16),
+    Mate(i16),
     // lowerbound: i32,
     // upperbound: i32,
 }

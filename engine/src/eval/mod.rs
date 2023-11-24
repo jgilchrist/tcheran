@@ -8,7 +8,7 @@ pub fn init() {
 }
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Eval(pub i32);
+pub struct Eval(pub i16);
 
 impl std::ops::Add for Eval {
     type Output = Self;
@@ -26,10 +26,10 @@ impl std::ops::Sub for Eval {
     }
 }
 
-impl std::ops::Mul<i32> for Eval {
+impl std::ops::Mul<i16> for Eval {
     type Output = Self;
 
-    fn mul(self, rhs: i32) -> Self::Output {
+    fn mul(self, rhs: i16) -> Self::Output {
         Self(self.0 * rhs)
     }
 }
