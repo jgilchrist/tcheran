@@ -2,7 +2,7 @@ use crate::search::quiescence::quiescence;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
 use crate::transposition::transposition_table::{
-    NodeBound, SearchTranspositionTable, SearchTranspositionTableData,
+    NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
 use chess::{game::Game, moves::Move};
 
@@ -55,7 +55,7 @@ pub fn negamax(
             }
         }
 
-        previous_best_move = tt_entry.best_move;
+        previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
@@ -130,7 +130,7 @@ pub fn negamax(
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
         eval: alpha,
-        best_move,
+        best_move: best_move.map(|m| TTMove::from_move(&m)),
         depth,
     };
 
