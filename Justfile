@@ -36,14 +36,14 @@ copy-bin name:
 	cargo build --release
 	cp target/release/engine bins/{{name}}
 
-playoff name1 name2 rounds concurrency openingsfile:
+playoff name1 name2 concurrency openingsfile:
 	cutechess-cli \
 		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
 		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
 		-openings file={{openingsfile}} \
 		-ratinginterval 5 \
 		-concurrency {{concurrency}} \
-		-rounds {{rounds}} \
+		-rounds 1000 -games 2 -repeat \
 		-pgnout ./bins/{{name1}}-vs-{{name2}}.pgn \
 		-each \
 			proto=uci \
