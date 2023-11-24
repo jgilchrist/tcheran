@@ -1,5 +1,4 @@
 use chess::moves::Move;
-use std::mem::size_of;
 
 use crate::search::NegamaxEval;
 use chess::zobrist::ZobristHash;
@@ -64,7 +63,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
             return;
         }
 
-        let size_of_entry = size_of::<T>();
+        let size_of_entry = std::mem::size_of::<TranspositionTableEntry<T>>();
         let total_size_in_bytes = size_mb * 1024 * 1024;
         let number_of_entries = total_size_in_bytes / size_of_entry;
 
