@@ -18,9 +18,8 @@ type PerftTranspositionTable = TranspositionTable<PerftTranspositionTableData>;
 
 #[must_use]
 fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize {
-    if depth == 0 {
-        // PERF: Replace with legal_moves once we're generating legal moves
-        return 1;
+    if depth == 1 {
+        return game.moves().len();
     }
 
     if let Some(tt_data) = tt.get(&game.zobrist) {
