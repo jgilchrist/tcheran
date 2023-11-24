@@ -183,7 +183,7 @@ impl Game {
     }
 
     #[must_use]
-    pub fn is_stalemate_by_fifty_move_rule(&mut self) -> bool {
+    pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         if self.halfmove_clock >= 100 {
             return self.moves().first().is_some();
         }
