@@ -2,15 +2,12 @@ use color_eyre::Result;
 use engine::util::log::log;
 
 mod cli {
-    use chess::game::Game;
     use clap::{Parser, Subcommand, ValueEnum};
     use color_eyre::Result;
     use engine::{
         strategy::KnownStrategy,
         uci::{self},
     };
-
-    use chess::perft;
 
     #[derive(ValueEnum, Clone)]
     pub enum Strategy {
@@ -32,9 +29,6 @@ mod cli {
             #[arg(value_enum)]
             strategy: Strategy,
         },
-
-        /// Run a perft test
-        Perft { depth: u8, fen: Option<String> },
     }
 
     pub fn parse_cli() -> Cli {
@@ -52,16 +46,6 @@ mod cli {
 
                 let strategy = known_strategy.create();
                 uci::uci(strategy)
-            }
-            Commands::Perft { depth, fen } => {
-                let mut game = match fen {
-                    Some(fen) => Game::from_fen(&fen)?,
-                    None => Game::default(),
-                };
-
-                let result = perft::perft(depth, &mut game);
-                println!("{result}");
-                Ok(())
             }
         }
     }
