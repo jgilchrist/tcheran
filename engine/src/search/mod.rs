@@ -22,7 +22,6 @@ const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 
 pub struct SearchState {
     start_time: Option<Instant>,
-    best_pv: Option<Vec<Move>>,
     nodes_visited: u32,
     max_depth_reached: u8,
 }
@@ -33,7 +32,6 @@ impl SearchState {
             start_time: None,
             max_depth_reached: 0,
             nodes_visited: 0,
-            best_pv: None,
         }
     }
 
