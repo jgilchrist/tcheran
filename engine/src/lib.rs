@@ -32,5 +32,4 @@ pub fn init() {
     chess::init();
 
     eval::init();
-    transposition::init();
 }
