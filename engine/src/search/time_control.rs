@@ -6,6 +6,8 @@ use std::time::{Duration, Instant};
 pub struct TimeStrategy {
     player: Player,
     time_control: TimeControl,
+
+    started_at: Option<Instant>,
     stop_searching_at: Option<Instant>,
 }
 
@@ -14,16 +16,23 @@ impl TimeStrategy {
         Self {
             time_control: time_control.clone(),
             player: game.player,
+            started_at: None,
             stop_searching_at: None,
         }
     }
 
     pub fn init(&mut self) {
+        self.started_at = Some(Instant::now());
+
         self.stop_searching_at = match self.time_control {
             TimeControl::Infinite => None,
             TimeControl::ExactTime(move_time) => Some(Instant::now() + move_time),
             TimeControl::Clocks(ref clocks) => Some(Instant::now() + self.time_allotted(clocks)),
         }
+    }
+
+    pub fn elapsed(&self) -> Duration {
+        self.started_at.unwrap().elapsed()
     }
 
     // TODO: Improve this - for now, it's super simple.

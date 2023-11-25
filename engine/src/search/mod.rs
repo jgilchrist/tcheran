@@ -1,5 +1,3 @@
-use std::time::{Duration, Instant};
-
 use chess::moves::Move;
 
 use crate::options::EngineOptions;
@@ -21,7 +19,6 @@ mod time_control;
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 
 pub struct SearchState {
-    start_time: Option<Instant>,
     nodes_visited: u32,
     max_depth_reached: u8,
 }
@@ -29,22 +26,9 @@ pub struct SearchState {
 impl SearchState {
     const fn new() -> Self {
         Self {
-            start_time: None,
             max_depth_reached: 0,
             nodes_visited: 0,
         }
-    }
-
-    pub fn start_timer(&mut self) {
-        self.start_time = Some(Instant::now());
-    }
-
-    pub fn elapsed_time(&self) -> Duration {
-        let Some(t) = self.start_time else {
-            panic!("Tried to fetch search's elapsed time without a start time.")
-        };
-
-        t.elapsed()
     }
 }
 
@@ -58,7 +42,6 @@ pub fn search(
     reporter: &impl Reporter,
 ) -> (Move, Eval) {
     let mut state = SearchState::new();
-    state.start_timer();
 
     let mut time_strategy = TimeStrategy::new(&game.game, time_control);
     time_strategy.init();

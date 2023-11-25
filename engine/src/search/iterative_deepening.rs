@@ -67,9 +67,9 @@ pub fn search(
             pv: pv.clone(),
             hashfull: tt.occupancy(),
             stats: SearchStats {
-                time: state.elapsed_time(),
+                time: time_control.elapsed(),
                 nodes: state.nodes_visited,
-                nodes_per_second: nodes_per_second(state.nodes_visited, state.elapsed_time()),
+                nodes_per_second: nodes_per_second(state.nodes_visited, time_control.elapsed()),
             },
         });
     }
