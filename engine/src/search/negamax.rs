@@ -1,10 +1,10 @@
 use crate::game::EngineGame;
 use crate::search::quiescence::quiescence;
 use crate::search::time_control::TimeStrategy;
-use crate::strategy::Control;
-use crate::transposition::transposition_table::{
+use crate::search::transposition::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
+use crate::strategy::Control;
 use chess::moves::Move;
 
 use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};

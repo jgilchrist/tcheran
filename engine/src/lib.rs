@@ -6,7 +6,7 @@ pub mod util;
 
 pub mod game;
 pub mod search;
-pub mod transposition;
+pub mod transposition_table;
 
 pub use eval::eval;
 

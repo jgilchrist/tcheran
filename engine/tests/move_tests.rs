@@ -4,9 +4,9 @@ use chess::square::squares::all::*;
 use engine::eval::Eval;
 use engine::game::EngineGame;
 use engine::options::EngineOptions;
+use engine::search::transposition::SearchTranspositionTable;
 use engine::search::{search, NegamaxEval};
 use engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
-use engine::transposition::transposition_table::SearchTranspositionTable;
 
 fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, Eval) {
     engine::init();

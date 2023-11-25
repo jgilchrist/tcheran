@@ -6,7 +6,7 @@ use crate::strategy::{Control, SearchRestrictions, TimeControl};
 use crate::{eval::Eval, strategy::Reporter};
 
 use crate::game::EngineGame;
-use crate::transposition::transposition_table::SearchTranspositionTable;
+use crate::search::transposition::SearchTranspositionTable;
 pub use negamax_eval::NegamaxEval;
 
 mod iterative_deepening;
@@ -15,6 +15,7 @@ mod negamax;
 mod negamax_eval;
 mod quiescence;
 mod time_control;
+pub mod transposition;
 
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 

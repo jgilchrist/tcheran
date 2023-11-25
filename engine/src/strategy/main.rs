@@ -2,7 +2,7 @@ use crate::game::EngineGame;
 use crate::options::EngineOptions;
 
 use crate::search;
-use crate::transposition::transposition_table::SearchTranspositionTable;
+use crate::search::transposition::SearchTranspositionTable;
 
 use super::{Control, Reporter, SearchRestrictions, Strategy, TimeControl};
 

@@ -1,6 +1,6 @@
 use chess::fen::START_POS;
 use chess::game::Game;
-use engine::transposition::transposition_table::{TTOverwriteable, TranspositionTable};
+use engine::transposition_table::{TTOverwriteable, TranspositionTable};
 
 #[derive(Debug, Clone)]
 struct PerftTranspositionTableData {

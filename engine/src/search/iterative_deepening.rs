@@ -2,11 +2,11 @@ use crate::game::EngineGame;
 use crate::options::EngineOptions;
 use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeStrategy;
+use crate::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::search::{negamax, SearchState, MAX_SEARCH_DEPTH};
 use crate::strategy::{
     Control, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchStats,
 };
-use crate::transposition::transposition_table::{NodeBound, SearchTranspositionTable};
 use chess::game::Game;
 use chess::moves::Move;
 use chess::util::nodes_per_second;
