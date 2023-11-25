@@ -116,9 +116,9 @@ impl KnownStrategy {
 
     pub const fn to_string(&self) -> &'static str {
         match self {
-            KnownStrategy::Main => "Main",
-            KnownStrategy::Random => "Random",
-            KnownStrategy::TopEval => "TopEval",
+            Self::Main => "Main",
+            Self::Random => "Random",
+            Self::TopEval => "TopEval",
         }
     }
 }
