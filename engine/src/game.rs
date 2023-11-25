@@ -1,8 +1,7 @@
 use crate::eval;
 use crate::eval::Eval;
-use chess::board::Board;
 use chess::direction::Direction;
-use chess::game::{CastleRights, Game};
+use chess::game::Game;
 use chess::movegen::MoveTypes;
 use chess::moves::Move;
 use chess::piece::{Piece, PieceKind};
@@ -32,35 +31,11 @@ impl Default for EngineGame {
 impl EngineGame {
     #[must_use]
     pub fn new() -> Self {
-        let game = Game::new();
-        let eval = eval::eval(&game);
-
-        Self {
-            game,
-            eval,
-            history: Vec::new(),
-        }
+        Self::from_game(Game::new())
     }
 
     #[must_use]
-    pub fn from_state(
-        board: Board,
-        player: Player,
-        white_castle_rights: CastleRights,
-        black_castle_rights: CastleRights,
-        en_passant_target: Option<Square>,
-        halfmove_clock: u32,
-        plies: u32,
-    ) -> Self {
-        let game = Game::from_state(
-            board,
-            player,
-            white_castle_rights,
-            black_castle_rights,
-            en_passant_target,
-            halfmove_clock,
-            plies,
-        );
+    pub fn from_game(game: Game) -> Self {
         let eval = eval::eval(&game);
 
         Self {
@@ -72,13 +47,7 @@ impl EngineGame {
 
     pub fn from_fen(fen: &str) -> Result<Self> {
         let game = Game::from_fen(fen)?;
-        let eval = eval::eval(&game);
-
-        Ok(Self {
-            game,
-            eval,
-            history: Vec::new(),
-        })
+        Ok(Self::from_game(game))
     }
 
     #[must_use]
