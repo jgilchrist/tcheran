@@ -115,7 +115,6 @@ fn format_fullmove_number(game: &Game) -> String {
     game.turn().to_string()
 }
 
-#[must_use]
 pub fn write(game: &Game) -> String {
     format!(
         "{} {} {} {} {} {}",

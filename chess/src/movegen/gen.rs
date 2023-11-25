@@ -42,7 +42,6 @@ impl MoveTypes {
     };
 }
 
-#[must_use]
 pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
     let ctx = get_ctx(game);
     let mut moves: Vec<Move> = Vec::with_capacity(64);

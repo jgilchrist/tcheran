@@ -63,7 +63,6 @@ impl std::fmt::Display for Eval {
 }
 
 #[allow(clippy::cast_possible_wrap)]
-#[must_use]
 pub fn eval(game: &Game) -> Eval {
     material_diff::material_diff(game) + piece_square_tables::piece_square_tables(game)
 }
@@ -77,7 +76,6 @@ pub struct EvalComponents {
     pub piece_square_tables: Eval,
 }
 
-#[must_use]
 pub fn eval_components(game: &Game) -> EvalComponents {
     let eval = eval(game);
     let material = material_diff::material_diff(game);

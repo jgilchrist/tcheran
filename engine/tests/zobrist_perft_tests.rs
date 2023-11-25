@@ -16,7 +16,6 @@ impl TTOverwriteable for PerftTranspositionTableData {
 
 type PerftTranspositionTable = TranspositionTable<PerftTranspositionTableData>;
 
-#[must_use]
 fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize {
     if depth == 1 {
         return game.moves().len();

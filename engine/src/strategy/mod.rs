@@ -106,7 +106,6 @@ pub enum KnownStrategy {
 }
 
 impl KnownStrategy {
-    #[must_use]
     pub fn create<TCx: Control, TRx: Reporter>(&self) -> Box<dyn Strategy<TCx, TRx> + Send + Sync> {
         match self {
             Self::Main => Box::<MainStrategy>::default(),

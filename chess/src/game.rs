@@ -23,7 +23,6 @@ pub enum CastleRightsSide {
 impl CastleRightsSide {
     pub const N: usize = 2;
 
-    #[must_use]
     #[inline]
     pub fn array_idx(&self) -> usize {
         *self as usize
@@ -37,12 +36,10 @@ pub struct CastleRights {
 }
 
 impl CastleRights {
-    #[must_use]
     pub const fn can_castle(&self) -> bool {
         self.king_side || self.queen_side
     }
 
-    #[must_use]
     pub const fn none() -> Self {
         Self {
             king_side: false,
@@ -50,7 +47,6 @@ impl CastleRights {
         }
     }
 
-    #[must_use]
     pub const fn without_kingside(&self) -> Self {
         Self {
             king_side: false,
@@ -58,7 +54,6 @@ impl CastleRights {
         }
     }
 
-    #[must_use]
     pub const fn without_queenside(&self) -> Self {
         Self {
             king_side: self.king_side,
@@ -66,7 +61,6 @@ impl CastleRights {
         }
     }
 
-    #[must_use]
     pub fn can_castle_to_side(&self, side: CastleRightsSide) -> bool {
         match side {
             CastleRightsSide::Kingside => self.king_side,
@@ -117,7 +111,6 @@ pub struct Game {
 }
 
 impl Game {
-    #[must_use]
     pub fn new() -> Self {
         Self::from_state(
             Board::start(),
@@ -130,7 +123,6 @@ impl Game {
         )
     }
 
-    #[must_use]
     pub fn from_state(
         board: Board,
         player: Player,
@@ -162,27 +154,22 @@ impl Game {
         fen::parse(fen)
     }
 
-    #[must_use]
     pub fn to_fen(&self) -> String {
         fen::write(self)
     }
 
-    #[must_use]
     pub fn turn(&self) -> u32 {
         self.plies / 2 + 1
     }
 
-    #[must_use]
     pub fn moves(&self) -> Vec<Move> {
         generate_moves(self, &MoveTypes::ALL)
     }
 
-    #[must_use]
     pub fn moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
         generate_moves(self, move_types)
     }
 
-    #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         if self.halfmove_clock >= 100 {
             return self.moves().first().is_some();
@@ -191,13 +178,11 @@ impl Game {
         false
     }
 
-    #[must_use]
     pub fn is_repeated_position(&self) -> bool {
         // PERF: We only need to search up to the last irreversible move
         self.history.iter().rev().any(|h| h.zobrist == self.zobrist)
     }
 
-    #[must_use]
     pub fn is_stalemate_by_repetition(&self) -> bool {
         // PERF: We only need to search up to the last irreversible move
         let mut count = 0;

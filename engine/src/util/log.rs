@@ -1,6 +1,5 @@
 use std::{fs, io::Write};
 
-#[must_use]
 pub fn log_file() -> String {
     "log".to_string()
 }

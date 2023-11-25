@@ -9,7 +9,6 @@ pub struct LockLatch {
 
 impl LockLatch {
     #[inline]
-    #[must_use]
     pub const fn new() -> Self {
         Self {
             m: Mutex::new(false),

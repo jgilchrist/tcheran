@@ -33,7 +33,6 @@ impl Direction {
         Self::NorthWest,
     ];
 
-    #[must_use]
     pub fn pawn_move_direction(player: Player) -> Self {
         match player {
             Player::White => Self::North,

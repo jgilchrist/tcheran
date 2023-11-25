@@ -11,7 +11,6 @@ pub enum PieceKind {
 }
 
 impl PieceKind {
-    #[must_use]
     pub fn is_slider(&self) -> bool {
         matches!(*self, Self::Bishop | Self::Rook | Self::Queen)
     }
@@ -29,13 +28,11 @@ impl PieceKind {
         Self::King,
     ];
 
-    #[must_use]
     #[inline]
     pub fn array_idx(&self) -> usize {
         *self as usize
     }
 
-    #[must_use]
     #[inline]
     pub const fn value_of(p: Self) -> i16 {
         match p {
@@ -48,7 +45,6 @@ impl PieceKind {
     }
 
     #[inline]
-    #[must_use]
     pub fn value(&self) -> i16 {
         Self::value_of(*self)
     }
@@ -66,7 +62,6 @@ pub enum PromotionPieceKind {
 impl PromotionPieceKind {
     pub const ALL: &'static [Self; 4] = &[Self::Knight, Self::Bishop, Self::Rook, Self::Queen];
 
-    #[must_use]
     pub const fn piece(&self) -> PieceKind {
         match self {
             Self::Knight => PieceKind::Knight,
@@ -98,22 +93,18 @@ impl Piece {
     pub const BLACK_QUEEN: Self = Self::black(PieceKind::Queen);
     pub const BLACK_KING: Self = Self::black(PieceKind::King);
 
-    #[must_use]
     pub const fn new(player: Player, kind: PieceKind) -> Self {
         Self { kind, player }
     }
 
-    #[must_use]
     pub const fn white(kind: PieceKind) -> Self {
         Self::new(Player::White, kind)
     }
 
-    #[must_use]
     pub const fn black(kind: PieceKind) -> Self {
         Self::new(Player::Black, kind)
     }
 
-    #[must_use]
     pub fn value(&self) -> i16 {
         match self.player {
             Player::White => self.kind.value(),

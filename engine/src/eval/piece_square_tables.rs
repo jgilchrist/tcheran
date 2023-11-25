@@ -140,7 +140,6 @@ pub fn init() {
     }
 }
 
-#[must_use]
 pub fn piece_square_tables(game: &Game) -> Eval {
     let mut eval = Eval(0);
 
@@ -155,7 +154,6 @@ pub fn piece_square_tables(game: &Game) -> Eval {
     eval
 }
 
-#[must_use]
 pub fn piece_square_tables_white(game: &Game) -> Eval {
     let mut eval = Eval(0);
 
@@ -170,7 +168,6 @@ pub fn piece_square_tables_white(game: &Game) -> Eval {
     eval
 }
 
-#[must_use]
 pub fn piece_square_tables_black(game: &Game) -> Eval {
     let mut eval = Eval(0);
 
@@ -186,7 +183,6 @@ pub fn piece_square_tables_black(game: &Game) -> Eval {
 }
 
 #[inline]
-#[must_use]
 pub fn piece_contribution(square: Square, piece: Piece) -> Eval {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square

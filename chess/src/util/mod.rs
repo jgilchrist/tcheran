@@ -7,7 +7,6 @@ use std::time::Duration;
     clippy::cast_sign_loss,
     clippy::cast_precision_loss
 )]
-#[must_use]
 pub fn nodes_per_second(nodes: u32, elapsed_time: Duration) -> u32 {
     (nodes as f32 / elapsed_time.as_secs_f32()) as u32
 }

@@ -7,7 +7,6 @@ pub enum Player {
 impl Player {
     pub const N: usize = 2;
 
-    #[must_use]
     pub const fn other(&self) -> Self {
         match *self {
             Self::White => Self::Black,
@@ -15,7 +14,6 @@ impl Player {
         }
     }
 
-    #[must_use]
     #[inline]
     pub fn array_idx(&self) -> usize {
         *self as usize

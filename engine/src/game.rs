@@ -29,12 +29,10 @@ impl Default for EngineGame {
 }
 
 impl EngineGame {
-    #[must_use]
     pub fn new() -> Self {
         Self::from_game(Game::new())
     }
 
-    #[must_use]
     pub fn from_game(game: Game) -> Self {
         let eval = eval::eval(&game);
 
@@ -50,45 +48,37 @@ impl EngineGame {
         Ok(Self::from_game(game))
     }
 
-    #[must_use]
     pub fn moves(&self) -> Vec<Move> {
         self.game.moves()
     }
 
-    #[must_use]
     pub fn moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
         self.game.moves_with_type(move_types)
     }
 
-    #[must_use]
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         self.game.is_stalemate_by_fifty_move_rule()
     }
 
-    #[must_use]
     pub fn is_repeated_position(&self) -> bool {
         self.game.is_repeated_position()
     }
 
-    #[must_use]
     pub fn is_stalemate_by_repetition(&self) -> bool {
         self.game.is_stalemate_by_repetition()
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn is_king_in_check(&self) -> bool {
         self.game.board.king_in_check(self.game.player)
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn player(&self) -> Player {
         self.game.player
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn zobrist(&self) -> ZobristHash {
         self.game.zobrist.clone()
     }

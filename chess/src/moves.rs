@@ -8,7 +8,6 @@ pub struct Move {
 }
 
 impl Move {
-    #[must_use]
     pub const fn new(src: Square, dst: Square) -> Self {
         Self {
             src,
@@ -17,7 +16,6 @@ impl Move {
         }
     }
 
-    #[must_use]
     pub const fn new_with_promotion(
         src: Square,
         dst: Square,
@@ -30,7 +28,6 @@ impl Move {
         }
     }
 
-    #[must_use]
     pub fn notation(&self) -> String {
         format!(
             "{}{}{}",
@@ -66,7 +63,6 @@ pub mod known {
     use crate::player::Player;
     use crate::square::squares;
 
-    #[must_use]
     pub const fn kingside_castle_move(player: Player) -> &'static Move {
         match player {
             Player::White => &WHITE_KINGSIDE_CASTLE_MOVE,
@@ -74,7 +70,6 @@ pub mod known {
         }
     }
 
-    #[must_use]
     pub const fn queenside_castle_move(player: Player) -> &'static Move {
         match player {
             Player::White => &WHITE_QUEENSIDE_CASTLE_MOVE,

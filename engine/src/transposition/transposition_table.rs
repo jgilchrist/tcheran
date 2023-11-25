@@ -44,7 +44,6 @@ pub struct TTMove {
 }
 
 impl TTMove {
-    #[must_use]
     pub fn from_move(mv: &Move) -> Self {
         Self {
             start_square_idx: mv.src.idx(),
@@ -53,7 +52,6 @@ impl TTMove {
         }
     }
 
-    #[must_use]
     pub fn to_move(&self) -> Move {
         Move {
             src: Square::from_index(self.start_square_idx),
@@ -110,7 +108,6 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     #[allow(clippy::cast_precision_loss)] // This is just an approximation, so a loss of precision is fine
     #[allow(clippy::cast_possible_truncation)]
     #[allow(clippy::cast_sign_loss)]
-    #[must_use]
     pub fn occupancy(&self) -> usize {
         let decimal = self.occupied as f32 / self.data.len() as f32;
         let permille = decimal * 1000.0;
@@ -143,7 +140,6 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         }
     }
 
-    #[must_use]
     pub fn get(&self, key: &ZobristHash) -> Option<&T> {
         let idx = self.get_entry_idx(key);
 

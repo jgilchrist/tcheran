@@ -26,7 +26,6 @@ pub enum File {
 impl File {
     pub const N: usize = 8;
 
-    #[must_use]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
@@ -44,12 +43,10 @@ impl File {
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn idx(&self) -> u8 {
         *self as u8
     }
 
-    #[must_use]
     pub const fn notation(&self) -> &str {
         match self {
             Self::A => "a",
@@ -63,7 +60,6 @@ impl File {
         }
     }
 
-    #[must_use]
     pub fn on_edge(&self) -> bool {
         matches!(self, Self::A | Self::H)
     }
@@ -107,7 +103,6 @@ pub enum Rank {
 impl Rank {
     pub const N: usize = 8;
 
-    #[must_use]
     #[inline]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
@@ -125,13 +120,11 @@ impl Rank {
         }
     }
 
-    #[must_use]
     #[inline]
     pub const fn idx(&self) -> u8 {
         *self as u8
     }
 
-    #[must_use]
     pub const fn notation(&self) -> &str {
         match self {
             Self::R1 => "1",
@@ -145,7 +138,6 @@ impl Rank {
         }
     }
 
-    #[must_use]
     pub fn on_edge(&self) -> bool {
         matches!(self, Self::R1 | Self::R8)
     }
@@ -169,12 +161,10 @@ pub struct Square(pub Bitboard);
 impl Square {
     pub const N: usize = 64;
 
-    #[must_use]
     pub const fn from_file_and_rank(file: File, rank: Rank) -> Self {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
-    #[must_use]
     pub fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
         match bitboard.count() {
             0 => None,
@@ -183,59 +173,49 @@ impl Square {
         }
     }
 
-    #[must_use]
     pub const fn from_index(idx: u8) -> Self {
         Self(Bitboard::new(1 << idx))
     }
 
-    #[must_use]
     pub const fn from_array_index(idx: usize) -> Self {
         Self(Bitboard::new(1 << idx))
     }
 
-    #[must_use]
     pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Self {
         let idx = rank_idx * 8 + file_idx;
         Self::from_index(idx)
     }
 
-    #[must_use]
     pub const fn from_array_idxs(file_idx: usize, rank_idx: usize) -> Self {
         let idx = rank_idx * 8 + file_idx;
         Self::from_array_index(idx)
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn idx(&self) -> u8 {
         self.0.trailing_zeros()
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn array_idx(&self) -> usize {
         self.idx() as usize
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn rank(self) -> Rank {
         Rank::from_idx(self.idx() / 8)
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn file(self) -> File {
         File::from_idx(self.idx() % 8)
     }
 
-    #[must_use]
     pub fn notation(&self) -> String {
         format!("{}{}", self.file(), self.rank())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn in_direction_maybe(&self, direction: Direction) -> Option<Self> {
         match direction {
             Direction::North => self.north_maybe(),
@@ -250,7 +230,6 @@ impl Square {
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
@@ -265,103 +244,86 @@ impl Square {
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north(&self) -> Self {
         Self(self.0.north())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south(&self) -> Self {
         Self(self.0.south())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn east(&self) -> Self {
         Self(self.0.east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_east(&self) -> Self {
         Self(self.0.north_east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_east_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_east(&self) -> Self {
         Self(self.0.south_east())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn west(&self) -> Self {
         Self(self.0.west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.south_west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_west(&self) -> Self {
         Self(self.0.south_west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_west_maybe(&self) -> Option<Self> {
         Self::from_bitboard_maybe(self.0.north_west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_west(&self) -> Self {
         Self(self.0.north_west())
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn on_edge(&self) -> bool {
         self.rank().on_edge() || self.file().on_edge()
     }
@@ -392,7 +354,6 @@ pub mod squares {
     use crate::player::Player;
     use crate::square::Square;
 
-    #[must_use]
     pub const fn king_start(player: Player) -> Square {
         match player {
             Player::White => INIT_WHITE_KING,
@@ -400,7 +361,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn kingside_rook_start(player: Player) -> Square {
         match player {
             Player::White => H1,
@@ -408,7 +368,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn queenside_rook_start(player: Player) -> Square {
         match player {
             Player::White => A1,
@@ -416,7 +375,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn kingside_castle_dest(player: Player) -> Square {
         match player {
             Player::White => WHITE_KINGSIDE_CASTLE_SQUARE,
@@ -424,7 +382,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn kingside_rook_castle_end(player: Player) -> Square {
         match player {
             Player::White => F1,
@@ -432,7 +389,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn queenside_castle_dest(player: Player) -> Square {
         match player {
             Player::White => WHITE_QUEENSIDE_CASTLE_SQUARE,
@@ -440,7 +396,6 @@ pub mod squares {
         }
     }
 
-    #[must_use]
     pub const fn queenside_rook_castle_end(player: Player) -> Square {
         match player {
             Player::White => D1,

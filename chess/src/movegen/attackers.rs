@@ -4,7 +4,6 @@ use crate::movegen::tables;
 use crate::player::Player;
 use crate::square::Square;
 
-#[must_use]
 pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
 
@@ -39,7 +38,6 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
     attacks
 }
 
-#[must_use]
 pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> Bitboard {
     let mut attackers = Bitboard::EMPTY;
     let our_pieces = board.player_pieces(player);

@@ -15,56 +15,47 @@ impl Bitboard {
     pub const FULL: Self = Self(u64::MAX);
 
     #[inline(always)]
-    #[must_use]
     pub const fn new(bits: u64) -> Self {
         Self(bits)
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn all_except(square: Square) -> Self {
         square.0.invert()
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn is_empty(&self) -> bool {
         self.0 == 0
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn any(&self) -> bool {
         self.0 != 0
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn contains(&self, square: Square) -> bool {
         (*self & square.0).any()
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn single(&self) -> Square {
         debug_assert_eq!(self.count(), 1);
         Square(*self)
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn invert(&self) -> Self {
         Self(!self.0)
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn lsb(&self) -> Self {
         Self((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn pop_lsb_inplace(&mut self) -> Self {
         let lsb = self.lsb();
         self.0 &= self.0 - 1;
@@ -81,14 +72,12 @@ impl Bitboard {
         self.0 &= square.0.invert().0;
     }
 
-    #[must_use]
     #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
     pub const fn count(&self) -> u8 {
         self.0.count_ones() as u8
     }
 
-    #[must_use]
     #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
     pub const fn trailing_zeros(&self) -> u8 {
@@ -96,7 +85,6 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn in_direction(&self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
@@ -111,54 +99,46 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn north(&self) -> Self {
         Self(self.0 << 8)
     }
 
     #[inline(always)]
-    #[must_use]
     pub const fn south(&self) -> Self {
         Self(self.0 >> 8)
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 << 1) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 << 9) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_east(&self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 >> 7) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 >> 1) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn south_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 >> 9) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
-    #[must_use]
     pub fn north_west(&self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 << 7) & Self::NOT_H_FILE
@@ -320,7 +300,6 @@ pub mod bitboards {
     use crate::square::squares;
     use crate::square::squares::all::*;
 
-    #[must_use]
     pub const fn kingside_required_empty_and_not_attacked_squares(player: Player) -> Bitboard {
         match player {
             Player::White => WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
@@ -328,7 +307,6 @@ pub mod bitboards {
         }
     }
 
-    #[must_use]
     pub const fn queenside_required_empty_squares(player: Player) -> Bitboard {
         match player {
             Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES,
@@ -336,7 +314,6 @@ pub mod bitboards {
         }
     }
 
-    #[must_use]
     pub const fn queenside_required_not_attacked_squares(player: Player) -> Bitboard {
         match player {
             Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
@@ -344,7 +321,6 @@ pub mod bitboards {
         }
     }
 
-    #[must_use]
     pub const fn pawn_back_rank(player: Player) -> Bitboard {
         match player {
             Player::White => RANK_2,
@@ -352,14 +328,12 @@ pub mod bitboards {
         }
     }
 
-    #[must_use]
     pub const fn pawn_double_push_rank(player: Player) -> Bitboard {
         match player {
             Player::White => RANK_4,
             Player::Black => RANK_5,
         }
     }
-
 
     // TODO: Once const traits are stabilised, all of this logic can be moved to BitOr and BitAnd impls directly
     pub const A_FILE: Bitboard = Bitboard::new(A1.0.0 | A2.0.0 | A3.0.0 | A4.0.0 | A5.0.0 | A6.0.0 | A7.0.0 | A8.0.0);

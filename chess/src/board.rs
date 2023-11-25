@@ -34,7 +34,6 @@ impl PlayerPieces {
 }
 
 impl Board {
-    #[must_use]
     pub fn start() -> Self {
         let mut start = Self {
             white_pieces: PlayerPieces {
@@ -108,7 +107,6 @@ impl Board {
         start
     }
 
-    #[must_use]
     pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
@@ -116,7 +114,6 @@ impl Board {
         }
     }
 
-    #[must_use]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
         // We know array_idx can only return up to Square::N - 1
         unsafe { *self.pieces.get_unchecked(square.array_idx()) }
@@ -161,7 +158,6 @@ impl Board {
         self.pieces[square.array_idx()] = Some(piece);
     }
 
-    #[must_use]
     pub fn king_in_check(&self, player: Player) -> bool {
         let king = self.player_pieces(player).king.single();
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);

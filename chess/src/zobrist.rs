@@ -8,7 +8,6 @@ use rand::prelude::*;
 pub struct ZobristHash(pub u64);
 
 impl ZobristHash {
-    #[must_use]
     pub fn uninit() -> Self {
         Self(0)
     }
@@ -87,7 +86,6 @@ pub fn init() {
     }
 }
 
-#[must_use]
 pub fn hash(game: &Game) -> ZobristHash {
     let mut hash = 0u64;
 
