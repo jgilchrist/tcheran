@@ -1,33 +1,6 @@
 use color_eyre::Result;
+use engine::uci;
 use engine::util::log::log;
-
-mod cli {
-    use clap::{Parser, Subcommand};
-    use color_eyre::Result;
-    use engine::uci::{self};
-
-    #[derive(Parser)]
-    pub struct Cli {
-        #[command(subcommand)]
-        pub command: Option<Commands>,
-    }
-
-    #[derive(Subcommand)]
-    pub enum Commands {
-        /// Run the engine using the UCI protocol
-        Uci,
-    }
-
-    pub fn parse_cli() -> Cli {
-        Cli::parse()
-    }
-
-    pub fn run(cmd: Commands) -> Result<()> {
-        match cmd {
-            Commands::Uci => uci::uci(),
-        }
-    }
-}
 
 fn main() -> Result<()> {
     color_eyre::install()?;
@@ -38,7 +11,5 @@ fn main() -> Result<()> {
     }));
 
     engine::init();
-
-    let args = cli::parse_cli();
-    cli::run(args.command.unwrap_or(cli::Commands::Uci))
+    uci::uci()
 }

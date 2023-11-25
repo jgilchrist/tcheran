@@ -7,7 +7,6 @@ rust-version.workspace = true
 [dependencies]
 chess = { path = "../chess" }
 color-eyre = { workspace = true }
-clap = { version = "4.3.19", features = ["derive"] }
 git-version = "0.3.8"
 nom = { workspace = true }
 rand = { workspace = true }
