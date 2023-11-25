@@ -14,11 +14,12 @@ use crate::game::EngineGame;
 use crate::options::EngineOptions;
 use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::uci::commands::DebugCommand;
-use crate::uci::options::{HashOption, UciOption};
+use crate::uci::options::UciOption;
 use crate::util::sync::LockLatch;
 use crate::{
     eval,
     strategy::{self, Strategy},
+    uci,
     util::log::log,
 };
 
@@ -94,7 +95,7 @@ impl strategy::Reporter for UciReporter {
 }
 
 pub struct Uci {
-    strategy: Arc<Mutex<Box<dyn Strategy<UciControl, UciReporter>>>>,
+    strategy: Option<Arc<Mutex<Box<dyn Strategy<UciControl, UciReporter>>>>>,
     control: UciControl,
     reporter: UciReporter,
     debug: bool,
@@ -118,7 +119,8 @@ impl Uci {
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
 
                 // Options
-                send_response(&UciResponse::option::<HashOption>());
+                send_response(&UciResponse::option::<uci::options::HashOption>());
+                send_response(&UciResponse::option::<uci::options::StrategyOption>());
 
                 send_response(&UciResponse::UciOk);
             }
@@ -128,7 +130,12 @@ impl Uci {
             UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
             UciCommand::SetOption { name, value } => {
                 match name.as_str() {
-                    HashOption::NAME => HashOption::set(&mut self.options, value),
+                    options::HashOption::NAME => options::HashOption::set(&mut self.options, value),
+                    options::StrategyOption::NAME => {
+                        let result = options::StrategyOption::set(&mut self.options, value);
+                        self.set_strategy();
+                        result
+                    }
                     _ => {
                         bail!("Unknown option: {name}")
                     }
@@ -195,7 +202,8 @@ impl Uci {
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
                 std::thread::spawn(move || {
-                    let mut s = strategy.lock().unwrap();
+                    let strategy_binding = strategy.unwrap();
+                    let mut s = strategy_binding.lock().unwrap();
                     s.go(
                         &mut game,
                         &time_control,
@@ -276,6 +284,11 @@ impl Uci {
         Ok(ExecuteResult::KeepGoing)
     }
 
+    fn set_strategy(&mut self) {
+        let strategy = self.options.strategy.create();
+        self.strategy = Some(Arc::new(Mutex::new(strategy)));
+    }
+
     fn main_loop(&mut self) -> Result<()> {
         let stdin_lines = std::io::stdin().lock().lines();
 
@@ -317,9 +330,9 @@ fn send_response(response: &UciResponse) {
     log(format!(" > {}", response.as_string()));
 }
 
-pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
+pub fn uci() -> Result<()> {
     let mut uci = Uci {
-        strategy: Arc::new(Mutex::new(strategy)),
+        strategy: None,
         control: UciControl {
             stop: Arc::new(Mutex::new(false)),
             stopped: Arc::new(LockLatch::new()),
@@ -330,5 +343,6 @@ pub fn uci(strategy: Box<dyn Strategy<UciControl, UciReporter>>) -> Result<()> {
         options: EngineOptions::default(),
     };
 
+    uci.set_strategy();
     uci.main_loop()
 }

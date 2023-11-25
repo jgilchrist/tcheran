@@ -2,19 +2,9 @@ use color_eyre::Result;
 use engine::util::log::log;
 
 mod cli {
-    use clap::{Parser, Subcommand, ValueEnum};
+    use clap::{Parser, Subcommand};
     use color_eyre::Result;
-    use engine::{
-        strategy::KnownStrategy,
-        uci::{self},
-    };
-
-    #[derive(ValueEnum, Clone)]
-    pub enum Strategy {
-        Main,
-        Random,
-        TopEval,
-    }
+    use engine::uci::{self};
 
     #[derive(Parser)]
     pub struct Cli {
@@ -25,10 +15,7 @@ mod cli {
     #[derive(Subcommand)]
     pub enum Commands {
         /// Run the engine using the UCI protocol
-        Uci {
-            #[arg(value_enum)]
-            strategy: Strategy,
-        },
+        Uci,
     }
 
     pub fn parse_cli() -> Cli {
@@ -37,16 +24,7 @@ mod cli {
 
     pub fn run(cmd: Commands) -> Result<()> {
         match cmd {
-            Commands::Uci { strategy } => {
-                let known_strategy = match strategy {
-                    Strategy::Main => KnownStrategy::Main,
-                    Strategy::Random => KnownStrategy::Random,
-                    Strategy::TopEval => KnownStrategy::TopEval,
-                };
-
-                let strategy = known_strategy.create();
-                uci::uci(strategy)
-            }
+            Commands::Uci => uci::uci(),
         }
     }
 }
@@ -62,7 +40,5 @@ fn main() -> Result<()> {
     engine::init();
 
     let args = cli::parse_cli();
-    cli::run(args.command.unwrap_or(cli::Commands::Uci {
-        strategy: cli::Strategy::Main,
-    }))
+    cli::run(args.command.unwrap_or(cli::Commands::Uci))
 }

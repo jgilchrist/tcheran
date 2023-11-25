@@ -1,4 +1,6 @@
 use crate::options::EngineOptions;
+use crate::strategy::KnownStrategy;
+use color_eyre::eyre::bail;
 use color_eyre::Result;
 
 #[derive(Debug)]
@@ -27,6 +29,30 @@ pub trait UciOption {
     const DEF: UciOptionType;
 
     fn set(options: &mut EngineOptions, value: &str) -> Result<()>;
+}
+
+pub struct StrategyOption;
+
+impl UciOption for StrategyOption {
+    const NAME: &'static str = "Strategy";
+    const DEF: UciOptionType = UciOptionType::String {
+        // TODO: Format crate::options::defaults::Strategy at compile time
+        default: crate::options::defaults::STRATEGY.to_string(),
+    };
+
+    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
+        let strategy = match value {
+            "Default" | "Main" => KnownStrategy::Main,
+            "Random" => KnownStrategy::Random,
+            "TopEval" => KnownStrategy::TopEval,
+            _ => {
+                bail!("Invalid strategy name: {}", value);
+            }
+        };
+
+        options.strategy = strategy;
+        Ok(())
+    }
 }
 
 pub struct HashOption;

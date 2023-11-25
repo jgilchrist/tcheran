@@ -98,6 +98,7 @@ mod main;
 mod random;
 mod top_eval;
 
+#[derive(Debug, Clone)]
 pub enum KnownStrategy {
     Main,
     Random,
@@ -111,6 +112,14 @@ impl KnownStrategy {
             Self::Main => Box::<MainStrategy>::default(),
             Self::Random => Box::<RandomMoveStrategy>::default(),
             Self::TopEval => Box::<TopEvalStrategy>::default(),
+        }
+    }
+
+    pub const fn to_string(&self) -> &'static str {
+        match self {
+            KnownStrategy::Main => "Main",
+            KnownStrategy::Random => "Random",
+            KnownStrategy::TopEval => "TopEval",
         }
     }
 }
