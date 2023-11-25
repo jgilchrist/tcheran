@@ -24,10 +24,7 @@ test-perft-tt:
 
 ############################### Profiling #####################################
 
-instruments-time-perft n:
-	cd engine && cargo instruments -t "time" --release -- perft {{n}}
-
-instruments-time-search:
+instruments:
 	cd engine && cargo instruments -t "time" --release --time-limit 60000
 
 ################################# Misc #######################################
