@@ -7,9 +7,9 @@ use crate::search::{negamax, SearchState, MAX_SEARCH_DEPTH};
 use crate::strategy::{
     Control, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchStats,
 };
+use crate::util;
 use chess::game::Game;
 use chess::moves::Move;
-use chess::util::nodes_per_second;
 
 pub fn search(
     game: &mut EngineGame,
@@ -69,7 +69,10 @@ pub fn search(
             stats: SearchStats {
                 time: time_control.elapsed(),
                 nodes: state.nodes_visited,
-                nodes_per_second: nodes_per_second(state.nodes_visited, time_control.elapsed()),
+                nodes_per_second: util::metrics::nodes_per_second(
+                    state.nodes_visited,
+                    time_control.elapsed(),
+                ),
             },
         });
     }

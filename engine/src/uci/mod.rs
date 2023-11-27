@@ -7,7 +7,6 @@ use std::time::{Duration, Instant};
 
 use chess::moves::Move;
 use chess::perft;
-use chess::util::nodes_per_second;
 use color_eyre::Result;
 
 use crate::game::EngineGame;
@@ -19,7 +18,7 @@ use crate::util::sync::LockLatch;
 use crate::{
     eval,
     strategy::{self, Strategy},
-    uci,
+    uci, util,
     util::log::log,
 };
 
@@ -244,7 +243,7 @@ impl Uci {
                     let time_taken = started_at.elapsed();
 
                     let nodes_per_second =
-                        nodes_per_second(u32::try_from(result).unwrap(), time_taken);
+                        util::metrics::nodes_per_second(u32::try_from(result).unwrap(), time_taken);
 
                     println!("positions: {result}");
                     println!("time taken: {time_taken:?}");

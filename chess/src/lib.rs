@@ -10,7 +10,6 @@ pub mod player;
 pub mod square;
 
 pub mod movegen;
-pub mod util;
 pub mod zobrist;
 
 pub fn init() {
