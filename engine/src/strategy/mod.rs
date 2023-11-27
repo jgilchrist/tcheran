@@ -27,6 +27,12 @@ pub struct SearchRestrictions {
     pub depth: Option<u8>,
 }
 
+impl Default for SearchRestrictions {
+    fn default() -> Self {
+        Self { depth: None }
+    }
+}
+
 #[derive(Debug, Clone)]
 pub enum TimeControl {
     Clocks(Clocks),
