@@ -36,4 +36,6 @@ This engine can be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot
 
 * Evaluation
     * Material difference
-    * Piece square tables
+    * Midgame and endgame piece square tables
+    * Tapered midgame vs. endgame evaluation
+    * Incremental updates
