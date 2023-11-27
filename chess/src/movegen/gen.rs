@@ -104,8 +104,7 @@ fn get_ctx(game: &Game) -> Ctx {
     let all_pieces = our_pieces | their_pieces;
 
     let king = game.board.player_pieces(game.player).king.single();
-    let checkers = attackers::generate_attackers_of(&game.board, game.player, king);
-    let (pinned, pinners) = pins::get_pins(&game.board, game.player, king);
+    let (checkers, pinned, pinners) = pins::get_pins_and_checkers(&game.board, game.player, king);
 
     Ctx {
         all_pieces,

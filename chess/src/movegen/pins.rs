@@ -4,7 +4,12 @@ use crate::movegen::tables;
 use crate::player::Player;
 use crate::square::Square;
 
-pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
+pub fn get_pins_and_checkers(
+    board: &Board,
+    player: Player,
+    king_square: Square,
+) -> (Bitboard, Bitboard, Bitboard) {
+    let mut checkers = Bitboard::EMPTY;
     let mut pinned = Bitboard::EMPTY;
     let mut pinners = Bitboard::EMPTY;
 
@@ -29,13 +34,18 @@ pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard
 
         let our_pieces_between = squares_between & our_pieces;
 
-        if our_pieces_between.count() == 1 {
+        if our_pieces_between.is_empty() {
+            checkers |= potential_pinner;
+        } else if our_pieces_between.count() == 1 {
             pinned |= our_pieces_between;
             pinners |= potential_pinner;
         }
     }
 
-    (pinned, pinners)
+    checkers |= tables::pawn_attacks(king_square, player) & their_pieces.pawns;
+    checkers |= tables::knight_attacks(king_square) & their_pieces.knights;
+
+    (checkers, pinned, pinners)
 }
 
 #[cfg(test)]
@@ -49,7 +59,7 @@ mod tests {
         let game = Game::from_fen(fen).unwrap();
 
         let king_square = game.board.player_pieces(game.player).king.single();
-        let (pinned, pinners) = get_pins(&game.board, game.player, king_square);
+        let (_, pinned, pinners) = get_pins_and_checkers(&game.board, game.player, king_square);
 
         assert_eq!(pinned, expected_pinned);
         assert_eq!(pinners, expected_pinners);
