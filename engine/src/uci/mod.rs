@@ -143,7 +143,7 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = EngineGame::new();
-                log(format!("{:?}", self.game.game.board));
+                log(chess::fen::write(&self.game.game));
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
@@ -156,7 +156,7 @@ impl Uci {
                 }
 
                 self.game = game;
-                log(format!("{:?}", self.game.game.board));
+                log(chess::fen::write(&self.game.game));
             }
             UciCommand::Go(GoCmdArguments {
                 searchmoves: _,
