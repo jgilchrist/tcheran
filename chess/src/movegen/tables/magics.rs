@@ -176,14 +176,14 @@ fn initialise_bishop_not_masks() {
     for s in Bitboard::FULL {
         let occupancies = generate_bishop_occupancies(s);
         unsafe {
-            BISHOP_NOT_MASKS[s.idx() as usize] = occupancies.invert();
+            BISHOP_NOT_MASKS[s.array_idx()] = occupancies.invert();
         }
     }
 }
 
 #[allow(clippy::cast_possible_truncation)]
 fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
-    let square_idx = s.idx() as usize;
+    let square_idx = s.array_idx();
     let (magic, index) = DEFAULT_BISHOP_MAGICS[square_idx];
     let not_mask = unsafe { BISHOP_NOT_MASKS[square_idx] };
 
@@ -214,14 +214,14 @@ fn initialise_rook_not_masks() {
     for s in Bitboard::FULL {
         let occupancies = generate_rook_occupancies(s);
         unsafe {
-            ROOK_NOT_MASKS[s.idx() as usize] = occupancies.invert();
+            ROOK_NOT_MASKS[s.array_idx()] = occupancies.invert();
         }
     }
 }
 
 #[allow(clippy::cast_possible_truncation)]
 fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
-    let square_idx = s.idx() as usize;
+    let square_idx = s.array_idx();
 
     let (magic, index) = DEFAULT_ROOK_MAGICS[square_idx];
     let not_mask = unsafe { ROOK_NOT_MASKS[square_idx] };

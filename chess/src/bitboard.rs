@@ -80,8 +80,8 @@ impl Bitboard {
 
     #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
-    pub const fn trailing_zeros(&self) -> u8 {
-        self.0.trailing_zeros() as u8
+    pub const fn trailing_zeros(&self) -> usize {
+        self.0.trailing_zeros() as usize
     }
 
     #[inline(always)]

@@ -5,7 +5,7 @@ use super::attacks;
 static mut ATTACKS_TABLE: [Bitboard; Square::N] = [Bitboard::EMPTY; Square::N];
 
 pub fn king_attacks(s: Square) -> Bitboard {
-    unsafe { ATTACKS_TABLE[s.idx() as usize] }
+    unsafe { ATTACKS_TABLE[s.array_idx()] }
 }
 
 pub fn init() {
@@ -13,7 +13,7 @@ pub fn init() {
         let attacks = attacks::generate_king_attacks(s);
 
         unsafe {
-            ATTACKS_TABLE[s.idx() as usize] = attacks;
+            ATTACKS_TABLE[s.array_idx()] = attacks;
         }
     }
 }

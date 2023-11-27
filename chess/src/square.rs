@@ -192,13 +192,13 @@ impl Square {
     }
 
     #[inline(always)]
-    pub const fn idx(&self) -> u8 {
-        self.0.trailing_zeros()
+    pub fn idx(&self) -> u8 {
+        u8::try_from(self.array_idx()).unwrap()
     }
 
     #[inline(always)]
     pub const fn array_idx(&self) -> usize {
-        self.idx() as usize
+        self.0.trailing_zeros()
     }
 
     #[inline(always)]
