@@ -179,15 +179,17 @@ impl Game {
     }
 
     pub fn is_repeated_position(&self) -> bool {
-        // PERF: We only need to search up to the last irreversible move
-        self.history.iter().rev().any(|h| h.zobrist == self.zobrist)
+        self.history
+            .iter()
+            .rev()
+            .take(self.halfmove_clock as usize)
+            .any(|h| h.zobrist == self.zobrist)
     }
 
     pub fn is_stalemate_by_repetition(&self) -> bool {
-        // PERF: We only need to search up to the last irreversible move
         let mut count = 0;
 
-        for seen_state in self.history.iter().rev() {
+        for seen_state in self.history.iter().rev().take(self.halfmove_clock as usize) {
             if self.zobrist == seen_state.zobrist {
                 count += 1;
             }
