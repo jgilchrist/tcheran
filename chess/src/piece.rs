@@ -34,19 +34,14 @@ impl PieceKind {
     }
 
     #[inline]
-    pub const fn value_of(p: Self) -> i16 {
-        match p {
+    pub fn value(&self) -> i16 {
+        match self {
             Self::Pawn => 100,
             Self::Knight | Self::Bishop => 300,
             Self::Rook => 500,
             Self::Queen => 800,
             Self::King => 10000,
         }
-    }
-
-    #[inline]
-    pub fn value(&self) -> i16 {
-        Self::value_of(*self)
     }
 }
 
@@ -103,12 +98,5 @@ impl Piece {
 
     pub const fn black(kind: PieceKind) -> Self {
         Self::new(Player::Black, kind)
-    }
-
-    pub fn value(&self) -> i16 {
-        match self.player {
-            Player::White => self.kind.value(),
-            Player::Black => -self.kind.value(),
-        }
     }
 }

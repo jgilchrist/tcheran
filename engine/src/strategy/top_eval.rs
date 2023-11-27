@@ -1,3 +1,4 @@
+use crate::eval;
 use crate::game::EngineGame;
 use crate::options::EngineOptions;
 
@@ -20,7 +21,7 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
 
         moves.sort_unstable_by_key(|m| {
             game.make_move(m);
-            let result = game.eval;
+            let result = eval::eval(game);
             game.undo_move();
             result
         });

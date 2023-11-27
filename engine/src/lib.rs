@@ -8,8 +8,6 @@ pub mod game;
 pub mod search;
 pub mod transposition_table;
 
-pub use eval::eval;
-
 pub fn engine_version() -> &'static str {
     // If we can't determine the version from git tags, fall back to the version
     // specified in the Cargo manifest

@@ -1,3 +1,4 @@
+use crate::eval;
 use crate::game::EngineGame;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
@@ -18,7 +19,7 @@ pub fn quiescence(
     state.nodes_visited += 1;
 
     if plies == MAX_SEARCH_DEPTH {
-        return Ok(NegamaxEval::from_eval(game.eval, game.player()));
+        return Ok(NegamaxEval::from_eval(eval::eval(game), game.player()));
     }
 
     if game.is_repeated_position() || game.is_stalemate_by_fifty_move_rule() {
@@ -31,7 +32,7 @@ pub fn quiescence(
         return Err(());
     }
 
-    let eval = NegamaxEval::from_eval(game.eval, game.player());
+    let eval = NegamaxEval::from_eval(eval::eval(game), game.player());
 
     if eval >= beta {
         return Ok(beta);

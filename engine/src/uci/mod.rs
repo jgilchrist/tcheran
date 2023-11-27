@@ -264,17 +264,16 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Eval => {
-                    let eval_components = eval::eval_components(&self.game.game);
+                    let eval_components = eval::eval_components(&self.game);
 
                     println!("Eval: {}", eval_components.eval);
-                    println!("Components:");
-                    println!("  Material: {}", eval_components.material);
                     println!(
                         "  Piece square tables: {}",
                         eval_components.piece_square_tables
                     );
-                    println!("    White: {}", eval_components.piece_square_tables_white);
-                    println!("    Black: {}", eval_components.piece_square_tables_black);
+                    println!("    Midgame: {}", eval_components.piece_square_midgame);
+                    println!("    Endgame: {}", eval_components.piece_square_endgame);
+                    println!("    Phase value: {}", eval_components.phase_value);
                 }
             },
             UciCommand::PonderHit => {}

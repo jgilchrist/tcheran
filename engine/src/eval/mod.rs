@@ -1,7 +1,6 @@
-mod material_diff;
 pub mod piece_square_tables;
 
-use chess::game::Game;
+use crate::game::EngineGame;
 
 pub fn init() {
     piece_square_tables::init();
@@ -62,32 +61,32 @@ impl std::fmt::Display for Eval {
     }
 }
 
-#[allow(clippy::cast_possible_wrap)]
-pub fn eval(game: &Game) -> Eval {
-    material_diff::material_diff(game) + piece_square_tables::piece_square_tables(game)
+pub fn eval(game: &EngineGame) -> Eval {
+    piece_square_tables::tapered_eval(game.phase_value, game.midgame_eval, game.endgame_eval)
 }
 
 #[derive(Debug)]
 pub struct EvalComponents {
     pub eval: Eval,
-    pub material: Eval,
-    pub piece_square_tables_white: Eval,
-    pub piece_square_tables_black: Eval,
+    pub piece_square_midgame: Eval,
+    pub piece_square_endgame: Eval,
+    pub phase_value: i16,
     pub piece_square_tables: Eval,
 }
 
-pub fn eval_components(game: &Game) -> EvalComponents {
+pub fn eval_components(game: &EngineGame) -> EvalComponents {
     let eval = eval(game);
-    let material = material_diff::material_diff(game);
-    let piece_square_tables_white = piece_square_tables::piece_square_tables_white(game);
-    let piece_square_tables_black = piece_square_tables::piece_square_tables_black(game);
-    let piece_square_tables = piece_square_tables::piece_square_tables(game);
+
+    let (midgame_pst, endgame_pst) = piece_square_tables::phase_evals(&game.game.board);
+    let phase_value = piece_square_tables::phase_value(&game.game.board);
+
+    let pst_eval = piece_square_tables::tapered_eval(phase_value, midgame_pst, endgame_pst);
 
     EvalComponents {
         eval,
-        material,
-        piece_square_tables_white,
-        piece_square_tables_black,
-        piece_square_tables,
+        piece_square_midgame: midgame_pst,
+        piece_square_endgame: endgame_pst,
+        phase_value,
+        piece_square_tables: pst_eval,
     }
 }
