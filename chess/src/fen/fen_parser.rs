@@ -262,9 +262,6 @@ mod tests {
         let game = game_result.unwrap();
         let default_game = Game::default();
 
-        dbg!(&game);
-        dbg!(&default_game);
-
         assert_eq!(
             game.board.white_pieces.pawns,
             default_game.board.white_pieces.pawns
