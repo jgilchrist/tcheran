@@ -114,6 +114,7 @@ impl Board {
         }
     }
 
+    #[inline(always)]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
         // We know array_idx can only return up to Square::N - 1
         unsafe { *self.pieces.get_unchecked(square.array_idx()) }
