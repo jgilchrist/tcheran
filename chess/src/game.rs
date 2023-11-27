@@ -203,6 +203,45 @@ impl Game {
         false
     }
 
+    pub fn is_stalemate_by_insufficient_material(&self) -> bool {
+        let all_pieces = self.board.white_pieces.all() | self.board.black_pieces.all();
+
+        match all_pieces.count() {
+            // King vs king is always a draw
+            2 => true,
+
+            // If the sole remaining non-king piece on the board is a knight or bishop,
+            // it's a draw
+            3 => (self.board.white_pieces.knights
+                | self.board.black_pieces.knights
+                | self.board.white_pieces.bishops
+                | self.board.black_pieces.bishops)
+                .any(),
+
+            4 => {
+                let player_pieces = self.board.player_pieces(self.player);
+                let knights = self.board.white_pieces.knights | self.board.black_pieces.knights;
+                let bishops = self.board.white_pieces.bishops | self.board.black_pieces.bishops;
+                let kings = self.board.white_pieces.king | self.board.black_pieces.king;
+
+                let one_piece_each = player_pieces.all().count() == 2;
+
+                let knight_count = knights.count();
+                let bishop_count = bishops.count();
+                let king_in_corner = (kings & bitboards::CORNERS).any();
+                let king_on_edge = (kings & bitboards::EDGES).any();
+
+                // This logic is from Carp
+                (knight_count == 2 && !king_on_edge) ||
+                    (bishop_count == 2 && (
+                        (bishops & bitboards::LIGHT_SQUARES).count() != 1 ||
+                            (one_piece_each && !king_in_corner))) ||
+                    (knight_count == 1 && bishop_count == 1 && one_piece_each && !king_in_corner)
+            }
+            _ => false,
+        }
+    }
+
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
@@ -454,5 +493,28 @@ impl Game {
 impl Default for Game {
     fn default() -> Self {
         Self::new()
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn test_draw_by_insufficient_material() {
+        // Knight vs Bishop mate
+        assert!(!Game::from_fen("5b1K/5k1N/8/8/8/8/8/8 b - - 1 1")
+            .unwrap()
+            .is_stalemate_by_insufficient_material());
+
+        // Bishop vs Knight - draw
+        assert!(Game::from_fen("8/8/3k4/4n3/8/2KB4/8/8 w - - 0 1")
+            .unwrap()
+            .is_stalemate_by_insufficient_material());
+
+        // Rook vs Knight mate
+        assert!(!Game::from_fen("8/8/4k3/4n3/8/2KR4/8/8 w - - 0 1")
+            .unwrap()
+            .is_stalemate_by_insufficient_material());
     }
 }

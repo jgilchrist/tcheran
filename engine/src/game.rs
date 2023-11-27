@@ -66,6 +66,10 @@ impl EngineGame {
         self.game.is_stalemate_by_repetition()
     }
 
+    pub fn is_stalemate_by_insufficient_material(&self) -> bool {
+        self.game.is_stalemate_by_insufficient_material()
+    }
+
     #[inline(always)]
     pub fn is_king_in_check(&self) -> bool {
         self.game.board.king_in_check(self.game.player)

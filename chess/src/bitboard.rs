@@ -357,6 +357,21 @@ pub mod bitboards {
     pub const UP_DIAGONAL: Bitboard = Bitboard::new(A1.0.0 | B2.0.0 | C3.0.0 | D4.0.0 | E5.0.0 | F6.0.0 | G7.0.0 | H8.0.0);
     pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8.0.0 | B7.0.0 | C6.0.0 | D5.0.0 | E4.0.0 | F3.0.0 | G2.0.0 | H1.0.0);
 
+    pub const CORNERS: Bitboard = Bitboard::new(A1.0.0 | A8.0.0 | H1.0.0 | H8.0.0);
+    pub const EDGES: Bitboard = Bitboard::new(
+        // Rank 1
+        A1.0.0 | B1.0.0 | C1.0.0 | D1.0.0 | E1.0.0 | F1.0.0 | G1.0.0 | H1.0.0 |
+
+        // Rank 8
+        A8.0.0 | B8.0.0 | C8.0.0 | D8.0.0 | E8.0.0 | F8.0.0 | G8.0.0 | H8.0.0 |
+
+        // File A
+        A1.0.0 | A2.0.0 | A3.0.0 | A4.0.0 | A5.0.0 | A6.0.0 | A7.0.0 | A8.0.0 |
+
+        // File H
+        H1.0.0 | H2.0.0 | H3.0.0 | H4.0.0 | H5.0.0 | H6.0.0 | H7.0.0 | H8.0.0
+    );
+
     pub const LIGHT_SQUARES: Bitboard = Bitboard::new(
         A8.0.0 | C8.0.0 | E8.0.0 | G8.0.0 |
         B7.0.0 | D7.0.0 | F7.0.0 | H7.0.0 |
