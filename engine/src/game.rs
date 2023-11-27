@@ -1,5 +1,4 @@
-use crate::eval;
-use crate::eval::Eval;
+use crate::eval::IncrementalEvalFields;
 use chess::direction::Direction;
 use chess::game::Game;
 use chess::movegen::MoveTypes;
@@ -12,19 +11,13 @@ use color_eyre::Result;
 
 #[derive(Debug, Clone)]
 struct History {
-    pub midgame_eval: Eval,
-    pub endgame_eval: Eval,
-    pub phase_value: i16,
+    pub incremental_eval: IncrementalEvalFields,
 }
 
 #[derive(Debug, Clone)]
 pub struct EngineGame {
     pub game: Game,
-
-    // TODO: Move these fields into a struct, and the update logic into eval/
-    pub midgame_eval: Eval,
-    pub endgame_eval: Eval,
-    pub phase_value: i16,
+    pub incremental_eval: IncrementalEvalFields,
     history: Vec<History>,
 }
 
@@ -40,16 +33,11 @@ impl EngineGame {
     }
 
     pub fn from_game(game: Game) -> Self {
-        let (midgame_eval, endgame_eval) = eval::piece_square_tables::phase_evals(&game.board);
-        let phase_value = eval::piece_square_tables::phase_value(&game.board);
+        let incremental_eval_fields = IncrementalEvalFields::init(&game);
 
         Self {
             game,
-
-            midgame_eval,
-            endgame_eval,
-            phase_value,
-
+            incremental_eval: incremental_eval_fields,
             history: Vec::new(),
         }
     }
@@ -95,26 +83,12 @@ impl EngineGame {
     }
 
     fn set_at(&mut self, sq: Square, piece: Piece) {
-        let (mg, eg) = eval::piece_square_tables::piece_contributions(sq, piece);
-        let phase_value_diff =
-            eval::piece_square_tables::piece_phase_value_contribution(piece.kind);
-
-        self.midgame_eval += mg;
-        self.endgame_eval += eg;
-        self.phase_value += phase_value_diff;
+        self.incremental_eval.set_at(sq, piece);
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.game.board.piece_at(sq).unwrap();
-
-        let (mg, eg) = eval::piece_square_tables::piece_contributions(sq, removed_piece);
-        let phase_value_diff =
-            eval::piece_square_tables::piece_phase_value_contribution(removed_piece.kind);
-
-        self.midgame_eval -= mg;
-        self.endgame_eval -= eg;
-        self.phase_value -= phase_value_diff;
-
+        self.incremental_eval.remove_at(sq, removed_piece);
         removed_piece
     }
 
@@ -130,9 +104,7 @@ impl EngineGame {
         // Capture the irreversible aspects of the position so that they can be restored
         // if we undo this move.
         let history = History {
-            midgame_eval: self.midgame_eval,
-            endgame_eval: self.endgame_eval,
-            phase_value: self.phase_value,
+            incremental_eval: self.incremental_eval.clone(),
         };
 
         self.history.push(history);
@@ -184,9 +156,7 @@ impl EngineGame {
 
     pub fn undo_move(&mut self) {
         let history = self.history.pop().unwrap();
-        self.midgame_eval = history.midgame_eval;
-        self.endgame_eval = history.endgame_eval;
-        self.phase_value = history.phase_value;
+        self.incremental_eval = history.incremental_eval;
 
         self.game.undo_move();
     }

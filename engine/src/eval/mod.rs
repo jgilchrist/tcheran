@@ -1,6 +1,9 @@
 pub mod piece_square_tables;
 
 use crate::game::EngineGame;
+use chess::game::Game;
+use chess::piece::Piece;
+use chess::square::Square;
 
 pub fn init() {
     piece_square_tables::init();
@@ -61,8 +64,52 @@ impl std::fmt::Display for Eval {
     }
 }
 
+#[derive(Debug, Clone)]
+pub struct IncrementalEvalFields {
+    pub midgame_eval: Eval,
+    pub endgame_eval: Eval,
+    pub phase_value: i16,
+}
+
+impl IncrementalEvalFields {
+    pub fn set_at(&mut self, sq: Square, piece: Piece) {
+        let (mg, eg) = piece_square_tables::piece_contributions(sq, piece);
+        let phase_value_diff = piece_square_tables::piece_phase_value_contribution(piece.kind);
+
+        self.midgame_eval += mg;
+        self.endgame_eval += eg;
+        self.phase_value += phase_value_diff;
+    }
+
+    pub fn remove_at(&mut self, sq: Square, piece: Piece) {
+        let (mg, eg) = piece_square_tables::piece_contributions(sq, piece);
+        let phase_value_diff = piece_square_tables::piece_phase_value_contribution(piece.kind);
+
+        self.midgame_eval -= mg;
+        self.endgame_eval -= eg;
+        self.phase_value -= phase_value_diff;
+    }
+}
+
+impl IncrementalEvalFields {
+    pub fn init(game: &Game) -> Self {
+        let (midgame_eval, endgame_eval) = piece_square_tables::phase_evals(&game.board);
+        let phase_value = piece_square_tables::phase_value(&game.board);
+
+        Self {
+            midgame_eval,
+            endgame_eval,
+            phase_value,
+        }
+    }
+}
+
 pub fn eval(game: &EngineGame) -> Eval {
-    piece_square_tables::tapered_eval(game.phase_value, game.midgame_eval, game.endgame_eval)
+    piece_square_tables::tapered_eval(
+        game.incremental_eval.phase_value,
+        game.incremental_eval.midgame_eval,
+        game.incremental_eval.endgame_eval,
+    )
 }
 
 #[derive(Debug)]
