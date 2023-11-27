@@ -7,7 +7,7 @@ use chess::{
     square::{File, Rank},
 };
 
-use super::Eval;
+use super::WhiteEval;
 
 type PieceValueTableDefinition = [[i16; File::N]; Rank::N];
 type PieceValueTable = [i16; Square::N];
@@ -60,7 +60,11 @@ pub fn phase_value(board: &Board) -> i16 {
     v
 }
 
-pub(super) fn tapered_eval(phase_value: i16, midgame_eval: Eval, endgame_eval: Eval) -> Eval {
+pub(super) fn tapered_eval(
+    phase_value: i16,
+    midgame_eval: WhiteEval,
+    endgame_eval: WhiteEval,
+) -> WhiteEval {
     // Switch to 64 bit calculations to avoid overflow
     let phase_value = i64::from(phase_value);
 
@@ -71,7 +75,7 @@ pub(super) fn tapered_eval(phase_value: i16, midgame_eval: Eval, endgame_eval: E
     let endgame_eval = i64::from(endgame_eval.0);
 
     let eval = (midgame_eval * midgame_phase_value + endgame_eval * endgame_phase_value) / 24;
-    Eval(i16::try_from(eval).unwrap())
+    WhiteEval(i16::try_from(eval).unwrap())
 }
 
 #[rustfmt::skip]
@@ -325,7 +329,7 @@ pub fn init() {
 }
 
 #[inline]
-pub fn piece_contributions(square: Square, piece: Piece) -> (Eval, Eval) {
+pub fn piece_contributions(square: Square, piece: Piece) -> (WhiteEval, WhiteEval) {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
 
@@ -337,12 +341,15 @@ pub fn piece_contributions(square: Square, piece: Piece) -> (Eval, Eval) {
         tables::ENDGAME_TABLES[piece.player.array_idx()][piece.kind.array_idx()][square.array_idx()]
     };
 
-    (Eval(midgame_contribution), Eval(endgame_contribution))
+    (
+        WhiteEval(midgame_contribution),
+        WhiteEval(endgame_contribution),
+    )
 }
 
-pub fn phase_evals(board: &Board) -> (Eval, Eval) {
-    let mut midgame_eval = Eval(0);
-    let mut endgame_eval = Eval(0);
+pub fn phase_evals(board: &Board) -> (WhiteEval, WhiteEval) {
+    let mut midgame_eval = WhiteEval(0);
+    let mut endgame_eval = WhiteEval(0);
 
     for idx in 0..Square::N {
         let maybe_piece = board.pieces[idx];
@@ -364,11 +371,11 @@ mod tests {
 
     #[test]
     fn test_eval_calculation_does_not_overflow() {
-        let midgame_eval = Eval(2456);
-        let endgame_eval = Eval(2393);
+        let midgame_eval = WhiteEval(2456);
+        let endgame_eval = WhiteEval(2393);
         let phase_value = 9;
 
         let eval = tapered_eval(phase_value, midgame_eval, endgame_eval);
-        assert!(eval > Eval(0));
+        assert!(eval > WhiteEval(0));
     }
 }

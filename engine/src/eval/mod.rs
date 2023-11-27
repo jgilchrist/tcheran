@@ -1,4 +1,9 @@
 pub mod piece_square_tables;
+mod player_eval;
+mod white_eval;
+
+pub use player_eval::Eval;
+pub use white_eval::WhiteEval;
 
 use crate::game::EngineGame;
 use chess::game::Game;
@@ -9,65 +14,10 @@ pub fn init() {
     piece_square_tables::init();
 }
 
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Eval(pub i16);
-
-impl std::ops::Add for Eval {
-    type Output = Self;
-
-    fn add(self, rhs: Self) -> Self::Output {
-        Self(self.0 + rhs.0)
-    }
-}
-
-impl std::ops::AddAssign for Eval {
-    fn add_assign(&mut self, rhs: Self) {
-        self.0 += rhs.0;
-    }
-}
-
-impl std::ops::Sub for Eval {
-    type Output = Self;
-
-    fn sub(self, rhs: Self) -> Self::Output {
-        Self(self.0 - rhs.0)
-    }
-}
-
-impl std::ops::SubAssign for Eval {
-    fn sub_assign(&mut self, rhs: Self) {
-        self.0 -= rhs.0;
-    }
-}
-
-impl std::ops::Mul<i16> for Eval {
-    type Output = Self;
-
-    fn mul(self, rhs: i16) -> Self::Output {
-        Self(self.0 * rhs)
-    }
-}
-
-impl std::ops::Neg for Eval {
-    type Output = Self;
-
-    fn neg(self) -> Self::Output {
-        Self(self.0.saturating_neg())
-    }
-}
-
-#[allow(clippy::cast_precision_loss)]
-impl std::fmt::Display for Eval {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let formatted_value = f32::from(self.0) / 100.0;
-        write!(f, "{formatted_value}")
-    }
-}
-
 #[derive(Debug, Clone)]
 pub struct IncrementalEvalFields {
-    pub midgame_eval: Eval,
-    pub endgame_eval: Eval,
+    pub midgame_eval: WhiteEval,
+    pub endgame_eval: WhiteEval,
     pub phase_value: i16,
 }
 
@@ -104,7 +54,7 @@ impl IncrementalEvalFields {
     }
 }
 
-pub fn eval(game: &EngineGame) -> Eval {
+pub fn eval(game: &EngineGame) -> WhiteEval {
     piece_square_tables::tapered_eval(
         game.incremental_eval.phase_value,
         game.incremental_eval.midgame_eval,
@@ -114,11 +64,11 @@ pub fn eval(game: &EngineGame) -> Eval {
 
 #[derive(Debug)]
 pub struct EvalComponents {
-    pub eval: Eval,
-    pub piece_square_midgame: Eval,
-    pub piece_square_endgame: Eval,
+    pub eval: WhiteEval,
+    pub piece_square_midgame: WhiteEval,
+    pub piece_square_endgame: WhiteEval,
     pub phase_value: i16,
-    pub piece_square_tables: Eval,
+    pub piece_square_tables: WhiteEval,
 }
 
 pub fn eval_components(game: &EngineGame) -> EvalComponents {

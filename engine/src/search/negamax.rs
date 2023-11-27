@@ -1,3 +1,4 @@
+use crate::eval::Eval;
 use crate::game::EngineGame;
 use crate::search::quiescence::quiescence;
 use crate::search::time_control::TimeStrategy;
@@ -7,19 +8,19 @@ use crate::search::transposition::{
 use crate::strategy::Control;
 use chess::moves::Move;
 
-use super::{move_ordering, negamax_eval::NegamaxEval, SearchState, MAX_SEARCH_DEPTH};
+use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut EngineGame,
-    mut alpha: NegamaxEval,
-    beta: NegamaxEval,
+    mut alpha: Eval,
+    beta: Eval,
     mut depth: u8,
     plies: u8,
     tt: &mut SearchTranspositionTable,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
-) -> Result<NegamaxEval, ()> {
+) -> Result<Eval, ()> {
     let is_root = plies == 0;
     state.max_depth_reached = state.max_depth_reached.max(plies);
 
@@ -37,7 +38,7 @@ pub fn negamax(
     }
 
     if !is_root && (game.is_repeated_position() || game.is_stalemate_by_fifty_move_rule()) {
-        return Ok(NegamaxEval::DRAW);
+        return Ok(Eval::DRAW);
     }
 
     if depth == 0 {
@@ -72,9 +73,9 @@ pub fn negamax(
 
     if moves.is_empty() {
         return Ok(if game.is_king_in_check() {
-            NegamaxEval::mated_in(plies)
+            Eval::mated_in(plies)
         } else {
-            NegamaxEval::DRAW
+            Eval::DRAW
         });
     }
 
@@ -82,7 +83,7 @@ pub fn negamax(
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
-    let mut best_eval = NegamaxEval::MIN;
+    let mut best_eval = Eval::MIN;
 
     for mv in &moves {
         game.make_move(mv);

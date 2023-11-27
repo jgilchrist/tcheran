@@ -1,6 +1,6 @@
+use crate::eval::Eval;
 use crate::game::EngineGame;
 use crate::options::EngineOptions;
-use crate::search::negamax_eval::NegamaxEval;
 use crate::search::time_control::TimeStrategy;
 use crate::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::search::{negamax, SearchState, MAX_SEARCH_DEPTH};
@@ -20,9 +20,9 @@ pub fn search(
     time_control: &TimeStrategy,
     control: &impl Control,
     reporter: &impl Reporter,
-) -> (Move, NegamaxEval) {
+) -> (Move, Eval) {
     let mut overall_best_move: Option<Move> = None;
-    let mut overall_eval: Option<NegamaxEval> = None;
+    let mut overall_eval: Option<Eval> = None;
 
     let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
     state.max_depth_reached = 0;
@@ -33,8 +33,8 @@ pub fn search(
 
         let Ok(eval) = negamax::negamax(
             game,
-            NegamaxEval::MIN,
-            NegamaxEval::MAX,
+            Eval::MIN,
+            Eval::MAX,
             depth,
             0,
             tt,

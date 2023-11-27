@@ -1,4 +1,4 @@
-use crate::search::NegamaxEval;
+use crate::eval::Eval;
 use crate::transposition_table::{TTOverwriteable, TranspositionTable};
 use chess::moves::Move;
 use chess::piece::PromotionPieceKind;
@@ -14,7 +14,7 @@ pub enum NodeBound {
 #[derive(Debug, Clone)]
 pub struct SearchTranspositionTableData {
     pub bound: NodeBound,
-    pub eval: NegamaxEval,
+    pub eval: Eval,
     pub depth: u8,
     pub best_move: Option<TTMove>,
 }

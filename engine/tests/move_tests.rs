@@ -1,14 +1,14 @@
 use chess::moves::Move;
 use chess::player::Player;
 use chess::square::squares::all::*;
-use engine::eval::Eval;
+use engine::eval::{Eval, WhiteEval};
 use engine::game::EngineGame;
 use engine::options::EngineOptions;
+use engine::search::search;
 use engine::search::transposition::SearchTranspositionTable;
-use engine::search::{search, NegamaxEval};
 use engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
 
-fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, Eval) {
+fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, WhiteEval) {
     engine::init();
     let mut game = EngineGame::from_fen(fen).unwrap();
 
@@ -37,5 +37,5 @@ fn test_mate_on_100th_halfmove_detected() {
         Move::new(E8, H8),
     );
 
-    assert_eq!(eval, NegamaxEval::mate_in(1).to_eval(Player::White));
+    assert_eq!(eval, Eval::mate_in(1).to_white_eval(Player::White));
 }

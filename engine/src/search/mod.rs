@@ -3,16 +3,14 @@ use chess::moves::Move;
 use crate::options::EngineOptions;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::{Control, SearchRestrictions, TimeControl};
-use crate::{eval::Eval, strategy::Reporter};
+use crate::{eval::WhiteEval, strategy::Reporter};
 
 use crate::game::EngineGame;
 use crate::search::transposition::SearchTranspositionTable;
-pub use negamax_eval::NegamaxEval;
 
 mod iterative_deepening;
 mod move_ordering;
 mod negamax;
-mod negamax_eval;
 mod quiescence;
 mod time_control;
 pub mod transposition;
@@ -41,7 +39,7 @@ pub fn search(
     options: &EngineOptions,
     control: &impl Control,
     reporter: &impl Reporter,
-) -> (Move, Eval) {
+) -> (Move, WhiteEval) {
     let mut state = SearchState::new();
 
     let mut time_strategy = TimeStrategy::new(&game.game, time_control);
@@ -58,5 +56,5 @@ pub fn search(
         reporter,
     );
 
-    (best_move, eval.to_eval(game.player()))
+    (best_move, eval.to_white_eval(game.player()))
 }
