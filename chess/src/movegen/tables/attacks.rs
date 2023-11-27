@@ -4,10 +4,7 @@ use crate::{direction::Direction, player::Player, square::Square};
 pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
 
-    let pawn_move_direction = match player {
-        Player::White => Direction::North,
-        Player::Black => Direction::South,
-    };
+    let pawn_move_direction = Direction::pawn_move_direction(player);
 
     let forward_one = square.in_direction_maybe(pawn_move_direction);
 

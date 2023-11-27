@@ -1,6 +1,8 @@
+use crate::direction::Direction;
+use crate::square::{File, Rank};
 use crate::{bitboard::Bitboard, square::Square};
 
-use super::{attacks, occupancies};
+use super::attacks;
 
 static mut BISHOP_NOT_MASKS: [Bitboard; Square::N] = [Bitboard::EMPTY; Square::N];
 const BISHOP_SHIFT: usize = 9;
@@ -101,6 +103,41 @@ impl Iterator for SubsetsOf {
     }
 }
 
+fn generate_bishop_occupancies(square: Square) -> Bitboard {
+    generate_sliding_occupancies(square, Direction::DIAGONAL)
+}
+
+fn generate_rook_occupancies(square: Square) -> Bitboard {
+    generate_sliding_occupancies(square, Direction::CARDINAL)
+}
+
+fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Bitboard {
+    let mut squares = Bitboard::EMPTY;
+
+    for direction in directions {
+        let mut current_square = square;
+
+        while let Some(dst) = current_square.in_direction_maybe(*direction) {
+            // Until we hit one of the edges
+            let (src_rank, src_file) = (square.rank(), square.file());
+            let (dst_rank, dst_file) = (dst.rank(), dst.file());
+
+            if dst_rank == Rank::R1 && src_rank != Rank::R1
+                || dst_rank == Rank::R8 && src_rank != Rank::R8
+                || dst_file == File::A && src_file != File::A
+                || dst_file == File::H && src_file != File::H
+            {
+                break;
+            }
+
+            current_square = dst;
+            squares |= dst;
+        }
+    }
+
+    squares
+}
+
 pub fn init() {
     initialise_bishop_not_masks();
     initialise_rook_not_masks();
@@ -121,7 +158,7 @@ pub fn bishop_attacks(s: Square, blockers: Bitboard) -> Bitboard {
 
 fn initialise_bishop_attacks() {
     for s in Bitboard::FULL {
-        let occupancies = occupancies::generate_bishop_occupancies(s);
+        let occupancies = generate_bishop_occupancies(s);
 
         let occupancy_subsets = SubsetsOf::new(occupancies);
 
@@ -137,7 +174,7 @@ fn initialise_bishop_attacks() {
 
 fn initialise_bishop_not_masks() {
     for s in Bitboard::FULL {
-        let occupancies = occupancies::generate_bishop_occupancies(s);
+        let occupancies = generate_bishop_occupancies(s);
         unsafe {
             BISHOP_NOT_MASKS[s.idx() as usize] = occupancies.invert();
         }
@@ -159,7 +196,7 @@ fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
 
 fn initialise_rook_attacks() {
     for s in Bitboard::FULL {
-        let occupancies = occupancies::generate_rook_occupancies(s);
+        let occupancies = generate_rook_occupancies(s);
 
         let occupancy_subsets = SubsetsOf::new(occupancies);
 
@@ -175,7 +212,7 @@ fn initialise_rook_attacks() {
 
 fn initialise_rook_not_masks() {
     for s in Bitboard::FULL {
-        let occupancies = occupancies::generate_rook_occupancies(s);
+        let occupancies = generate_rook_occupancies(s);
         unsafe {
             ROOK_NOT_MASKS[s.idx() as usize] = occupancies.invert();
         }

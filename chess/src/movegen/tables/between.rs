@@ -9,7 +9,6 @@ pub fn between(s1: Square, s2: Square) -> Bitboard {
     unsafe { BETWEEN_TABLE[s1.array_idx()][s2.array_idx()].unwrap() }
 }
 
-// TODO: Tidy this up with more utility methods in Rank and File
 fn generate_squares_between(s1: Square, s2: Square) -> Option<Bitboard> {
     let mut squares = Bitboard::EMPTY;
 
