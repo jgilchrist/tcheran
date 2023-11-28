@@ -328,7 +328,7 @@ pub fn init() {
     }
 }
 
-#[inline]
+#[inline(always)]
 pub fn piece_contributions(square: Square, piece: Piece) -> (WhiteEval, WhiteEval) {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square

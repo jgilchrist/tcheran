@@ -103,7 +103,7 @@ pub enum Rank {
 impl Rank {
     pub const N: usize = 8;
 
-    #[inline]
+    #[inline(always)]
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
 
@@ -120,7 +120,7 @@ impl Rank {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub const fn idx(&self) -> u8 {
         *self as u8
     }

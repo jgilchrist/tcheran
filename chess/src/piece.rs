@@ -28,12 +28,12 @@ impl PieceKind {
         Self::King,
     ];
 
-    #[inline]
+    #[inline(always)]
     pub fn array_idx(&self) -> usize {
         *self as usize
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn value(&self) -> i16 {
         match self {
             Self::Pawn => 100,

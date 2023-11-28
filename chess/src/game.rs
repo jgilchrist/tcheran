@@ -22,7 +22,7 @@ pub enum CastleRightsSide {
 impl CastleRightsSide {
     pub const N: usize = 2;
 
-    #[inline]
+    #[inline(always)]
     pub fn array_idx(&self) -> usize {
         *self as usize
     }

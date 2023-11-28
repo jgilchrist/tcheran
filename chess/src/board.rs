@@ -28,6 +28,7 @@ pub struct PlayerPieces {
 }
 
 impl PlayerPieces {
+    #[inline(always)]
     pub(crate) fn all(&self) -> Bitboard {
         self.pawns | self.knights | self.bishops | self.rooks | self.queens | self.king
     }
@@ -77,6 +78,7 @@ impl Board {
         start
     }
 
+    #[inline(always)]
     pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
@@ -90,7 +92,7 @@ impl Board {
         unsafe { *self.pieces.get_unchecked(square.array_idx()) }
     }
 
-    #[inline]
+    #[inline(always)]
     fn player_pieces_for(&mut self, player: Player) -> &mut PlayerPieces {
         match player {
             Player::White => &mut self.white_pieces,
@@ -98,7 +100,7 @@ impl Board {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
         let player_pieces = self.player_pieces_for(piece.player);
 
@@ -112,7 +114,7 @@ impl Board {
         }
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn remove_at(&mut self, square: Square) -> bool {
         let Some(piece) = self.piece_at(square) else {
             return false;
@@ -123,7 +125,7 @@ impl Board {
         true
     }
 
-    #[inline]
+    #[inline(always)]
     pub fn set_at(&mut self, square: Square, piece: Piece) {
         self.squares_for_piece(piece).set_inplace(square);
         self.pieces[square.array_idx()] = Some(piece);

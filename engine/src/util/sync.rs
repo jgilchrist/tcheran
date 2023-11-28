@@ -8,7 +8,7 @@ pub struct LockLatch {
 }
 
 impl LockLatch {
-    #[inline]
+    #[inline(always)]
     pub const fn new() -> Self {
         Self {
             m: Mutex::new(false),
@@ -17,7 +17,7 @@ impl LockLatch {
     }
 
     /// Block until latch is set.
-    #[inline]
+    #[inline(always)]
     #[allow(clippy::significant_drop_tightening)]
     pub fn wait(&self) {
         let mut guard = self.m.lock().unwrap();
@@ -27,7 +27,7 @@ impl LockLatch {
     }
 
     // Sets the lock to true and notifies any threads waiting on it.
-    #[inline]
+    #[inline(always)]
     pub fn set(&self) {
         *self.m.lock().unwrap() = true;
         self.v.notify_all();
