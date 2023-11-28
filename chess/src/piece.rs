@@ -47,15 +47,15 @@ impl PieceKind {
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PromotionPieceKind {
-    // Ordered in preference-order (i.e. we'll most likely want to promote to a queen)
-    Queen,
-    Rook,
     Knight,
     Bishop,
+    Rook,
+    Queen,
 }
 
 impl PromotionPieceKind {
-    pub const ALL: &'static [Self; 4] = &[Self::Knight, Self::Bishop, Self::Rook, Self::Queen];
+    // Ordered in preference-order (i.e. we'll most likely want to promote to a queen)
+    pub const ALL: &'static [Self; 4] = &[Self::Queen, Self::Rook, Self::Knight, Self::Bishop];
 
     pub const fn piece(&self) -> PieceKind {
         match self {
