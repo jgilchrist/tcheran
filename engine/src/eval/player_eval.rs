@@ -20,6 +20,7 @@ impl Eval {
     pub(crate) const DRAW: Self = Self(0);
 
     const MATE: i16 = 32000;
+    const MATE_THRESHOLD: i16 = Self::MATE - 100;
 
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i16::from(ply))
@@ -29,14 +30,12 @@ impl Eval {
         Self(-Self::MATE + i16::from(ply))
     }
 
-    // TODO: We say 'any rating within 100 of 32000 is still mate in x moves'
-    // Can we make this less arbitrary?
     pub fn is_mate_in_moves(self) -> Option<i16> {
-        if self.0 > 32000 - 100 {
+        if self.0 > Self::MATE_THRESHOLD {
             return Some((Self::MATE - self.0 + 1) / 2);
         }
 
-        if self.0 < -32000 + 100 {
+        if self.0 < -Self::MATE_THRESHOLD {
             return Some((-Self::MATE - self.0) / 2);
         }
 
