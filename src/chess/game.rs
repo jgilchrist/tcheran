@@ -64,7 +64,7 @@ impl Default for CastleRights {
 
 #[derive(Debug, Clone)]
 pub struct History {
-    pub mv: Move,
+    pub mv: Option<Move>,
     pub captured: Option<Piece>,
     pub white_castle_rights: CastleRights,
     pub black_castle_rights: CastleRights,
@@ -266,7 +266,7 @@ impl Game {
         // Capture the irreversible aspects of the position so that they can be restored
         // if we undo this move.
         let history = History {
-            mv,
+            mv: Some(mv),
             captured: maybe_captured_piece,
             white_castle_rights: self.white_castle_rights,
             black_castle_rights: self.black_castle_rights,
@@ -373,9 +373,33 @@ impl Game {
         self.zobrist.toggle_side_to_play();
     }
 
+    pub fn make_null_move(&mut self) {
+        // Capture the irreversible aspects of the position so that they can be restored
+        // if we undo this move.
+        let history = History {
+            mv: None,
+            captured: None,
+            white_castle_rights: self.white_castle_rights,
+            black_castle_rights: self.black_castle_rights,
+            en_passant_target: None,
+            halfmove_clock: self.halfmove_clock,
+            zobrist: self.zobrist.clone(),
+        };
+
+        self.history.push(history);
+
+        self.zobrist.set_en_passant(self.en_passant_target, None);
+        self.en_passant_target = None;
+
+        self.plies += 1;
+
+        self.player = self.player.other();
+        self.zobrist.toggle_side_to_play();
+    }
+
     pub fn undo_move(&mut self) {
         let history = self.history.pop().unwrap();
-        let mv = history.mv;
+        let mv = history.mv.unwrap();
         let from = mv.src;
         let to = mv.dst;
 
@@ -448,6 +472,23 @@ impl Game {
         } else {
             self.set_at(from, moved_piece);
         }
+    }
+
+    pub fn undo_null_move(&mut self) {
+        let history = self.history.pop().unwrap();
+        assert!(history.mv.is_none());
+
+        self.player = self.player.other();
+        self.zobrist.toggle_side_to_play();
+
+        let en_passant_target_before_undo = self.en_passant_target;
+        self.en_passant_target = history.en_passant_target;
+
+        self.zobrist
+            .set_en_passant(en_passant_target_before_undo, history.en_passant_target);
+
+        self.plies -= 1;
+        self.halfmove_clock = history.halfmove_clock;
     }
 }
 

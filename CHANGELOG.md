@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Add null move pruning
+
 ### Misc
 
 * Remove the ability to specify alternate strategies

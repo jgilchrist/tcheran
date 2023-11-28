@@ -1,5 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
+use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
@@ -8,6 +9,11 @@ use crate::engine::search::transposition::{
 };
 
 use super::{move_ordering, Control, SearchState, MAX_SEARCH_DEPTH};
+
+mod params {
+    pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
+    pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
+}
 
 pub fn negamax(
     game: &mut Game,
@@ -78,10 +84,42 @@ pub fn negamax(
         return Err(());
     }
 
+    let in_check = game.is_king_in_check();
+
+    if !is_root && !in_check {
+        let eval = eval::eval(game);
+
+        if depth >= params::NULL_MOVE_PRUNING_DEPTH_LIMIT
+            && eval > beta
+            // Don't let a player play a null move in response to a null move
+            && game.history.last().map_or(true, |m| m.mv.is_some())
+        {
+            game.make_null_move();
+
+            let null_score = -negamax(
+                game,
+                -beta,
+                -beta + Eval(1),
+                depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
+                plies + 1,
+                tt,
+                time_control,
+                state,
+                control,
+            )?;
+
+            game.undo_null_move();
+
+            if null_score >= beta {
+                return Ok(null_score);
+            }
+        }
+    }
+
     let mut moves = game.moves();
 
     if moves.is_empty() {
-        return Ok(if game.is_king_in_check() {
+        return Ok(if in_check {
             Eval::mated_in(plies)
         } else {
             Eval::DRAW
