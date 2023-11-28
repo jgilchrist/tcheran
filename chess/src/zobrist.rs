@@ -51,9 +51,7 @@ mod components {
 }
 
 pub fn init() {
-    // TODO: Figure out exactly which generator to use
-    // TODO: Seed this with a fixed seed
-    let mut random = thread_rng();
+    let mut random = StdRng::seed_from_u64(0);
 
     for player in 0..Player::N {
         for square in 0..Square::N {
