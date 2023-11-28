@@ -1,4 +1,5 @@
 use crate::bitboard::{bitboards, Bitboard};
+use crate::board::PlayerPieces;
 use crate::movegen::{attackers, pins, tables};
 use crate::piece::PieceKind;
 use crate::square::{squares, Square};
@@ -6,8 +7,9 @@ use crate::{
     direction::Direction, game::Game, moves::Move, piece::PromotionPieceKind, player::Player,
 };
 
-struct Ctx {
+struct Ctx<'gen> {
     all_pieces: Bitboard,
+    our_pieces: &'gen PlayerPieces,
     their_pieces: Bitboard,
 
     king: Square,
@@ -58,7 +60,7 @@ pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
 
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
-        generate_king_moves(&mut moves, game, move_types, attacked_squares, &ctx);
+        generate_king_moves(&mut moves, move_types, attacked_squares, &ctx);
         return moves;
     }
 
@@ -89,25 +91,26 @@ pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
     };
 
     generate_pawn_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_knight_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_bishop_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_rook_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_queen_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_king_moves(&mut moves, game, move_types, attacked_squares, &ctx);
+    generate_knight_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_bishop_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_rook_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_queen_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_king_moves(&mut moves, move_types, attacked_squares, &ctx);
     generate_castles(&mut moves, game, move_types, attacked_squares, &ctx);
     moves
 }
 
 fn get_ctx(game: &Game) -> Ctx {
-    let our_pieces = game.board.player_pieces(game.player).all();
+    let our_pieces = game.board.player_pieces(game.player);
     let their_pieces = game.board.player_pieces(game.player.other()).all();
-    let all_pieces = our_pieces | their_pieces;
+    let all_pieces = our_pieces.all() | their_pieces;
 
-    let king = game.board.player_pieces(game.player).king.single();
+    let king = our_pieces.king.single();
     let (checkers, pinned, pinners) = pins::get_pins_and_checkers(&game.board, game.player, king);
 
     Ctx {
         all_pieces,
+        our_pieces,
         their_pieces,
 
         king,
@@ -126,7 +129,7 @@ fn generate_pawn_moves(
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let pawns = game.board.player_pieces(game.player).pawns;
+    let pawns = ctx.our_pieces.pawns;
 
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
     let back_rank = bitboards::pawn_back_rank(game.player);
@@ -328,13 +331,12 @@ fn generate_pawn_moves(
 
 fn generate_knight_moves(
     moves: &mut Vec<Move>,
-    game: &Game,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let knights = game.board.player_pieces(game.player).knights;
+    let knights = ctx.our_pieces.knights;
 
     // Pinned knights can't move
     for knight in knights & !ctx.pinned {
@@ -358,13 +360,12 @@ fn generate_knight_moves(
 
 fn generate_bishop_moves(
     moves: &mut Vec<Move>,
-    game: &Game,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let bishops = game.board.player_pieces(game.player).bishops;
+    let bishops = ctx.our_pieces.bishops;
 
     for bishop in bishops & !ctx.pinned {
         let destinations = tables::bishop_attacks(bishop, ctx.all_pieces);
@@ -408,13 +409,12 @@ fn generate_bishop_moves(
 
 fn generate_rook_moves(
     moves: &mut Vec<Move>,
-    game: &Game,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let rooks = game.board.player_pieces(game.player).rooks;
+    let rooks = ctx.our_pieces.rooks;
 
     for rook in rooks & !ctx.pinned {
         let destinations = tables::rook_attacks(rook, ctx.all_pieces);
@@ -458,13 +458,12 @@ fn generate_rook_moves(
 
 fn generate_queen_moves(
     moves: &mut Vec<Move>,
-    game: &Game,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let queens = game.board.player_pieces(game.player).queens;
+    let queens = ctx.our_pieces.queens;
 
     for queen in queens & !ctx.pinned {
         let destinations = tables::queen_attacks(queen, ctx.all_pieces);
@@ -508,12 +507,11 @@ fn generate_queen_moves(
 
 fn generate_king_moves(
     moves: &mut Vec<Move>,
-    game: &Game,
     move_types: &MoveTypes,
     attacked_squares: Bitboard,
     ctx: &Ctx,
 ) {
-    let king = game.board.player_pieces(game.player).king.single();
+    let king = ctx.our_pieces.king.single();
 
     // Kings can't move to attacked squares
     let king_move_mask = !ctx.all_pieces & !attacked_squares;
@@ -547,7 +545,7 @@ fn generate_castles(
         return;
     }
 
-    let king = game.board.player_pieces(game.player).king.single();
+    let king = ctx.our_pieces.king.single();
 
     // We can't castle if we're in check
     if attacked_squares.contains(king) {
