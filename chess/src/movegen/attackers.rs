@@ -19,16 +19,12 @@ pub fn generate_all_attacks(board: &Board, player: Player) -> Bitboard {
         attacks |= tables::knight_attacks(knight);
     }
 
-    for bishop in our_pieces.bishops {
+    for bishop in our_pieces.bishops | our_pieces.queens {
         attacks |= tables::bishop_attacks(bishop, all_pieces);
     }
 
-    for rook in our_pieces.rooks {
+    for rook in our_pieces.rooks | our_pieces.queens {
         attacks |= tables::rook_attacks(rook, all_pieces);
-    }
-
-    for queen in our_pieces.queens {
-        attacks |= tables::queen_attacks(queen, all_pieces);
     }
 
     for king in our_pieces.king {
@@ -52,9 +48,10 @@ pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> B
     attackers |= tables::knight_attacks(square) & their_pieces.knights;
 
     // Sliders: A square is attacked by any squares a
-    attackers |= tables::bishop_attacks(square, all_pieces) & their_pieces.bishops;
-    attackers |= tables::rook_attacks(square, all_pieces) & their_pieces.rooks;
-    attackers |= tables::queen_attacks(square, all_pieces) & their_pieces.queens;
+    attackers |=
+        tables::bishop_attacks(square, all_pieces) & (their_pieces.bishops | their_pieces.queens);
+    attackers |=
+        tables::rook_attacks(square, all_pieces) & (their_pieces.rooks | their_pieces.queens);
     attackers |= tables::king_attacks(square) & their_pieces.king;
 
     attackers

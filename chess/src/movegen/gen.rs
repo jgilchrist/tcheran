@@ -92,9 +92,8 @@ pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
 
     generate_pawn_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
     generate_knight_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_bishop_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_rook_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_queen_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_diagonal_slider_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
+    generate_orthogonal_slider_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
     generate_king_moves(&mut moves, move_types, attacked_squares, &ctx);
     generate_castles(&mut moves, game, move_types, attacked_squares, &ctx);
     moves
@@ -358,148 +357,99 @@ fn generate_knight_moves(
     }
 }
 
-fn generate_bishop_moves(
+fn generate_diagonal_slider_moves(
     moves: &mut Vec<Move>,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let bishops = ctx.our_pieces.bishops;
+    let diagonal_sliders = ctx.our_pieces.bishops | ctx.our_pieces.queens;
 
-    for bishop in bishops & !ctx.pinned {
-        let destinations = tables::bishop_attacks(bishop, ctx.all_pieces);
+    for diagonal_slider in diagonal_sliders & !ctx.pinned {
+        let destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces);
         let move_destinations = destinations & move_mask;
         let capture_destinations = destinations & capture_mask;
 
         if move_types.captures {
             for dst in capture_destinations {
-                moves.push(Move::new(bishop, dst));
+                moves.push(Move::new(diagonal_slider, dst));
             }
         }
 
         if move_types.quiet {
             for dst in move_destinations {
-                moves.push(Move::new(bishop, dst));
+                moves.push(Move::new(diagonal_slider, dst));
             }
         }
     }
 
-    // Pinned bishops can move along the pin ray, or capture the pinning piece
-    for pinned_bishop in bishops & ctx.pinned {
-        let destinations = tables::bishop_attacks(pinned_bishop, ctx.all_pieces);
-        let ray = tables::ray(pinned_bishop, ctx.king);
+    // Pinned pieces can move along the pin ray, or capture the pinning piece
+    for pinned_diagonal_slider in diagonal_sliders & ctx.pinned {
+        let destinations = tables::bishop_attacks(pinned_diagonal_slider, ctx.all_pieces);
+        let ray = tables::ray(pinned_diagonal_slider, ctx.king);
 
         let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
 
         if move_types.captures {
             for dst in capture_destinations {
-                moves.push(Move::new(pinned_bishop, dst));
+                moves.push(Move::new(pinned_diagonal_slider, dst));
             }
         }
 
         if move_types.quiet {
             for dst in move_destinations {
-                moves.push(Move::new(pinned_bishop, dst));
+                moves.push(Move::new(pinned_diagonal_slider, dst));
             }
         }
     }
 }
 
-fn generate_rook_moves(
+fn generate_orthogonal_slider_moves(
     moves: &mut Vec<Move>,
     move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let rooks = ctx.our_pieces.rooks;
+    let orthogonal_sliders = ctx.our_pieces.rooks | ctx.our_pieces.queens;
 
-    for rook in rooks & !ctx.pinned {
-        let destinations = tables::rook_attacks(rook, ctx.all_pieces);
+    for orthogonal_slider in orthogonal_sliders & !ctx.pinned {
+        let destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces);
         let move_destinations = destinations & move_mask;
         let capture_destinations = destinations & capture_mask;
 
         if move_types.captures {
             for dst in capture_destinations {
-                moves.push(Move::new(rook, dst));
+                moves.push(Move::new(orthogonal_slider, dst));
             }
         }
 
         if move_types.quiet {
             for dst in move_destinations {
-                moves.push(Move::new(rook, dst));
+                moves.push(Move::new(orthogonal_slider, dst));
             }
         }
     }
 
-    // Pinned rooks can move along the pin ray, or capture the pinning piece
-    for pinned_rook in rooks & ctx.pinned {
-        let destinations = tables::rook_attacks(pinned_rook, ctx.all_pieces);
-        let ray = tables::ray(pinned_rook, ctx.king);
+    // Pinned pieces can move along the pin ray, or capture the pinning piece
+    for pinned_orthogonal_slider in orthogonal_sliders & ctx.pinned {
+        let destinations = tables::rook_attacks(pinned_orthogonal_slider, ctx.all_pieces);
+        let ray = tables::ray(pinned_orthogonal_slider, ctx.king);
 
         let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
 
         if move_types.captures {
             for dst in capture_destinations {
-                moves.push(Move::new(pinned_rook, dst));
+                moves.push(Move::new(pinned_orthogonal_slider, dst));
             }
         }
 
         if move_types.quiet {
             for dst in move_destinations {
-                moves.push(Move::new(pinned_rook, dst));
-            }
-        }
-    }
-}
-
-fn generate_queen_moves(
-    moves: &mut Vec<Move>,
-    move_types: &MoveTypes,
-    move_mask: Bitboard,
-    capture_mask: Bitboard,
-    ctx: &Ctx,
-) {
-    let queens = ctx.our_pieces.queens;
-
-    for queen in queens & !ctx.pinned {
-        let destinations = tables::queen_attacks(queen, ctx.all_pieces);
-        let move_destinations = destinations & move_mask;
-        let capture_destinations = destinations & capture_mask;
-
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(queen, dst));
-            }
-        }
-
-        if move_types.quiet {
-            for dst in move_destinations {
-                moves.push(Move::new(queen, dst));
-            }
-        }
-    }
-
-    // Pinned queens can move along the pin ray, or capture the pinning piece
-    for pinned_queen in queens & ctx.pinned {
-        let destinations = tables::queen_attacks(pinned_queen, ctx.all_pieces);
-        let ray = tables::ray(pinned_queen, ctx.king);
-
-        let move_destinations = destinations & ray & move_mask;
-        let capture_destinations = destinations & ray & capture_mask;
-
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(pinned_queen, dst));
-            }
-        }
-
-        if move_types.quiet {
-            for dst in move_destinations {
-                moves.push(Move::new(pinned_queen, dst));
+                moves.push(Move::new(pinned_orthogonal_slider, dst));
             }
         }
     }

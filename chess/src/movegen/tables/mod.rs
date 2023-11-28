@@ -14,14 +14,6 @@ pub use magics::rook_attacks;
 pub use pawns::pawn_attacks;
 pub use rays::ray;
 
-use crate::bitboard::Bitboard;
-use crate::square::Square;
-
-#[inline]
-pub fn queen_attacks(s: Square, blockers: Bitboard) -> Bitboard {
-    rook_attacks(s, blockers) | bishop_attacks(s, blockers)
-}
-
 pub fn init() {
     magics::init();
 
