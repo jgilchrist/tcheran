@@ -55,54 +55,24 @@ impl Board {
             pieces: [None; Square::N],
         };
 
-        // TODO: Use a constant
-        for pawn in start.white_pieces.pawns {
-            start.pieces[pawn.array_idx()] = Some(Piece::new(Player::White, PieceKind::Pawn));
-        }
+        let mut set_pieces = |squares: Bitboard, piece: Piece| {
+            for sq in squares {
+                start.pieces[sq.array_idx()] = Some(piece);
+            }
+        };
 
-        for knight in start.white_pieces.knights {
-            start.pieces[knight.array_idx()] = Some(Piece::new(Player::White, PieceKind::Knight));
-        }
-
-        for bishop in start.white_pieces.bishops {
-            start.pieces[bishop.array_idx()] = Some(Piece::new(Player::White, PieceKind::Bishop));
-        }
-
-        for rook in start.white_pieces.rooks {
-            start.pieces[rook.array_idx()] = Some(Piece::new(Player::White, PieceKind::Rook));
-        }
-
-        for queen in start.white_pieces.queens {
-            start.pieces[queen.array_idx()] = Some(Piece::new(Player::White, PieceKind::Queen));
-        }
-
-        for king in start.white_pieces.king {
-            start.pieces[king.array_idx()] = Some(Piece::new(Player::White, PieceKind::King));
-        }
-
-        for pawn in start.black_pieces.pawns {
-            start.pieces[pawn.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Pawn));
-        }
-
-        for knight in start.black_pieces.knights {
-            start.pieces[knight.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Knight));
-        }
-
-        for bishop in start.black_pieces.bishops {
-            start.pieces[bishop.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Bishop));
-        }
-
-        for rook in start.black_pieces.rooks {
-            start.pieces[rook.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Rook));
-        }
-
-        for queen in start.black_pieces.queens {
-            start.pieces[queen.array_idx()] = Some(Piece::new(Player::Black, PieceKind::Queen));
-        }
-
-        for king in start.black_pieces.king {
-            start.pieces[king.array_idx()] = Some(Piece::new(Player::Black, PieceKind::King));
-        }
+        set_pieces(start.white_pieces.pawns, Piece::WHITE_PAWN);
+        set_pieces(start.white_pieces.knights, Piece::WHITE_KNIGHT);
+        set_pieces(start.white_pieces.bishops, Piece::WHITE_BISHOP);
+        set_pieces(start.white_pieces.rooks, Piece::WHITE_ROOK);
+        set_pieces(start.white_pieces.queens, Piece::WHITE_QUEEN);
+        set_pieces(start.white_pieces.king, Piece::WHITE_KING);
+        set_pieces(start.black_pieces.pawns, Piece::BLACK_PAWN);
+        set_pieces(start.black_pieces.knights, Piece::BLACK_KNIGHT);
+        set_pieces(start.black_pieces.bishops, Piece::BLACK_BISHOP);
+        set_pieces(start.black_pieces.rooks, Piece::BLACK_ROOK);
+        set_pieces(start.black_pieces.queens, Piece::BLACK_QUEEN);
+        set_pieces(start.black_pieces.king, Piece::BLACK_KING);
 
         start
     }

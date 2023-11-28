@@ -92,11 +92,11 @@ impl Piece {
         Self { kind, player }
     }
 
-    pub const fn white(kind: PieceKind) -> Self {
+    const fn white(kind: PieceKind) -> Self {
         Self::new(Player::White, kind)
     }
 
-    pub const fn black(kind: PieceKind) -> Self {
+    const fn black(kind: PieceKind) -> Self {
         Self::new(Player::Black, kind)
     }
 }
