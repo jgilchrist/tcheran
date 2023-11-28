@@ -28,9 +28,6 @@ pub fn search(
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
-        // TODO: Are we counting nodes searched at this depth?
-        state.nodes_visited = 0;
-
         let Ok(eval) = negamax::negamax(
             game,
             Eval::MIN,
