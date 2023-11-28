@@ -324,8 +324,8 @@ enum ExecuteResult {
 }
 
 fn send_response(response: &UciResponse) {
-    println!("{}", &response.as_string());
-    log(format!(" > {}", response.as_string()));
+    println!("{response}");
+    log(format!(" > {response}"));
 }
 
 pub fn uci() -> Result<()> {

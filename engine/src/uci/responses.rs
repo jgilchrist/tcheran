@@ -1,4 +1,4 @@
-use std::fmt::Write;
+use std::fmt::{Formatter, Write};
 use std::time::Duration;
 
 use crate::uci::options::{UciOption, UciOptionType};
@@ -61,20 +61,22 @@ impl UciResponse {
             def: T::DEF,
         }
     }
+}
 
-    pub(super) fn as_string(&self) -> String {
+impl std::fmt::Display for UciResponse {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
         match self {
             Self::Id(i) => match i {
-                IdParam::Name(name) => format!("id name {name}"),
-                IdParam::Author(author) => format!("id author {author}"),
+                IdParam::Name(name) => write!(f, "id name {name}")?,
+                IdParam::Author(author) => write!(f, "id author {author}")?,
             },
-            Self::UciOk => "uciok".to_string(),
-            Self::ReadyOk => "readyok".to_string(),
+            Self::UciOk => write!(f, "uciok")?,
+            Self::ReadyOk => write!(f, "readyok")?,
             // TODO: Account for 'ponder'
             Self::BestMove {
                 mv,
                 ponder: _ponder,
-            } => format!("bestmove {}", mv.notation()),
+            } => write!(f, "bestmove {}", mv.notation())?,
             Self::Info(InfoFields {
                 depth,
                 seldepth,
@@ -93,100 +95,95 @@ impl UciResponse {
                 refutation: _refutation,
                 currline: _currline,
             }) => {
-                let mut response = "info".to_owned();
+                write!(f, "info")?;
 
                 // TODO: Some of these fields are not implemented
 
                 if let Some(depth) = depth {
-                    response.push_str(&format!(" depth {depth}"));
+                    write!(f, " depth {depth}")?;
                 }
 
                 if let Some(seldepth) = seldepth {
-                    response.push_str(&format!(" seldepth {seldepth}"));
+                    write!(f, " seldepth {seldepth}")?;
                 }
 
                 if let Some(score) = score {
                     match score {
                         InfoScore::Centipawns(centipawns) => {
-                            response.push_str(&format!(" score cp {centipawns}"));
+                            write!(f, " score cp {centipawns}")?;
                         }
                         InfoScore::Mate(turns) => {
-                            response.push_str(&format!(" score mate {turns}"));
+                            write!(f, " score mate {turns}")?;
                         }
                     }
                 }
 
                 if let Some(time) = time {
-                    response.push_str(&format!(" time {}", time.as_millis()));
+                    write!(f, " time {}", time.as_millis())?;
                 }
 
                 if let Some(nodes) = nodes {
-                    response.push_str(&format!(" nodes {nodes}"));
+                    write!(f, " nodes {nodes}")?;
                 }
 
                 if let Some(nps) = nps {
-                    response.push_str(&format!(" nps {nps}"));
+                    write!(f, " nps {nps}")?;
                 }
 
                 if let Some(hashfull) = hashfull {
-                    response.push_str(&format!(" hashfull {hashfull}"));
+                    write!(f, " hashfull {hashfull}")?;
                 }
 
                 if let Some(currmove) = currmove {
-                    response.push_str(&format!(" currmove {}", currmove.notation()));
+                    write!(f, " currmove {}", currmove.notation())?;
                 }
 
                 if let Some(pv) = pv {
-                    response.push_str(" pv");
+                    write!(f, " pv")?;
 
                     for mv in pv {
-                        response.push_str(&format!(" {}", mv.notation()));
+                        write!(f, " {}", mv.notation())?;
                     }
                 }
-
-                response
             }
             Self::Option { name, def } => {
-                let mut response = format!("option name {name}");
+                write!(f, "option name {name}")?;
 
-                let type_str = match def {
-                    UciOptionType::Check { .. } => "check",
-                    UciOptionType::Spin { .. } => "spin",
-                    UciOptionType::Combo { .. } => "combo",
-                    UciOptionType::String { .. } => "string",
-                    UciOptionType::Button => "button",
-                };
-
-                response.push_str(&format!(" type {type_str}"));
-
-                let default_str = match def {
-                    UciOptionType::Check { default } => format!(" default {default}"),
-                    UciOptionType::Spin { default, .. } => format!(" default {default}"),
-                    UciOptionType::Combo { default, .. } | UciOptionType::String { default } => {
-                        format!(" default {default}")
+                write!(
+                    f,
+                    " {}",
+                    match def {
+                        UciOptionType::Check { .. } => "check",
+                        UciOptionType::Spin { .. } => "spin",
+                        UciOptionType::Combo { .. } => "combo",
+                        UciOptionType::String { .. } => "string",
+                        UciOptionType::Button => "button",
                     }
-                    UciOptionType::Button => String::new(),
+                )?;
+
+                match def {
+                    UciOptionType::Check { default } => write!(f, " default {default}")?,
+                    UciOptionType::Spin { default, .. } => write!(f, " default {default}")?,
+                    UciOptionType::Combo { default, .. } | UciOptionType::String { default } => {
+                        write!(f, " default {default}")?;
+                    }
+                    UciOptionType::Button => {}
                 };
 
-                response.push_str(&default_str);
-
-                let args_str = match def {
-                    UciOptionType::Spin { min, max, .. } => format!(" min {min} max {max}"),
+                match def {
+                    UciOptionType::Spin { min, max, .. } => write!(f, " min {min} max {max}")?,
                     UciOptionType::Combo { ref values, .. } => {
-                        values.iter().fold(String::new(), |mut out, v| {
-                            let _ = write!(out, " var {v}");
-                            out
-                        })
+                        for v in values {
+                            write!(f, " var {v}")?;
+                        }
                     }
                     UciOptionType::Check { .. }
                     | UciOptionType::String { .. }
-                    | UciOptionType::Button => String::new(),
-                };
-
-                response.push_str(&args_str);
-
-                response
+                    | UciOptionType::Button => {}
+                }
             }
         }
+
+        Ok(())
     }
 }
