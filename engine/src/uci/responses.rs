@@ -149,7 +149,7 @@ impl std::fmt::Display for UciResponse {
 
                 write!(
                     f,
-                    " {}",
+                    " type {}",
                     match def {
                         UciOptionType::Check { .. } => "check",
                         UciOptionType::Spin { .. } => "spin",
