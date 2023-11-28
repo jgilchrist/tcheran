@@ -36,7 +36,6 @@ pub struct StrategyOption;
 impl UciOption for StrategyOption {
     const NAME: &'static str = "Strategy";
     const DEF: UciOptionType = UciOptionType::String {
-        // TODO: Format crate::options::defaults::Strategy at compile time
         default: crate::options::defaults::STRATEGY.to_string(),
     };
 

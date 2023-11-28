@@ -8,7 +8,6 @@ pub fn ray(s1: Square, s2: Square) -> Bitboard {
     unsafe { RAYS_TABLE[s1.array_idx()][s2.array_idx()].unwrap() }
 }
 
-// TODO: Tidy this up with more utility methods in Rank and File
 fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
     // Same rank
     if s1.rank() == s2.rank() {
@@ -43,7 +42,6 @@ fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
     }
 
     // Diagonal
-    // TODO
     if s1.file().idx().abs_diff(s2.file().idx()) == s1.rank().idx().abs_diff(s2.rank().idx()) {
         let mut squares = Bitboard::EMPTY;
 

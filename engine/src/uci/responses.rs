@@ -1,4 +1,4 @@
-use std::fmt::{Formatter, Write};
+use std::fmt::Formatter;
 use std::time::Duration;
 
 use crate::uci::options::{UciOption, UciOptionType};
@@ -8,8 +8,6 @@ use chess::moves::Move;
 pub(super) enum InfoScore {
     Centipawns(i16),
     Mate(i16),
-    // lowerbound: i32,
-    // upperbound: i32,
 }
 
 #[derive(Debug)]

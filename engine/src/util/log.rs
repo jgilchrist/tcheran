@@ -1,9 +1,5 @@
 use std::{fs, io::Write};
 
-pub fn log_file() -> String {
-    "log".to_string()
-}
-
 // FIXME: It's not ideal to open a handle to the file every time we want to write a line
 pub fn log<S: AsRef<str>>(s: S) {
     let current_exe =

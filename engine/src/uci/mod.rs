@@ -31,10 +31,7 @@ use self::{
 pub mod commands;
 mod options;
 pub mod parser;
-#[allow(unused)]
 pub mod responses;
-
-// TODO: Use some clearer types in commands/responses, e.g. u32 -> nplies/msec
 
 #[derive(Clone)]
 pub struct UciControl {

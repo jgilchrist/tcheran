@@ -87,7 +87,6 @@ fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {
         };
 
         if tt_entry.bound != NodeBound::Exact {
-            // TODO: Log this to a file
             assert!(!pv.is_empty());
             return pv;
         }
