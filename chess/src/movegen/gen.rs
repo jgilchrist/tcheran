@@ -19,32 +19,7 @@ struct Ctx<'gen> {
     pinners: Bitboard,
 }
 
-#[allow(clippy::struct_excessive_bools)]
-pub struct MoveTypes {
-    pub quiet: bool,
-    pub captures: bool,
-    pub promotions: bool,
-    pub castles: bool,
-}
-
-impl MoveTypes {
-    pub const ALL: Self = Self {
-        quiet: true,
-        captures: true,
-        promotions: true,
-        castles: true,
-    };
-
-    pub const QUIESCENCE: Self = Self {
-        captures: true,
-        promotions: true,
-
-        quiet: false,
-        castles: false,
-    };
-}
-
-pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
+pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
     let ctx = get_ctx(game);
     let mut moves: Vec<Move> = Vec::with_capacity(64);
 
@@ -60,7 +35,7 @@ pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
 
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
-        generate_king_moves(&mut moves, move_types, attacked_squares, &ctx);
+        generate_king_moves::<QUIET>(&mut moves, attacked_squares, &ctx);
         return moves;
     }
 
@@ -90,12 +65,12 @@ pub fn generate_moves(game: &Game, move_types: &MoveTypes) -> Vec<Move> {
         Some(_) => ctx.checkers,
     };
 
-    generate_pawn_moves(&mut moves, game, move_types, move_mask, capture_mask, &ctx);
-    generate_knight_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_diagonal_slider_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_orthogonal_slider_moves(&mut moves, move_types, move_mask, capture_mask, &ctx);
-    generate_king_moves(&mut moves, move_types, attacked_squares, &ctx);
-    generate_castles(&mut moves, game, move_types, attacked_squares, &ctx);
+    generate_pawn_moves::<QUIET>(&mut moves, game, move_mask, capture_mask, &ctx);
+    generate_knight_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
+    generate_diagonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
+    generate_orthogonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
+    generate_king_moves::<QUIET>(&mut moves, attacked_squares, &ctx);
+    generate_castles::<QUIET>(&mut moves, game, attacked_squares, &ctx);
     moves
 }
 
@@ -120,10 +95,9 @@ fn get_ctx(game: &Game) -> Ctx {
     }
 }
 
-fn generate_pawn_moves(
+fn generate_pawn_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
-    move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -159,129 +133,123 @@ fn generate_pawn_moves(
         .in_direction(!pawn_move_direction)
         .in_direction(Direction::East);
 
-    if move_types.captures {
-        // Promotion capture: Pawns on the enemy's start rank will promote when capturing
-        for pawn in non_pinned_promoting_pawns & capturable_pieces_left {
-            let capture_left_square = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::East);
+    // Promotion capture: Pawns on the enemy's start rank will promote when capturing
+    for pawn in non_pinned_promoting_pawns & capturable_pieces_left {
+        let capture_left_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::East);
 
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(
+                pawn,
+                capture_left_square,
+                *promotion,
+            ));
+        }
+    }
+
+    for pawn in non_pinned_promoting_pawns & capturable_pieces_right {
+        let capture_right_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::West);
+
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(
+                pawn,
+                capture_right_square,
+                *promotion,
+            ));
+        }
+    }
+
+    // Promotion push: Pawns on the enemy's start rank will promote when pushing
+    for pawn in non_pinned_promoting_pawns & !pawn_move_blockers {
+        let forward_one = pawn.in_direction(pawn_move_direction);
+
+        if move_mask.contains(forward_one) {
             for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(
-                    pawn,
-                    capture_left_square,
-                    *promotion,
-                ));
-            }
-        }
-
-        for pawn in non_pinned_promoting_pawns & capturable_pieces_right {
-            let capture_right_square = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::West);
-
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(
-                    pawn,
-                    capture_right_square,
-                    *promotion,
-                ));
+                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
             }
         }
     }
 
-    if move_types.promotions {
-        // Promotion push: Pawns on the enemy's start rank will promote when pushing
-        for pawn in non_pinned_promoting_pawns & !pawn_move_blockers {
-            let forward_one = pawn.in_direction(pawn_move_direction);
+    // Non-promoting captures: All pawns can capture diagonally
+    for pawn in non_pinned_non_promoting_pawns & capturable_pieces_left {
+        let capture_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::East);
 
-            if move_mask.contains(forward_one) {
-                for promotion in PromotionPieceKind::ALL {
-                    moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
-                }
-            }
+        moves.push(Move::new(pawn, capture_square));
+    }
+
+    for pawn in non_pinned_non_promoting_pawns & capturable_pieces_right {
+        let capture_square = pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::West);
+
+        moves.push(Move::new(pawn, capture_square));
+    }
+
+    // Pinned pawns can only capture pinners along their pin ray
+    for pinned_pawn in pinned_pawns & capturable_pinner_pieces_left {
+        let ray = tables::ray(pinned_pawn, ctx.king);
+
+        let capture_square = pinned_pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::East);
+
+        if ray.contains(capture_square) {
+            moves.push(Move::new(pinned_pawn, capture_square));
         }
     }
 
-    if move_types.captures {
-        // Non-promoting captures: All pawns can capture diagonally
-        for pawn in non_pinned_non_promoting_pawns & capturable_pieces_left {
-            let capture_square = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::East);
+    for pinned_pawn in pinned_pawns & capturable_pinner_pieces_right {
+        let ray = tables::ray(pinned_pawn, ctx.king);
 
-            moves.push(Move::new(pawn, capture_square));
-        }
+        let capture_square = pinned_pawn
+            .in_direction(pawn_move_direction)
+            .in_direction(Direction::West);
 
-        for pawn in non_pinned_non_promoting_pawns & capturable_pieces_right {
-            let capture_square = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::West);
-
-            moves.push(Move::new(pawn, capture_square));
-        }
-
-        // Pinned pawns can only capture pinners along their pin ray
-        for pinned_pawn in pinned_pawns & capturable_pinner_pieces_left {
-            let ray = tables::ray(pinned_pawn, ctx.king);
-
-            let capture_square = pinned_pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::East);
-
-            if ray.contains(capture_square) {
-                moves.push(Move::new(pinned_pawn, capture_square));
-            }
-        }
-
-        for pinned_pawn in pinned_pawns & capturable_pinner_pieces_right {
-            let ray = tables::ray(pinned_pawn, ctx.king);
-
-            let capture_square = pinned_pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(Direction::West);
-
-            if ray.contains(capture_square) {
-                moves.push(Move::new(pinned_pawn, capture_square));
-            }
-        }
-
-        // En-passant capture: Pawns either side of the en-passant pawn can capture
-        if let Some(en_passant_target) = game.en_passant_target {
-            // We may use en passant to move the pawn to a square which blocks check, so we & with move_mask
-            let pawns_in_capturing_positions =
-                tables::pawn_attacks(en_passant_target, game.player.other());
-
-            for potential_en_passant_capture_start in
-                pawns_in_capturing_positions & non_pinned_non_promoting_pawns
-            {
-                let captured_pawn = en_passant_target.in_direction(!pawn_move_direction);
-
-                // We need to check that we do not reveal a check by making this en-passant capture
-                let mut board_without_en_passant_participants = game.board;
-                board_without_en_passant_participants.remove_at(potential_en_passant_capture_start);
-                board_without_en_passant_participants.remove_at(captured_pawn);
-
-                let king_in_check = attackers::generate_attackers_of(
-                    &board_without_en_passant_participants,
-                    game.player,
-                    ctx.king,
-                )
-                .any();
-
-                if king_in_check {
-                    continue;
-                }
-
-                moves.push(Move::new(
-                    potential_en_passant_capture_start,
-                    en_passant_target,
-                ));
-            }
+        if ray.contains(capture_square) {
+            moves.push(Move::new(pinned_pawn, capture_square));
         }
     }
 
-    if move_types.quiet {
+    // En-passant capture: Pawns either side of the en-passant pawn can capture
+    if let Some(en_passant_target) = game.en_passant_target {
+        // We may use en passant to move the pawn to a square which blocks check, so we & with move_mask
+        let pawns_in_capturing_positions =
+            tables::pawn_attacks(en_passant_target, game.player.other());
+
+        for potential_en_passant_capture_start in
+            pawns_in_capturing_positions & non_pinned_non_promoting_pawns
+        {
+            let captured_pawn = en_passant_target.in_direction(!pawn_move_direction);
+
+            // We need to check that we do not reveal a check by making this en-passant capture
+            let mut board_without_en_passant_participants = game.board;
+            board_without_en_passant_participants.remove_at(potential_en_passant_capture_start);
+            board_without_en_passant_participants.remove_at(captured_pawn);
+
+            let king_in_check = attackers::generate_attackers_of(
+                &board_without_en_passant_participants,
+                game.player,
+                ctx.king,
+            )
+            .any();
+
+            if king_in_check {
+                continue;
+            }
+
+            moves.push(Move::new(
+                potential_en_passant_capture_start,
+                en_passant_target,
+            ));
+        }
+    }
+
+    if QUIET {
         // Push: All pawns with an empty square in front of them can move forward
         for pawn in non_pinned_non_promoting_pawns & !pawn_move_blockers {
             let forward_one = pawn.in_direction(pawn_move_direction);
@@ -328,9 +296,8 @@ fn generate_pawn_moves(
     }
 }
 
-fn generate_knight_moves(
+fn generate_knight_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -343,13 +310,11 @@ fn generate_knight_moves(
         let move_destinations = destinations & move_mask;
         let capture_destinations = destinations & capture_mask;
 
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(knight, dst));
-            }
+        for dst in capture_destinations {
+            moves.push(Move::new(knight, dst));
         }
 
-        if move_types.quiet {
+        if QUIET {
             for dst in move_destinations {
                 moves.push(Move::new(knight, dst));
             }
@@ -357,9 +322,8 @@ fn generate_knight_moves(
     }
 }
 
-fn generate_diagonal_slider_moves(
+fn generate_diagonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -371,13 +335,11 @@ fn generate_diagonal_slider_moves(
         let move_destinations = destinations & move_mask;
         let capture_destinations = destinations & capture_mask;
 
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(diagonal_slider, dst));
-            }
+        for dst in capture_destinations {
+            moves.push(Move::new(diagonal_slider, dst));
         }
 
-        if move_types.quiet {
+        if QUIET {
             for dst in move_destinations {
                 moves.push(Move::new(diagonal_slider, dst));
             }
@@ -392,13 +354,11 @@ fn generate_diagonal_slider_moves(
         let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
 
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(pinned_diagonal_slider, dst));
-            }
+        for dst in capture_destinations {
+            moves.push(Move::new(pinned_diagonal_slider, dst));
         }
 
-        if move_types.quiet {
+        if QUIET {
             for dst in move_destinations {
                 moves.push(Move::new(pinned_diagonal_slider, dst));
             }
@@ -406,9 +366,8 @@ fn generate_diagonal_slider_moves(
     }
 }
 
-fn generate_orthogonal_slider_moves(
+fn generate_orthogonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    move_types: &MoveTypes,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -420,13 +379,11 @@ fn generate_orthogonal_slider_moves(
         let move_destinations = destinations & move_mask;
         let capture_destinations = destinations & capture_mask;
 
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(orthogonal_slider, dst));
-            }
+        for dst in capture_destinations {
+            moves.push(Move::new(orthogonal_slider, dst));
         }
 
-        if move_types.quiet {
+        if QUIET {
             for dst in move_destinations {
                 moves.push(Move::new(orthogonal_slider, dst));
             }
@@ -441,13 +398,11 @@ fn generate_orthogonal_slider_moves(
         let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
 
-        if move_types.captures {
-            for dst in capture_destinations {
-                moves.push(Move::new(pinned_orthogonal_slider, dst));
-            }
+        for dst in capture_destinations {
+            moves.push(Move::new(pinned_orthogonal_slider, dst));
         }
 
-        if move_types.quiet {
+        if QUIET {
             for dst in move_destinations {
                 moves.push(Move::new(pinned_orthogonal_slider, dst));
             }
@@ -455,9 +410,8 @@ fn generate_orthogonal_slider_moves(
     }
 }
 
-fn generate_king_moves(
+fn generate_king_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    move_types: &MoveTypes,
     attacked_squares: Bitboard,
     ctx: &Ctx,
 ) {
@@ -471,27 +425,24 @@ fn generate_king_moves(
 
     let destinations = tables::king_attacks(king);
 
-    if move_types.captures {
-        for dst in destinations & king_capture_mask {
-            moves.push(Move::new(king, dst));
-        }
+    for dst in destinations & king_capture_mask {
+        moves.push(Move::new(king, dst));
     }
 
-    if move_types.quiet {
+    if QUIET {
         for dst in destinations & king_move_mask {
             moves.push(Move::new(king, dst));
         }
     }
 }
 
-fn generate_castles(
+fn generate_castles<const QUIET: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
-    move_types: &MoveTypes,
     attacked_squares: Bitboard,
     ctx: &Ctx,
 ) {
-    if !move_types.castles {
+    if !QUIET {
         return;
     }
 
@@ -571,7 +522,7 @@ mod tests {
     fn should_not_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = generate_moves(&game, &MoveTypes::ALL);
+        let moves = generate_moves::<true>(&game);
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 

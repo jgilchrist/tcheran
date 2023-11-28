@@ -3,7 +3,6 @@ use crate::eval::Eval;
 use crate::game::EngineGame;
 use crate::search::time_control::TimeStrategy;
 use crate::strategy::Control;
-use chess::movegen::MoveTypes;
 
 use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
 
@@ -43,7 +42,7 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = game.moves_with_type(&MoveTypes::QUIESCENCE);
+    let mut moves = game.loud_moves();
 
     move_ordering::order_moves(&game.game, &mut moves, None);
 

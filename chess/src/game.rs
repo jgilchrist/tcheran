@@ -1,5 +1,4 @@
 use crate::bitboard::bitboards;
-use crate::movegen::MoveTypes;
 use crate::piece::Piece;
 use crate::square::squares;
 use crate::zobrist::ZobristHash;
@@ -163,11 +162,11 @@ impl Game {
     }
 
     pub fn moves(&self) -> Vec<Move> {
-        generate_moves(self, &MoveTypes::ALL)
+        generate_moves::<true>(self)
     }
 
-    pub fn moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
-        generate_moves(self, move_types)
+    pub fn loud_moves(&self) -> Vec<Move> {
+        generate_moves::<false>(self)
     }
 
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {

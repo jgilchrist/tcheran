@@ -1,7 +1,6 @@
 use crate::eval::IncrementalEvalFields;
 use chess::direction::Direction;
 use chess::game::Game;
-use chess::movegen::MoveTypes;
 use chess::moves::Move;
 use chess::piece::{Piece, PieceKind};
 use chess::player::Player;
@@ -51,8 +50,8 @@ impl EngineGame {
         self.game.moves()
     }
 
-    pub fn moves_with_type(&self, move_types: &MoveTypes) -> Vec<Move> {
-        self.game.moves_with_type(move_types)
+    pub fn loud_moves(&self) -> Vec<Move> {
+        self.game.loud_moves()
     }
 
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
