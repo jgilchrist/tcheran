@@ -12,6 +12,10 @@ pub struct TimeStrategy {
 }
 
 impl TimeStrategy {
+    // Account for the possibility that there's some overhead making the move
+    // e.g. sending the best move over the internet.
+    const MOVE_OVERHEAD: Duration = Duration::from_millis(50);
+
     pub fn new(game: &Game, time_control: &TimeControl) -> Self {
         Self {
             time_control: time_control.clone(),
@@ -35,7 +39,6 @@ impl TimeStrategy {
         self.started_at.unwrap().elapsed()
     }
 
-    // TODO: Improve this - for now, it's super simple.
     fn time_allotted(&self, clocks: &Clocks) -> Duration {
         let (time_remaining, increment) = match self.player {
             Player::White => (clocks.white_clock, clocks.white_increment),
@@ -45,31 +48,20 @@ impl TimeStrategy {
         let increment = increment.unwrap_or_default();
 
         // If we don't have a time limit, spend a minute per move
-        let Some(time_remaining) = time_remaining else {
+        let Some(mut time_remaining) = time_remaining else {
             return Duration::from_secs(60);
         };
 
-        // About to lose on time
-        if time_remaining < Duration::from_secs(1) {
-            return Duration::from_millis(100);
-        }
+        time_remaining = time_remaining
+            .saturating_sub(Self::MOVE_OVERHEAD)
+            .max(Self::MOVE_OVERHEAD);
 
-        // Extreme time pressure - start blitzing
-        if time_remaining < Duration::from_secs(2) {
-            return Duration::from_millis(500);
-        }
+        let time_to_use = std::cmp::min(
+            time_remaining.mul_f64(0.5),
+            time_remaining.mul_f64(0.03333) + increment,
+        );
 
-        // Moderate time pressure - less than a minute.
-        if time_remaining < Duration::from_secs(60) {
-            return Duration::from_secs(1) + increment;
-        }
-
-        // Time pressure - we have less than two minutes.
-        if time_remaining < Duration::from_secs(60 * 3) {
-            return Duration::from_secs(4) + increment;
-        }
-
-        Duration::from_secs(20) + increment
+        time_to_use
     }
 
     pub fn should_stop(&self) -> bool {
