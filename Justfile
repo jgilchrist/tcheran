@@ -33,7 +33,7 @@ copy-bin name:
 	cargo build --release
 	cp target/release/engine bins/{{name}}
 
-playoff name1 name2 concurrency openingsfile:
+playoff name1 name2 tc concurrency openingsfile:
 	cutechess-cli \
 		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
 		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
@@ -45,5 +45,5 @@ playoff name1 name2 concurrency openingsfile:
 		-sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
-			tc=8+0.2 \
+			tc={{tc}} \
 			restart=on
