@@ -71,13 +71,12 @@ fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
         }
 
         let mut current_square = start_square;
+        squares.set_inplace(start_square);
 
         while current_square != end_square {
-            squares.set_inplace(current_square);
             current_square = current_square.in_direction(to_end_direction);
+            squares.set_inplace(current_square);
         }
-
-        squares.set_inplace(end_square);
 
         return Some(squares);
     }
