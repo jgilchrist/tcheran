@@ -56,6 +56,11 @@ impl TimeStrategy {
             .saturating_sub(Self::MOVE_OVERHEAD)
             .max(Self::MOVE_OVERHEAD);
 
+        if let Some(moves_to_go) = clocks.moves_to_go {
+            // Try to use a roughly even amount of time per move
+            return time_remaining / moves_to_go + increment;
+        }
+
         let time_to_use = std::cmp::min(
             time_remaining.mul_f64(0.5),
             time_remaining.mul_f64(0.03333) + increment,
