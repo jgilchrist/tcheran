@@ -8,6 +8,8 @@ pub mod game;
 pub mod search;
 pub mod transposition_table;
 
+pub const ENGINE_NAME: &str = "Tcheran";
+
 pub fn engine_version() -> &'static str {
     // If we can't determine the version from git tags, fall back to the version
     // specified in the Cargo manifest

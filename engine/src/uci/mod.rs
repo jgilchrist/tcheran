@@ -15,6 +15,7 @@ use crate::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::uci::commands::DebugCommand;
 use crate::uci::options::UciOption;
 use crate::util::sync::LockLatch;
+use crate::ENGINE_NAME;
 use crate::{
     eval,
     strategy::{self, Strategy},
@@ -110,7 +111,7 @@ impl Uci {
 
                 let version = crate::engine_version();
                 send_response(&UciResponse::Id(IdParam::Name(format!(
-                    "engine ({version})"
+                    "{ENGINE_NAME} ({version})"
                 ))));
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
 
