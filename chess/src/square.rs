@@ -47,7 +47,7 @@ impl File {
         *self as u8
     }
 
-    pub const fn notation(&self) -> &str {
+    pub const fn notation(&self) -> &'static str {
         match self {
             Self::A => "a",
             Self::B => "b",
@@ -125,7 +125,7 @@ impl Rank {
         *self as u8
     }
 
-    pub const fn notation(&self) -> &str {
+    pub const fn notation(&self) -> &'static str {
         match self {
             Self::R1 => "1",
             Self::R2 => "2",
