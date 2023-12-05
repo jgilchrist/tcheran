@@ -242,6 +242,11 @@ impl Game {
         }
     }
 
+    #[inline(always)]
+    pub fn is_king_in_check(&self) -> bool {
+        self.board.king_in_check(self.player)
+    }
+
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);

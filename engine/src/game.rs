@@ -72,7 +72,7 @@ impl EngineGame {
 
     #[inline(always)]
     pub fn is_king_in_check(&self) -> bool {
-        self.game.board.king_in_check(self.game.player)
+        self.game.is_king_in_check()
     }
 
     #[inline(always)]
