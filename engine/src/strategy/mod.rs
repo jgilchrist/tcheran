@@ -54,8 +54,8 @@ pub struct SearchInfo {
 
 pub struct SearchStats {
     pub time: Duration,
-    pub nodes: u32,
-    pub nodes_per_second: u32,
+    pub nodes: u64,
+    pub nodes_per_second: u64,
 }
 
 pub trait Control {

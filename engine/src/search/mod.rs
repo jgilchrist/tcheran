@@ -18,7 +18,7 @@ pub mod transposition;
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 
 pub struct SearchState {
-    nodes_visited: u32,
+    nodes_visited: u64,
     max_depth_reached: u8,
 }
 

@@ -241,7 +241,7 @@ impl Uci {
                     let time_taken = started_at.elapsed();
 
                     let nodes_per_second =
-                        util::metrics::nodes_per_second(u32::try_from(result).unwrap(), time_taken);
+                        util::metrics::nodes_per_second(u64::try_from(result).unwrap(), time_taken);
 
                     println!("positions: {result}");
                     println!("time taken: {time_taken:?}");
