@@ -49,7 +49,7 @@ checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
 name = "chess"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "color-eyre",
  "nom",
@@ -71,7 +71,7 @@ dependencies = [
 
 [[package]]
 name = "engine"
-version = "0.0.0"
+version = "1.0.0"
 dependencies = [
  "chess",
  "color-eyre",

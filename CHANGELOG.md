@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+## [1.0]
+
+> 2023-12-07
+
 Initial release with the following major features:
 
 * Board
@@ -30,3 +34,6 @@ Initial release with the following major features:
     * Midgame and endgame piece square tables
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
+
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v1.0...HEAD
+[1.0]: https://github.com/jgilchrist/chess-engine/releases/tag/v1.0
