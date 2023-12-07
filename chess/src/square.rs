@@ -156,13 +156,18 @@ impl std::fmt::Display for Rank {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Square(pub Bitboard);
+pub struct Square(Bitboard);
 
 impl Square {
     pub const N: usize = 64;
 
     pub const fn from_file_and_rank(file: File, rank: Rank) -> Self {
         Self::from_idxs(file.idx(), rank.idx())
+    }
+
+    pub fn from_bitboard(bitboard: Bitboard) -> Self {
+        debug_assert!(bitboard.count() == 1);
+        Self(bitboard)
     }
 
     pub fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
@@ -189,6 +194,11 @@ impl Square {
     pub const fn from_array_idxs(file_idx: usize, rank_idx: usize) -> Self {
         let idx = rank_idx * 8 + file_idx;
         Self::from_array_index(idx)
+    }
+
+    #[inline(always)]
+    pub const fn bb(&self) -> Bitboard {
+        self.0
     }
 
     #[inline(always)]

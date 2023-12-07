@@ -67,7 +67,7 @@ mod tests {
 
     #[test]
     fn test_single_pinned_piece() {
-        pin_test("8/8/8/1kq2PK1/8/8/8/8 w - - 0 1", F5.0, C5.0);
+        pin_test("8/8/8/1kq2PK1/8/8/8/8 w - - 0 1", F5.bb(), C5.bb());
     }
 
     #[test]

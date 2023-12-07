@@ -329,7 +329,7 @@ impl Game {
             && bitboards::pawn_back_rank(player).contains(from)
             && bitboards::pawn_double_push_rank(player).contains(to)
         {
-            let en_passant_attacker_squares = to.0.west() | to.0.east();
+            let en_passant_attacker_squares = to.west() | to.east();
             let enemy_pawns = self.board.player_pieces(other_player).pawns;
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 

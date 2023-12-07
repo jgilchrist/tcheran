@@ -21,7 +21,7 @@ impl Bitboard {
 
     #[inline(always)]
     pub const fn all_except(square: Square) -> Self {
-        square.0.invert()
+        square.bb().invert()
     }
 
     #[inline(always)]
@@ -36,13 +36,13 @@ impl Bitboard {
 
     #[inline(always)]
     pub fn contains(&self, square: Square) -> bool {
-        (*self & square.0).any()
+        (*self & square.bb()).any()
     }
 
     #[inline(always)]
     pub fn single(&self) -> Square {
         debug_assert_eq!(self.count(), 1);
-        Square(*self)
+        Square::from_bitboard_maybe(*self).unwrap()
     }
 
     #[inline(always)]
@@ -64,12 +64,12 @@ impl Bitboard {
 
     #[inline(always)]
     pub fn set_inplace(&mut self, square: Square) {
-        self.0 |= square.0 .0;
+        self.0 |= square.bb().0;
     }
 
     #[inline(always)]
     pub fn unset_inplace(&mut self, square: Square) {
-        self.0 &= square.0.invert().0;
+        self.0 &= square.bb().invert().0;
     }
 
     #[inline(always)]
@@ -154,7 +154,7 @@ impl Iterator for SquareIterator {
         if self.0.is_empty() {
             None
         } else {
-            Some(Square(self.0.pop_lsb_inplace()))
+            Some(Square::from_bitboard(self.0.pop_lsb_inplace()))
         }
     }
 }
@@ -197,7 +197,7 @@ impl std::ops::BitAnd<Square> for Bitboard {
     type Output = Self;
 
     fn bitand(self, rhs: Square) -> Self::Output {
-        self & rhs.0
+        self & rhs.bb()
     }
 }
 
@@ -209,7 +209,7 @@ impl std::ops::BitAndAssign for Bitboard {
 
 impl std::ops::BitAndAssign<Square> for Bitboard {
     fn bitand_assign(&mut self, rhs: Square) {
-        self.0 = self.0 & (rhs.0 .0);
+        self.0 = self.0 & (rhs.bb().0);
     }
 }
 
@@ -225,7 +225,7 @@ impl std::ops::BitOr<Square> for Bitboard {
     type Output = Self;
 
     fn bitor(self, rhs: Square) -> Self::Output {
-        self | rhs.0
+        self | rhs.bb()
     }
 }
 
@@ -237,7 +237,7 @@ impl std::ops::BitOrAssign for Bitboard {
 
 impl std::ops::BitOrAssign<Square> for Bitboard {
     fn bitor_assign(&mut self, rhs: Square) {
-        self.0 = self.0 | (rhs.0 .0);
+        self.0 = self.0 | rhs.bb().0;
     }
 }
 
@@ -335,77 +335,77 @@ pub mod bitboards {
         }
     }
 
-    pub const A1_BB: Bitboard = A1.0;
-    pub const A2_BB: Bitboard = A2.0;
-    pub const A3_BB: Bitboard = A3.0;
-    pub const A4_BB: Bitboard = A4.0;
-    pub const A5_BB: Bitboard = A5.0;
-    pub const A6_BB: Bitboard = A6.0;
-    pub const A7_BB: Bitboard = A7.0;
-    pub const A8_BB: Bitboard = A8.0;
+    pub const A1_BB: Bitboard = A1.bb();
+    pub const A2_BB: Bitboard = A2.bb();
+    pub const A3_BB: Bitboard = A3.bb();
+    pub const A4_BB: Bitboard = A4.bb();
+    pub const A5_BB: Bitboard = A5.bb();
+    pub const A6_BB: Bitboard = A6.bb();
+    pub const A7_BB: Bitboard = A7.bb();
+    pub const A8_BB: Bitboard = A8.bb();
 
-    pub const B1_BB: Bitboard = B1.0;
-    pub const B2_BB: Bitboard = B2.0;
-    pub const B3_BB: Bitboard = B3.0;
-    pub const B4_BB: Bitboard = B4.0;
-    pub const B5_BB: Bitboard = B5.0;
-    pub const B6_BB: Bitboard = B6.0;
-    pub const B7_BB: Bitboard = B7.0;
-    pub const B8_BB: Bitboard = B8.0;
+    pub const B1_BB: Bitboard = B1.bb();
+    pub const B2_BB: Bitboard = B2.bb();
+    pub const B3_BB: Bitboard = B3.bb();
+    pub const B4_BB: Bitboard = B4.bb();
+    pub const B5_BB: Bitboard = B5.bb();
+    pub const B6_BB: Bitboard = B6.bb();
+    pub const B7_BB: Bitboard = B7.bb();
+    pub const B8_BB: Bitboard = B8.bb();
 
-    pub const C1_BB: Bitboard = C1.0;
-    pub const C2_BB: Bitboard = C2.0;
-    pub const C3_BB: Bitboard = C3.0;
-    pub const C4_BB: Bitboard = C4.0;
-    pub const C5_BB: Bitboard = C5.0;
-    pub const C6_BB: Bitboard = C6.0;
-    pub const C7_BB: Bitboard = C7.0;
-    pub const C8_BB: Bitboard = C8.0;
+    pub const C1_BB: Bitboard = C1.bb();
+    pub const C2_BB: Bitboard = C2.bb();
+    pub const C3_BB: Bitboard = C3.bb();
+    pub const C4_BB: Bitboard = C4.bb();
+    pub const C5_BB: Bitboard = C5.bb();
+    pub const C6_BB: Bitboard = C6.bb();
+    pub const C7_BB: Bitboard = C7.bb();
+    pub const C8_BB: Bitboard = C8.bb();
 
-    pub const D1_BB: Bitboard = D1.0;
-    pub const D2_BB: Bitboard = D2.0;
-    pub const D3_BB: Bitboard = D3.0;
-    pub const D4_BB: Bitboard = D4.0;
-    pub const D5_BB: Bitboard = D5.0;
-    pub const D6_BB: Bitboard = D6.0;
-    pub const D7_BB: Bitboard = D7.0;
-    pub const D8_BB: Bitboard = D8.0;
+    pub const D1_BB: Bitboard = D1.bb();
+    pub const D2_BB: Bitboard = D2.bb();
+    pub const D3_BB: Bitboard = D3.bb();
+    pub const D4_BB: Bitboard = D4.bb();
+    pub const D5_BB: Bitboard = D5.bb();
+    pub const D6_BB: Bitboard = D6.bb();
+    pub const D7_BB: Bitboard = D7.bb();
+    pub const D8_BB: Bitboard = D8.bb();
 
-    pub const E1_BB: Bitboard = E1.0;
-    pub const E2_BB: Bitboard = E2.0;
-    pub const E3_BB: Bitboard = E3.0;
-    pub const E4_BB: Bitboard = E4.0;
-    pub const E5_BB: Bitboard = E5.0;
-    pub const E6_BB: Bitboard = E6.0;
-    pub const E7_BB: Bitboard = E7.0;
-    pub const E8_BB: Bitboard = E8.0;
+    pub const E1_BB: Bitboard = E1.bb();
+    pub const E2_BB: Bitboard = E2.bb();
+    pub const E3_BB: Bitboard = E3.bb();
+    pub const E4_BB: Bitboard = E4.bb();
+    pub const E5_BB: Bitboard = E5.bb();
+    pub const E6_BB: Bitboard = E6.bb();
+    pub const E7_BB: Bitboard = E7.bb();
+    pub const E8_BB: Bitboard = E8.bb();
 
-    pub const F1_BB: Bitboard = F1.0;
-    pub const F2_BB: Bitboard = F2.0;
-    pub const F3_BB: Bitboard = F3.0;
-    pub const F4_BB: Bitboard = F4.0;
-    pub const F5_BB: Bitboard = F5.0;
-    pub const F6_BB: Bitboard = F6.0;
-    pub const F7_BB: Bitboard = F7.0;
-    pub const F8_BB: Bitboard = F8.0;
+    pub const F1_BB: Bitboard = F1.bb();
+    pub const F2_BB: Bitboard = F2.bb();
+    pub const F3_BB: Bitboard = F3.bb();
+    pub const F4_BB: Bitboard = F4.bb();
+    pub const F5_BB: Bitboard = F5.bb();
+    pub const F6_BB: Bitboard = F6.bb();
+    pub const F7_BB: Bitboard = F7.bb();
+    pub const F8_BB: Bitboard = F8.bb();
 
-    pub const G1_BB: Bitboard = G1.0;
-    pub const G2_BB: Bitboard = G2.0;
-    pub const G3_BB: Bitboard = G3.0;
-    pub const G4_BB: Bitboard = G4.0;
-    pub const G5_BB: Bitboard = G5.0;
-    pub const G6_BB: Bitboard = G6.0;
-    pub const G7_BB: Bitboard = G7.0;
-    pub const G8_BB: Bitboard = G8.0;
+    pub const G1_BB: Bitboard = G1.bb();
+    pub const G2_BB: Bitboard = G2.bb();
+    pub const G3_BB: Bitboard = G3.bb();
+    pub const G4_BB: Bitboard = G4.bb();
+    pub const G5_BB: Bitboard = G5.bb();
+    pub const G6_BB: Bitboard = G6.bb();
+    pub const G7_BB: Bitboard = G7.bb();
+    pub const G8_BB: Bitboard = G8.bb();
 
-    pub const H1_BB: Bitboard = H1.0;
-    pub const H2_BB: Bitboard = H2.0;
-    pub const H3_BB: Bitboard = H3.0;
-    pub const H4_BB: Bitboard = H4.0;
-    pub const H5_BB: Bitboard = H5.0;
-    pub const H6_BB: Bitboard = H6.0;
-    pub const H7_BB: Bitboard = H7.0;
-    pub const H8_BB: Bitboard = H8.0;
+    pub const H1_BB: Bitboard = H1.bb();
+    pub const H2_BB: Bitboard = H2.bb();
+    pub const H3_BB: Bitboard = H3.bb();
+    pub const H4_BB: Bitboard = H4.bb();
+    pub const H5_BB: Bitboard = H5.bb();
+    pub const H6_BB: Bitboard = H6.bb();
+    pub const H7_BB: Bitboard = H7.bb();
+    pub const H8_BB: Bitboard = H8.bb();
 
     pub const A_FILE: Bitboard = Bitboard::new(A1_BB.0 | A2_BB.0 | A3_BB.0 | A4_BB.0 | A5_BB.0 | A6_BB.0 | A7_BB.0 | A8_BB.0);
     pub const B_FILE: Bitboard = Bitboard::new(B1_BB.0 | B2_BB.0 | B3_BB.0 | B4_BB.0 | B5_BB.0 | B6_BB.0 | B7_BB.0 | B8_BB.0);
@@ -468,15 +468,15 @@ pub mod bitboards {
     pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(B1_BB.0 | G1_BB.0);
     pub const INIT_WHITE_BISHOPS: Bitboard = Bitboard::new(C1_BB.0 | F1_BB.0);
     pub const INIT_WHITE_ROOKS: Bitboard = Bitboard::new(A1_BB.0 | H1_BB.0);
-    pub const INIT_WHITE_QUEEN: Bitboard = squares::INIT_WHITE_QUEEN.0;
-    pub const INIT_WHITE_KING: Bitboard = squares::INIT_WHITE_KING.0;
+    pub const INIT_WHITE_QUEEN: Bitboard = squares::INIT_WHITE_QUEEN.bb();
+    pub const INIT_WHITE_KING: Bitboard = squares::INIT_WHITE_KING.bb();
 
     pub const INIT_BLACK_PAWNS: Bitboard = RANK_7;
     pub const INIT_BLACK_KNIGHTS: Bitboard = Bitboard::new(B8_BB.0 | G8_BB.0);
     pub const INIT_BLACK_BISHOPS: Bitboard = Bitboard::new(C8_BB.0 | F8_BB.0);
     pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(A8_BB.0 | H8_BB.0);
-    pub const INIT_BLACK_QUEEN: Bitboard = squares::INIT_BLACK_QUEEN.0;
-    pub const INIT_BLACK_KING: Bitboard = squares::INIT_BLACK_KING.0;
+    pub const INIT_BLACK_QUEEN: Bitboard = squares::INIT_BLACK_QUEEN.bb();
+    pub const INIT_BLACK_KING: Bitboard = squares::INIT_BLACK_KING.bb();
 
     pub const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1_BB.0 | G1_BB.0);
     pub const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8_BB.0 | G8_BB.0);
