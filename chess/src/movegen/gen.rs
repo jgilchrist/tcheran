@@ -105,8 +105,6 @@ fn generate_pawn_moves<const QUIET: bool>(
     let pawns = ctx.our_pieces.pawns;
 
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
-    let pawn_capture_left_direction = Direction::pawn_capture_left_direction(game.player);
-    let pawn_capture_right_direction = Direction::pawn_capture_right_direction(game.player);
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
     let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !ctx.pinned;
@@ -116,38 +114,14 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     let move_mask_overlay = move_mask.in_direction(!pawn_move_direction);
 
-    let capturable_pieces_left = capture_mask.in_direction(!pawn_capture_left_direction);
-
-    let capturable_pinner_pieces_left =
-        (capture_mask & ctx.pinners).in_direction(!pawn_capture_left_direction);
-
-    let capturable_pieces_right = capture_mask.in_direction(!pawn_capture_right_direction);
-
-    let capturable_pinner_pieces_right =
-        (capture_mask & ctx.pinners).in_direction(!pawn_capture_right_direction);
-
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
-    for pawn in non_pinned_promoting_pawns & capturable_pieces_left {
-        let capture_left_square = pawn.in_direction(pawn_capture_left_direction);
+    for pawn in non_pinned_promoting_pawns {
+        let attacks = tables::pawn_attacks(pawn, game.player);
 
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(
-                pawn,
-                capture_left_square,
-                *promotion,
-            ));
-        }
-    }
-
-    for pawn in non_pinned_promoting_pawns & capturable_pieces_right {
-        let capture_right_square = pawn.in_direction(pawn_capture_right_direction);
-
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(
-                pawn,
-                capture_right_square,
-                *promotion,
-            ));
+        for target in attacks & capture_mask {
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(pawn, target, *promotion));
+            }
         }
     }
 
@@ -161,34 +135,21 @@ fn generate_pawn_moves<const QUIET: bool>(
     }
 
     // Non-promoting captures: All pawns can capture diagonally
-    for pawn in non_pinned_non_promoting_pawns & capturable_pieces_left {
-        let capture_square = pawn.in_direction(pawn_capture_left_direction);
+    for pawn in non_pinned_non_promoting_pawns {
+        let attacks = tables::pawn_attacks(pawn, game.player);
 
-        moves.push(Move::new(pawn, capture_square));
-    }
-
-    for pawn in non_pinned_non_promoting_pawns & capturable_pieces_right {
-        let capture_square = pawn.in_direction(pawn_capture_right_direction);
-
-        moves.push(Move::new(pawn, capture_square));
-    }
-
-    // Pinned pawns can only capture pinners along their pin ray
-    for pinned_pawn in pinned_pawns & capturable_pinner_pieces_left {
-        let ray = tables::ray(pinned_pawn, ctx.king);
-        let capture_square = pinned_pawn.in_direction(pawn_capture_left_direction);
-
-        if ray.contains(capture_square) {
-            moves.push(Move::new(pinned_pawn, capture_square));
+        for target in attacks & capture_mask {
+            moves.push(Move::new(pawn, target));
         }
     }
 
-    for pinned_pawn in pinned_pawns & capturable_pinner_pieces_right {
+    // Pinned pawns can only capture pinners along their pin ray
+    for pinned_pawn in pinned_pawns {
+        let attacks = tables::pawn_attacks(pinned_pawn, game.player);
         let ray = tables::ray(pinned_pawn, ctx.king);
-        let capture_square = pinned_pawn.in_direction(pawn_capture_right_direction);
 
-        if ray.contains(capture_square) {
-            moves.push(Move::new(pinned_pawn, capture_square));
+        for target in attacks & ray & capture_mask {
+            moves.push(Move::new(pinned_pawn, target));
         }
     }
 
