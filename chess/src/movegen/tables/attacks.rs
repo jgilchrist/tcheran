@@ -3,62 +3,29 @@ use crate::{direction::Direction, player::Player, square::Square};
 
 pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
+    let sq = square.bb();
 
     let pawn_move_direction = Direction::pawn_move_direction(player);
 
-    let forward_one = square.in_direction_maybe(pawn_move_direction);
-
-    // Capture
-    let capture_left = forward_one.and_then(|s| s.west_maybe());
-
-    if let Some(dst) = capture_left {
-        attacks |= dst;
-    }
-
-    let capture_right = forward_one.and_then(|s| s.east_maybe());
-
-    if let Some(dst) = capture_right {
-        attacks |= dst;
-    }
+    attacks |= sq.in_direction(pawn_move_direction).west();
+    attacks |= sq.in_direction(pawn_move_direction).east();
 
     attacks
 }
 
 pub fn generate_knight_attacks(square: Square) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
+    let sq = square.bb();
 
     // Going clockwise, starting at 12
-    if let Some(nne) = square.north_maybe().and_then(|s| s.north_east_maybe()) {
-        attacks |= nne;
-    }
-
-    if let Some(een) = square.east_maybe().and_then(|s| s.north_east_maybe()) {
-        attacks |= een;
-    }
-
-    if let Some(ees) = square.east_maybe().and_then(|s| s.south_east_maybe()) {
-        attacks |= ees;
-    }
-
-    if let Some(sse) = square.south_maybe().and_then(|s| s.south_east_maybe()) {
-        attacks |= sse;
-    }
-
-    if let Some(ssw) = square.south_maybe().and_then(|s| s.south_west_maybe()) {
-        attacks |= ssw;
-    }
-
-    if let Some(wws) = square.west_maybe().and_then(|s| s.south_west_maybe()) {
-        attacks |= wws;
-    }
-
-    if let Some(wwn) = square.west_maybe().and_then(|s| s.north_west_maybe()) {
-        attacks |= wwn;
-    }
-
-    if let Some(nnw) = square.north_maybe().and_then(|s| s.north_west_maybe()) {
-        attacks |= nnw;
-    }
+    attacks |= sq.north().north_east();
+    attacks |= sq.east().north_east();
+    attacks |= sq.east().south_east();
+    attacks |= sq.south().south_east();
+    attacks |= sq.south().south_west();
+    attacks |= sq.west().south_west();
+    attacks |= sq.west().north_west();
+    attacks |= sq.north().north_west();
 
     attacks
 }
@@ -79,15 +46,15 @@ fn generate_sliding_attacks(
     let mut attacks = Bitboard::EMPTY;
 
     for direction in directions {
-        let mut current_square = square;
+        let mut current_square = square.bb();
 
         // Until we're off the board
-        while let Some(dst) = current_square.in_direction_maybe(*direction) {
-            current_square = dst;
-            attacks |= dst;
+        while current_square.any() {
+            current_square = current_square.in_direction(*direction);
+            attacks |= current_square;
 
             // Future squares blocked
-            if pieces.contains(dst) {
+            if (pieces & current_square).any() {
                 break;
             }
         }
@@ -98,11 +65,10 @@ fn generate_sliding_attacks(
 
 pub fn generate_king_attacks(square: Square) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
+    let sq = square.bb();
 
     for direction in Direction::ALL {
-        if let Some(dst) = square.in_direction_maybe(*direction) {
-            attacks |= dst;
-        }
+        attacks |= sq.in_direction(*direction);
     }
 
     attacks

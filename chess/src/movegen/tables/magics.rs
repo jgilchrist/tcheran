@@ -1,3 +1,4 @@
+use crate::bitboard::bitboards;
 use crate::direction::Direction;
 use crate::square::{File, Rank};
 use crate::{bitboard::Bitboard, square::Square};
@@ -114,24 +115,26 @@ fn generate_rook_occupancies(square: Square) -> Bitboard {
 fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Bitboard {
     let mut squares = Bitboard::EMPTY;
 
+    let mut end_mask = Bitboard::EMPTY;
+    if !bitboards::A_FILE.contains(square) {
+        end_mask |= bitboards::A_FILE;
+    };
+    if !bitboards::H_FILE.contains(square) {
+        end_mask |= bitboards::H_FILE;
+    };
+    if !bitboards::RANK_1.contains(square) {
+        end_mask |= bitboards::RANK_1;
+    };
+    if !bitboards::RANK_8.contains(square) {
+        end_mask |= bitboards::RANK_8;
+    };
+
     for direction in directions {
-        let mut current_square = square;
+        let mut sq = square.bb();
 
-        while let Some(dst) = current_square.in_direction_maybe(*direction) {
-            // Until we hit one of the edges
-            let (src_rank, src_file) = (square.rank(), square.file());
-            let (dst_rank, dst_file) = (dst.rank(), dst.file());
-
-            if dst_rank == Rank::R1 && src_rank != Rank::R1
-                || dst_rank == Rank::R8 && src_rank != Rank::R8
-                || dst_file == File::A && src_file != File::A
-                || dst_file == File::H && src_file != File::H
-            {
-                break;
-            }
-
-            current_square = dst;
-            squares |= dst;
+        while sq.any() {
+            sq = sq.in_direction(*direction) & !end_mask;
+            squares |= sq;
         }
     }
 
