@@ -39,6 +39,20 @@ impl Direction {
             Player::Black => Self::South,
         }
     }
+
+    pub fn pawn_capture_left_direction(player: Player) -> Self {
+        match player {
+            Player::White => Self::NorthWest,
+            Player::Black => Self::SouthEast,
+        }
+    }
+
+    pub fn pawn_capture_right_direction(player: Player) -> Self {
+        match player {
+            Player::White => Self::NorthEast,
+            Player::Black => Self::SouthWest,
+        }
+    }
 }
 
 impl std::ops::Not for Direction {

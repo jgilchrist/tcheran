@@ -105,6 +105,9 @@ fn generate_pawn_moves<const QUIET: bool>(
     let pawns = ctx.our_pieces.pawns;
 
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
+    let pawn_capture_left_direction = Direction::pawn_capture_left_direction(game.player);
+    let pawn_capture_right_direction = Direction::pawn_capture_right_direction(game.player);
+
     let back_rank = bitboards::pawn_back_rank(game.player);
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
@@ -117,27 +120,21 @@ fn generate_pawn_moves<const QUIET: bool>(
     let pawn_move_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
     let double_push_blockers = pawn_move_blockers.in_direction(!pawn_move_direction);
 
-    let capturable_pieces_left = (ctx.their_pieces & capture_mask)
-        .in_direction(!pawn_move_direction)
-        .in_direction(Direction::West);
+    let capturable_pieces_left =
+        (ctx.their_pieces & capture_mask).in_direction(!pawn_capture_left_direction);
 
-    let capturable_pinner_pieces_left = (ctx.their_pieces & capture_mask & ctx.pinners)
-        .in_direction(!pawn_move_direction)
-        .in_direction(Direction::West);
+    let capturable_pinner_pieces_left =
+        (ctx.their_pieces & capture_mask & ctx.pinners).in_direction(!pawn_capture_left_direction);
 
-    let capturable_pieces_right = (ctx.their_pieces & capture_mask)
-        .in_direction(!pawn_move_direction)
-        .in_direction(Direction::East);
+    let capturable_pieces_right =
+        (ctx.their_pieces & capture_mask).in_direction(!pawn_capture_right_direction);
 
-    let capturable_pinner_pieces_right = (ctx.their_pieces & capture_mask & ctx.pinners)
-        .in_direction(!pawn_move_direction)
-        .in_direction(Direction::East);
+    let capturable_pinner_pieces_right =
+        (ctx.their_pieces & capture_mask & ctx.pinners).in_direction(!pawn_capture_right_direction);
 
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
     for pawn in non_pinned_promoting_pawns & capturable_pieces_left {
-        let capture_left_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::East);
+        let capture_left_square = pawn.in_direction(pawn_capture_left_direction);
 
         for promotion in PromotionPieceKind::ALL {
             moves.push(Move::new_with_promotion(
@@ -149,9 +146,7 @@ fn generate_pawn_moves<const QUIET: bool>(
     }
 
     for pawn in non_pinned_promoting_pawns & capturable_pieces_right {
-        let capture_right_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::West);
+        let capture_right_square = pawn.in_direction(pawn_capture_right_direction);
 
         for promotion in PromotionPieceKind::ALL {
             moves.push(Move::new_with_promotion(
@@ -175,17 +170,13 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     // Non-promoting captures: All pawns can capture diagonally
     for pawn in non_pinned_non_promoting_pawns & capturable_pieces_left {
-        let capture_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::East);
+        let capture_square = pawn.in_direction(pawn_capture_left_direction);
 
         moves.push(Move::new(pawn, capture_square));
     }
 
     for pawn in non_pinned_non_promoting_pawns & capturable_pieces_right {
-        let capture_square = pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::West);
+        let capture_square = pawn.in_direction(pawn_capture_right_direction);
 
         moves.push(Move::new(pawn, capture_square));
     }
@@ -193,10 +184,7 @@ fn generate_pawn_moves<const QUIET: bool>(
     // Pinned pawns can only capture pinners along their pin ray
     for pinned_pawn in pinned_pawns & capturable_pinner_pieces_left {
         let ray = tables::ray(pinned_pawn, ctx.king);
-
-        let capture_square = pinned_pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::East);
+        let capture_square = pinned_pawn.in_direction(pawn_capture_left_direction);
 
         if ray.contains(capture_square) {
             moves.push(Move::new(pinned_pawn, capture_square));
@@ -205,10 +193,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     for pinned_pawn in pinned_pawns & capturable_pinner_pieces_right {
         let ray = tables::ray(pinned_pawn, ctx.king);
-
-        let capture_square = pinned_pawn
-            .in_direction(pawn_move_direction)
-            .in_direction(Direction::West);
+        let capture_square = pinned_pawn.in_direction(pawn_capture_right_direction);
 
         if ray.contains(capture_square) {
             moves.push(Move::new(pinned_pawn, capture_square));
