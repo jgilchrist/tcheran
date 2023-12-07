@@ -27,6 +27,9 @@ test-perft-tt:
 instruments:
 	cd engine && cargo instruments -t "time" --release --time-limit 60000
 
+instruments-debug:
+	cd engine && cargo instruments -t "time" --time-limit 60000
+
 ################################# Misc #######################################
 
 copy-bin name:
