@@ -118,6 +118,7 @@ impl Uci {
                 // Options
                 send_response(&UciResponse::option::<uci::options::HashOption>());
                 send_response(&UciResponse::option::<uci::options::StrategyOption>());
+                send_response(&UciResponse::option::<uci::options::LogOption>());
 
                 send_response(&UciResponse::UciOk);
             }
@@ -133,6 +134,7 @@ impl Uci {
                         self.set_strategy();
                         result
                     }
+                    options::LogOption::NAME => options::LogOption::set(&mut self.options, value),
                     _ => {
                         bail!("Unknown option: {name}")
                     }
