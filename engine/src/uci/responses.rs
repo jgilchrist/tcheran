@@ -23,17 +23,11 @@ pub(crate) struct InfoFields {
     pub(super) time: Option<Duration>,
     pub(super) nodes: Option<u64>,
     pub(super) pv: Option<Vec<Move>>,
-    pub(super) multipv: Option<u32>,
     pub(super) score: Option<InfoScore>,
-    pub(super) currmove: Option<Move>,
-    pub(super) currmovenumber: Option<u32>,
     pub(super) hashfull: Option<usize>,
     pub(super) nps: Option<u64>,
     pub(super) tbhits: Option<u32>,
-    pub(super) cpuload: Option<u32>,
     pub(super) string: Option<String>,
-    pub(super) refutation: Option<(Move, Option<Move>)>,
-    pub(super) currline: Option<Vec<Move>>,
 }
 
 #[derive(Debug)]
@@ -70,32 +64,26 @@ impl std::fmt::Display for UciResponse {
             },
             Self::UciOk => write!(f, "uciok")?,
             Self::ReadyOk => write!(f, "readyok")?,
-            // TODO: Account for 'ponder'
-            Self::BestMove {
-                mv,
-                ponder: _ponder,
-            } => write!(f, "bestmove {}", mv.notation())?,
+            Self::BestMove { mv, ponder } => {
+                write!(f, "bestmove {}", mv.notation())?;
+
+                if let Some(pondermv) = ponder {
+                    write!(f, " ponder {}", pondermv.notation())?;
+                }
+            }
             Self::Info(InfoFields {
                 depth,
                 seldepth,
                 time,
                 nodes,
                 pv,
-                multipv: _multipv,
                 score,
-                currmove,
-                currmovenumber: _currmovenumber,
                 hashfull,
                 nps,
-                tbhits: _tbhits,
-                cpuload: _cpuload,
-                string: _string,
-                refutation: _refutation,
-                currline: _currline,
+                tbhits,
+                string,
             }) => {
                 write!(f, "info")?;
-
-                // TODO: Some of these fields are not implemented
 
                 if let Some(depth) = depth {
                     write!(f, " depth {depth}")?;
@@ -132,8 +120,8 @@ impl std::fmt::Display for UciResponse {
                     write!(f, " hashfull {hashfull}")?;
                 }
 
-                if let Some(currmove) = currmove {
-                    write!(f, " currmove {}", currmove.notation())?;
+                if let Some(tbhits) = tbhits {
+                    write!(f, " tbhits {tbhits}")?;
                 }
 
                 if let Some(pv) = pv {
@@ -142,6 +130,10 @@ impl std::fmt::Display for UciResponse {
                     for mv in pv {
                         write!(f, " {}", mv.notation())?;
                     }
+                }
+
+                if let Some(s) = string {
+                    write!(f, " string {s}")?;
                 }
             }
             Self::Option { name, def } => {
