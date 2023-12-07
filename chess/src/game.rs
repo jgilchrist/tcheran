@@ -232,11 +232,11 @@ impl Game {
                 let king_on_edge = (kings & bitboards::EDGES).any();
 
                 // This logic is from Carp
-                (knight_count == 2 && !king_on_edge) ||
-                    (bishop_count == 2 && (
-                        (bishops & bitboards::LIGHT_SQUARES).count() != 1 ||
-                            (one_piece_each && !king_in_corner))) ||
-                    (knight_count == 1 && bishop_count == 1 && one_piece_each && !king_in_corner)
+                (knight_count == 2 && !king_on_edge)
+                    || (bishop_count == 2
+                        && ((bishops & bitboards::LIGHT_SQUARES).count() != 1
+                            || (one_piece_each && !king_in_corner)))
+                    || (knight_count == 1 && bishop_count == 1 && one_piece_each && !king_in_corner)
             }
             _ => false,
         }
@@ -351,22 +351,11 @@ impl Game {
         // PERF: Here, we figure out if the move was castling. It may be more performant to
         // tell this function that the move was castling, but it loses the cleanliness of
         // just telling the board the start and end destination for the piece.
-        //
-        // TODO: Collapse the queenside and kingside code paths into one here
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
             // We're castling!
-            if to == squares::kingside_castle_dest(player) {
-                let rook_remove_square = squares::kingside_rook_start(player);
-                let rook_add_square = squares::kingside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, rook);
-            } else if to == squares::queenside_castle_dest(player) {
-                let rook_remove_square = squares::queenside_rook_start(player);
-                let rook_add_square = squares::queenside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, rook);
+            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
+                let rook = self.remove_at(rook_from);
+                self.set_at(rook_to, rook);
             }
         }
 
@@ -451,18 +440,9 @@ impl Game {
 
         // Undo castling, if we castled
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            if to == squares::kingside_castle_dest(player) {
-                let rook_removed_square = squares::kingside_rook_start(player);
-                let rook_added_square = squares::kingside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_added_square);
-                self.set_at(rook_removed_square, rook);
-            } else if to == squares::queenside_castle_dest(player) {
-                let rook_removed_square = squares::queenside_rook_start(player);
-                let rook_added_square = squares::queenside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_added_square);
-                self.set_at(rook_removed_square, rook);
+            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
+                let rook = self.remove_at(rook_to);
+                self.set_at(rook_from, rook);
             }
         }
 

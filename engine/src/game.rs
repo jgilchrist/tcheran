@@ -139,18 +139,9 @@ impl EngineGame {
 
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
             // We're castling!
-            if to == squares::kingside_castle_dest(player) {
-                let rook_remove_square = squares::kingside_rook_start(player);
-                let rook_add_square = squares::kingside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, rook);
-            } else if to == squares::queenside_castle_dest(player) {
-                let rook_remove_square = squares::queenside_rook_start(player);
-                let rook_add_square = squares::queenside_rook_castle_end(player);
-
-                let rook = self.remove_at(rook_remove_square);
-                self.set_at(rook_add_square, rook);
+            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
+                let rook = self.remove_at(rook_from);
+                self.set_at(rook_to, rook);
             }
         }
 

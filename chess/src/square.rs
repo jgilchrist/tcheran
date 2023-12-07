@@ -375,6 +375,23 @@ pub mod squares {
         }
     }
 
+    pub fn castle_squares(player: Player, king_moved_to: Square) -> Option<(Square, Square)> {
+        let kingside_castle_dest = kingside_castle_dest(player);
+        let queenside_castle_dest = queenside_castle_dest(player);
+
+        match king_moved_to {
+            s if s == kingside_castle_dest => Some((
+                kingside_rook_start(player),
+                kingside_rook_castle_end(player),
+            )),
+            s if s == queenside_castle_dest => Some((
+                queenside_rook_start(player),
+                queenside_rook_castle_end(player),
+            )),
+            _ => None,
+        }
+    }
+
     pub const fn kingside_castle_dest(player: Player) -> Square {
         match player {
             Player::White => WHITE_KINGSIDE_CASTLE_SQUARE,
@@ -382,7 +399,7 @@ pub mod squares {
         }
     }
 
-    pub const fn kingside_rook_castle_end(player: Player) -> Square {
+    const fn kingside_rook_castle_end(player: Player) -> Square {
         match player {
             Player::White => F1,
             Player::Black => F8,
@@ -396,7 +413,7 @@ pub mod squares {
         }
     }
 
-    pub const fn queenside_rook_castle_end(player: Player) -> Square {
+    const fn queenside_rook_castle_end(player: Player) -> Square {
         match player {
             Player::White => D1,
             Player::Black => D8,
