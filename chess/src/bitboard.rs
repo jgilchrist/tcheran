@@ -154,7 +154,9 @@ impl Iterator for SquareIterator {
         if self.0.is_empty() {
             None
         } else {
-            Some(Square::from_bitboard(self.0.pop_lsb_inplace()))
+            Some(Square::from_array_index(
+                self.0.pop_lsb_inplace().trailing_zeros(),
+            ))
         }
     }
 }

@@ -149,7 +149,7 @@ impl std::fmt::Display for Rank {
 }
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Square(Bitboard);
+pub struct Square(u8);
 
 impl Square {
     pub const N: usize = 64;
@@ -158,25 +158,29 @@ impl Square {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
+    #[allow(clippy::cast_possible_truncation)] // At most 63 from .trailing_zeros() of a u64
     pub fn from_bitboard(bitboard: Bitboard) -> Self {
         debug_assert!(bitboard.count() == 1);
-        Self(bitboard)
+        Self(bitboard.trailing_zeros() as u8)
     }
 
     pub fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
         match bitboard.count() {
             0 => None,
-            1 => Some(Self(bitboard)),
+            1 => Some(Self::from_bitboard(bitboard)),
             _ => panic!("Should have had 0 or 1 bits in bitboard."),
         }
     }
 
     pub const fn from_index(idx: u8) -> Self {
-        Self(Bitboard::new(1 << idx))
+        debug_assert!(idx < 64);
+        Self(idx)
     }
 
+    #[allow(clippy::cast_possible_truncation)] // idx is guaranteed to be 0-63
     pub const fn from_array_index(idx: usize) -> Self {
-        Self(Bitboard::new(1 << idx))
+        debug_assert!(idx < 64);
+        Self(idx as u8)
     }
 
     pub const fn from_idxs(file_idx: u8, rank_idx: u8) -> Self {
@@ -184,24 +188,19 @@ impl Square {
         Self::from_index(idx)
     }
 
-    pub const fn from_array_idxs(file_idx: usize, rank_idx: usize) -> Self {
-        let idx = rank_idx * 8 + file_idx;
-        Self::from_array_index(idx)
-    }
-
     #[inline(always)]
     pub const fn bb(&self) -> Bitboard {
-        self.0
+        Bitboard(1 << self.0)
     }
 
     #[inline(always)]
     pub fn idx(&self) -> u8 {
-        u8::try_from(self.array_idx()).unwrap()
+        self.0
     }
 
     #[inline(always)]
     pub const fn array_idx(&self) -> usize {
-        self.0.trailing_zeros()
+        self.0 as usize
     }
 
     #[inline(always)]
@@ -234,12 +233,12 @@ impl Square {
 
     #[inline(always)]
     pub fn north(&self) -> Self {
-        Self(self.0.north())
+        Self(self.0 + 8)
     }
 
     #[inline(always)]
     pub fn south(&self) -> Self {
-        Self(self.0.south())
+        Self(self.0 - 8)
     }
 }
 
@@ -255,11 +254,12 @@ impl std::fmt::Display for Square {
     }
 }
 
+#[cfg(test)]
 impl std::ops::BitOr for Square {
     type Output = Bitboard;
 
     fn bitor(self, rhs: Self) -> Self::Output {
-        self.0 | rhs.0
+        self.bb() | rhs.bb()
     }
 }
 
@@ -449,9 +449,6 @@ mod tests {
 
     #[test]
     fn square_size() {
-        assert_eq!(
-            std::mem::size_of::<Square>(),
-            std::mem::size_of::<Bitboard>()
-        );
+        assert_eq!(std::mem::size_of::<Square>(), std::mem::size_of::<u8>());
     }
 }
