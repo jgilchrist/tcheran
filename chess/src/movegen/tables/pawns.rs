@@ -6,7 +6,11 @@ static mut ATTACKS_TABLE: [[Bitboard; Square::N]; Player::N] =
     [[Bitboard::EMPTY; Square::N]; Player::N];
 
 pub fn pawn_attacks(s: Square, player: Player) -> Bitboard {
-    unsafe { ATTACKS_TABLE[player.array_idx()][s.array_idx()] }
+    *unsafe {
+        ATTACKS_TABLE
+            .get_unchecked(player.array_idx())
+            .get_unchecked(s.array_idx())
+    }
 }
 
 pub fn init() {

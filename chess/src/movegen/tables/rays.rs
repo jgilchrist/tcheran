@@ -2,10 +2,15 @@ use crate::bitboard::{bitboards, Bitboard};
 use crate::direction::Direction;
 use crate::square::{File, Rank, Square};
 
-static mut RAYS_TABLE: [[Option<Bitboard>; Square::N]; Square::N] = [[None; Square::N]; Square::N];
+static mut RAYS_TABLE: [[Bitboard; Square::N]; Square::N] =
+    [[Bitboard::EMPTY; Square::N]; Square::N];
 
 pub fn ray(s1: Square, s2: Square) -> Bitboard {
-    unsafe { RAYS_TABLE[s1.array_idx()][s2.array_idx()].unwrap() }
+    *unsafe {
+        RAYS_TABLE
+            .get_unchecked(s1.array_idx())
+            .get_unchecked(s2.array_idx())
+    }
 }
 
 fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
@@ -88,7 +93,7 @@ fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
 pub fn init() {
     for s1 in Bitboard::FULL {
         for s2 in Bitboard::FULL {
-            let line = generate_ray_from(s1, s2);
+            let line = generate_ray_from(s1, s2).unwrap_or(Bitboard::EMPTY);
 
             unsafe {
                 RAYS_TABLE[s1.array_idx()][s2.array_idx()] = line;
