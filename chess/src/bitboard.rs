@@ -335,86 +335,158 @@ pub mod bitboards {
         }
     }
 
-    pub const A_FILE: Bitboard = Bitboard::new(A1.0.0 | A2.0.0 | A3.0.0 | A4.0.0 | A5.0.0 | A6.0.0 | A7.0.0 | A8.0.0);
-    pub const B_FILE: Bitboard = Bitboard::new(B1.0.0 | B2.0.0 | B3.0.0 | B4.0.0 | B5.0.0 | B6.0.0 | B7.0.0 | B8.0.0);
-    pub const C_FILE: Bitboard = Bitboard::new(C1.0.0 | C2.0.0 | C3.0.0 | C4.0.0 | C5.0.0 | C6.0.0 | C7.0.0 | C8.0.0);
-    pub const D_FILE: Bitboard = Bitboard::new(D1.0.0 | D2.0.0 | D3.0.0 | D4.0.0 | D5.0.0 | D6.0.0 | D7.0.0 | D8.0.0);
-    pub const E_FILE: Bitboard = Bitboard::new(E1.0.0 | E2.0.0 | E3.0.0 | E4.0.0 | E5.0.0 | E6.0.0 | E7.0.0 | E8.0.0);
-    pub const F_FILE: Bitboard = Bitboard::new(F1.0.0 | F2.0.0 | F3.0.0 | F4.0.0 | F5.0.0 | F6.0.0 | F7.0.0 | F8.0.0);
-    pub const G_FILE: Bitboard = Bitboard::new(G1.0.0 | G2.0.0 | G3.0.0 | G4.0.0 | G5.0.0 | G6.0.0 | G7.0.0 | G8.0.0);
-    pub const H_FILE: Bitboard = Bitboard::new(H1.0.0 | H2.0.0 | H3.0.0 | H4.0.0 | H5.0.0 | H6.0.0 | H7.0.0 | H8.0.0);
+    pub const A1_BB: Bitboard = A1.0;
+    pub const A2_BB: Bitboard = A2.0;
+    pub const A3_BB: Bitboard = A3.0;
+    pub const A4_BB: Bitboard = A4.0;
+    pub const A5_BB: Bitboard = A5.0;
+    pub const A6_BB: Bitboard = A6.0;
+    pub const A7_BB: Bitboard = A7.0;
+    pub const A8_BB: Bitboard = A8.0;
 
-    pub const RANK_1: Bitboard = Bitboard::new(A1.0.0 | B1.0.0 | C1.0.0 | D1.0.0 | E1.0.0 | F1.0.0 | G1.0.0 | H1.0.0);
-    pub const RANK_2: Bitboard = Bitboard::new(A2.0.0 | B2.0.0 | C2.0.0 | D2.0.0 | E2.0.0 | F2.0.0 | G2.0.0 | H2.0.0);
-    pub const RANK_3: Bitboard = Bitboard::new(A3.0.0 | B3.0.0 | C3.0.0 | D3.0.0 | E3.0.0 | F3.0.0 | G3.0.0 | H3.0.0);
-    pub const RANK_4: Bitboard = Bitboard::new(A4.0.0 | B4.0.0 | C4.0.0 | D4.0.0 | E4.0.0 | F4.0.0 | G4.0.0 | H4.0.0);
-    pub const RANK_5: Bitboard = Bitboard::new(A5.0.0 | B5.0.0 | C5.0.0 | D5.0.0 | E5.0.0 | F5.0.0 | G5.0.0 | H5.0.0);
-    pub const RANK_6: Bitboard = Bitboard::new(A6.0.0 | B6.0.0 | C6.0.0 | D6.0.0 | E6.0.0 | F6.0.0 | G6.0.0 | H6.0.0);
-    pub const RANK_7: Bitboard = Bitboard::new(A7.0.0 | B7.0.0 | C7.0.0 | D7.0.0 | E7.0.0 | F7.0.0 | G7.0.0 | H7.0.0);
-    pub const RANK_8: Bitboard = Bitboard::new(A8.0.0 | B8.0.0 | C8.0.0 | D8.0.0 | E8.0.0 | F8.0.0 | G8.0.0 | H8.0.0);
+    pub const B1_BB: Bitboard = B1.0;
+    pub const B2_BB: Bitboard = B2.0;
+    pub const B3_BB: Bitboard = B3.0;
+    pub const B4_BB: Bitboard = B4.0;
+    pub const B5_BB: Bitboard = B5.0;
+    pub const B6_BB: Bitboard = B6.0;
+    pub const B7_BB: Bitboard = B7.0;
+    pub const B8_BB: Bitboard = B8.0;
 
-    pub const UP_DIAGONAL: Bitboard = Bitboard::new(A1.0.0 | B2.0.0 | C3.0.0 | D4.0.0 | E5.0.0 | F6.0.0 | G7.0.0 | H8.0.0);
-    pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8.0.0 | B7.0.0 | C6.0.0 | D5.0.0 | E4.0.0 | F3.0.0 | G2.0.0 | H1.0.0);
+    pub const C1_BB: Bitboard = C1.0;
+    pub const C2_BB: Bitboard = C2.0;
+    pub const C3_BB: Bitboard = C3.0;
+    pub const C4_BB: Bitboard = C4.0;
+    pub const C5_BB: Bitboard = C5.0;
+    pub const C6_BB: Bitboard = C6.0;
+    pub const C7_BB: Bitboard = C7.0;
+    pub const C8_BB: Bitboard = C8.0;
 
-    pub const CORNERS: Bitboard = Bitboard::new(A1.0.0 | A8.0.0 | H1.0.0 | H8.0.0);
+    pub const D1_BB: Bitboard = D1.0;
+    pub const D2_BB: Bitboard = D2.0;
+    pub const D3_BB: Bitboard = D3.0;
+    pub const D4_BB: Bitboard = D4.0;
+    pub const D5_BB: Bitboard = D5.0;
+    pub const D6_BB: Bitboard = D6.0;
+    pub const D7_BB: Bitboard = D7.0;
+    pub const D8_BB: Bitboard = D8.0;
+
+    pub const E1_BB: Bitboard = E1.0;
+    pub const E2_BB: Bitboard = E2.0;
+    pub const E3_BB: Bitboard = E3.0;
+    pub const E4_BB: Bitboard = E4.0;
+    pub const E5_BB: Bitboard = E5.0;
+    pub const E6_BB: Bitboard = E6.0;
+    pub const E7_BB: Bitboard = E7.0;
+    pub const E8_BB: Bitboard = E8.0;
+
+    pub const F1_BB: Bitboard = F1.0;
+    pub const F2_BB: Bitboard = F2.0;
+    pub const F3_BB: Bitboard = F3.0;
+    pub const F4_BB: Bitboard = F4.0;
+    pub const F5_BB: Bitboard = F5.0;
+    pub const F6_BB: Bitboard = F6.0;
+    pub const F7_BB: Bitboard = F7.0;
+    pub const F8_BB: Bitboard = F8.0;
+
+    pub const G1_BB: Bitboard = G1.0;
+    pub const G2_BB: Bitboard = G2.0;
+    pub const G3_BB: Bitboard = G3.0;
+    pub const G4_BB: Bitboard = G4.0;
+    pub const G5_BB: Bitboard = G5.0;
+    pub const G6_BB: Bitboard = G6.0;
+    pub const G7_BB: Bitboard = G7.0;
+    pub const G8_BB: Bitboard = G8.0;
+
+    pub const H1_BB: Bitboard = H1.0;
+    pub const H2_BB: Bitboard = H2.0;
+    pub const H3_BB: Bitboard = H3.0;
+    pub const H4_BB: Bitboard = H4.0;
+    pub const H5_BB: Bitboard = H5.0;
+    pub const H6_BB: Bitboard = H6.0;
+    pub const H7_BB: Bitboard = H7.0;
+    pub const H8_BB: Bitboard = H8.0;
+
+    pub const A_FILE: Bitboard = Bitboard::new(A1_BB.0 | A2_BB.0 | A3_BB.0 | A4_BB.0 | A5_BB.0 | A6_BB.0 | A7_BB.0 | A8_BB.0);
+    pub const B_FILE: Bitboard = Bitboard::new(B1_BB.0 | B2_BB.0 | B3_BB.0 | B4_BB.0 | B5_BB.0 | B6_BB.0 | B7_BB.0 | B8_BB.0);
+    pub const C_FILE: Bitboard = Bitboard::new(C1_BB.0 | C2_BB.0 | C3_BB.0 | C4_BB.0 | C5_BB.0 | C6_BB.0 | C7_BB.0 | C8_BB.0);
+    pub const D_FILE: Bitboard = Bitboard::new(D1_BB.0 | D2_BB.0 | D3_BB.0 | D4_BB.0 | D5_BB.0 | D6_BB.0 | D7_BB.0 | D8_BB.0);
+    pub const E_FILE: Bitboard = Bitboard::new(E1_BB.0 | E2_BB.0 | E3_BB.0 | E4_BB.0 | E5_BB.0 | E6_BB.0 | E7_BB.0 | E8_BB.0);
+    pub const F_FILE: Bitboard = Bitboard::new(F1_BB.0 | F2_BB.0 | F3_BB.0 | F4_BB.0 | F5_BB.0 | F6_BB.0 | F7_BB.0 | F8_BB.0);
+    pub const G_FILE: Bitboard = Bitboard::new(G1_BB.0 | G2_BB.0 | G3_BB.0 | G4_BB.0 | G5_BB.0 | G6_BB.0 | G7_BB.0 | G8_BB.0);
+    pub const H_FILE: Bitboard = Bitboard::new(H1_BB.0 | H2_BB.0 | H3_BB.0 | H4_BB.0 | H5_BB.0 | H6_BB.0 | H7_BB.0 | H8_BB.0);
+
+    pub const RANK_1: Bitboard = Bitboard::new(A1_BB.0 | B1_BB.0 | C1_BB.0 | D1_BB.0 | E1_BB.0 | F1_BB.0 | G1_BB.0 | H1_BB.0);
+    pub const RANK_2: Bitboard = Bitboard::new(A2_BB.0 | B2_BB.0 | C2_BB.0 | D2_BB.0 | E2_BB.0 | F2_BB.0 | G2_BB.0 | H2_BB.0);
+    pub const RANK_3: Bitboard = Bitboard::new(A3_BB.0 | B3_BB.0 | C3_BB.0 | D3_BB.0 | E3_BB.0 | F3_BB.0 | G3_BB.0 | H3_BB.0);
+    pub const RANK_4: Bitboard = Bitboard::new(A4_BB.0 | B4_BB.0 | C4_BB.0 | D4_BB.0 | E4_BB.0 | F4_BB.0 | G4_BB.0 | H4_BB.0);
+    pub const RANK_5: Bitboard = Bitboard::new(A5_BB.0 | B5_BB.0 | C5_BB.0 | D5_BB.0 | E5_BB.0 | F5_BB.0 | G5_BB.0 | H5_BB.0);
+    pub const RANK_6: Bitboard = Bitboard::new(A6_BB.0 | B6_BB.0 | C6_BB.0 | D6_BB.0 | E6_BB.0 | F6_BB.0 | G6_BB.0 | H6_BB.0);
+    pub const RANK_7: Bitboard = Bitboard::new(A7_BB.0 | B7_BB.0 | C7_BB.0 | D7_BB.0 | E7_BB.0 | F7_BB.0 | G7_BB.0 | H7_BB.0);
+    pub const RANK_8: Bitboard = Bitboard::new(A8_BB.0 | B8_BB.0 | C8_BB.0 | D8_BB.0 | E8_BB.0 | F8_BB.0 | G8_BB.0 | H8_BB.0);
+
+    pub const UP_DIAGONAL: Bitboard = Bitboard::new(A1_BB.0 | B2_BB.0 | C3_BB.0 | D4_BB.0 | E5_BB.0 | F6_BB.0 | G7_BB.0 | H8_BB.0);
+    pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8_BB.0 | B7_BB.0 | C6_BB.0 | D5_BB.0 | E4_BB.0 | F3_BB.0 | G2_BB.0 | H1_BB.0);
+
+    pub const CORNERS: Bitboard = Bitboard::new(A1_BB.0 | A8_BB.0 | H1_BB.0 | H8_BB.0);
     pub const EDGES: Bitboard = Bitboard::new(
         // Rank 1
-        A1.0.0 | B1.0.0 | C1.0.0 | D1.0.0 | E1.0.0 | F1.0.0 | G1.0.0 | H1.0.0 |
+        A1_BB.0 | B1_BB.0 | C1_BB.0 | D1_BB.0 | E1_BB.0 | F1_BB.0 | G1_BB.0 | H1_BB.0 |
 
         // Rank 8
-        A8.0.0 | B8.0.0 | C8.0.0 | D8.0.0 | E8.0.0 | F8.0.0 | G8.0.0 | H8.0.0 |
+        A8_BB.0 | B8_BB.0 | C8_BB.0 | D8_BB.0 | E8_BB.0 | F8_BB.0 | G8_BB.0 | H8_BB.0 |
 
         // File A
-        A1.0.0 | A2.0.0 | A3.0.0 | A4.0.0 | A5.0.0 | A6.0.0 | A7.0.0 | A8.0.0 |
+        A1_BB.0 | A2_BB.0 | A3_BB.0 | A4_BB.0 | A5_BB.0 | A6_BB.0 | A7_BB.0 | A8_BB.0 |
 
         // File H
-        H1.0.0 | H2.0.0 | H3.0.0 | H4.0.0 | H5.0.0 | H6.0.0 | H7.0.0 | H8.0.0
+        H1_BB.0 | H2_BB.0 | H3_BB.0 | H4_BB.0 | H5_BB.0 | H6_BB.0 | H7_BB.0 | H8_BB.0
     );
 
     pub const LIGHT_SQUARES: Bitboard = Bitboard::new(
-        A8.0.0 | C8.0.0 | E8.0.0 | G8.0.0 |
-        B7.0.0 | D7.0.0 | F7.0.0 | H7.0.0 |
-        A6.0.0 | C6.0.0 | E6.0.0 | G6.0.0 |
-        B5.0.0 | D5.0.0 | F5.0.0 | H5.0.0 |
-        A4.0.0 | C4.0.0 | E4.0.0 | G4.0.0 |
-        B3.0.0 | D3.0.0 | F3.0.0 | H3.0.0 |
-        A2.0.0 | C2.0.0 | E2.0.0 | G2.0.0 |
-        B1.0.0 | D1.0.0 | F1.0.0 | H1.0.0 );
+        A8_BB.0 | C8_BB.0 | E8_BB.0 | G8_BB.0 |
+        B7_BB.0 | D7_BB.0 | F7_BB.0 | H7_BB.0 |
+        A6_BB.0 | C6_BB.0 | E6_BB.0 | G6_BB.0 |
+        B5_BB.0 | D5_BB.0 | F5_BB.0 | H5_BB.0 |
+        A4_BB.0 | C4_BB.0 | E4_BB.0 | G4_BB.0 |
+        B3_BB.0 | D3_BB.0 | F3_BB.0 | H3_BB.0 |
+        A2_BB.0 | C2_BB.0 | E2_BB.0 | G2_BB.0 |
+        B1_BB.0 | D1_BB.0 | F1_BB.0 | H1_BB.0 );
 
     #[rustfmt::skip]
     pub const DARK_SQUARES: Bitboard = Bitboard::new(
-        B8.0.0 | D8.0.0 | F8.0.0 | H8.0.0 |
-        A7.0.0 | C7.0.0 | E7.0.0 | G7.0.0 |
-        B6.0.0 | D6.0.0 | F6.0.0 | H6.0.0 |
-        A5.0.0 | C5.0.0 | E5.0.0 | G5.0.0 |
-        B4.0.0 | D4.0.0 | F4.0.0 | H4.0.0 |
-        A3.0.0 | C3.0.0 | E3.0.0 | G3.0.0 |
-        B2.0.0 | D2.0.0 | F2.0.0 | H2.0.0 |
-        A1.0.0 | C1.0.0 | E1.0.0 | G1.0.0 );
+        B8_BB.0 | D8_BB.0 | F8_BB.0 | H8_BB.0 |
+        A7_BB.0 | C7_BB.0 | E7_BB.0 | G7_BB.0 |
+        B6_BB.0 | D6_BB.0 | F6_BB.0 | H6_BB.0 |
+        A5_BB.0 | C5_BB.0 | E5_BB.0 | G5_BB.0 |
+        B4_BB.0 | D4_BB.0 | F4_BB.0 | H4_BB.0 |
+        A3_BB.0 | C3_BB.0 | E3_BB.0 | G3_BB.0 |
+        B2_BB.0 | D2_BB.0 | F2_BB.0 | H2_BB.0 |
+        A1_BB.0 | C1_BB.0 | E1_BB.0 | G1_BB.0 );
 
     pub const INIT_WHITE_PAWNS: Bitboard = RANK_2;
-    pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(B1.0.0 | G1.0.0);
-    pub const INIT_WHITE_BISHOPS: Bitboard = Bitboard::new(C1.0.0 | F1.0.0);
-    pub const INIT_WHITE_ROOKS: Bitboard = Bitboard::new(A1.0.0 | H1.0.0);
+    pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(B1_BB.0 | G1_BB.0);
+    pub const INIT_WHITE_BISHOPS: Bitboard = Bitboard::new(C1_BB.0 | F1_BB.0);
+    pub const INIT_WHITE_ROOKS: Bitboard = Bitboard::new(A1_BB.0 | H1_BB.0);
     pub const INIT_WHITE_QUEEN: Bitboard = squares::INIT_WHITE_QUEEN.0;
     pub const INIT_WHITE_KING: Bitboard = squares::INIT_WHITE_KING.0;
 
     pub const INIT_BLACK_PAWNS: Bitboard = RANK_7;
-    pub const INIT_BLACK_KNIGHTS: Bitboard = Bitboard::new(B8.0.0 | G8.0.0);
-    pub const INIT_BLACK_BISHOPS: Bitboard = Bitboard::new(C8.0.0 | F8.0.0);
-    pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(A8.0.0 | H8.0.0);
+    pub const INIT_BLACK_KNIGHTS: Bitboard = Bitboard::new(B8_BB.0 | G8_BB.0);
+    pub const INIT_BLACK_BISHOPS: Bitboard = Bitboard::new(C8_BB.0 | F8_BB.0);
+    pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(A8_BB.0 | H8_BB.0);
     pub const INIT_BLACK_QUEEN: Bitboard = squares::INIT_BLACK_QUEEN.0;
     pub const INIT_BLACK_KING: Bitboard = squares::INIT_BLACK_KING.0;
 
-    pub const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1.0.0 | G1.0.0);
-    pub const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8.0.0 | G8.0.0);
+    pub const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1_BB.0 | G1_BB.0);
+    pub const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8_BB.0 | G8_BB.0);
 
-    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B1.0.0 | C1.0.0 | D1.0.0);
-    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B8.0.0 | C8.0.0 | D8.0.0);
+    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B1_BB.0 | C1_BB.0 | D1_BB.0);
+    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B8_BB.0 | C8_BB.0 | D8_BB.0);
 
 
-    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C1.0.0 | D1.0.0);
-    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C8.0.0 | D8.0.0);
+    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C1_BB.0 | D1_BB.0);
+    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C8_BB.0 | D8_BB.0);
 }
 
 #[cfg(test)]
