@@ -429,19 +429,7 @@ pub mod bitboards {
     pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8_BB.0 | B7_BB.0 | C6_BB.0 | D5_BB.0 | E4_BB.0 | F3_BB.0 | G2_BB.0 | H1_BB.0);
 
     pub const CORNERS: Bitboard = Bitboard::new(A1_BB.0 | A8_BB.0 | H1_BB.0 | H8_BB.0);
-    pub const EDGES: Bitboard = Bitboard::new(
-        // Rank 1
-        A1_BB.0 | B1_BB.0 | C1_BB.0 | D1_BB.0 | E1_BB.0 | F1_BB.0 | G1_BB.0 | H1_BB.0 |
-
-        // Rank 8
-        A8_BB.0 | B8_BB.0 | C8_BB.0 | D8_BB.0 | E8_BB.0 | F8_BB.0 | G8_BB.0 | H8_BB.0 |
-
-        // File A
-        A1_BB.0 | A2_BB.0 | A3_BB.0 | A4_BB.0 | A5_BB.0 | A6_BB.0 | A7_BB.0 | A8_BB.0 |
-
-        // File H
-        H1_BB.0 | H2_BB.0 | H3_BB.0 | H4_BB.0 | H5_BB.0 | H6_BB.0 | H7_BB.0 | H8_BB.0
-    );
+    pub const EDGES: Bitboard = Bitboard::new(RANK_1.0 | RANK_8.0 | A_FILE.0 | H_FILE.0);
 
     pub const LIGHT_SQUARES: Bitboard = Bitboard::new(
         A8_BB.0 | C8_BB.0 | E8_BB.0 | G8_BB.0 |
