@@ -148,12 +148,12 @@ pub fn init() {
 
 pub fn rook_attacks(s: Square, blockers: Bitboard) -> Bitboard {
     let table_idx = table_index_rook(s, blockers);
-    unsafe { ATTACKS_TABLE[table_idx] }
+    *unsafe { ATTACKS_TABLE.get_unchecked(table_idx) }
 }
 
 pub fn bishop_attacks(s: Square, blockers: Bitboard) -> Bitboard {
     let table_idx = table_index_bishop(s, blockers);
-    unsafe { ATTACKS_TABLE[table_idx] }
+    *unsafe { ATTACKS_TABLE.get_unchecked(table_idx) }
 }
 
 fn initialise_bishop_attacks() {
@@ -184,11 +184,11 @@ fn initialise_bishop_not_masks() {
 #[allow(clippy::cast_possible_truncation)]
 fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.array_idx();
-    let (magic, index) = DEFAULT_BISHOP_MAGICS[square_idx];
-    let not_mask = unsafe { BISHOP_NOT_MASKS[square_idx] };
+    let (magic, index) = unsafe { DEFAULT_BISHOP_MAGICS.get_unchecked(square_idx) };
+    let not_mask = unsafe { BISHOP_NOT_MASKS.get_unchecked(square_idx) };
 
-    let relevant_occupancies = blockers | not_mask;
-    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);
+    let relevant_occupancies = blockers | *not_mask;
+    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(*magic);
     occupancies_index_offset >>= Square::N - BISHOP_SHIFT;
 
     index + occupancies_index_offset as usize
@@ -223,11 +223,11 @@ fn initialise_rook_not_masks() {
 fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
     let square_idx = s.array_idx();
 
-    let (magic, index) = DEFAULT_ROOK_MAGICS[square_idx];
-    let not_mask = unsafe { ROOK_NOT_MASKS[square_idx] };
+    let (magic, index) = unsafe { DEFAULT_ROOK_MAGICS.get_unchecked(square_idx) };
+    let not_mask = unsafe { ROOK_NOT_MASKS.get_unchecked(square_idx) };
 
-    let relevant_occupancies = blockers | not_mask;
-    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(magic);
+    let relevant_occupancies = blockers | *not_mask;
+    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(*magic);
     occupancies_index_offset >>= Square::N - ROOK_SHIFT;
 
     index + occupancies_index_offset as usize
