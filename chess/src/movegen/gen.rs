@@ -120,17 +120,15 @@ fn generate_pawn_moves<const QUIET: bool>(
     let pawn_move_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
     let double_push_blockers = pawn_move_blockers.in_direction(!pawn_move_direction);
 
-    let capturable_pieces_left =
-        (ctx.their_pieces & capture_mask).in_direction(!pawn_capture_left_direction);
+    let capturable_pieces_left = capture_mask.in_direction(!pawn_capture_left_direction);
 
     let capturable_pinner_pieces_left =
-        (ctx.their_pieces & capture_mask & ctx.pinners).in_direction(!pawn_capture_left_direction);
+        (capture_mask & ctx.pinners).in_direction(!pawn_capture_left_direction);
 
-    let capturable_pieces_right =
-        (ctx.their_pieces & capture_mask).in_direction(!pawn_capture_right_direction);
+    let capturable_pieces_right = capture_mask.in_direction(!pawn_capture_right_direction);
 
     let capturable_pinner_pieces_right =
-        (ctx.their_pieces & capture_mask & ctx.pinners).in_direction(!pawn_capture_right_direction);
+        (capture_mask & ctx.pinners).in_direction(!pawn_capture_right_direction);
 
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
     for pawn in non_pinned_promoting_pawns & capturable_pieces_left {
