@@ -107,8 +107,6 @@ fn generate_pawn_moves<const QUIET: bool>(
     let pawn_move_direction = Direction::pawn_move_direction(game.player);
     let pawn_capture_left_direction = Direction::pawn_capture_left_direction(game.player);
     let pawn_capture_right_direction = Direction::pawn_capture_right_direction(game.player);
-
-    let back_rank = bitboards::pawn_back_rank(game.player);
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
     let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !ctx.pinned;
@@ -116,9 +114,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     let pinned_pawns = pawns & ctx.pinned;
 
-    // TODO: Is this redundant with move_mask?
-    let pawn_move_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
-    let double_push_blockers = pawn_move_blockers.in_direction(!pawn_move_direction);
+    let move_mask_overlay = move_mask.in_direction(!pawn_move_direction);
 
     let capturable_pieces_left = capture_mask.in_direction(!pawn_capture_left_direction);
 
@@ -156,13 +152,11 @@ fn generate_pawn_moves<const QUIET: bool>(
     }
 
     // Promotion push: Pawns on the enemy's start rank will promote when pushing
-    for pawn in non_pinned_promoting_pawns & !pawn_move_blockers {
+    for pawn in non_pinned_promoting_pawns & move_mask_overlay {
         let forward_one = pawn.in_direction(pawn_move_direction);
 
-        if move_mask.contains(forward_one) {
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
-            }
+        for promotion in PromotionPieceKind::ALL {
+            moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
         }
     }
 
@@ -233,46 +227,51 @@ fn generate_pawn_moves<const QUIET: bool>(
     }
 
     if QUIET {
+        let back_rank = bitboards::pawn_back_rank(game.player);
+
         // Push: All pawns with an empty square in front of them can move forward
-        for pawn in non_pinned_non_promoting_pawns & !pawn_move_blockers {
+        for pawn in non_pinned_non_promoting_pawns & move_mask_overlay {
             let forward_one = pawn.in_direction(pawn_move_direction);
 
-            if move_mask.contains(forward_one) {
-                moves.push(Move::new(pawn, forward_one));
-            }
+            moves.push(Move::new(pawn, forward_one));
         }
 
         // Push: Pinned pawns can move along the pin ray
-        for pinned_pawn in pinned_pawns & !pawn_move_blockers {
+        for pinned_pawn in pinned_pawns & move_mask_overlay {
             let ray = tables::ray(pinned_pawn, ctx.king);
             let forward_one = pinned_pawn.in_direction(pawn_move_direction);
 
-            if move_mask.contains(forward_one) && ray.contains(forward_one) {
+            if ray.contains(forward_one) {
                 moves.push(Move::new(pinned_pawn, forward_one));
             }
         }
 
+        let double_push_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
+        let double_push_move_mask_overlay = move_mask_overlay.in_direction(!pawn_move_direction);
+
         // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
-        for pawn in
-            non_pinned_non_promoting_pawns & back_rank & !pawn_move_blockers & !double_push_blockers
+        for pawn in non_pinned_non_promoting_pawns
+            & back_rank
+            & !double_push_blockers
+            & double_push_move_mask_overlay
         {
             let forward_two = pawn
                 .in_direction(pawn_move_direction)
                 .in_direction(pawn_move_direction);
 
-            if move_mask.contains(forward_two) {
-                moves.push(Move::new(pawn, forward_two));
-            }
+            moves.push(Move::new(pawn, forward_two));
         }
 
         // Double push: Pinned pawns can still double-push along the pin ray
-        for pinned_pawn in pinned_pawns & back_rank & !pawn_move_blockers & !double_push_blockers {
+        for pinned_pawn in
+            pinned_pawns & back_rank & !double_push_blockers & double_push_move_mask_overlay
+        {
             let ray = tables::ray(pinned_pawn, ctx.king);
             let forward_two = pinned_pawn
                 .in_direction(pawn_move_direction)
                 .in_direction(pawn_move_direction);
 
-            if move_mask.contains(forward_two) && ray.contains(forward_two) {
+            if ray.contains(forward_two) {
                 moves.push(Move::new(pinned_pawn, forward_two));
             }
         }
