@@ -3,7 +3,7 @@
 use color_eyre::eyre::{bail, Context};
 use std::io::BufRead;
 use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::time::Instant;
 
 use chess::moves::Move;
 use chess::perft;
@@ -176,20 +176,18 @@ impl Uci {
                 let reporter = self.reporter.clone();
 
                 let clocks = Clocks {
-                    white_clock: wtime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    black_clock: btime.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    white_increment: winc.map(|t| Duration::from_millis(t.try_into().unwrap())),
-                    black_increment: binc.map(|t| Duration::from_millis(t.try_into().unwrap())),
+                    white_clock: *wtime,
+                    black_clock: *btime,
+                    white_increment: *winc,
+                    black_increment: *binc,
                     moves_to_go: *movestogo,
                 };
-
-                let move_time = movetime.map(|t| Duration::from_millis(t.try_into().unwrap()));
 
                 // TODO: Improve errors if we get conflicting time control messaging here (e.g. movetime 100 infinite)
                 let mut time_control = TimeControl::Infinite;
 
-                if let Some(move_time) = move_time {
-                    time_control = TimeControl::ExactTime(move_time);
+                if let Some(move_time) = movetime {
+                    time_control = TimeControl::ExactTime(*move_time);
                 }
 
                 if wtime.is_some() && btime.is_some() {

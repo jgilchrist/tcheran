@@ -1,4 +1,5 @@
 use chess::moves::Move;
+use std::time::Duration;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Position {
@@ -10,15 +11,15 @@ pub enum Position {
 pub struct GoCmdArguments {
     pub searchmoves: Option<Vec<Move>>,
     pub ponder: bool,
-    pub wtime: Option<i32>,
-    pub btime: Option<i32>,
-    pub winc: Option<u32>,
-    pub binc: Option<u32>,
+    pub wtime: Option<Duration>,
+    pub btime: Option<Duration>,
+    pub winc: Option<Duration>,
+    pub binc: Option<Duration>,
     pub movestogo: Option<u32>,
     pub depth: Option<u8>,
     pub nodes: Option<u32>,
     pub mate: Option<u32>,
-    pub movetime: Option<u32>,
+    pub movetime: Option<Duration>,
     pub infinite: bool,
 }
 

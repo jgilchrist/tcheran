@@ -17,6 +17,7 @@ use nom::{
     sequence::{pair, preceded, tuple},
     IResult, Parser,
 };
+use std::time::Duration;
 
 use super::commands::{GoCmdArguments, UciCommand};
 
@@ -205,6 +206,10 @@ impl GoCmdArgumentsModifyFn {
     }
 }
 
+fn parse_duration(n: i64) -> Duration {
+    Duration::from_millis(n.max(0).try_into().unwrap())
+}
+
 fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
     let (input, _) = tag("go")(input)?;
 
@@ -224,24 +229,24 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.ponder = true;
                     })
                 }),
-                command_with_argument("wtime", nom::character::complete::i32, |wtime| {
+                command_with_argument("wtime", nom::character::complete::i64, |wtime| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.wtime = Some(wtime);
+                        acc.wtime = Some(parse_duration(wtime));
                     })
                 }),
-                command_with_argument("btime", nom::character::complete::i32, |btime| {
+                command_with_argument("btime", nom::character::complete::i64, |btime| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.btime = Some(btime);
+                        acc.btime = Some(parse_duration(btime));
                     })
                 }),
-                command_with_argument("winc", nom::character::complete::u32, |winc| {
+                command_with_argument("winc", nom::character::complete::i64, |winc| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.winc = Some(winc);
+                        acc.winc = Some(parse_duration(winc));
                     })
                 }),
-                command_with_argument("binc", nom::character::complete::u32, |binc| {
+                command_with_argument("binc", nom::character::complete::i64, |binc| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.binc = Some(binc);
+                        acc.binc = Some(parse_duration(binc));
                     })
                 }),
                 command_with_argument("movestogo", nom::character::complete::u32, |movestogo| {
@@ -264,9 +269,9 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.mate = Some(mate);
                     })
                 }),
-                command_with_argument("movetime", nom::character::complete::u32, |movetime| {
+                command_with_argument("movetime", nom::character::complete::i64, |movetime| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.movetime = Some(movetime);
+                        acc.movetime = Some(parse_duration(movetime));
                     })
                 }),
                 command_without_arguments("infinite", |_| {
