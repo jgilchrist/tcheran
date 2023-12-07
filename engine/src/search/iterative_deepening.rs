@@ -39,8 +39,6 @@ pub fn search(
             state,
             control,
         ) else {
-            // TODO: Send results, even if the search is cancelled, since they may still be better
-            // than whatever we found at the previous depth even if we didn't finish the search.
             break;
         };
 

@@ -335,7 +335,6 @@ pub mod bitboards {
         }
     }
 
-    // TODO: Once const traits are stabilised, all of this logic can be moved to BitOr and BitAnd impls directly
     pub const A_FILE: Bitboard = Bitboard::new(A1.0.0 | A2.0.0 | A3.0.0 | A4.0.0 | A5.0.0 | A6.0.0 | A7.0.0 | A8.0.0);
     pub const B_FILE: Bitboard = Bitboard::new(B1.0.0 | B2.0.0 | B3.0.0 | B4.0.0 | B5.0.0 | B6.0.0 | B7.0.0 | B8.0.0);
     pub const C_FILE: Bitboard = Bitboard::new(C1.0.0 | C2.0.0 | C3.0.0 | C4.0.0 | C5.0.0 | C6.0.0 | C7.0.0 | C8.0.0);

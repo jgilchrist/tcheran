@@ -181,7 +181,6 @@ impl Uci {
                     moves_to_go: *movestogo,
                 };
 
-                // TODO: Improve errors if we get conflicting time control messaging here (e.g. movetime 100 infinite)
                 let mut time_control = TimeControl::Infinite;
 
                 if let Some(move_time) = movetime {
