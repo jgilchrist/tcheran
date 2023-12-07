@@ -156,7 +156,6 @@ impl Uci {
                 log(chess::fen::write(&self.game.game));
             }
             UciCommand::Go(GoCmdArguments {
-                searchmoves: _,
                 ponder: _,
                 wtime,
                 btime,
@@ -165,7 +164,6 @@ impl Uci {
                 movestogo,
                 depth,
                 nodes: _,
-                mate: _,
                 movetime,
                 infinite: _,
             }) => {

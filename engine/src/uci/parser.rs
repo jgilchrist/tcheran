@@ -219,11 +219,6 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
         preceded(
             space1,
             alt((
-                command_with_argument("searchmoves", uci_moves, |searchmoves| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.searchmoves = Some(searchmoves);
-                    })
-                }),
                 command_without_arguments("ponder", |_| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.ponder = true;
@@ -264,11 +259,6 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.nodes = Some(nodes);
                     })
                 }),
-                command_with_argument("mate", nom::character::complete::u32, |mate| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.mate = Some(mate);
-                    })
-                }),
                 command_with_argument("movetime", nom::character::complete::i64, |movetime| {
                     GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
                         acc.movetime = Some(parse_duration(movetime));
@@ -282,7 +272,6 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
             )),
         ),
         || GoCmdArguments {
-            searchmoves: None,
             ponder: false,
             wtime: None,
             btime: None,
@@ -291,7 +280,6 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
             movestogo: None,
             depth: None,
             nodes: None,
-            mate: None,
             movetime: None,
             infinite: false,
         },

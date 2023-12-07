@@ -9,7 +9,6 @@ pub enum Position {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub struct GoCmdArguments {
-    pub searchmoves: Option<Vec<Move>>,
     pub ponder: bool,
     pub wtime: Option<Duration>,
     pub btime: Option<Duration>,
@@ -18,7 +17,6 @@ pub struct GoCmdArguments {
     pub movestogo: Option<u32>,
     pub depth: Option<u8>,
     pub nodes: Option<u32>,
-    pub mate: Option<u32>,
     pub movetime: Option<Duration>,
     pub infinite: bool,
 }
