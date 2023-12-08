@@ -22,13 +22,13 @@ fn generate_squares_between(s1: Square, s2: Square) -> Option<Bitboard> {
 
     // Same rank
     if s1.rank() == s2.rank() {
-        let mut current_square = std::cmp::min_by_key(s1, s2, |s| s.file());
-        let end_square = std::cmp::max_by_key(s1, s2, |s| s.file());
+        let mut current_square = std::cmp::min_by_key(s1, s2, |s| s.file()).bb();
+        let end_square = std::cmp::max_by_key(s1, s2, |s| s.file()).bb();
 
         current_square = current_square.east();
 
         while current_square != end_square {
-            squares.set_inplace(current_square);
+            squares |= current_square;
             current_square = current_square.east();
         }
 
@@ -37,13 +37,13 @@ fn generate_squares_between(s1: Square, s2: Square) -> Option<Bitboard> {
 
     // Same file
     if s1.file() == s2.file() {
-        let mut current_square = std::cmp::min_by_key(s1, s2, |s| s.rank());
-        let end_square = std::cmp::max_by_key(s1, s2, |s| s.rank());
+        let mut current_square = std::cmp::min_by_key(s1, s2, |s| s.rank()).bb();
+        let end_square = std::cmp::max_by_key(s1, s2, |s| s.rank()).bb();
 
         current_square = current_square.north();
 
         while current_square != end_square {
-            squares.set_inplace(current_square);
+            squares |= current_square;
             current_square = current_square.north();
         }
 

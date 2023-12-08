@@ -241,36 +241,6 @@ impl Square {
     pub fn south(&self) -> Self {
         Self(self.0.south())
     }
-
-    #[inline(always)]
-    pub fn east(&self) -> Self {
-        Self(self.0.east())
-    }
-
-    #[inline(always)]
-    pub fn north_east(&self) -> Self {
-        Self(self.0.north_east())
-    }
-
-    #[inline(always)]
-    pub fn south_east(&self) -> Self {
-        Self(self.0.south_east())
-    }
-
-    #[inline(always)]
-    pub fn west(&self) -> Self {
-        Self(self.0.west())
-    }
-
-    #[inline(always)]
-    pub fn south_west(&self) -> Self {
-        Self(self.0.south_west())
-    }
-
-    #[inline(always)]
-    pub fn north_west(&self) -> Self {
-        Self(self.0.north_west())
-    }
 }
 
 impl std::fmt::Debug for Square {
