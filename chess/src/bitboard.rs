@@ -195,6 +195,7 @@ impl std::ops::BitAnd for Bitboard {
     }
 }
 
+#[cfg(test)]
 impl std::ops::BitAnd<Square> for Bitboard {
     type Output = Self;
 
@@ -209,6 +210,7 @@ impl std::ops::BitAndAssign for Bitboard {
     }
 }
 
+#[cfg(test)]
 impl std::ops::BitAndAssign<Square> for Bitboard {
     fn bitand_assign(&mut self, rhs: Square) {
         self.0 = self.0 & (rhs.bb().0);
@@ -223,6 +225,7 @@ impl std::ops::BitOr for Bitboard {
     }
 }
 
+#[cfg(test)]
 impl std::ops::BitOr<Square> for Bitboard {
     type Output = Self;
 
@@ -237,6 +240,7 @@ impl std::ops::BitOrAssign for Bitboard {
     }
 }
 
+#[cfg(test)]
 impl std::ops::BitOrAssign<Square> for Bitboard {
     fn bitor_assign(&mut self, rhs: Square) {
         self.0 = self.0 | rhs.bb().0;

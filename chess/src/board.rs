@@ -205,7 +205,7 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
 
         for (i, maybe_piece) in pieces.iter().enumerate() {
             if let Some(p) = maybe_piece {
-                let square = Square::from_index(i.try_into()?);
+                let square = Square::from_index(i.try_into()?).bb();
 
                 match *p {
                     Piece::WHITE_PAWN => white_pawns |= square,

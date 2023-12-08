@@ -35,10 +35,10 @@ pub fn get_pins_and_checkers(
         let our_pieces_between = squares_between & our_pieces;
 
         if our_pieces_between.is_empty() {
-            checkers |= potential_pinner;
+            checkers |= potential_pinner.bb();
         } else if our_pieces_between.count() == 1 {
             pinned |= our_pieces_between;
-            pinners |= potential_pinner;
+            pinners |= potential_pinner.bb();
         }
     }
 
