@@ -1,4 +1,5 @@
-use crate::{bitboard::Bitboard, direction::Direction};
+use crate::bitboard::Bitboard;
+use crate::player::Player;
 
 pub const FILES: [File; File::N] = [
     File::A,
@@ -58,10 +59,6 @@ impl File {
             Self::G => "g",
             Self::H => "h",
         }
-    }
-
-    pub fn on_edge(&self) -> bool {
-        matches!(self, Self::A | Self::H)
     }
 }
 
@@ -136,10 +133,6 @@ impl Rank {
             Self::R7 => "7",
             Self::R8 => "8",
         }
-    }
-
-    pub fn on_edge(&self) -> bool {
-        matches!(self, Self::R1 | Self::R8)
     }
 }
 
@@ -225,17 +218,17 @@ impl Square {
         format!("{}{}", self.file(), self.rank())
     }
 
-    #[inline(always)]
-    pub fn in_direction(&self, direction: Direction) -> Self {
-        match direction {
-            Direction::North => self.north(),
-            Direction::NorthEast => self.north_east(),
-            Direction::East => self.east(),
-            Direction::SouthEast => self.south_east(),
-            Direction::South => self.south(),
-            Direction::SouthWest => self.south_west(),
-            Direction::West => self.west(),
-            Direction::NorthWest => self.north_west(),
+    pub fn forward(&self, player: Player) -> Self {
+        match player {
+            Player::White => self.north(),
+            Player::Black => self.south(),
+        }
+    }
+
+    pub fn backward(&self, player: Player) -> Self {
+        match player {
+            Player::White => self.south(),
+            Player::Black => self.north(),
         }
     }
 
@@ -277,11 +270,6 @@ impl Square {
     #[inline(always)]
     pub fn north_west(&self) -> Self {
         Self(self.0.north_west())
-    }
-
-    #[inline(always)]
-    pub fn on_edge(&self) -> bool {
-        self.rank().on_edge() || self.file().on_edge()
     }
 }
 

@@ -1,6 +1,5 @@
 use crate::bitboard::bitboards;
 use crate::direction::Direction;
-use crate::square::{File, Rank};
 use crate::{bitboard::Bitboard, square::Square};
 
 use super::attacks;

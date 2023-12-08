@@ -3,8 +3,8 @@ use crate::piece::Piece;
 use crate::square::squares;
 use crate::zobrist::ZobristHash;
 use crate::{
-    board::Board, direction::Direction, fen, movegen::generate_moves, moves::Move,
-    piece::PieceKind, player::Player, square::Square, zobrist,
+    board::Board, fen, movegen::generate_moves, moves::Move, piece::PieceKind, player::Player,
+    square::Square, zobrist,
 };
 use color_eyre::Result;
 
@@ -313,14 +313,12 @@ impl Game {
             self.set_at(to, moved_piece);
         }
 
-        let pawn_move_direction = Direction::pawn_move_direction(player);
-
         // If we moved a pawn to the en passant target, this was an en passant capture, so we
         // remove the captured pawn from the board.
         if let Some(en_passant_target) = self.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.in_direction(!pawn_move_direction);
+                let capture_square = to.backward(player);
                 self.remove_at(capture_square);
             }
         }
@@ -334,7 +332,7 @@ impl Game {
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
-                Some(from.in_direction(pawn_move_direction))
+                Some(from.forward(player))
             } else {
                 None
             }
@@ -449,7 +447,7 @@ impl Game {
         // Replace the pawn taken by en-passant capture
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                let capture_square = to.in_direction(!Direction::pawn_move_direction(player));
+                let capture_square = to.backward(player);
                 self.set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
             }
         }

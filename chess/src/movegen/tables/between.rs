@@ -52,22 +52,23 @@ fn generate_squares_between(s1: Square, s2: Square) -> Option<Bitboard> {
 
     // Diagonal
     if s1.file().idx().abs_diff(s2.file().idx()) == s1.rank().idx().abs_diff(s2.rank().idx()) {
-        let mut current_square = std::cmp::min_by_key(s1, s2, |s| s.file());
+        let start_square = std::cmp::min_by_key(s1, s2, |s| s.file());
         let end_square = std::cmp::max_by_key(s1, s2, |s| s.file());
 
         // We're starting with the leftmost of the two squares.
         // If that square is below our end square, we need to move up and to the right.
         // If that square is above our end square, we need to move below and to the right.
-        let direction = if current_square.rank() < end_square.rank() {
+        let direction = if start_square.rank() < end_square.rank() {
             Direction::NorthEast
         } else {
             Direction::SouthEast
         };
 
+        let mut current_square = start_square.bb();
         current_square = current_square.in_direction(direction);
 
-        while current_square != end_square {
-            squares.set_inplace(current_square);
+        while current_square != end_square.bb() {
+            squares |= current_square;
             current_square = current_square.in_direction(direction);
         }
 

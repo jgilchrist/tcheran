@@ -1,5 +1,4 @@
 use crate::eval::IncrementalEvalFields;
-use chess::direction::Direction;
 use chess::game::Game;
 use chess::moves::Move;
 use chess::piece::{Piece, PieceKind};
@@ -125,14 +124,12 @@ impl EngineGame {
             self.set_at(to, moved_piece);
         }
 
-        let pawn_move_direction = Direction::pawn_move_direction(player);
-
         // If we moved a pawn to the en passant target, this was an en passant capture, so we
         // remove the captured pawn from the board.
         if let Some(en_passant_target) = self.game.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.in_direction(!pawn_move_direction);
+                let capture_square = to.backward(player);
                 self.remove_at(capture_square);
             }
         }

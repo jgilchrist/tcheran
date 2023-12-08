@@ -63,24 +63,24 @@ fn generate_ray_from(s1: Square, s2: Square) -> Option<Bitboard> {
                 (Direction::SouthEast, Direction::NorthWest)
             };
 
-        let mut start_square = leftmost_square;
-        let mut end_square = rightmost_square;
+        let mut start_square = leftmost_square.bb();
+        let mut end_square = rightmost_square.bb();
 
         // First, walk back from the start square along the diagonal until we hit the edge of the board
-        while !start_square.on_edge() {
+        while (start_square & bitboards::EDGES).is_empty() {
             start_square = start_square.in_direction(to_start_direction);
         }
 
-        while !end_square.on_edge() {
+        while (end_square & bitboards::EDGES).is_empty() {
             end_square = end_square.in_direction(to_end_direction);
         }
 
         let mut current_square = start_square;
-        squares.set_inplace(start_square);
+        squares |= current_square;
 
         while current_square != end_square {
             current_square = current_square.in_direction(to_end_direction);
-            squares.set_inplace(current_square);
+            squares |= current_square;
         }
 
         return Some(squares);

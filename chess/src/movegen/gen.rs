@@ -127,7 +127,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     // Promotion push: Pawns on the enemy's start rank will promote when pushing
     for pawn in non_pinned_promoting_pawns & move_mask_overlay {
-        let forward_one = pawn.in_direction(pawn_move_direction);
+        let forward_one = pawn.forward(game.player);
 
         for promotion in PromotionPieceKind::ALL {
             moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
@@ -162,7 +162,7 @@ fn generate_pawn_moves<const QUIET: bool>(
         for potential_en_passant_capture_start in
             pawns_in_capturing_positions & non_pinned_non_promoting_pawns
         {
-            let captured_pawn = en_passant_target.in_direction(!pawn_move_direction);
+            let captured_pawn = en_passant_target.backward(game.player);
 
             // We need to check that we do not reveal a check by making this en-passant capture
             let mut board_without_en_passant_participants = game.board;
@@ -192,7 +192,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
         // Push: All pawns with an empty square in front of them can move forward
         for pawn in non_pinned_non_promoting_pawns & move_mask_overlay {
-            let forward_one = pawn.in_direction(pawn_move_direction);
+            let forward_one = pawn.forward(game.player);
 
             moves.push(Move::new(pawn, forward_one));
         }
@@ -200,7 +200,7 @@ fn generate_pawn_moves<const QUIET: bool>(
         // Push: Pinned pawns can move along the pin ray
         for pinned_pawn in pinned_pawns & move_mask_overlay {
             let ray = tables::ray(pinned_pawn, ctx.king);
-            let forward_one = pinned_pawn.in_direction(pawn_move_direction);
+            let forward_one = pinned_pawn.forward(game.player);
 
             if ray.contains(forward_one) {
                 moves.push(Move::new(pinned_pawn, forward_one));
@@ -216,9 +216,7 @@ fn generate_pawn_moves<const QUIET: bool>(
             & !double_push_blockers
             & double_push_move_mask_overlay
         {
-            let forward_two = pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(pawn_move_direction);
+            let forward_two = pawn.forward(game.player).forward(game.player);
 
             moves.push(Move::new(pawn, forward_two));
         }
@@ -228,9 +226,7 @@ fn generate_pawn_moves<const QUIET: bool>(
             pinned_pawns & back_rank & !double_push_blockers & double_push_move_mask_overlay
         {
             let ray = tables::ray(pinned_pawn, ctx.king);
-            let forward_two = pinned_pawn
-                .in_direction(pawn_move_direction)
-                .in_direction(pawn_move_direction);
+            let forward_two = pinned_pawn.forward(game.player).forward(game.player);
 
             if ray.contains(forward_two) {
                 moves.push(Move::new(pinned_pawn, forward_two));
