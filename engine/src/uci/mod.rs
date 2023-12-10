@@ -30,9 +30,12 @@ use self::{
 };
 
 pub mod commands;
+mod r#move;
 mod options;
 pub mod parser;
 pub mod responses;
+
+pub use r#move::UciMove;
 
 #[derive(Clone)]
 pub struct UciControl {
@@ -68,7 +71,7 @@ impl strategy::Reporter for UciReporter {
             depth: Some(progress.depth),
             seldepth: Some(progress.seldepth),
             score: Some(score),
-            pv: Some(progress.pv),
+            pv: Some(progress.pv.into_iter().map(|m| m.into()).collect()),
             time: Some(progress.stats.time),
             nodes: Some(progress.stats.nodes),
             nps: Some(progress.stats.nodes_per_second),
@@ -87,7 +90,10 @@ impl strategy::Reporter for UciReporter {
     }
 
     fn best_move(&self, mv: Move) {
-        send_response(&UciResponse::BestMove { mv, ponder: None });
+        send_response(&UciResponse::BestMove {
+            mv: mv.into(),
+            ponder: None,
+        });
     }
 }
 

@@ -2,7 +2,7 @@ use std::fmt::Formatter;
 use std::time::Duration;
 
 use crate::uci::options::{UciOption, UciOptionType};
-use chess::moves::Move;
+use crate::uci::UciMove;
 
 #[derive(Debug)]
 pub(super) enum InfoScore {
@@ -22,7 +22,7 @@ pub(crate) struct InfoFields {
     pub(super) seldepth: Option<u8>,
     pub(super) time: Option<Duration>,
     pub(super) nodes: Option<u64>,
-    pub(super) pv: Option<Vec<Move>>,
+    pub(super) pv: Option<Vec<UciMove>>,
     pub(super) score: Option<InfoScore>,
     pub(super) hashfull: Option<usize>,
     pub(super) nps: Option<u64>,
@@ -36,8 +36,8 @@ pub(super) enum UciResponse {
     UciOk,
     ReadyOk,
     BestMove {
-        mv: Move,
-        ponder: Option<Move>,
+        mv: UciMove,
+        ponder: Option<UciMove>,
     },
     Info(InfoFields),
     Option {
