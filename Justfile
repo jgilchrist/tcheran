@@ -40,7 +40,7 @@ playoff name1 name2 tc concurrency openingsfile:
 	cutechess-cli \
 		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
 		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
-		-openings file={{openingsfile}} \
+		-openings file={{openingsfile}} order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds 1000 -games 2 -repeat \
