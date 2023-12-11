@@ -164,14 +164,6 @@ impl Square {
         Self(bitboard.trailing_zeros() as u8)
     }
 
-    pub fn from_bitboard_maybe(bitboard: Bitboard) -> Option<Self> {
-        match bitboard.count() {
-            0 => None,
-            1 => Some(Self::from_bitboard(bitboard)),
-            _ => panic!("Should have had 0 or 1 bits in bitboard."),
-        }
-    }
-
     pub const fn from_index(idx: u8) -> Self {
         debug_assert!(idx < 64);
         Self(idx)

@@ -42,7 +42,7 @@ impl Bitboard {
     #[inline(always)]
     pub fn single(&self) -> Square {
         debug_assert_eq!(self.count(), 1);
-        Square::from_bitboard_maybe(*self).unwrap()
+        Square::from_bitboard(*self)
     }
 
     #[inline(always)]

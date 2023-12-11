@@ -1,7 +1,6 @@
 use crate::bitboard::{bitboards, Bitboard};
 use crate::board::PlayerPieces;
 use crate::movegen::{attackers, pins, tables};
-use crate::piece::PieceKind;
 use crate::square::{squares, Square};
 use crate::{
     direction::Direction, game::Game, moves::Move, piece::PromotionPieceKind, player::Player,
@@ -39,14 +38,19 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         return moves;
     }
 
-    let checker: Option<(Square, PieceKind)> = Square::from_bitboard_maybe(ctx.checkers)
-        .map(|sq| (sq, game.board.piece_at(sq).unwrap().kind));
+    let checker: Option<Square> = if number_of_checkers == 1 {
+        Some(ctx.checkers.single())
+    } else {
+        None
+    };
 
     let move_mask = match checker {
         // If we're not in check, pieces can move as normal
         None => !ctx.all_pieces,
         // If we are in check, pieces can only move to block the check
-        Some((checker_sq, piece)) => {
+        Some(checker_sq) => {
+            let piece = game.board.piece_at(checker_sq).unwrap().kind;
+
             if piece.is_slider() {
                 // If the piece giving check casts a ray, we can block the check by moving any piece
                 // into that ray
