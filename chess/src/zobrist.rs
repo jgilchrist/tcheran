@@ -169,16 +169,25 @@ pub fn hash(game: &Game) -> ZobristHash {
 }
 
 fn piece_on_square(player: Player, piece: PieceKind, square: Square) -> ZobristComponent {
-    unsafe { components::PIECE_SQUARE[player.array_idx()][square.array_idx()][piece.array_idx()] }
+    *unsafe {
+        components::PIECE_SQUARE
+            .get_unchecked(player.array_idx())
+            .get_unchecked(square.array_idx())
+            .get_unchecked(piece.array_idx())
+    }
 }
 
 fn castle_rights(player: Player, side: CastleRightsSide) -> ZobristComponent {
-    unsafe { components::CASTLING[player.array_idx()][side.array_idx()] }
+    *unsafe {
+        components::CASTLING
+            .get_unchecked(player.array_idx())
+            .get_unchecked(side.array_idx())
+    }
 }
 
 fn en_passant(square: Option<Square>) -> ZobristComponent {
     match square {
-        Some(s) => unsafe { components::EN_PASSANT_SQUARE[s.array_idx()] },
+        Some(s) => *unsafe { components::EN_PASSANT_SQUARE.get_unchecked(s.array_idx()) },
         None => unsafe { components::NO_EN_PASSANT_SQUARE },
     }
 }
