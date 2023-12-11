@@ -246,14 +246,14 @@ fn generate_knight_moves<const QUIET: bool>(
     // Pinned knights can't move
     for knight in knights & !ctx.pinned {
         let destinations = tables::knight_attacks(knight);
-        let move_destinations = destinations & move_mask;
-        let capture_destinations = destinations & capture_mask;
 
+        let capture_destinations = destinations & capture_mask;
         for dst in capture_destinations {
             moves.push(Move::new(knight, dst));
         }
 
         if QUIET {
+            let move_destinations = destinations & move_mask;
             for dst in move_destinations {
                 moves.push(Move::new(knight, dst));
             }
@@ -271,14 +271,14 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
 
     for diagonal_slider in diagonal_sliders & !ctx.pinned {
         let destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces);
-        let move_destinations = destinations & move_mask;
-        let capture_destinations = destinations & capture_mask;
 
+        let capture_destinations = destinations & capture_mask;
         for dst in capture_destinations {
             moves.push(Move::new(diagonal_slider, dst));
         }
 
         if QUIET {
+            let move_destinations = destinations & move_mask;
             for dst in move_destinations {
                 moves.push(Move::new(diagonal_slider, dst));
             }
@@ -290,14 +290,13 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
         let destinations = tables::bishop_attacks(pinned_diagonal_slider, ctx.all_pieces);
         let ray = tables::ray(pinned_diagonal_slider, ctx.king);
 
-        let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
-
         for dst in capture_destinations {
             moves.push(Move::new(pinned_diagonal_slider, dst));
         }
 
         if QUIET {
+            let move_destinations = destinations & ray & move_mask;
             for dst in move_destinations {
                 moves.push(Move::new(pinned_diagonal_slider, dst));
             }
@@ -315,14 +314,14 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
 
     for orthogonal_slider in orthogonal_sliders & !ctx.pinned {
         let destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces);
-        let move_destinations = destinations & move_mask;
-        let capture_destinations = destinations & capture_mask;
 
+        let capture_destinations = destinations & capture_mask;
         for dst in capture_destinations {
             moves.push(Move::new(orthogonal_slider, dst));
         }
 
         if QUIET {
+            let move_destinations = destinations & move_mask;
             for dst in move_destinations {
                 moves.push(Move::new(orthogonal_slider, dst));
             }
@@ -334,14 +333,13 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
         let destinations = tables::rook_attacks(pinned_orthogonal_slider, ctx.all_pieces);
         let ray = tables::ray(pinned_orthogonal_slider, ctx.king);
 
-        let move_destinations = destinations & ray & move_mask;
         let capture_destinations = destinations & ray & capture_mask;
-
         for dst in capture_destinations {
             moves.push(Move::new(pinned_orthogonal_slider, dst));
         }
 
         if QUIET {
+            let move_destinations = destinations & ray & move_mask;
             for dst in move_destinations {
                 moves.push(Move::new(pinned_orthogonal_slider, dst));
             }
@@ -355,20 +353,19 @@ fn generate_king_moves<const QUIET: bool>(
     ctx: &Ctx,
 ) {
     let king = ctx.our_pieces.king.single();
-
-    // Kings can't move to attacked squares
-    let king_move_mask = !ctx.all_pieces & !attacked_squares;
+    let destinations = tables::king_attacks(king);
 
     // Kings can't capture defended pieces
     let king_capture_mask = ctx.their_pieces & !attacked_squares;
-
-    let destinations = tables::king_attacks(king);
 
     for dst in destinations & king_capture_mask {
         moves.push(Move::new(king, dst));
     }
 
     if QUIET {
+        // Kings can't move to attacked squares
+        let king_move_mask = !ctx.all_pieces & !attacked_squares;
+
         for dst in destinations & king_move_mask {
             moves.push(Move::new(king, dst));
         }
