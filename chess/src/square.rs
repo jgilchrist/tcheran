@@ -209,6 +209,7 @@ impl Square {
         format!("{}{}", self.file(), self.rank())
     }
 
+    #[inline(always)]
     pub fn forward(&self, player: Player) -> Self {
         match player {
             Player::White => self.north(),
@@ -216,6 +217,7 @@ impl Square {
         }
     }
 
+    #[inline(always)]
     pub fn backward(&self, player: Player) -> Self {
         match player {
             Player::White => self.south(),
