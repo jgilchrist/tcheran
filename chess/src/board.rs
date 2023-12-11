@@ -18,41 +18,68 @@ pub struct Board {
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
 #[derive(Clone, Copy)]
-pub struct PlayerPieces {
-    pub pawns: Bitboard,
-    pub knights: Bitboard,
-    pub bishops: Bitboard,
-    pub rooks: Bitboard,
-    pub queens: Bitboard,
-    pub king: Bitboard,
-}
+pub struct PlayerPieces([Bitboard; PieceKind::N]);
 
 impl PlayerPieces {
+    pub fn new(pieces: [Bitboard; PieceKind::N]) -> Self {
+        Self(pieces)
+    }
+
     #[inline(always)]
     pub(crate) fn all(&self) -> Bitboard {
-        self.pawns | self.knights | self.bishops | self.rooks | self.queens | self.king
+        self.pawns() | self.knights() | self.bishops() | self.rooks() | self.queens() | self.king()
+    }
+
+    #[inline(always)]
+    pub fn pawns(&self) -> Bitboard {
+        self.0[PieceKind::Pawn.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn knights(&self) -> Bitboard {
+        self.0[PieceKind::Knight.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn bishops(&self) -> Bitboard {
+        self.0[PieceKind::Bishop.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn rooks(&self) -> Bitboard {
+        self.0[PieceKind::Rook.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn queens(&self) -> Bitboard {
+        self.0[PieceKind::Queen.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn king(&self) -> Bitboard {
+        self.0[PieceKind::King.array_idx()]
     }
 }
 
 impl Board {
     pub fn start() -> Self {
         let mut start = Self {
-            white_pieces: PlayerPieces {
-                pawns: bitboards::INIT_WHITE_PAWNS,
-                knights: bitboards::INIT_WHITE_KNIGHTS,
-                bishops: bitboards::INIT_WHITE_BISHOPS,
-                rooks: bitboards::INIT_WHITE_ROOKS,
-                queens: bitboards::INIT_WHITE_QUEEN,
-                king: bitboards::INIT_WHITE_KING,
-            },
-            black_pieces: PlayerPieces {
-                pawns: bitboards::INIT_BLACK_PAWNS,
-                knights: bitboards::INIT_BLACK_KNIGHTS,
-                bishops: bitboards::INIT_BLACK_BISHOPS,
-                rooks: bitboards::INIT_BLACK_ROOKS,
-                queens: bitboards::INIT_BLACK_QUEEN,
-                king: bitboards::INIT_BLACK_KING,
-            },
+            white_pieces: PlayerPieces::new([
+                bitboards::INIT_WHITE_PAWNS,
+                bitboards::INIT_WHITE_KNIGHTS,
+                bitboards::INIT_WHITE_BISHOPS,
+                bitboards::INIT_WHITE_ROOKS,
+                bitboards::INIT_WHITE_QUEEN,
+                bitboards::INIT_WHITE_KING,
+            ]),
+            black_pieces: PlayerPieces::new([
+                bitboards::INIT_BLACK_PAWNS,
+                bitboards::INIT_BLACK_KNIGHTS,
+                bitboards::INIT_BLACK_BISHOPS,
+                bitboards::INIT_BLACK_ROOKS,
+                bitboards::INIT_BLACK_QUEEN,
+                bitboards::INIT_BLACK_KING,
+            ]),
             pieces: [None; Square::N],
         };
 
@@ -62,18 +89,18 @@ impl Board {
             }
         };
 
-        set_pieces(start.white_pieces.pawns, Piece::WHITE_PAWN);
-        set_pieces(start.white_pieces.knights, Piece::WHITE_KNIGHT);
-        set_pieces(start.white_pieces.bishops, Piece::WHITE_BISHOP);
-        set_pieces(start.white_pieces.rooks, Piece::WHITE_ROOK);
-        set_pieces(start.white_pieces.queens, Piece::WHITE_QUEEN);
-        set_pieces(start.white_pieces.king, Piece::WHITE_KING);
-        set_pieces(start.black_pieces.pawns, Piece::BLACK_PAWN);
-        set_pieces(start.black_pieces.knights, Piece::BLACK_KNIGHT);
-        set_pieces(start.black_pieces.bishops, Piece::BLACK_BISHOP);
-        set_pieces(start.black_pieces.rooks, Piece::BLACK_ROOK);
-        set_pieces(start.black_pieces.queens, Piece::BLACK_QUEEN);
-        set_pieces(start.black_pieces.king, Piece::BLACK_KING);
+        set_pieces(start.white_pieces.pawns(), Piece::WHITE_PAWN);
+        set_pieces(start.white_pieces.knights(), Piece::WHITE_KNIGHT);
+        set_pieces(start.white_pieces.bishops(), Piece::WHITE_BISHOP);
+        set_pieces(start.white_pieces.rooks(), Piece::WHITE_ROOK);
+        set_pieces(start.white_pieces.queens(), Piece::WHITE_QUEEN);
+        set_pieces(start.white_pieces.king(), Piece::WHITE_KING);
+        set_pieces(start.black_pieces.pawns(), Piece::BLACK_PAWN);
+        set_pieces(start.black_pieces.knights(), Piece::BLACK_KNIGHT);
+        set_pieces(start.black_pieces.bishops(), Piece::BLACK_BISHOP);
+        set_pieces(start.black_pieces.rooks(), Piece::BLACK_ROOK);
+        set_pieces(start.black_pieces.queens(), Piece::BLACK_QUEEN);
+        set_pieces(start.black_pieces.king(), Piece::BLACK_KING);
 
         start
     }
@@ -103,15 +130,7 @@ impl Board {
     #[inline(always)]
     fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
         let player_pieces = self.player_pieces_for(piece.player);
-
-        match piece.kind {
-            PieceKind::Pawn => &mut player_pieces.pawns,
-            PieceKind::Knight => &mut player_pieces.knights,
-            PieceKind::Bishop => &mut player_pieces.bishops,
-            PieceKind::Rook => &mut player_pieces.rooks,
-            PieceKind::Queen => &mut player_pieces.queens,
-            PieceKind::King => &mut player_pieces.king,
-        }
+        &mut player_pieces.0[piece.kind.array_idx()]
     }
 
     #[inline(always)]
@@ -132,7 +151,7 @@ impl Board {
     }
 
     pub fn king_in_check(&self, player: Player) -> bool {
-        let king = self.player_pieces(player).king.single();
+        let king = self.player_pieces(player).king().single();
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);
         enemy_attackers.any()
     }
@@ -226,22 +245,22 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
         }
 
         Ok(Self {
-            white_pieces: PlayerPieces {
-                pawns: white_pawns,
-                knights: white_knights,
-                bishops: white_bishops,
-                rooks: white_rooks,
-                queens: white_queens,
-                king: white_king,
-            },
-            black_pieces: PlayerPieces {
-                pawns: black_pawns,
-                knights: black_knights,
-                bishops: black_bishops,
-                rooks: black_rooks,
-                queens: black_queens,
-                king: black_king,
-            },
+            white_pieces: PlayerPieces::new([
+                white_pawns,
+                white_knights,
+                white_bishops,
+                white_rooks,
+                white_queens,
+                white_king,
+            ]),
+            black_pieces: PlayerPieces([
+                black_pawns,
+                black_knights,
+                black_bishops,
+                black_rooks,
+                black_queens,
+                black_king,
+            ]),
             pieces,
         })
     }

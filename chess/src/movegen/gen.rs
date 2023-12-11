@@ -80,7 +80,7 @@ fn get_ctx(game: &Game) -> Ctx {
     let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces.all() | their_pieces;
 
-    let king = our_pieces.king.single();
+    let king = our_pieces.king().single();
     let (checkers, pinned) = pins::get_pins_and_checkers(&game.board, game.player, king);
 
     Ctx {
@@ -102,7 +102,7 @@ fn generate_pawn_moves<const QUIET: bool>(
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let pawns = ctx.our_pieces.pawns;
+    let pawns = ctx.our_pieces.pawns();
 
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
@@ -240,7 +240,7 @@ fn generate_knight_moves<const QUIET: bool>(
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let knights = ctx.our_pieces.knights;
+    let knights = ctx.our_pieces.knights();
 
     // Pinned knights can't move
     for knight in knights & !ctx.pinned {
@@ -266,7 +266,7 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let diagonal_sliders = ctx.our_pieces.bishops | ctx.our_pieces.queens;
+    let diagonal_sliders = ctx.our_pieces.bishops() | ctx.our_pieces.queens();
 
     for diagonal_slider in diagonal_sliders & !ctx.pinned {
         let destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces);
@@ -309,7 +309,7 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
-    let orthogonal_sliders = ctx.our_pieces.rooks | ctx.our_pieces.queens;
+    let orthogonal_sliders = ctx.our_pieces.rooks() | ctx.our_pieces.queens();
 
     for orthogonal_slider in orthogonal_sliders & !ctx.pinned {
         let destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces);
@@ -351,7 +351,7 @@ fn generate_king_moves<const QUIET: bool>(
     attacked_squares: Bitboard,
     ctx: &Ctx,
 ) {
-    let king = ctx.our_pieces.king.single();
+    let king = ctx.our_pieces.king().single();
     let destinations = tables::king_attacks(king);
 
     // Kings can't capture defended pieces
@@ -381,7 +381,7 @@ fn generate_castles<const QUIET: bool>(
         return;
     }
 
-    let king = ctx.our_pieces.king.single();
+    let king = ctx.our_pieces.king().single();
 
     // We can't castle if we're in check
     if attacked_squares.contains(king) {

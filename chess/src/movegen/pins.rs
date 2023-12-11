@@ -19,9 +19,9 @@ pub fn get_pins_and_checkers(
     // Any sliding piece on a ray around the King could be attacking the king, depending on if
     // there are any blocking pieces or not.
     let potential_pinners = tables::rook_attacks(king_square, Bitboard::EMPTY)
-        & (their_pieces.rooks | their_pieces.queens)
+        & (their_pieces.rooks() | their_pieces.queens())
         | tables::bishop_attacks(king_square, Bitboard::EMPTY)
-            & (their_pieces.bishops | their_pieces.queens);
+            & (their_pieces.bishops() | their_pieces.queens());
 
     for potential_pinner in potential_pinners {
         let squares_between = tables::between(king_square, potential_pinner);
@@ -41,8 +41,8 @@ pub fn get_pins_and_checkers(
         }
     }
 
-    checkers |= tables::pawn_attacks(king_square, player) & their_pieces.pawns;
-    checkers |= tables::knight_attacks(king_square) & their_pieces.knights;
+    checkers |= tables::pawn_attacks(king_square, player) & their_pieces.pawns();
+    checkers |= tables::knight_attacks(king_square) & their_pieces.knights();
 
     (checkers, pinned)
 }
@@ -57,7 +57,7 @@ mod tests {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
-        let king_square = game.board.player_pieces(game.player).king.single();
+        let king_square = game.board.player_pieces(game.player).king().single();
         let (_, pinned) = get_pins_and_checkers(&game.board, game.player, king_square);
 
         assert_eq!(pinned, expected_pinned);

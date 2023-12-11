@@ -212,17 +212,17 @@ impl Game {
 
             // If the sole remaining non-king piece on the board is a knight or bishop,
             // it's a draw
-            3 => (self.board.white_pieces.knights
-                | self.board.black_pieces.knights
-                | self.board.white_pieces.bishops
-                | self.board.black_pieces.bishops)
-                .any(),
+            3 => (self.board.white_pieces.knights()
+                | self.board.black_pieces.knights()
+                | self.board.white_pieces.bishops()
+                | self.board.black_pieces.bishops())
+            .any(),
 
             4 => {
                 let player_pieces = self.board.player_pieces(self.player);
-                let knights = self.board.white_pieces.knights | self.board.black_pieces.knights;
-                let bishops = self.board.white_pieces.bishops | self.board.black_pieces.bishops;
-                let kings = self.board.white_pieces.king | self.board.black_pieces.king;
+                let knights = self.board.white_pieces.knights() | self.board.black_pieces.knights();
+                let bishops = self.board.white_pieces.bishops() | self.board.black_pieces.bishops();
+                let kings = self.board.white_pieces.king() | self.board.black_pieces.king();
 
                 let one_piece_each = player_pieces.all().count() == 2;
 
@@ -329,7 +329,7 @@ impl Game {
         {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = self.board.player_pieces(other_player).pawns;
+            let enemy_pawns = self.board.player_pieces(other_player).pawns();
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
