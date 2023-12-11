@@ -13,7 +13,6 @@ struct Ctx<'gen> {
 
     checkers: Bitboard,
     pinned: Bitboard,
-    pinners: Bitboard,
 }
 
 pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
@@ -82,7 +81,7 @@ fn get_ctx(game: &Game) -> Ctx {
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king.single();
-    let (checkers, pinned, pinners) = pins::get_pins_and_checkers(&game.board, game.player, king);
+    let (checkers, pinned) = pins::get_pins_and_checkers(&game.board, game.player, king);
 
     Ctx {
         all_pieces,
@@ -93,7 +92,6 @@ fn get_ctx(game: &Game) -> Ctx {
 
         checkers,
         pinned,
-        pinners,
     }
 }
 
