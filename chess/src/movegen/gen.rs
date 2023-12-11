@@ -2,9 +2,7 @@ use crate::bitboard::{bitboards, Bitboard};
 use crate::board::PlayerPieces;
 use crate::movegen::{attackers, pins, tables};
 use crate::square::{squares, Square};
-use crate::{
-    direction::Direction, game::Game, moves::Move, piece::PromotionPieceKind, player::Player,
-};
+use crate::{game::Game, moves::Move, piece::PromotionPieceKind, player::Player};
 
 struct Ctx<'gen> {
     all_pieces: Bitboard,
@@ -108,7 +106,6 @@ fn generate_pawn_moves<const QUIET: bool>(
 ) {
     let pawns = ctx.our_pieces.pawns;
 
-    let pawn_move_direction = Direction::pawn_move_direction(game.player);
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
     let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !ctx.pinned;
@@ -116,7 +113,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     let pinned_pawns = pawns & ctx.pinned;
 
-    let move_mask_overlay = move_mask.in_direction(!pawn_move_direction);
+    let move_mask_overlay = move_mask.backward(game.player);
 
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
     for pawn in non_pinned_promoting_pawns {
@@ -211,8 +208,8 @@ fn generate_pawn_moves<const QUIET: bool>(
             }
         }
 
-        let double_push_blockers = ctx.all_pieces.in_direction(!pawn_move_direction);
-        let double_push_move_mask_overlay = move_mask_overlay.in_direction(!pawn_move_direction);
+        let double_push_blockers = ctx.all_pieces.backward(game.player);
+        let double_push_move_mask_overlay = move_mask_overlay.backward(game.player);
 
         // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
         for pawn in non_pinned_non_promoting_pawns

@@ -5,10 +5,8 @@ pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
     let sq = square.bb();
 
-    let pawn_move_direction = Direction::pawn_move_direction(player);
-
-    attacks |= sq.in_direction(pawn_move_direction).west();
-    attacks |= sq.in_direction(pawn_move_direction).east();
+    attacks |= sq.forward(player).west();
+    attacks |= sq.forward(player).east();
 
     attacks
 }

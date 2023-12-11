@@ -1,3 +1,4 @@
+use crate::player::Player;
 use crate::square::Square;
 use crate::{
     direction::Direction,
@@ -95,6 +96,22 @@ impl Bitboard {
             Direction::SouthWest => self.south_west(),
             Direction::West => self.west(),
             Direction::NorthWest => self.north_west(),
+        }
+    }
+
+    #[inline(always)]
+    pub fn forward(&self, player: Player) -> Self {
+        match player {
+            Player::White => self.north(),
+            Player::Black => self.south(),
+        }
+    }
+
+    #[inline(always)]
+    pub fn backward(&self, player: Player) -> Self {
+        match player {
+            Player::White => self.south(),
+            Player::Black => self.north(),
         }
     }
 

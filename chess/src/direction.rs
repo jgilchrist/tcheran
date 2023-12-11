@@ -1,5 +1,3 @@
-use crate::player::Player;
-
 #[derive(Debug, Clone, Copy)]
 pub enum Direction {
     North,
@@ -32,13 +30,6 @@ impl Direction {
         Self::SouthWest,
         Self::NorthWest,
     ];
-
-    pub fn pawn_move_direction(player: Player) -> Self {
-        match player {
-            Player::White => Self::North,
-            Player::Black => Self::South,
-        }
-    }
 }
 
 impl std::ops::Not for Direction {
