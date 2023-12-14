@@ -21,17 +21,9 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
 
     let number_of_checkers = ctx.checkers.count();
 
-    // When calculating the attacked squares, we need to remove our King from the board.
-    // If we don't, squares behind the king look safe (since they are blocked by the king)
-    // meaning we'd generate moves away from a slider while in check.
-    let mut board_without_king = game.board;
-    board_without_king.remove_at(ctx.king);
-    let attacked_squares =
-        attackers::generate_all_attacks(&board_without_king, game.player.other());
-
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
-        generate_king_moves::<QUIET>(&mut moves, attacked_squares, &ctx);
+        generate_king_moves::<QUIET>(&mut moves, game, &ctx);
         return moves;
     }
 
@@ -70,8 +62,12 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
     generate_knight_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
     generate_diagonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
     generate_orthogonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
-    generate_king_moves::<QUIET>(&mut moves, attacked_squares, &ctx);
-    generate_castles::<QUIET>(&mut moves, game, attacked_squares, &ctx);
+    generate_king_moves::<QUIET>(&mut moves, game, &ctx);
+
+    if QUIET {
+        generate_castles::<QUIET>(&mut moves, game, &ctx);
+    }
+
     moves
 }
 
@@ -346,48 +342,44 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
     }
 }
 
-fn generate_king_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
-    attacked_squares: Bitboard,
-    ctx: &Ctx,
-) {
+fn generate_king_moves<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
     let king = ctx.our_pieces.king().single();
     let destinations = tables::king_attacks(king);
 
-    // Kings can't capture defended pieces
-    let king_capture_mask = ctx.their_pieces & !attacked_squares;
+    // When calculating the attacked squares, we need to remove our King from the board.
+    // If we don't, squares behind the king look safe (since they are blocked by the king)
+    // meaning we'd generate moves away from a slider while in check.
+    let mut board_without_king = game.board.clone();
+    board_without_king.remove_at(ctx.king);
 
-    for dst in destinations & king_capture_mask {
-        moves.push(Move::new(king, dst));
+    // Kings can't capture defended pieces
+    let king_capture_mask = ctx.their_pieces;
+
+    for dst in destinations & ctx.their_pieces {
+        if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
+            moves.push(Move::new(king, dst));
+        }
     }
 
     if QUIET {
         // Kings can't move to attacked squares
-        let king_move_mask = !ctx.all_pieces & !attacked_squares;
+        let king_move_mask = !ctx.all_pieces;
 
         for dst in destinations & king_move_mask {
-            moves.push(Move::new(king, dst));
+            if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
+                moves.push(Move::new(king, dst));
+            }
         }
     }
 }
 
-fn generate_castles<const QUIET: bool>(
-    moves: &mut Vec<Move>,
-    game: &Game,
-    attacked_squares: Bitboard,
-    ctx: &Ctx,
-) {
-    if !QUIET {
+fn generate_castles<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+    // We can't castle if we're in check
+    if ctx.checkers.any() {
         return;
     }
 
     let king = ctx.our_pieces.king().single();
-
-    // We can't castle if we're in check
-    if attacked_squares.contains(king) {
-        return;
-    }
-
     let king_start_square = squares::king_start(game.player);
 
     // We can only castle if the King is still on its start square
@@ -405,17 +397,32 @@ fn generate_castles<const QUIET: bool>(
         return;
     }
 
+    let mut board_without_king = game.board.clone();
+    board_without_king.remove_at(ctx.king);
+
     if castle_rights_for_player.king_side {
         let kingside_required_empty_and_not_attacked_squares =
             bitboards::kingside_required_empty_and_not_attacked_squares(game.player);
 
         let pieces_in_the_way = kingside_required_empty_and_not_attacked_squares & ctx.all_pieces;
-        let attacked_squares_in_the_way =
-            kingside_required_empty_and_not_attacked_squares & attacked_squares;
-        let squares_preventing_castling = pieces_in_the_way | attacked_squares_in_the_way;
 
-        if squares_preventing_castling.is_empty() {
-            moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+        if pieces_in_the_way.is_empty() {
+            let mut squares_in_between_are_attacked = false;
+            for in_between_square in kingside_required_empty_and_not_attacked_squares {
+                if attackers::generate_attackers_of(
+                    &board_without_king,
+                    game.player,
+                    in_between_square,
+                )
+                .any()
+                {
+                    squares_in_between_are_attacked = true;
+                }
+            }
+
+            if !squares_in_between_are_attacked {
+                moves.push(Move::new(king, squares::kingside_castle_dest(game.player)));
+            }
         }
     }
 
@@ -426,12 +433,24 @@ fn generate_castles<const QUIET: bool>(
             bitboards::queenside_required_not_attacked_squares(game.player);
 
         let pieces_in_the_way = queenside_required_empty_squares & ctx.all_pieces;
-        let attacked_squares_in_the_way =
-            queenside_required_not_attacked_squares & attacked_squares;
-        let squares_preventing_castling = pieces_in_the_way | attacked_squares_in_the_way;
 
-        if squares_preventing_castling.is_empty() {
-            moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
+        if pieces_in_the_way.is_empty() {
+            let mut squares_in_between_are_attacked = false;
+            for in_between_square in queenside_required_not_attacked_squares {
+                if attackers::generate_attackers_of(
+                    &board_without_king,
+                    game.player,
+                    in_between_square,
+                )
+                .any()
+                {
+                    squares_in_between_are_attacked = true;
+                }
+            }
+
+            if !squares_in_between_are_attacked {
+                moves.push(Move::new(king, squares::queenside_castle_dest(game.player)));
+            }
         }
     }
 }
