@@ -25,19 +25,38 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         return moves;
     }
 
-    let (move_mask, capture_mask) = if number_of_checkers == 1 {
+    let check_mask = if number_of_checkers == 1 {
         let checker_sq = checkers.single();
-        (tables::between(checker_sq, ctx.king), checkers)
+        tables::between(checker_sq, ctx.king) | checkers
     } else {
-        (!ctx.all_pieces, ctx.their_pieces)
+        Bitboard::FULL
     };
 
-    let pinned = pins::get_pins(&game.board, game.player, ctx.king);
+    let (orthogonal_pins, diagonal_pins) = pins::get_pins(&game.board, game.player, ctx.king);
 
-    generate_pawn_moves::<QUIET>(&mut moves, game, pinned, move_mask, capture_mask, &ctx);
-    generate_knight_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
-    generate_diagonal_slider_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
-    generate_orthogonal_slider_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
+    generate_pawn_moves::<QUIET>(
+        &mut moves,
+        game,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+        &ctx,
+    );
+    generate_knight_moves::<QUIET>(&mut moves, check_mask, orthogonal_pins, diagonal_pins, &ctx);
+    generate_diagonal_slider_moves::<QUIET>(
+        &mut moves,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+        &ctx,
+    );
+    generate_orthogonal_slider_moves::<QUIET>(
+        &mut moves,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+        &ctx,
+    );
     generate_king_moves::<QUIET>(&mut moves, game, &ctx);
 
     if QUIET && !checkers.any() {
@@ -66,27 +85,39 @@ fn get_ctx(game: &Game) -> Ctx {
 fn generate_pawn_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
-    pinned: Bitboard,
-    move_mask: Bitboard,
-    capture_mask: Bitboard,
+    check_mask: Bitboard,
+    orthogonal_pins: Bitboard,
+    diagonal_pins: Bitboard,
     ctx: &Ctx,
 ) {
     let pawns = ctx.our_pieces.pawns();
 
+    // Pawns that are pinned orthogonally would reveal the king by capturing diagonally
+    let can_capture_pawns = pawns & !orthogonal_pins;
+
+    // Pawns that are pinned diagonally would reveal the king by moving forward
+    let can_move_pawns = pawns & !diagonal_pins;
+
+    // Pawns can move onto empty squares, as long as they block check if in check
+    let available_move_squares = !ctx.all_pieces & check_mask;
+    let single_push_available_move_pawns = available_move_squares.backward(game.player);
+
+    // Pawns can push once if they can move by pin rules, are not obstructed, and block check if in check
+    let can_push_once_pawns = can_move_pawns & single_push_available_move_pawns;
+
+    let capture_targets = ctx.their_pieces & check_mask;
+
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
-    let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !pinned;
-    let non_pinned_promoting_pawns = pawns & will_promote_rank & !pinned;
-
-    let pinned_pawns = pawns & pinned;
-
-    let move_mask_overlay = move_mask.backward(game.player);
-
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
-    for pawn in non_pinned_promoting_pawns {
-        let attacks = tables::pawn_attacks(pawn, game.player);
+    for pawn in can_capture_pawns & will_promote_rank {
+        let mut attacks = tables::pawn_attacks(pawn, game.player);
 
-        for target in attacks & capture_mask {
+        if diagonal_pins.contains(pawn) {
+            attacks &= diagonal_pins;
+        }
+
+        for target in attacks & capture_targets {
             for promotion in PromotionPieceKind::ALL {
                 moves.push(Move::new_with_promotion(pawn, target, *promotion));
             }
@@ -94,64 +125,65 @@ fn generate_pawn_moves<const QUIET: bool>(
     }
 
     // Promotion push: Pawns on the enemy's start rank will promote when pushing
-    for pawn in non_pinned_promoting_pawns & move_mask_overlay {
+    for pawn in can_push_once_pawns & will_promote_rank {
         let forward_one = pawn.forward(game.player);
 
-        for promotion in PromotionPieceKind::ALL {
-            moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+        // Pawns cannot push forward if they are pinned orthogonally
+        // There's no 'moving along the pin ray' for these pieces, since the target square is empty
+        if !orthogonal_pins.contains(pawn) {
+            for promotion in PromotionPieceKind::ALL {
+                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+            }
         }
     }
 
     // Non-promoting captures: All pawns can capture diagonally
-    for pawn in non_pinned_non_promoting_pawns {
-        let attacks = tables::pawn_attacks(pawn, game.player);
+    for pawn in can_capture_pawns & !will_promote_rank {
+        let mut attacks = tables::pawn_attacks(pawn, game.player);
 
-        for target in attacks & capture_mask {
-            moves.push(Move::new(pawn, target));
+        if diagonal_pins.contains(pawn) {
+            attacks &= diagonal_pins;
         }
-    }
 
-    // Pinned pawns can only capture pinners along their pin ray
-    for pinned_pawn in pinned_pawns {
-        let attacks = tables::pawn_attacks(pinned_pawn, game.player);
-        let ray = tables::ray(pinned_pawn, ctx.king);
-
-        for target in attacks & ray & capture_mask {
-            moves.push(Move::new(pinned_pawn, target));
+        for target in attacks & capture_targets {
+            moves.push(Move::new(pawn, target));
         }
     }
 
     // En-passant capture: Pawns either side of the en-passant pawn can capture
     if let Some(en_passant_target) = game.en_passant_target {
-        // We may use en passant to move the pawn to a square which blocks check, so we & with move_mask
-        let pawns_in_capturing_positions =
-            tables::pawn_attacks(en_passant_target, game.player.other());
+        let captured_pawn = en_passant_target.backward(game.player);
 
-        for potential_en_passant_capture_start in
-            pawns_in_capturing_positions & non_pinned_non_promoting_pawns
-        {
-            let captured_pawn = en_passant_target.backward(game.player);
+        if (check_mask & (en_passant_target.bb() | captured_pawn.bb())).any() {
+            let potential_capturers =
+                can_capture_pawns & tables::pawn_attacks(en_passant_target, game.player.other());
 
-            // We need to check that we do not reveal a check by making this en-passant capture
-            let mut board_without_en_passant_participants = game.board;
-            board_without_en_passant_participants.remove_at(potential_en_passant_capture_start);
-            board_without_en_passant_participants.remove_at(captured_pawn);
+            for potential_en_passant_capture_start in potential_capturers {
+                // Only consider this pawn if it is not pinned, or if it is pinned but captures along the pin ray
+                if !diagonal_pins.contains(potential_en_passant_capture_start)
+                    || diagonal_pins.contains(en_passant_target)
+                {
+                    // We need to check that we do not reveal a check by making this en-passant capture
+                    let mut board_without_en_passant_participants = game.board;
+                    board_without_en_passant_participants
+                        .remove_at(potential_en_passant_capture_start);
+                    board_without_en_passant_participants.remove_at(captured_pawn);
 
-            let king_in_check = attackers::generate_attackers_of(
-                &board_without_en_passant_participants,
-                game.player,
-                ctx.king,
-            )
-            .any();
+                    let king_in_check = attackers::generate_attackers_of(
+                        &board_without_en_passant_participants,
+                        game.player,
+                        ctx.king,
+                    )
+                    .any();
 
-            if king_in_check {
-                continue;
+                    if !king_in_check {
+                        moves.push(Move::new(
+                            potential_en_passant_capture_start,
+                            en_passant_target,
+                        ));
+                    }
+                }
             }
-
-            moves.push(Move::new(
-                potential_en_passant_capture_start,
-                en_passant_target,
-            ));
         }
     }
 
@@ -159,45 +191,29 @@ fn generate_pawn_moves<const QUIET: bool>(
         let back_rank = bitboards::pawn_back_rank(game.player);
 
         // Push: All pawns with an empty square in front of them can move forward
-        for pawn in non_pinned_non_promoting_pawns & move_mask_overlay {
+        for pawn in can_push_once_pawns & !will_promote_rank {
             let forward_one = pawn.forward(game.player);
 
-            moves.push(Move::new(pawn, forward_one));
-        }
-
-        // Push: Pinned pawns can move along the pin ray
-        for pinned_pawn in pinned_pawns & move_mask_overlay {
-            let ray = tables::ray(pinned_pawn, ctx.king);
-            let forward_one = pinned_pawn.forward(game.player);
-
-            if ray.contains(forward_one) {
-                moves.push(Move::new(pinned_pawn, forward_one));
+            // Pawns cannot push forward if they are pinned orthogonally, unless they're moving along the pin ray
+            if !orthogonal_pins.contains(pawn) || orthogonal_pins.contains(forward_one) {
+                moves.push(Move::new(pawn, forward_one));
             }
         }
 
         let double_push_blockers = ctx.all_pieces.backward(game.player);
-        let double_push_move_mask_overlay = move_mask_overlay.backward(game.player);
 
-        // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
-        for pawn in non_pinned_non_promoting_pawns
+        let can_push_twice_pawns = can_move_pawns
             & back_rank
             & !double_push_blockers
-            & double_push_move_mask_overlay
-        {
+            & single_push_available_move_pawns.backward(game.player);
+
+        // Double push: All pawns on the start rank with empty squares in front of them can move forward two squares
+        for pawn in can_push_twice_pawns {
             let forward_two = pawn.forward(game.player).forward(game.player);
 
-            moves.push(Move::new(pawn, forward_two));
-        }
-
-        // Double push: Pinned pawns can still double-push along the pin ray
-        for pinned_pawn in
-            pinned_pawns & back_rank & !double_push_blockers & double_push_move_mask_overlay
-        {
-            let ray = tables::ray(pinned_pawn, ctx.king);
-            let forward_two = pinned_pawn.forward(game.player).forward(game.player);
-
-            if ray.contains(forward_two) {
-                moves.push(Move::new(pinned_pawn, forward_two));
+            // Pawns cannot push forward if they are pinned orthogonally, unless they are moving along the pin ray
+            if !orthogonal_pins.contains(pawn) || orthogonal_pins.contains(forward_two) {
+                moves.push(Move::new(pawn, forward_two));
             }
         }
     }
@@ -205,24 +221,24 @@ fn generate_pawn_moves<const QUIET: bool>(
 
 fn generate_knight_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    pinned: Bitboard,
-    move_mask: Bitboard,
-    capture_mask: Bitboard,
+    check_mask: Bitboard,
+    orthogonal_pins: Bitboard,
+    diagonal_pins: Bitboard,
     ctx: &Ctx,
 ) {
     let knights = ctx.our_pieces.knights();
 
     // Pinned knights can't move
-    for knight in knights & !pinned {
-        let destinations = tables::knight_attacks(knight);
+    for knight in knights & !(orthogonal_pins | diagonal_pins) {
+        let destinations = tables::knight_attacks(knight) & check_mask;
 
-        let capture_destinations = destinations & capture_mask;
+        let capture_destinations = destinations & ctx.their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(knight, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & move_mask;
+            let move_destinations = destinations & !ctx.all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(knight, dst));
             }
@@ -232,43 +248,31 @@ fn generate_knight_moves<const QUIET: bool>(
 
 fn generate_diagonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    pinned: Bitboard,
-    move_mask: Bitboard,
-    capture_mask: Bitboard,
+    check_mask: Bitboard,
+    orthogonal_pins: Bitboard,
+    diagonal_pins: Bitboard,
     ctx: &Ctx,
 ) {
-    let diagonal_sliders = ctx.our_pieces.bishops() | ctx.our_pieces.queens();
+    // Diagonal sliders which are pinned orthogonally would expose the king by moving
+    let diagonal_sliders = (ctx.our_pieces.bishops() | ctx.our_pieces.queens()) & !orthogonal_pins;
 
-    for diagonal_slider in diagonal_sliders & !pinned {
-        let destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces);
+    for diagonal_slider in diagonal_sliders {
+        let mut destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces) & check_mask;
 
-        let capture_destinations = destinations & capture_mask;
+        // If the slider is pinned, it can only move along the pin ray
+        if diagonal_pins.contains(diagonal_slider) {
+            destinations &= diagonal_pins;
+        }
+
+        let capture_destinations = destinations & ctx.their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(diagonal_slider, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & move_mask;
+            let move_destinations = destinations & !ctx.all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(diagonal_slider, dst));
-            }
-        }
-    }
-
-    // Pinned pieces can move along the pin ray, or capture the pinning piece
-    for pinned_diagonal_slider in diagonal_sliders & pinned {
-        let destinations = tables::bishop_attacks(pinned_diagonal_slider, ctx.all_pieces);
-        let ray = tables::ray(pinned_diagonal_slider, ctx.king);
-
-        let capture_destinations = destinations & ray & capture_mask;
-        for dst in capture_destinations {
-            moves.push(Move::new(pinned_diagonal_slider, dst));
-        }
-
-        if QUIET {
-            let move_destinations = destinations & ray & move_mask;
-            for dst in move_destinations {
-                moves.push(Move::new(pinned_diagonal_slider, dst));
             }
         }
     }
@@ -276,43 +280,30 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
 
 fn generate_orthogonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
-    pinned: Bitboard,
-    move_mask: Bitboard,
-    capture_mask: Bitboard,
+    check_mask: Bitboard,
+    orthogonal_pins: Bitboard,
+    diagonal_pins: Bitboard,
     ctx: &Ctx,
 ) {
-    let orthogonal_sliders = ctx.our_pieces.rooks() | ctx.our_pieces.queens();
+    // Orthogonal sliders which are pinned diagonally would expose the king by moving
+    let orthogonal_sliders = (ctx.our_pieces.rooks() | ctx.our_pieces.queens()) & !diagonal_pins;
 
-    for orthogonal_slider in orthogonal_sliders & !pinned {
-        let destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces);
+    for orthogonal_slider in orthogonal_sliders {
+        let mut destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces) & check_mask;
 
-        let capture_destinations = destinations & capture_mask;
+        if orthogonal_pins.contains(orthogonal_slider) {
+            destinations &= orthogonal_pins;
+        }
+
+        let capture_destinations = destinations & ctx.their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(orthogonal_slider, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & move_mask;
+            let move_destinations = destinations & !ctx.all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(orthogonal_slider, dst));
-            }
-        }
-    }
-
-    // Pinned pieces can move along the pin ray, or capture the pinning piece
-    for pinned_orthogonal_slider in orthogonal_sliders & pinned {
-        let destinations = tables::rook_attacks(pinned_orthogonal_slider, ctx.all_pieces);
-        let ray = tables::ray(pinned_orthogonal_slider, ctx.king);
-
-        let capture_destinations = destinations & ray & capture_mask;
-        for dst in capture_destinations {
-            moves.push(Move::new(pinned_orthogonal_slider, dst));
-        }
-
-        if QUIET {
-            let move_destinations = destinations & ray & move_mask;
-            for dst in move_destinations {
-                moves.push(Move::new(pinned_orthogonal_slider, dst));
             }
         }
     }

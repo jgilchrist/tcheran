@@ -1,68 +1,68 @@
 use crate::bitboard::Bitboard;
 use crate::board::Board;
 use crate::movegen::tables;
+use crate::movegen::tables::{bishop_attacks, rook_attacks};
 use crate::player::Player;
 use crate::square::Square;
 
-pub fn get_pins(board: &Board, player: Player, king_square: Square) -> Bitboard {
-    let mut pinned = Bitboard::EMPTY;
-
+pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
     let our_pieces = board.player_pieces(player).all();
     let their_pieces = board.player_pieces(player.other());
     let all_their_pieces = their_pieces.all();
+    let all_pieces = our_pieces | all_their_pieces;
 
-    // Any sliding piece on a ray around the King could be attacking the king, depending on if
-    // there are any blocking pieces or not.
-    let potential_pinners = tables::rook_attacks(king_square, Bitboard::EMPTY)
-        & (their_pieces.rooks() | their_pieces.queens())
-        | tables::bishop_attacks(king_square, Bitboard::EMPTY)
-            & (their_pieces.bishops() | their_pieces.queens());
+    let mut orthogonal_pins = Bitboard::EMPTY;
+    let potential_orthogonal_pinned = rook_attacks(king_square, all_pieces) & our_pieces;
+    let without_potential_orthogonal_pinned_pieces = all_pieces & !potential_orthogonal_pinned;
+    let orthogonal_pinners = rook_attacks(king_square, without_potential_orthogonal_pinned_pieces)
+        & (their_pieces.rooks() | their_pieces.queens());
 
-    for potential_pinner in potential_pinners {
-        let squares_between = tables::between(king_square, potential_pinner);
-        let their_pieces_on_ray = squares_between & all_their_pieces;
+    let mut diagonal_pins = Bitboard::EMPTY;
+    let potential_diagonal_pinned = bishop_attacks(king_square, all_pieces) & our_pieces;
+    let without_potential_diagonal_pinned_pieces = all_pieces & !potential_diagonal_pinned;
+    let diagonal_pinners = bishop_attacks(king_square, without_potential_diagonal_pinned_pieces)
+        & (their_pieces.bishops() | their_pieces.queens());
 
-        // If there are any other enemy pieces between, they're blocking this attack.
-        if their_pieces_on_ray.any() {
-            continue;
-        }
-
-        let our_pieces_between = squares_between & our_pieces;
-
-        if our_pieces_between.count() == 1 {
-            pinned |= our_pieces_between;
-        }
+    for pinner in orthogonal_pinners {
+        orthogonal_pins |= pinner.bb();
+        orthogonal_pins |= tables::between(king_square, pinner);
     }
 
-    pinned
+    for pinner in diagonal_pinners {
+        diagonal_pins |= pinner.bb();
+        diagonal_pins |= tables::between(king_square, pinner);
+    }
+
+    (orthogonal_pins, diagonal_pins)
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::bitboard::bitboards::*;
     use crate::game::Game;
-    use crate::square::squares::all::*;
 
-    fn pin_test(fen: &'static str, expected_pinned: Bitboard) {
+    fn pin_test(
+        fen: &'static str,
+        expected_orthogonal_pins: Bitboard,
+        expected_diagonal_pins: Bitboard,
+    ) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
         let king_square = game.board.player_pieces(game.player).king().single();
-        let pinned = get_pins(&game.board, game.player, king_square);
+        let (orthogonal_pins, diagonal_pins) = get_pins(&game.board, game.player, king_square);
 
-        assert_eq!(pinned, expected_pinned);
+        assert_eq!(orthogonal_pins, expected_orthogonal_pins);
+        assert_eq!(diagonal_pins, expected_diagonal_pins);
     }
 
     #[test]
-    fn test_single_pinned_piece() {
-        pin_test("8/8/8/1kq2PK1/8/8/8/8 w - - 0 1", F5.bb());
-    }
-
-    #[test]
-    fn test_pins_all_around() {
+    fn test_pin_in_gist_8_depth_3() {
         pin_test(
-            "K7/2Q1Q1Q1/3ppp2/2QpkpQ1/3ppp2/2Q1Q1Q1/8/8 b - - 0 1",
-            D6 | E6 | F6 | D5 | F5 | D4 | E4 | F4,
+            "rnbq1k1r/pp1P1ppp/2p5/8/1bB5/8/PPPNNnPP/R1BQK2R w KQ - 3 9",
+            Bitboard::EMPTY,
+            B4_BB | C3_BB | D2_BB,
         );
     }
 }
