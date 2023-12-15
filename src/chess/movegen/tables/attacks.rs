@@ -1,12 +1,12 @@
 use crate::chess::bitboard::Bitboard;
-use crate::chess::{direction::Direction, player::Player, square::Square};
+use crate::chess::{direction::Direction, square::Square};
 
-pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
+pub fn generate_pawn_attacks<const PLAYER: bool>(square: Square) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
     let sq = square.bb();
 
-    attacks |= sq.forward(player).west();
-    attacks |= sq.forward(player).east();
+    attacks |= sq.forward::<PLAYER>().west();
+    attacks |= sq.forward::<PLAYER>().east();
 
     attacks
 }

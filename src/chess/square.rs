@@ -1,5 +1,4 @@
 use crate::chess::bitboard::Bitboard;
-use crate::chess::player::Player;
 
 pub const FILES: [File; File::N] = [
     File::A,
@@ -210,18 +209,18 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn forward(self, player: Player) -> Self {
-        match player {
-            Player::White => self.north(),
-            Player::Black => self.south(),
+    pub fn forward<const PLAYER: bool>(self) -> Self {
+        match PLAYER {
+            true => self.north(),
+            false => self.south(),
         }
     }
 
     #[inline(always)]
-    pub fn backward(self, player: Player) -> Self {
-        match player {
-            Player::White => self.south(),
-            Player::Black => self.north(),
+    pub fn backward<const PLAYER: bool>(self) -> Self {
+        match PLAYER {
+            true => self.south(),
+            false => self.north(),
         }
     }
 
@@ -259,72 +258,85 @@ impl std::ops::BitOr for Square {
 
 pub mod squares {
     use self::all::*;
-    use crate::chess::player::Player;
     use crate::chess::square::Square;
 
-    pub const fn king_start(player: Player) -> Square {
-        match player {
-            Player::White => INIT_WHITE_KING,
-            Player::Black => INIT_BLACK_KING,
+    pub const fn king_start<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => INIT_WHITE_KING,
+            false => INIT_BLACK_KING,
         }
     }
 
-    pub const fn kingside_rook_start(player: Player) -> Square {
-        match player {
-            Player::White => H1,
-            Player::Black => H8,
+    pub const fn kingside_rook_start<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => H1,
+            false => H8,
         }
     }
 
-    pub const fn queenside_rook_start(player: Player) -> Square {
-        match player {
-            Player::White => A1,
-            Player::Black => A8,
+    pub const fn opponent_kingside_rook_start<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => H8,
+            false => H1,
         }
     }
 
-    pub fn castle_squares(player: Player, king_moved_to: Square) -> Option<(Square, Square)> {
-        let kingside_castle_dest = kingside_castle_dest(player);
-        let queenside_castle_dest = queenside_castle_dest(player);
+    pub const fn queenside_rook_start<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => A1,
+            false => A8,
+        }
+    }
+
+    pub const fn opponent_queenside_rook_start<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => A8,
+            false => A1,
+        }
+    }
+
+    pub fn castle_squares<const PLAYER: bool>(king_moved_to: Square) -> Option<(Square, Square)> {
+        let kingside_castle_dest = kingside_castle_dest::<PLAYER>();
+        let queenside_castle_dest = queenside_castle_dest::<PLAYER>();
 
         match king_moved_to {
             s if s == kingside_castle_dest => Some((
-                kingside_rook_start(player),
-                kingside_rook_castle_end(player),
+                kingside_rook_start::<PLAYER>(),
+                kingside_rook_castle_end::<PLAYER>(),
             )),
             s if s == queenside_castle_dest => Some((
-                queenside_rook_start(player),
-                queenside_rook_castle_end(player),
+                queenside_rook_start::<PLAYER>(),
+                queenside_rook_castle_end::<PLAYER>(),
             )),
             _ => None,
         }
     }
 
-    pub const fn kingside_castle_dest(player: Player) -> Square {
-        match player {
-            Player::White => WHITE_KINGSIDE_CASTLE_SQUARE,
-            Player::Black => BLACK_KINGSIDE_CASTLE_SQUARE,
+    pub const fn kingside_castle_dest<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => WHITE_KINGSIDE_CASTLE_SQUARE,
+            false => BLACK_KINGSIDE_CASTLE_SQUARE,
         }
     }
 
-    const fn kingside_rook_castle_end(player: Player) -> Square {
-        match player {
-            Player::White => F1,
-            Player::Black => F8,
+    const fn kingside_rook_castle_end<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => F1,
+            false => F8,
         }
     }
 
-    pub const fn queenside_castle_dest(player: Player) -> Square {
-        match player {
-            Player::White => WHITE_QUEENSIDE_CASTLE_SQUARE,
-            Player::Black => BLACK_QUEENSIDE_CASTLE_SQUARE,
+    pub const fn queenside_castle_dest<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => WHITE_QUEENSIDE_CASTLE_SQUARE,
+            false => BLACK_QUEENSIDE_CASTLE_SQUARE,
         }
     }
 
-    const fn queenside_rook_castle_end(player: Player) -> Square {
-        match player {
-            Player::White => D1,
-            Player::Black => D8,
+    const fn queenside_rook_castle_end<const PLAYER: bool>() -> Square {
+        match PLAYER {
+            true => D1,
+            false => D8,
         }
     }
 

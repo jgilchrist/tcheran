@@ -137,7 +137,12 @@ impl Game {
     // movelist and allow them to iterate easily over the resulting list of moves
     pub fn moves(&self) -> MoveList {
         let mut movelist = MoveList::new();
-        generate_moves::<true>(self, &mut movelist);
+
+        match self.player {
+            Player::White => generate_moves::<true, true>(self),
+            Player::Black => generate_moves::<false, true>(self),
+        };
+
         movelist
     }
 
@@ -194,7 +199,7 @@ impl Game {
             .any(),
 
             4 => {
-                let player_pieces = self.board.player_pieces(self.player);
+                let player_pieces = self.board.player_pieces_ref(self.player);
                 let knights = self.board.white_pieces.knights() | self.board.black_pieces.knights();
                 let bishops = self.board.white_pieces.bishops() | self.board.black_pieces.bishops();
                 let kings = self.board.white_pieces.king() | self.board.black_pieces.king();
@@ -236,9 +241,11 @@ impl Game {
         removed_piece
     }
 
-    // PERF: Make fetching the castle rights for a player more efficient
-    fn try_remove_castle_rights(&mut self, player: Player, castle_rights_side: CastleRightsSide) {
-        let castle_rights = self.castle_rights.get_mut(player.array_idx()).unwrap();
+    fn try_remove_castle_rights<const PLAYER: bool>(
+        &mut self,
+        castle_rights_side: CastleRightsSide,
+    ) {
+        let castle_rights = self.player_castle_rights_mut::<PLAYER>();
 
         // We don't want to modify anything if the castle rights on this side were already lost
         if !castle_rights.can_castle_to_side(castle_rights_side) {
@@ -248,14 +255,38 @@ impl Game {
         castle_rights.remove_rights(castle_rights_side);
 
         self.zobrist
-            .toggle_castle_rights(player, castle_rights_side);
+            .toggle_castle_rights::<PLAYER>(castle_rights_side);
+    }
+
+    fn try_remove_opponents_castle_rights<const PLAYER: bool>(
+        &mut self,
+        castle_rights_side: CastleRightsSide,
+    ) {
+        let castle_rights = self.opponent_castle_rights_mut::<PLAYER>();
+
+        // We don't want to modify anything if the castle rights on this side were already lost
+        if !castle_rights.can_castle_to_side(castle_rights_side) {
+            return;
+        }
+
+        castle_rights.remove_rights(castle_rights_side);
+
+        self.zobrist
+            .toggle_castle_rights::<PLAYER>(castle_rights_side);
     }
 
     pub fn make_move(&mut self, mv: Move) {
+        match self.player {
+            Player::White => self.make_move_t::<true>(mv),
+            Player::Black => self.make_move_t::<false>(mv),
+        }
+    }
+
+    pub fn make_move_t<const PLAYER: bool>(&mut self, mv: Move) {
         let from = mv.src;
         let to = mv.dst;
         let player = self.player;
-        let other_player = player.other();
+        let opponent = player.other();
 
         let moved_piece = self.board.piece_at(from).unwrap();
         let maybe_captured_piece = self.board.piece_at(to);
@@ -281,7 +312,7 @@ impl Game {
         }
 
         if let Some(promoted_to) = mv.promotion {
-            let promoted_piece = Piece::new(player, promoted_to.piece());
+            let promoted_piece = Piece::new_t::<PLAYER>(promoted_to.piece());
             self.set_at(to, promoted_piece);
         } else {
             self.set_at(to, moved_piece);
@@ -292,22 +323,22 @@ impl Game {
         if let Some(en_passant_target) = self.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.backward(player);
+                let capture_square = to.backward::<PLAYER>();
                 self.remove_at(capture_square);
             }
         }
 
         let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
-            && bitboards::pawn_back_rank(player).contains(from)
-            && bitboards::pawn_double_push_rank(player).contains(to)
+            && bitboards::pawn_back_rank::<PLAYER>().contains(from)
+            && bitboards::pawn_double_push_rank::<PLAYER>().contains(to)
         {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = self.board.player_pieces(other_player).pawns();
+            let enemy_pawns = self.board.opponent_pieces::<PLAYER>().pawns();
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
-                Some(from.forward(player))
+                Some(from.forward::<PLAYER>())
             } else {
                 None
             }
@@ -324,9 +355,9 @@ impl Game {
         // PERF: Here, we figure out if the move was castling. It may be more performant to
         // tell this function that the move was castling, but it loses the cleanliness of
         // just telling the board the start and end destination for the piece.
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
+        if moved_piece.kind == PieceKind::King && from == squares::king_start::<PLAYER>() {
             // We're castling!
-            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
+            if let Some((rook_from, rook_to)) = squares::castle_squares::<PLAYER>(to) {
                 let rook = self.remove_at(rook_from);
                 self.set_at(rook_to, rook);
             }
@@ -335,23 +366,23 @@ impl Game {
         // Check if we lost castle rights.
         // If we moved the king, we lose all rights to castle.
         // If we moved one of our rooks, we lose rights to castle on that side.
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
-            self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
+        if moved_piece.kind == PieceKind::King && from == squares::king_start::<PLAYER>() {
+            self.try_remove_castle_rights::<PLAYER>(CastleRightsSide::Kingside);
+            self.try_remove_castle_rights::<PLAYER>(CastleRightsSide::Queenside);
         } else if moved_piece.kind == PieceKind::Rook {
-            if from == squares::kingside_rook_start(player) {
-                self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
-            } else if from == squares::queenside_rook_start(player) {
-                self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
+            if from == squares::kingside_rook_start::<PLAYER>() {
+                self.try_remove_castle_rights::<PLAYER>(CastleRightsSide::Kingside);
+            } else if from == squares::queenside_rook_start::<PLAYER>() {
+                self.try_remove_castle_rights::<PLAYER>(CastleRightsSide::Queenside);
             }
         }
 
         // Check if we removed our enemy's ability to castle, i.e. if we took one of their rooks
         if maybe_captured_piece.is_some() {
-            if to == squares::kingside_rook_start(other_player) {
-                self.try_remove_castle_rights(other_player, CastleRightsSide::Kingside);
-            } else if to == squares::queenside_rook_start(other_player) {
-                self.try_remove_castle_rights(other_player, CastleRightsSide::Queenside);
+            if to == squares::opponent_kingside_rook_start::<PLAYER>() {
+                self.try_remove_opponents_castle_rights::<PLAYER>(CastleRightsSide::Kingside);
+            } else if to == squares::opponent_queenside_rook_start::<PLAYER>() {
+                self.try_remove_opponents_castle_rights::<PLAYER>(CastleRightsSide::Queenside);
             }
         }
 
@@ -366,7 +397,7 @@ impl Game {
 
         self.plies += 1;
 
-        self.player = other_player;
+        self.player = opponent;
         self.zobrist.toggle_side_to_play();
     }
 
@@ -395,6 +426,13 @@ impl Game {
     }
 
     pub fn undo_move(&mut self) {
+        match self.player {
+            Player::White => self.undo_move_t::<false>(),
+            Player::Black => self.undo_move_t::<true>(),
+        }
+    }
+
+    pub fn undo_move_t<const PLAYER: bool>(&mut self) {
         let history = self.history.pop().unwrap();
         let mv = history.mv.unwrap();
         let from = mv.src;
@@ -403,7 +441,7 @@ impl Game {
         // The player that made this move is the one whose turn it was before
         // we start undoing the move.
         let player = self.player.other();
-        let other_player = self.player;
+        let opponent = self.player;
 
         self.plies -= 1;
         self.player = player;
@@ -416,8 +454,8 @@ impl Game {
         let moved_piece = self.board.piece_at(to).unwrap();
 
         // Undo castling, if we castled
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
+        if moved_piece.kind == PieceKind::King && from == squares::king_start::<PLAYER>() {
+            if let Some((rook_from, rook_to)) = squares::castle_squares::<PLAYER>(to) {
                 self.board.remove_at(rook_to);
                 self.board
                     .set_at(rook_from, Piece::new(player, PieceKind::Rook));
@@ -427,7 +465,7 @@ impl Game {
         // Replace the pawn taken by en-passant capture
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                let capture_square = to.backward(player);
+                let capture_square = to.backward::<PLAYER>();
                 self.board
                     .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
             }

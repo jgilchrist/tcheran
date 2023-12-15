@@ -2,12 +2,11 @@ use crate::chess::bitboard::Bitboard;
 use crate::chess::board::Board;
 use crate::chess::movegen::tables;
 use crate::chess::movegen::tables::{bishop_attacks, rook_attacks};
-use crate::chess::player::Player;
 use crate::chess::square::Square;
 
-pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
-    let our_pieces = board.player_pieces(player).all();
-    let their_pieces = board.player_pieces(player.other());
+pub fn get_pins<const PLAYER: bool>(board: &Board, king_square: Square) -> (Bitboard, Bitboard) {
+    let our_pieces = board.player_pieces::<PLAYER>().all();
+    let their_pieces = board.opponent_pieces::<PLAYER>();
     let all_their_pieces = their_pieces.all();
     let all_pieces = our_pieces | all_their_pieces;
 
@@ -41,6 +40,7 @@ mod tests {
     use super::*;
     use crate::chess::bitboard::bitboards::*;
     use crate::chess::game::Game;
+    use crate::chess::player::Player;
 
     fn pin_test(
         fen: &'static str,
@@ -50,8 +50,11 @@ mod tests {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
-        let king_square = game.board.player_pieces(game.player).king().single();
-        let (orthogonal_pins, diagonal_pins) = get_pins(&game.board, game.player, king_square);
+        let king_square = game.board.player_pieces_ref(game.player).king().single();
+        let (orthogonal_pins, diagonal_pins) = match game.player {
+            Player::White => get_pins::<true>(&game.board, king_square),
+            Player::Black => get_pins::<false>(&game.board, king_square),
+        };
 
         assert_eq!(orthogonal_pins, expected_orthogonal_pins);
         assert_eq!(diagonal_pins, expected_diagonal_pins);
