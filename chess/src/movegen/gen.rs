@@ -25,35 +25,11 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         return moves;
     }
 
-    let checker: Option<Square> = if number_of_checkers == 1 {
-        Some(checkers.single())
+    let (move_mask, capture_mask) = if number_of_checkers == 1 {
+        let checker_sq = checkers.single();
+        (tables::between(checker_sq, ctx.king), checkers)
     } else {
-        None
-    };
-
-    let move_mask = match checker {
-        // If we're not in check, pieces can move as normal
-        None => !ctx.all_pieces,
-        // If we are in check, pieces can only move to block the check
-        Some(checker_sq) => {
-            let piece = game.board.piece_at(checker_sq).unwrap().kind;
-
-            if piece.is_slider() {
-                // If the piece giving check casts a ray, we can block the check by moving any piece
-                // into that ray
-                tables::between(checker_sq, ctx.king)
-            } else {
-                // If the piece giving check jumps, we can't get in the way, only capture that piece
-                Bitboard::EMPTY
-            }
-        }
-    };
-
-    let capture_mask = match checker {
-        // If we're not in check, we can capture any enemy piece
-        None => ctx.their_pieces,
-        // If we are in check, we can get out by capturing our checker
-        Some(_) => checkers,
+        (!ctx.all_pieces, ctx.their_pieces)
     };
 
     let pinned = pins::get_pins(&game.board, game.player, ctx.king);
