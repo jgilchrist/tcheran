@@ -323,24 +323,17 @@ pub mod bitboards {
     use crate::square::squares;
     use crate::square::squares::all::*;
 
-    pub const fn kingside_required_empty_and_not_attacked_squares(player: Player) -> Bitboard {
-        match player {
-            Player::White => WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
-            Player::Black => BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES,
-        }
-    }
-
-    pub const fn queenside_required_empty_squares(player: Player) -> Bitboard {
-        match player {
-            Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES,
-            Player::Black => BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES,
-        }
-    }
-
-    pub const fn queenside_required_not_attacked_squares(player: Player) -> Bitboard {
-        match player {
-            Player::White => WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
-            Player::Black => BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES,
+    pub const fn castle_squares<const KINGSIDE: bool>(player: Player) -> (Bitboard, Square, Square) {
+        if KINGSIDE {
+            match player {
+                Player::White => (WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_KINGSIDE_CASTLE_TARGET_SQUARE, WHITE_KINGSIDE_CASTLE_MIDDLE_SQUARE),
+                Player::Black => (BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_KINGSIDE_CASTLE_TARGET_SQUARE, BLACK_KINGSIDE_CASTLE_MIDDLE_SQUARE),
+            }
+        } else {
+            match player {
+                Player::White => (WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE, WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
+                Player::Black => (BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE, BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
+            }
         }
     }
 
@@ -489,15 +482,21 @@ pub mod bitboards {
     pub const INIT_BLACK_QUEEN: Bitboard = squares::INIT_BLACK_QUEEN.bb();
     pub const INIT_BLACK_KING: Bitboard = squares::INIT_BLACK_KING.bb();
 
-    pub const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F1_BB.0 | G1_BB.0);
-    pub const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_AND_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(F8_BB.0 | G8_BB.0);
+    const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(F1_BB.0 | G1_BB.0);
+    const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(F8_BB.0 | G8_BB.0);
 
-    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B1_BB.0 | C1_BB.0 | D1_BB.0);
-    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B8_BB.0 | C8_BB.0 | D8_BB.0);
+    const WHITE_KINGSIDE_CASTLE_TARGET_SQUARE: Square = G1;
+    const WHITE_KINGSIDE_CASTLE_MIDDLE_SQUARE: Square = F1;
+    const BLACK_KINGSIDE_CASTLE_TARGET_SQUARE: Square = G8;
+    const BLACK_KINGSIDE_CASTLE_MIDDLE_SQUARE: Square = F8;
 
+    const WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B1_BB.0 | C1_BB.0 | D1_BB.0);
+    const BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(B8_BB.0 | C8_BB.0 | D8_BB.0);
 
-    pub const WHITE_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C1_BB.0 | D1_BB.0);
-    pub const BLACK_QUEENSIDE_CASTLE_REQUIRED_NOT_ATTACKED_SQUARES: Bitboard = Bitboard::new(C8_BB.0 | D8_BB.0);
+    const WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE: Square = C1;
+    const WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE: Square = D1;
+    const BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE: Square = C8;
+    const BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE: Square = D8;
 }
 
 #[cfg(test)]
