@@ -16,8 +16,8 @@ impl ZobristHash {
         self.0 ^= piece_on_square(piece.player, piece.kind, square);
     }
 
-    pub fn toggle_castle_rights(&mut self, player: Player, side: CastleRightsSide) {
-        self.0 ^= castle_rights(player, side);
+    pub fn toggle_castle_rights<const PLAYER: bool>(&mut self, side: CastleRightsSide) {
+        self.0 ^= castle_rights::<PLAYER>(side);
     }
 
     pub fn set_en_passant(&mut self, previous_square: Option<Square>, square: Option<Square>) {
@@ -146,20 +146,20 @@ pub fn hash(game: &Game) -> ZobristHash {
     // Castle rights
     // White
     if game.white_castle_rights.king_side {
-        hash ^= castle_rights(Player::White, CastleRightsSide::Kingside);
+        hash ^= castle_rights::<true>(CastleRightsSide::Kingside);
     }
 
     if game.white_castle_rights.queen_side {
-        hash ^= castle_rights(Player::White, CastleRightsSide::Queenside);
+        hash ^= castle_rights::<true>(CastleRightsSide::Queenside);
     }
 
     // Black
     if game.black_castle_rights.king_side {
-        hash ^= castle_rights(Player::Black, CastleRightsSide::Kingside);
+        hash ^= castle_rights::<false>(CastleRightsSide::Kingside);
     }
 
     if game.black_castle_rights.queen_side {
-        hash ^= castle_rights(Player::Black, CastleRightsSide::Queenside);
+        hash ^= castle_rights::<false>(CastleRightsSide::Queenside);
     }
 
     // En passant
@@ -182,10 +182,10 @@ fn piece_on_square(player: Player, piece: PieceKind, square: Square) -> ZobristC
     }
 }
 
-fn castle_rights(player: Player, side: CastleRightsSide) -> ZobristComponent {
+fn castle_rights<const PLAYER: bool>(side: CastleRightsSide) -> ZobristComponent {
     *unsafe {
         components::CASTLING
-            .get_unchecked(player.array_idx())
+            .get_unchecked(usize::from(!PLAYER))
             .get_unchecked(side.array_idx())
     }
 }

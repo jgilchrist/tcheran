@@ -74,6 +74,19 @@ impl Piece {
         Self { kind, player }
     }
 
+    pub const fn new_t<const PLAYER: bool>(kind: PieceKind) -> Self {
+        match PLAYER {
+            true => Self {
+                kind,
+                player: Player::White,
+            },
+            false => Self {
+                kind,
+                player: Player::Black,
+            },
+        }
+    }
+
     const fn white(kind: PieceKind) -> Self {
         Self::new(Player::White, kind)
     }

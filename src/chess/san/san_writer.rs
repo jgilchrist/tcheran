@@ -1,6 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
+use crate::chess::player::Player;
 use crate::chess::san;
 use crate::chess::square::squares;
 
@@ -12,21 +13,20 @@ enum AmbiguityResolution {
     Exact, // Two pieces on the same file or rank can move to the same square - specify the exact source square
 }
 
-#[allow(unused)]
-pub fn format_move(game: &Game, mv: Move) -> String {
+fn format_move_t<const PLAYER: bool>(game: &Game, mv: Move) -> String {
     let from = mv.src;
     let to = mv.dst;
 
     let piece = game.board.piece_at(from).unwrap();
 
-    let king_start = squares::king_start(game.player);
+    let king_start = squares::king_start::<PLAYER>();
     if piece.kind == PieceKind::King && from == king_start {
-        let kingside_castle_dest = squares::kingside_castle_dest(game.player);
+        let kingside_castle_dest = squares::kingside_castle_dest::<PLAYER>();
         if to == kingside_castle_dest {
             return san::KINGSIDE_CASTLE.to_string();
         }
 
-        let queenside_castle_dest = squares::queenside_castle_dest(game.player);
+        let queenside_castle_dest = squares::queenside_castle_dest::<PLAYER>();
         if to == queenside_castle_dest {
             return san::QUEENSIDE_CASTLE.to_string();
         }
@@ -90,6 +90,14 @@ pub fn format_move(game: &Game, mv: Move) -> String {
     };
 
     format!("{piece_identifier}{ambiguity_resolution}{capture_x}{destination_notation}{promotion_specifier}{opponent_in_check_specifier}")
+}
+
+#[allow(unused)]
+pub fn format_move(game: &Game, mv: Move) -> String {
+    match game.player {
+        Player::White => format_move_t::<true>(game, mv),
+        Player::Black => format_move_t::<false>(game, mv),
+    }
 }
 
 fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {

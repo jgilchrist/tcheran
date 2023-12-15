@@ -63,10 +63,26 @@ impl PlayerPieces {
 
 impl Board {
     #[inline(always)]
-    pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
+    pub const fn player_pieces_ref(&self, player: Player) -> &PlayerPieces {
         match player {
             Player::White => &self.white_pieces,
             Player::Black => &self.black_pieces,
+        }
+    }
+
+    #[inline(always)]
+    pub const fn player_pieces<const PLAYER: bool>(&self) -> &PlayerPieces {
+        match PLAYER {
+            true => &self.white_pieces,
+            false => &self.black_pieces,
+        }
+    }
+
+    #[inline(always)]
+    pub const fn opponent_pieces<const PLAYER: bool>(&self) -> &PlayerPieces {
+        match PLAYER {
+            true => &self.black_pieces,
+            false => &self.white_pieces,
         }
     }
 
@@ -77,7 +93,7 @@ impl Board {
     }
 
     #[inline(always)]
-    fn player_pieces_for(&mut self, player: Player) -> &mut PlayerPieces {
+    fn player_pieces_mut(&mut self, player: Player) -> &mut PlayerPieces {
         match player {
             Player::White => &mut self.white_pieces,
             Player::Black => &mut self.black_pieces,
@@ -86,7 +102,7 @@ impl Board {
 
     #[inline(always)]
     fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
-        let player_pieces = self.player_pieces_for(piece.player);
+        let player_pieces = self.player_pieces_mut(piece.player);
         &mut player_pieces.0[piece.kind.array_idx()]
     }
 
@@ -108,8 +124,15 @@ impl Board {
     }
 
     pub fn king_in_check(&self, player: Player) -> bool {
-        let king = self.player_pieces(player).king().single();
-        let enemy_attackers = movegen::generate_attackers_of(self, player, king);
+        match player {
+            Player::White => self.king_in_check_t::<true>(),
+            Player::Black => self.king_in_check_t::<false>(),
+        }
+    }
+
+    fn king_in_check_t<const PLAYER: bool>(&self) -> bool {
+        let king = self.player_pieces::<PLAYER>().king().single();
+        let enemy_attackers = movegen::generate_attackers_of::<PLAYER>(self, king);
         enemy_attackers.any()
     }
 }

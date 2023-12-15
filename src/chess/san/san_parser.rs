@@ -1,6 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
+use crate::chess::player::Player;
 use crate::chess::san;
 use crate::chess::square::{squares, File, Rank, Square};
 use color_eyre::eyre::{bail, eyre};
@@ -197,19 +198,18 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
     parse_move_squares(game, mv)
 }
 
-#[allow(unused)]
-pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
+fn parse_move_t<const PLAYER: bool>(game: &Game, mv: &str) -> Result<Move> {
     if mv == san::KINGSIDE_CASTLE {
         return Ok(Move::new(
-            squares::king_start(game.player),
-            squares::kingside_castle_dest(game.player),
+            squares::king_start::<PLAYER>(),
+            squares::kingside_castle_dest::<PLAYER>(),
         ));
     }
 
     if mv == san::QUEENSIDE_CASTLE {
         return Ok(Move::new(
-            squares::king_start(game.player),
-            squares::queenside_castle_dest(game.player),
+            squares::king_start::<PLAYER>(),
+            squares::queenside_castle_dest::<PLAYER>(),
         ));
     }
 
@@ -233,6 +233,14 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
         None => Move::new(src, dst),
         Some(promoted_to) => Move::promotion(src, dst, promoted_to),
     })
+}
+
+#[allow(unused)]
+pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
+    match game.player {
+        Player::White => parse_move_t::<true>(game, mv),
+        Player::Black => parse_move_t::<false>(game, mv),
+    }
 }
 
 #[cfg(test)]

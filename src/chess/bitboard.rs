@@ -1,4 +1,3 @@
-use crate::chess::player::Player;
 use crate::chess::square::Square;
 use crate::chess::{
     direction::Direction,
@@ -105,18 +104,18 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn forward(self, player: Player) -> Self {
-        match player {
-            Player::White => self.north(),
-            Player::Black => self.south(),
+    pub fn forward<const PLAYER: bool>(self) -> Self {
+        match PLAYER {
+            true => self.north(),
+            false => self.south(),
         }
     }
 
     #[inline(always)]
-    pub fn backward(self, player: Player) -> Self {
-        match player {
-            Player::White => self.south(),
-            Player::Black => self.north(),
+    pub fn backward<const PLAYER: bool>(self) -> Self {
+        match PLAYER {
+            true => self.south(),
+            false => self.north(),
         }
     }
 
@@ -328,31 +327,38 @@ pub mod bitboards {
     use crate::chess::player::Player;
     use crate::chess::square::squares::all::*;
 
-    pub const fn castle_squares<const KINGSIDE: bool>(player: Player) -> (Bitboard, Square, Square) {
+    pub const fn castle_squares<const PLAYER: bool, const KINGSIDE: bool>() -> (Bitboard, Square, Square) {
         if KINGSIDE {
-            match player {
-                Player::White => (WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_KINGSIDE_CASTLE_TARGET_SQUARE, WHITE_KINGSIDE_CASTLE_MIDDLE_SQUARE),
-                Player::Black => (BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_KINGSIDE_CASTLE_TARGET_SQUARE, BLACK_KINGSIDE_CASTLE_MIDDLE_SQUARE),
+            match PLAYER {
+                true => (WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_KINGSIDE_CASTLE_TARGET_SQUARE, WHITE_KINGSIDE_CASTLE_MIDDLE_SQUARE),
+                false => (BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_KINGSIDE_CASTLE_TARGET_SQUARE, BLACK_KINGSIDE_CASTLE_MIDDLE_SQUARE),
             }
         } else {
-            match player {
-                Player::White => (WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE, WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
-                Player::Black => (BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE, BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
+            match PLAYER {
+                true => (WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE, WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
+                false => (BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE, BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
             }
         }
     }
 
-    pub const fn pawn_back_rank(player: Player) -> Bitboard {
-        match player {
-            Player::White => RANK_2,
-            Player::Black => RANK_7,
+    pub const fn pawn_back_rank<const PLAYER: bool>() -> Bitboard {
+        match PLAYER {
+            true => RANK_2,
+            false => RANK_7,
         }
     }
 
-    pub const fn pawn_double_push_rank(player: Player) -> Bitboard {
-        match player {
-            Player::White => RANK_4,
-            Player::Black => RANK_5,
+    pub const fn opponent_pawn_back_rank<const PLAYER: bool>() -> Bitboard {
+        match PLAYER {
+            true => RANK_7,
+            false => RANK_2,
+        }
+    }
+
+    pub const fn pawn_double_push_rank<const PLAYER: bool>() -> Bitboard {
+        match PLAYER {
+            true => RANK_4,
+            false => RANK_5,
         }
     }
 
