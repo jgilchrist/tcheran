@@ -10,16 +10,14 @@ struct Ctx<'gen> {
     their_pieces: Bitboard,
 
     king: Square,
-
-    checkers: Bitboard,
-    pinned: Bitboard,
 }
 
 pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
     let ctx = get_ctx(game);
     let mut moves: Vec<Move> = Vec::with_capacity(64);
 
-    let number_of_checkers = ctx.checkers.count();
+    let checkers = attackers::generate_attackers_of(&game.board, game.player, ctx.king);
+    let number_of_checkers = checkers.count();
 
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
@@ -28,7 +26,7 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
     }
 
     let checker: Option<Square> = if number_of_checkers == 1 {
-        Some(ctx.checkers.single())
+        Some(checkers.single())
     } else {
         None
     };
@@ -55,16 +53,18 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         // If we're not in check, we can capture any enemy piece
         None => ctx.their_pieces,
         // If we are in check, we can get out by capturing our checker
-        Some(_) => ctx.checkers,
+        Some(_) => checkers,
     };
 
-    generate_pawn_moves::<QUIET>(&mut moves, game, move_mask, capture_mask, &ctx);
-    generate_knight_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
-    generate_diagonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
-    generate_orthogonal_slider_moves::<QUIET>(&mut moves, move_mask, capture_mask, &ctx);
+    let pinned = pins::get_pins(&game.board, game.player, ctx.king);
+
+    generate_pawn_moves::<QUIET>(&mut moves, game, pinned, move_mask, capture_mask, &ctx);
+    generate_knight_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
+    generate_diagonal_slider_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
+    generate_orthogonal_slider_moves::<QUIET>(&mut moves, pinned, move_mask, capture_mask, &ctx);
     generate_king_moves::<QUIET>(&mut moves, game, &ctx);
 
-    if QUIET && !ctx.checkers.any() {
+    if QUIET && !checkers.any() {
         generate_castles::<QUIET>(&mut moves, game, &ctx);
     }
 
@@ -77,7 +77,6 @@ fn get_ctx(game: &Game) -> Ctx {
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king().single();
-    let (checkers, pinned) = pins::get_pins_and_checkers(&game.board, game.player, king);
 
     Ctx {
         all_pieces,
@@ -85,15 +84,13 @@ fn get_ctx(game: &Game) -> Ctx {
         their_pieces,
 
         king,
-
-        checkers,
-        pinned,
     }
 }
 
 fn generate_pawn_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
+    pinned: Bitboard,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -102,10 +99,10 @@ fn generate_pawn_moves<const QUIET: bool>(
 
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
-    let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !ctx.pinned;
-    let non_pinned_promoting_pawns = pawns & will_promote_rank & !ctx.pinned;
+    let non_pinned_non_promoting_pawns = pawns & !will_promote_rank & !pinned;
+    let non_pinned_promoting_pawns = pawns & will_promote_rank & !pinned;
 
-    let pinned_pawns = pawns & ctx.pinned;
+    let pinned_pawns = pawns & pinned;
 
     let move_mask_overlay = move_mask.backward(game.player);
 
@@ -232,6 +229,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 
 fn generate_knight_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    pinned: Bitboard,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
@@ -239,7 +237,7 @@ fn generate_knight_moves<const QUIET: bool>(
     let knights = ctx.our_pieces.knights();
 
     // Pinned knights can't move
-    for knight in knights & !ctx.pinned {
+    for knight in knights & !pinned {
         let destinations = tables::knight_attacks(knight);
 
         let capture_destinations = destinations & capture_mask;
@@ -258,13 +256,14 @@ fn generate_knight_moves<const QUIET: bool>(
 
 fn generate_diagonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    pinned: Bitboard,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
     let diagonal_sliders = ctx.our_pieces.bishops() | ctx.our_pieces.queens();
 
-    for diagonal_slider in diagonal_sliders & !ctx.pinned {
+    for diagonal_slider in diagonal_sliders & !pinned {
         let destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces);
 
         let capture_destinations = destinations & capture_mask;
@@ -281,7 +280,7 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
     }
 
     // Pinned pieces can move along the pin ray, or capture the pinning piece
-    for pinned_diagonal_slider in diagonal_sliders & ctx.pinned {
+    for pinned_diagonal_slider in diagonal_sliders & pinned {
         let destinations = tables::bishop_attacks(pinned_diagonal_slider, ctx.all_pieces);
         let ray = tables::ray(pinned_diagonal_slider, ctx.king);
 
@@ -301,13 +300,14 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
 
 fn generate_orthogonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    pinned: Bitboard,
     move_mask: Bitboard,
     capture_mask: Bitboard,
     ctx: &Ctx,
 ) {
     let orthogonal_sliders = ctx.our_pieces.rooks() | ctx.our_pieces.queens();
 
-    for orthogonal_slider in orthogonal_sliders & !ctx.pinned {
+    for orthogonal_slider in orthogonal_sliders & !pinned {
         let destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces);
 
         let capture_destinations = destinations & capture_mask;
@@ -324,7 +324,7 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
     }
 
     // Pinned pieces can move along the pin ray, or capture the pinning piece
-    for pinned_orthogonal_slider in orthogonal_sliders & ctx.pinned {
+    for pinned_orthogonal_slider in orthogonal_sliders & pinned {
         let destinations = tables::rook_attacks(pinned_orthogonal_slider, ctx.all_pieces);
         let ray = tables::ray(pinned_orthogonal_slider, ctx.king);
 
