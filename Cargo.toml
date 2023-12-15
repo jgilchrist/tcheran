@@ -38,4 +38,3 @@ into_iter_without_iter = "allow"
 
 [profile.release]
 debug = 1
-incremental = true
