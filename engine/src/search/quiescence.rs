@@ -19,7 +19,7 @@ pub fn quiescence(
     state.nodes_visited += 1;
 
     if plies == MAX_SEARCH_DEPTH {
-        return Ok(Eval::from_white_eval(eval::eval(game), game.player()));
+        return Ok(eval::eval(game));
     }
 
     if game.is_repeated_position()
@@ -35,7 +35,7 @@ pub fn quiescence(
         return Err(());
     }
 
-    let eval = Eval::from_white_eval(eval::eval(game), game.player());
+    let eval = eval::eval(game);
 
     if eval >= beta {
         return Ok(beta);

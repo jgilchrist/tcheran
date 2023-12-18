@@ -54,7 +54,12 @@ impl IncrementalEvalFields {
     }
 }
 
-pub fn eval(game: &EngineGame) -> WhiteEval {
+pub fn eval(game: &EngineGame) -> Eval {
+    let absolute_eval = absolute_eval(game);
+    Eval::from_white_eval(absolute_eval, game.game.player)
+}
+
+pub fn absolute_eval(game: &EngineGame) -> WhiteEval {
     piece_square_tables::tapered_eval(
         game.incremental_eval.phase_value,
         game.incremental_eval.midgame_eval,
@@ -72,7 +77,7 @@ pub struct EvalComponents {
 }
 
 pub fn eval_components(game: &EngineGame) -> EvalComponents {
-    let eval = eval(game);
+    let eval = absolute_eval(game);
 
     let (midgame_pst, endgame_pst) = piece_square_tables::phase_evals(&game.game.board);
     let phase_value = piece_square_tables::phase_value(&game.game.board);
