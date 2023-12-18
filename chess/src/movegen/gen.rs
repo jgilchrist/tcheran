@@ -118,21 +118,27 @@ fn generate_pawn_moves<const QUIET: bool>(
         }
 
         for target in attacks & capture_targets {
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(pawn, target, *promotion));
-            }
+            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
+            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
+            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
+            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
         }
     }
 
     // Promotion push: Pawns on the enemy's start rank will promote when pushing
     for pawn in can_push_once_pawns & will_promote_rank {
-        let forward_one = pawn.forward(game.player);
+        let target = pawn.forward(game.player);
 
         // Pawns cannot push forward if they are pinned orthogonally
         // There's no 'moving along the pin ray' for these pieces, since the target square is empty
         if !orthogonal_pins.contains(pawn) {
-            for promotion in PromotionPieceKind::ALL {
-                moves.push(Move::new_with_promotion(pawn, forward_one, *promotion));
+            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
+
+            // Consider underpromoting pushes to be 'quiet' moves
+            if QUIET {
+                moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
+                moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
+                moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
             }
         }
     }

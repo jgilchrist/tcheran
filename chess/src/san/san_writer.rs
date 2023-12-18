@@ -184,25 +184,25 @@ mod tests {
 
         test_san_string(
             promotion_fen,
-            Move::new_with_promotion(H7, H8, PromotionPieceKind::Knight),
+            Move::promotion(H7, H8, PromotionPieceKind::Knight),
             "h8=N",
         );
 
         test_san_string(
             promotion_fen,
-            Move::new_with_promotion(H7, H8, PromotionPieceKind::Bishop),
+            Move::promotion(H7, H8, PromotionPieceKind::Bishop),
             "h8=B",
         );
 
         test_san_string(
             promotion_fen,
-            Move::new_with_promotion(H7, H8, PromotionPieceKind::Rook),
+            Move::promotion(H7, H8, PromotionPieceKind::Rook),
             "h8=R+",
         );
 
         test_san_string(
             promotion_fen,
-            Move::new_with_promotion(H7, H8, PromotionPieceKind::Queen),
+            Move::promotion(H7, H8, PromotionPieceKind::Queen),
             "h8=Q+",
         );
     }
@@ -267,7 +267,7 @@ mod tests {
     fn san_plus_for_check() {
         test_san_string(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
-            Move::new_with_promotion(G7, G8, PromotionPieceKind::Queen),
+            Move::promotion(G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",
         );
     }

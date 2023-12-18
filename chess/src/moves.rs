@@ -16,11 +16,7 @@ impl Move {
         }
     }
 
-    pub const fn new_with_promotion(
-        src: Square,
-        dst: Square,
-        promotion: PromotionPieceKind,
-    ) -> Self {
+    pub const fn promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
         Self {
             src,
             dst,

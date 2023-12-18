@@ -91,7 +91,7 @@ fn uci_move(input: &str) -> IResult<&str, Move> {
         tuple((uci_square, uci_square, opt(uci_promotion))),
         |(from, to, promotion)| match promotion {
             None => Move::new(from, to),
-            Some(p) => Move::new_with_promotion(from, to, p),
+            Some(p) => Move::promotion(from, to, p),
         },
     )(input)
 }
