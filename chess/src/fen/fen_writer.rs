@@ -60,7 +60,7 @@ fn format_rank(rank: &[Option<Piece>]) -> String {
     )
 }
 
-fn format_board(board: Board) -> String {
+fn format_board(board: &Board) -> String {
     RANKS
         .into_iter()
         .rev()
@@ -118,7 +118,7 @@ fn format_fullmove_number(game: &Game) -> String {
 pub fn write(game: &Game) -> String {
     format!(
         "{} {} {} {} {} {}",
-        format_board(game.board),
+        format_board(&game.board),
         format_current_player(game),
         format_castle_rights(game),
         format_en_passant_target(game),

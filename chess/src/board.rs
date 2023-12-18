@@ -8,7 +8,7 @@ use crate::{
 use crate::bitboard::{bitboards, Bitboard};
 use color_eyre::Result;
 
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct Board {
     pub white_pieces: PlayerPieces,
     pub black_pieces: PlayerPieces,
@@ -17,7 +17,7 @@ pub struct Board {
 
 // Many engines store these in an array (or 2D array) by piece & player.
 // This avoids this approach for the initial implementation for simplicity.
-#[derive(Clone, Copy)]
+#[derive(Clone)]
 pub struct PlayerPieces([Bitboard; PieceKind::N]);
 
 impl PlayerPieces {
