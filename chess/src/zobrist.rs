@@ -85,6 +85,11 @@ pub fn init() {
 }
 
 pub fn hash(game: &Game) -> ZobristHash {
+    debug_assert!(
+        unsafe { components::SIDE_TO_PLAY != 0 },
+        "Zobrist components were not initialised"
+    );
+
     let mut hash = 0u64;
 
     // Add piece components to hash
