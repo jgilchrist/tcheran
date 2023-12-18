@@ -23,14 +23,9 @@ pub enum SearchScore {
     Mate(i16),
 }
 
+#[derive(Default)]
 pub struct SearchRestrictions {
     pub depth: Option<u8>,
-}
-
-impl Default for SearchRestrictions {
-    fn default() -> Self {
-        Self { depth: None }
-    }
 }
 
 #[derive(Debug, Clone)]

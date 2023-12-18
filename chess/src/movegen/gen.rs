@@ -316,7 +316,7 @@ fn generate_king_moves<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ct
     // When calculating the attacked squares, we need to remove our King from the board.
     // If we don't, squares behind the king look safe (since they are blocked by the king)
     // meaning we'd generate moves away from a slider while in check.
-    let mut board_without_king = game.board.clone();
+    let mut board_without_king = game.board;
     board_without_king.remove_at(ctx.king);
 
     for dst in destinations & ctx.their_pieces {
