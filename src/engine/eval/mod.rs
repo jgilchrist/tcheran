@@ -2,13 +2,13 @@ pub mod piece_square_tables;
 mod player_eval;
 mod white_eval;
 
+use crate::chess::board::Board;
 pub use player_eval::Eval;
 pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
 use crate::chess::piece::Piece;
 use crate::chess::square::Square;
-use crate::engine::game::EngineGame;
 
 pub fn init() {
     piece_square_tables::init();
@@ -42,9 +42,9 @@ impl IncrementalEvalFields {
 }
 
 impl IncrementalEvalFields {
-    pub fn init(game: &Game) -> Self {
-        let (midgame_eval, endgame_eval) = piece_square_tables::phase_evals(&game.board);
-        let phase_value = piece_square_tables::phase_value(&game.board);
+    pub fn init(board: &Board) -> Self {
+        let (midgame_eval, endgame_eval) = piece_square_tables::phase_evals(&board);
+        let phase_value = piece_square_tables::phase_value(&board);
 
         Self {
             midgame_eval,
@@ -54,12 +54,12 @@ impl IncrementalEvalFields {
     }
 }
 
-pub fn eval(game: &EngineGame) -> Eval {
+pub fn eval(game: &Game) -> Eval {
     let absolute_eval = absolute_eval(game);
-    Eval::from_white_eval(absolute_eval, game.game.player)
+    Eval::from_white_eval(absolute_eval, game.player)
 }
 
-pub fn absolute_eval(game: &EngineGame) -> WhiteEval {
+pub fn absolute_eval(game: &Game) -> WhiteEval {
     piece_square_tables::tapered_eval(
         game.incremental_eval.phase_value,
         game.incremental_eval.midgame_eval,
@@ -76,11 +76,11 @@ pub struct EvalComponents {
     pub piece_square_tables: WhiteEval,
 }
 
-pub fn eval_components(game: &EngineGame) -> EvalComponents {
+pub fn eval_components(game: &Game) -> EvalComponents {
     let eval = absolute_eval(game);
 
-    let (midgame_pst, endgame_pst) = piece_square_tables::phase_evals(&game.game.board);
-    let phase_value = piece_square_tables::phase_value(&game.game.board);
+    let (midgame_pst, endgame_pst) = piece_square_tables::phase_evals(&game.board);
+    let phase_value = piece_square_tables::phase_value(&game.board);
 
     let pst_eval = piece_square_tables::tapered_eval(phase_value, midgame_pst, endgame_pst);
 

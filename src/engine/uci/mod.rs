@@ -9,7 +9,6 @@ use crate::chess::moves::Move;
 use crate::chess::perft;
 use color_eyre::Result;
 
-use crate::engine::game::EngineGame;
 use crate::engine::options::EngineOptions;
 use crate::engine::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::engine::util::sync::LockLatch;
@@ -35,6 +34,7 @@ mod options;
 pub mod parser;
 pub mod responses;
 
+use crate::chess::game::Game;
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -102,7 +102,7 @@ pub struct Uci {
     control: UciControl,
     reporter: UciReporter,
     debug: bool,
-    game: EngineGame,
+    game: Game,
     options: EngineOptions,
 }
 
@@ -113,7 +113,7 @@ impl Uci {
     fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult> {
         match cmd {
             UciCommand::Uci => {
-                self.game = EngineGame::new();
+                self.game = Game::new();
 
                 let version = crate::engine_version();
                 send_response(&UciResponse::Id(IdParam::Name(format!(
@@ -147,13 +147,13 @@ impl Uci {
                 }?;
             }
             UciCommand::UciNewGame => {
-                self.game = EngineGame::new();
-                log(&self.game.game.to_fen());
+                self.game = Game::new();
+                log(&self.game.to_fen());
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
-                    commands::Position::StartPos => EngineGame::new(),
-                    commands::Position::Fen(fen) => EngineGame::from_fen(fen)?,
+                    commands::Position::StartPos => Game::new(),
+                    commands::Position::Fen(fen) => Game::from_fen(fen)?,
                 };
 
                 for mv in moves {
@@ -161,7 +161,7 @@ impl Uci {
                 }
 
                 self.game = game;
-                log(&self.game.game.to_fen());
+                log(&self.game.to_fen());
             }
             UciCommand::Go(GoCmdArguments {
                 ponder: _,
@@ -228,19 +228,19 @@ impl Uci {
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::Position => {
-                    println!("{:?}", self.game.game.board);
-                    println!("FEN: {}", &self.game.game.to_fen());
+                    println!("{:?}", self.game.board);
+                    println!("FEN: {}", &self.game.to_fen());
                     println!();
                 }
                 DebugCommand::Move { mv } => {
                     self.game.make_move(mv);
-                    println!("{:?}", self.game.game.board);
-                    println!("FEN: {}", crate::chess::fen::write(&self.game.game));
+                    println!("{:?}", self.game.board);
+                    println!("FEN: {}", crate::chess::fen::write(&self.game));
                     println!();
                 }
                 DebugCommand::Perft { depth } => {
                     let started_at = Instant::now();
-                    let result = perft::perft(*depth, &mut self.game.game);
+                    let result = perft::perft(*depth, &mut self.game);
                     let time_taken = started_at.elapsed();
 
                     let nodes_per_second =
@@ -252,7 +252,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::PerftDiv { depth } => {
-                    let result = perft::perft_div(*depth, &mut self.game.game);
+                    let result = perft::perft_div(*depth, &mut self.game);
                     let mut total = 0;
 
                     for (mv, number_for_mv) in result {
@@ -338,7 +338,7 @@ pub fn uci() -> Result<()> {
         },
         reporter: UciReporter {},
         debug: false,
-        game: EngineGame::new(),
+        game: Game::new(),
         options: EngineOptions::default(),
     };
 

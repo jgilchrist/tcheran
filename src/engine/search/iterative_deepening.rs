@@ -1,7 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
-use crate::engine::game::EngineGame;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
@@ -12,7 +11,7 @@ use crate::engine::strategy::{
 use crate::engine::util;
 
 pub fn search(
-    game: &mut EngineGame,
+    game: &mut Game,
     tt: &mut SearchTranspositionTable,
     search_restrictions: &SearchRestrictions,
     _options: &EngineOptions,
@@ -48,7 +47,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game.game.clone(), tt);
+        let pv = get_pv(depth, game.clone(), tt);
 
         let best_move = pv.first().unwrap();
 

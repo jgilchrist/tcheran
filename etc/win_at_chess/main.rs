@@ -1,16 +1,16 @@
-extern crate tcheran;
 extern crate color_eyre;
+extern crate tcheran;
 
+use color_eyre::Result;
+use std::io::{stdout, Write};
+use std::time::Duration;
 use tcheran::chess::game::Game;
 use tcheran::chess::moves::Move;
-use color_eyre::Result;
-use tcheran::engine::game::EngineGame;
+use tcheran::engine::game::Game;
 use tcheran::engine::options::EngineOptions;
 use tcheran::engine::search::search;
 use tcheran::engine::search::transposition::SearchTranspositionTable;
 use tcheran::engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
-use std::io::{stdout, Write};
-use std::time::Duration;
 
 const WIN_AT_CHESS_EPD: &str = r#"2rr3k/pp3pp1/1nnqbN1p/3pN3/2pP4/2P3Q1/PPB4P/R4RK1 w - - bm Qg6; id "WAC.001";
 8/7p/5k2/5p2/p1p2P2/Pr1pPK2/1P1R3P/8 b - - bm Rxb2; id "WAC.002";
@@ -348,7 +348,7 @@ fn run_spec(spec: &WinAtChessSpec, time_control: &TimeControl) -> Result<()> {
     let mut tt = SearchTranspositionTable::default();
     tt.resize(256);
 
-    let mut game = EngineGame::from_game(spec.game.clone());
+    let mut game = Game::from_game(spec.game.clone());
 
     let (best_move, _) = search(
         &mut game,

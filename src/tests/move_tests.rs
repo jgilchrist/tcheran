@@ -1,8 +1,8 @@
+use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::player::Player;
 use crate::chess::square::squares::all::*;
 use crate::engine::eval::{Eval, WhiteEval};
-use crate::engine::game::EngineGame;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::search;
 use crate::engine::search::transposition::SearchTranspositionTable;
@@ -10,7 +10,7 @@ use crate::engine::strategy::{NullControl, NullReporter, SearchRestrictions, Tim
 
 fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, WhiteEval) {
     crate::init();
-    let mut game = EngineGame::from_fen(fen).unwrap();
+    let mut game = Game::from_fen(fen).unwrap();
 
     let mut tt = SearchTranspositionTable::new();
     tt.resize(128);

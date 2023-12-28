@@ -1,7 +1,7 @@
+use crate::chess::game::Game;
 use std::time::Duration;
 
 use crate::chess::moves::Move;
-use crate::engine::game::EngineGame;
 use crate::engine::options::EngineOptions;
 
 pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEvalStrategy};
@@ -9,7 +9,7 @@ pub use self::{main::MainStrategy, random::RandomMoveStrategy, top_eval::TopEval
 pub trait Strategy<TCx: Control, TRx: Reporter>: Send + Sync {
     fn go(
         &mut self,
-        game: &mut EngineGame,
+        game: &mut Game,
         time_control: &TimeControl,
         search_restrictions: &SearchRestrictions,
         options: &EngineOptions,

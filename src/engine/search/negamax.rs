@@ -1,6 +1,6 @@
+use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
-use crate::engine::game::EngineGame;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{
@@ -11,7 +11,7 @@ use crate::engine::strategy::Control;
 use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
-    game: &mut EngineGame,
+    game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
     mut depth: u8,
@@ -57,7 +57,7 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = tt.get(&game.zobrist()) {
+    if let Some(tt_entry) = tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth > depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval),
@@ -89,7 +89,7 @@ pub fn negamax(
         });
     }
 
-    move_ordering::order_moves(&game.game, &mut moves, previous_best_move);
+    move_ordering::order_moves(&game, &mut moves, previous_best_move);
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
@@ -162,7 +162,7 @@ pub fn negamax(
                 age: tt.generation,
             };
 
-            tt.insert(&game.zobrist(), tt_data);
+            tt.insert(&game.zobrist, tt_data);
 
             return Ok(beta);
         }
@@ -185,7 +185,7 @@ pub fn negamax(
         depth,
     };
 
-    tt.insert(&game.zobrist(), tt_data);
+    tt.insert(&game.zobrist, tt_data);
 
     Ok(alpha)
 }

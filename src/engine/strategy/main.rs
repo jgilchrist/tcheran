@@ -1,4 +1,4 @@
-use crate::engine::game::EngineGame;
+use crate::chess::game::Game;
 use crate::engine::options::EngineOptions;
 
 use crate::engine::search;
@@ -21,7 +21,7 @@ impl Default for MainStrategy {
 impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for MainStrategy {
     fn go(
         &mut self,
-        game: &mut EngineGame,
+        game: &mut Game,
         time_control: &TimeControl,
         restrictions: &SearchRestrictions,
         options: &EngineOptions,

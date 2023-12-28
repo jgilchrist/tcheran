@@ -1,13 +1,13 @@
+use crate::chess::game::Game;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
-use crate::engine::game::EngineGame;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::strategy::Control;
 
 use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
-    game: &mut EngineGame,
+    game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
     plies: u8,
@@ -47,7 +47,7 @@ pub fn quiescence(
 
     let mut moves = game.loud_moves();
 
-    move_ordering::order_moves(&game.game, &mut moves, None);
+    move_ordering::order_moves(&game, &mut moves, None);
 
     let mut best_eval = Eval::MIN;
 

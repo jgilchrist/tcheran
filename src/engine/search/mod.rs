@@ -5,7 +5,7 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::strategy::{Control, SearchRestrictions, TimeControl};
 use crate::engine::{eval::WhiteEval, strategy::Reporter};
 
-use crate::engine::game::EngineGame;
+use crate::chess::game::Game;
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
@@ -32,7 +32,7 @@ impl SearchState {
 }
 
 pub fn search(
-    game: &mut EngineGame,
+    game: &mut Game,
     tt: &mut SearchTranspositionTable,
     time_control: &TimeControl,
     search_restrictions: &SearchRestrictions,
@@ -42,7 +42,7 @@ pub fn search(
 ) -> (Move, WhiteEval) {
     let mut state = SearchState::new();
 
-    let mut time_strategy = TimeStrategy::new(&game.game, time_control);
+    let mut time_strategy = TimeStrategy::new(&game, time_control);
     time_strategy.init();
 
     tt.new_generation();
@@ -58,5 +58,5 @@ pub fn search(
         reporter,
     );
 
-    (best_move, eval.to_white_eval(game.player()))
+    (best_move, eval.to_white_eval(game.player))
 }

@@ -4,7 +4,6 @@ pub mod strategy;
 pub mod uci;
 pub mod util;
 
-pub mod game;
 pub mod search;
 pub mod transposition_table;
 

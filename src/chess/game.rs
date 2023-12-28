@@ -6,6 +6,7 @@ use crate::chess::{
     board::Board, fen, movegen::generate_moves, moves::Move, piece::PieceKind, player::Player,
     square::Square, zobrist,
 };
+use crate::engine::eval::IncrementalEvalFields;
 use color_eyre::Result;
 
 #[derive(Debug, Copy, Clone)]
@@ -83,6 +84,7 @@ pub struct Game {
     pub plies: u32,
 
     pub zobrist: ZobristHash,
+    pub incremental_eval: IncrementalEvalFields,
     pub history: Vec<History>,
 }
 
@@ -100,6 +102,8 @@ impl Game {
         halfmove_clock: u32,
         plies: u32,
     ) -> Self {
+        let incremental_eval_fields = IncrementalEvalFields::init(&board);
+
         let mut game = Self {
             board,
             player,
@@ -110,6 +114,7 @@ impl Game {
             plies,
 
             zobrist: ZobristHash::uninit(),
+            incremental_eval: incremental_eval_fields,
             history: Vec::new(),
         };
 
@@ -220,12 +225,14 @@ impl Game {
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
+        self.incremental_eval.set_at(sq, piece);
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_at(sq).unwrap();
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
+        self.incremental_eval.remove_at(sq, removed_piece);
         removed_piece
     }
 
