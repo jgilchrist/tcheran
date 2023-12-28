@@ -48,15 +48,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "baf1de4339761588bc0619e3cbc0120ee582ebb74b53b4efbf79117bd2da40fd"
 
 [[package]]
-name = "chess"
-version = "1.0.0"
-dependencies = [
- "color-eyre",
- "nom",
- "rand",
-]
-
-[[package]]
 name = "color-eyre"
 version = "0.6.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -70,23 +61,11 @@ dependencies = [
 ]
 
 [[package]]
-name = "engine"
-version = "1.0.0"
-dependencies = [
- "chess",
- "color-eyre",
- "git-version",
- "nom",
- "rand",
-]
-
-[[package]]
 name = "engine_win_at_chess_tests"
 version = "0.1.0"
 dependencies = [
- "chess",
  "color-eyre",
- "engine",
+ "tcheran",
 ]
 
 [[package]]
@@ -269,6 +248,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tcheran"
+version = "1.0.0"
+dependencies = [
+ "color-eyre",
+ "git-version",
+ "nom",
+ "rand",
 ]
 
 [[package]]

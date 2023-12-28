@@ -1,15 +1,14 @@
-extern crate chess;
+extern crate tcheran;
 extern crate color_eyre;
-extern crate engine;
 
-use chess::game::Game;
-use chess::moves::Move;
+use tcheran::chess::game::Game;
+use tcheran::chess::moves::Move;
 use color_eyre::Result;
-use engine::game::EngineGame;
-use engine::options::EngineOptions;
-use engine::search::search;
-use engine::search::transposition::SearchTranspositionTable;
-use engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
+use tcheran::engine::game::EngineGame;
+use tcheran::engine::options::EngineOptions;
+use tcheran::engine::search::search;
+use tcheran::engine::search::transposition::SearchTranspositionTable;
+use tcheran::engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
 use std::io::{stdout, Write};
 use std::time::Duration;
 

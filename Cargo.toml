@@ -1,28 +1,22 @@
-[workspace]
-members = [
-    "chess",
-    "engine",
-]
-
-resolver = "2"
-
-[workspace.package]
+[package]
+name = "engine"
 version = "1.0.0"
 edition = "2021"
 rust-version = "1.74"
 
-[workspace.dependencies]
+[dependencies]
 color-eyre = { version = "0.6.2", default-features = false }
+git-version = "0.3.8"
 nom = "7.1.1"
 rand = "0.8.5"
 
-[workspace.lints.rust]
+[lints.rust]
 future_incompatible = "warn"
 let_underscore = "warn"
 nonstandard_style = "warn"
 rust_2018_idioms = "warn"
 
-[workspace.lints.clippy]
+[lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 

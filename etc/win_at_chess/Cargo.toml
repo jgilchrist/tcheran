@@ -5,8 +5,7 @@ version = "0.1.0"
 [workspace]
 
 [dependencies]
-chess = { path = "../../chess" }
-engine = { path = "../../engine" }
+tcheran = { path = "../.." }
 color-eyre = { version = "0.6.2", default-features = false }
 
 [[bin]]

@@ -18,10 +18,10 @@ test:
 	@cargo test
 
 test-perft:
-	@cargo test --release --package chess perft -- --include-ignored
+	@cargo test --release tests::perft_tests -- --include-ignored
 
 test-perft-tt:
-	@cargo test --release --package engine perft_tt -- --include-ignored
+	@cargo test --release tests::zobrist_perft_tests -- --include-ignored
 
 ############################### Profiling #####################################
 
