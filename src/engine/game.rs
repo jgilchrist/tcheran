@@ -61,6 +61,7 @@ impl EngineGame {
         self.game.is_repeated_position()
     }
 
+    #[allow(unused)]
     pub fn is_stalemate_by_repetition(&self) -> bool {
         self.game.is_stalemate_by_repetition()
     }

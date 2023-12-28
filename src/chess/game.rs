@@ -8,11 +8,6 @@ use crate::chess::{
 };
 use color_eyre::Result;
 
-#[derive(Debug)]
-pub enum MoveError {
-    InvalidMove,
-}
-
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
     Kingside,
@@ -35,27 +30,9 @@ pub struct CastleRights {
 }
 
 impl CastleRights {
-    pub const fn can_castle(&self) -> bool {
-        self.king_side || self.queen_side
-    }
-
     pub const fn none() -> Self {
         Self {
             king_side: false,
-            queen_side: false,
-        }
-    }
-
-    pub const fn without_kingside(&self) -> Self {
-        Self {
-            king_side: false,
-            queen_side: self.queen_side,
-        }
-    }
-
-    pub const fn without_queenside(&self) -> Self {
-        Self {
-            king_side: self.king_side,
             queen_side: false,
         }
     }
@@ -177,6 +154,7 @@ impl Game {
             .any(|h| h.zobrist == self.zobrist)
     }
 
+    #[allow(unused)]
     pub fn is_stalemate_by_repetition(&self) -> bool {
         let mut count = 0;
 

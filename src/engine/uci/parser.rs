@@ -96,10 +96,6 @@ fn uci_move(input: &str) -> IResult<&str, Move> {
     )(input)
 }
 
-pub fn maybe_uci_moves(input: &str) -> IResult<&str, Option<Vec<Move>>> {
-    opt(uci_moves)(input)
-}
-
 pub fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
     separated_list1(space1, uci_move)(input)
 }
@@ -374,15 +370,6 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
     let (input, _) = eof(input)?;
 
     Ok((input, cmd))
-}
-
-pub fn parse_move(input: &str) -> Result<Move> {
-    let result = uci_move(input);
-
-    match result {
-        Ok((_, mv)) => Ok(mv),
-        Err(e) => bail!("Unknown move: {} ({})", input, e),
-    }
 }
 
 pub fn parse(input: &str) -> Result<UciCommand> {

@@ -317,6 +317,7 @@ impl std::fmt::Display for Bitboard {
 }
 
 #[rustfmt::skip]
+#[allow(unused)]
 pub mod bitboards {
     use super::*;
     use crate::chess::player::Player;
@@ -439,9 +440,6 @@ pub mod bitboards {
     pub const RANK_6: Bitboard = Bitboard::new(A6_BB.0 | B6_BB.0 | C6_BB.0 | D6_BB.0 | E6_BB.0 | F6_BB.0 | G6_BB.0 | H6_BB.0);
     pub const RANK_7: Bitboard = Bitboard::new(A7_BB.0 | B7_BB.0 | C7_BB.0 | D7_BB.0 | E7_BB.0 | F7_BB.0 | G7_BB.0 | H7_BB.0);
     pub const RANK_8: Bitboard = Bitboard::new(A8_BB.0 | B8_BB.0 | C8_BB.0 | D8_BB.0 | E8_BB.0 | F8_BB.0 | G8_BB.0 | H8_BB.0);
-
-    pub const UP_DIAGONAL: Bitboard = Bitboard::new(A1_BB.0 | B2_BB.0 | C3_BB.0 | D4_BB.0 | E5_BB.0 | F6_BB.0 | G7_BB.0 | H8_BB.0);
-    pub const DOWN_DIAGONAL: Bitboard = Bitboard::new(A8_BB.0 | B7_BB.0 | C6_BB.0 | D5_BB.0 | E4_BB.0 | F3_BB.0 | G2_BB.0 | H1_BB.0);
 
     pub const CORNERS: Bitboard = Bitboard::new(A1_BB.0 | A8_BB.0 | H1_BB.0 | H8_BB.0);
     pub const EDGES: Bitboard = Bitboard::new(RANK_1.0 | RANK_8.0 | A_FILE.0 | H_FILE.0);

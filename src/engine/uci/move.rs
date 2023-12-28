@@ -10,26 +10,6 @@ pub struct UciMove {
 }
 
 impl UciMove {
-    pub const fn new(src: Square, dst: Square) -> Self {
-        Self {
-            src,
-            dst,
-            promotion: None,
-        }
-    }
-
-    pub const fn new_with_promotion(
-        src: Square,
-        dst: Square,
-        promotion: PromotionPieceKind,
-    ) -> Self {
-        Self {
-            src,
-            dst,
-            promotion: Some(promotion),
-        }
-    }
-
     pub fn notation(&self) -> String {
         format!(
             "{}{}{}",

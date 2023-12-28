@@ -12,6 +12,7 @@ enum AmbiguityResolution {
     Exact, // Two pieces on the same file or rank can move to the same square - specify the exact source square
 }
 
+#[allow(unused)]
 pub fn format_move(game: &Game, mv: &Move) -> String {
     let from = mv.src;
     let to = mv.dst;
