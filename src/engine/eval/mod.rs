@@ -43,8 +43,8 @@ impl IncrementalEvalFields {
 
 impl IncrementalEvalFields {
     pub fn init(board: &Board) -> Self {
-        let (midgame_eval, endgame_eval) = piece_square_tables::phase_evals(&board);
-        let phase_value = piece_square_tables::phase_value(&board);
+        let (midgame_eval, endgame_eval) = piece_square_tables::phase_evals(board);
+        let phase_value = piece_square_tables::phase_value(board);
 
         Self {
             midgame_eval,

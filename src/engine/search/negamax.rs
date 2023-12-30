@@ -89,7 +89,7 @@ pub fn negamax(
         });
     }
 
-    move_ordering::order_moves(&game, &mut moves, previous_best_move);
+    move_ordering::order_moves(game, &mut moves, previous_best_move);
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;

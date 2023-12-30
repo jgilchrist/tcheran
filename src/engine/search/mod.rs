@@ -42,7 +42,7 @@ pub fn search(
 ) -> (Move, WhiteEval) {
     let mut state = SearchState::new();
 
-    let mut time_strategy = TimeStrategy::new(&game, time_control);
+    let mut time_strategy = TimeStrategy::new(game, time_control);
     time_strategy.init();
 
     tt.new_generation();

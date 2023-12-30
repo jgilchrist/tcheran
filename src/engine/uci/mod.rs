@@ -148,7 +148,7 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
-                log(&self.game.to_fen());
+                log(self.game.to_fen());
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
@@ -161,7 +161,7 @@ impl Uci {
                 }
 
                 self.game = game;
-                log(&self.game.to_fen());
+                log(self.game.to_fen());
             }
             UciCommand::Go(GoCmdArguments {
                 ponder: _,
@@ -229,7 +229,7 @@ impl Uci {
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::Position => {
                     println!("{:?}", self.game.board);
-                    println!("FEN: {}", &self.game.to_fen());
+                    println!("FEN: {}", self.game.to_fen());
                     println!();
                 }
                 DebugCommand::Move { mv } => {
