@@ -1,4 +1,4 @@
-pub(crate) mod attackers;
+mod attackers;
 mod gen;
 mod pins;
 mod tables;

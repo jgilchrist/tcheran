@@ -17,7 +17,7 @@ pub(super) enum IdParam {
 }
 
 #[derive(Debug, Default)]
-pub(crate) struct InfoFields {
+pub struct InfoFields {
     pub(super) depth: Option<u8>,
     pub(super) seldepth: Option<u8>,
     pub(super) time: Option<Duration>,
