@@ -8,5 +8,8 @@ const PROMOTION: char = '=';
 const CHECK: char = '+';
 const CHECKMATE: char = '#';
 
+#[allow(unused_imports)]
 pub use san_parser::parse_move;
+
+#[allow(unused_imports)]
 pub use san_writer::format_move;
