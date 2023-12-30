@@ -4,7 +4,13 @@ A UCI compatible engine developed by [@jgilchrist](https://github.com/jgilchrist
 
 ## Strength
 
-This engine can be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). Its current ratings are:
+This engine has been tested by [CCRL](https://computerchess.org.uk/ccrl/):
+
+| Version | [CCRL Blitz](https://computerchess.org.uk/ccrl/404/) |
+| ------- | ---------------------------------------------------- |
+| v1.0    | 1978                                                 |
+
+It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). Its current ratings are:
 
 [![lichess-rapid](https://lichess-shield.vercel.app/api?username=jpg-bot&format=bullet)](https://lichess.org/@/jpg-bot/perf/bullet)
 [![lichess-rapid](https://lichess-shield.vercel.app/api?username=jpg-bot&format=blitz)](https://lichess.org/@/jpg-bot/perf/blitz)
