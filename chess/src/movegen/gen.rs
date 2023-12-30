@@ -1,97 +1,93 @@
 use crate::bitboard::{bitboards, Bitboard};
-use crate::board::PlayerPieces;
 use crate::movegen::{attackers, pins, tables};
 use crate::square::{squares, Square};
 use crate::{game::Game, moves::Move, piece::PromotionPieceKind, player::Player};
 
-struct Ctx<'gen> {
-    all_pieces: Bitboard,
-    our_pieces: &'gen PlayerPieces,
-    their_pieces: Bitboard,
-
-    king: Square,
-}
-
 pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
-    let ctx = get_ctx(game);
-    let mut moves: Vec<Move> = Vec::with_capacity(64);
-
-    let checkers = attackers::generate_attackers_of(&game.board, game.player, ctx.king);
-    let number_of_checkers = checkers.count();
-
-    // If we're in check by more than one attacker, we can only get out of check via a king move
-    if number_of_checkers > 1 {
-        generate_king_moves::<QUIET>(&mut moves, game, &ctx);
-        return moves;
-    }
-
-    let check_mask = if number_of_checkers == 1 {
-        let checker_sq = checkers.single();
-        tables::between(checker_sq, ctx.king) | checkers
-    } else {
-        Bitboard::FULL
-    };
-
-    let (orthogonal_pins, diagonal_pins) = pins::get_pins(&game.board, game.player, ctx.king);
-
-    generate_pawn_moves::<QUIET>(
-        &mut moves,
-        game,
-        check_mask,
-        orthogonal_pins,
-        diagonal_pins,
-        &ctx,
-    );
-    generate_knight_moves::<QUIET>(&mut moves, check_mask, orthogonal_pins, diagonal_pins, &ctx);
-    generate_diagonal_slider_moves::<QUIET>(
-        &mut moves,
-        check_mask,
-        orthogonal_pins,
-        diagonal_pins,
-        &ctx,
-    );
-    generate_orthogonal_slider_moves::<QUIET>(
-        &mut moves,
-        check_mask,
-        orthogonal_pins,
-        diagonal_pins,
-        &ctx,
-    );
-    generate_king_moves::<QUIET>(&mut moves, game, &ctx);
-
-    if QUIET && !checkers.any() {
-        generate_castles::<QUIET>(&mut moves, game, &ctx);
-    }
-
-    moves
-}
-
-fn get_ctx(game: &Game) -> Ctx {
     let our_pieces = game.board.player_pieces(game.player);
     let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king().single();
 
-    Ctx {
-        all_pieces,
-        our_pieces,
-        their_pieces,
+    let mut moves: Vec<Move> = Vec::with_capacity(64);
 
-        king,
+    let checkers = attackers::generate_attackers_of(&game.board, game.player, king);
+    let number_of_checkers = checkers.count();
+
+    // If we're in check by more than one attacker, we can only get out of check via a king move
+    if number_of_checkers > 1 {
+        generate_king_moves::<QUIET>(&mut moves, game, king, their_pieces, all_pieces);
+        return moves;
     }
+
+    let check_mask = if number_of_checkers == 1 {
+        let checker_sq = checkers.single();
+        tables::between(checker_sq, king) | checkers
+    } else {
+        Bitboard::FULL
+    };
+
+    let (orthogonal_pins, diagonal_pins) = pins::get_pins(&game.board, game.player, king);
+
+    generate_pawn_moves::<QUIET>(
+        &mut moves,
+        game,
+        our_pieces.pawns(),
+        king,
+        their_pieces,
+        all_pieces,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+    );
+    generate_knight_moves::<QUIET>(
+        &mut moves,
+        our_pieces.knights(),
+        their_pieces,
+        all_pieces,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+    );
+    generate_diagonal_slider_moves::<QUIET>(
+        &mut moves,
+        our_pieces.bishops() | our_pieces.queens(),
+        their_pieces,
+        all_pieces,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+    );
+    generate_orthogonal_slider_moves::<QUIET>(
+        &mut moves,
+        our_pieces.rooks() | our_pieces.queens(),
+        their_pieces,
+        all_pieces,
+        check_mask,
+        orthogonal_pins,
+        diagonal_pins,
+    );
+    generate_king_moves::<QUIET>(&mut moves, game, king, their_pieces, all_pieces);
+
+    if QUIET && !checkers.any() {
+        generate_castles::<QUIET>(&mut moves, game, all_pieces);
+    }
+
+    moves
 }
 
 fn generate_pawn_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
+    pawns: Bitboard,
+    king: Square,
+    their_pieces: Bitboard,
+    all_pieces: Bitboard,
     check_mask: Bitboard,
     orthogonal_pins: Bitboard,
     diagonal_pins: Bitboard,
-    ctx: &Ctx,
 ) {
-    let pawns = ctx.our_pieces.pawns();
-
     // Pawns that are pinned orthogonally would reveal the king by capturing diagonally
     let can_capture_pawns = pawns & !orthogonal_pins;
 
@@ -99,13 +95,13 @@ fn generate_pawn_moves<const QUIET: bool>(
     let can_move_pawns = pawns & !diagonal_pins;
 
     // Pawns can move onto empty squares, as long as they block check if in check
-    let available_move_squares = !ctx.all_pieces & check_mask;
+    let available_move_squares = !all_pieces & check_mask;
     let single_push_available_move_pawns = available_move_squares.backward(game.player);
 
     // Pawns can push once if they can move by pin rules, are not obstructed, and block check if in check
     let can_push_once_pawns = can_move_pawns & single_push_available_move_pawns;
 
-    let capture_targets = ctx.their_pieces & check_mask;
+    let capture_targets = their_pieces & check_mask;
 
     let will_promote_rank = bitboards::pawn_back_rank(game.player.other());
 
@@ -178,7 +174,7 @@ fn generate_pawn_moves<const QUIET: bool>(
                     let king_in_check = attackers::generate_attackers_of(
                         &board_without_en_passant_participants,
                         game.player,
-                        ctx.king,
+                        king,
                     )
                     .any();
 
@@ -206,7 +202,7 @@ fn generate_pawn_moves<const QUIET: bool>(
             }
         }
 
-        let double_push_blockers = ctx.all_pieces.backward(game.player);
+        let double_push_blockers = all_pieces.backward(game.player);
 
         let can_push_twice_pawns = can_move_pawns
             & back_rank
@@ -227,24 +223,24 @@ fn generate_pawn_moves<const QUIET: bool>(
 
 fn generate_knight_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    knights: Bitboard,
+    their_pieces: Bitboard,
+    all_pieces: Bitboard,
     check_mask: Bitboard,
     orthogonal_pins: Bitboard,
     diagonal_pins: Bitboard,
-    ctx: &Ctx,
 ) {
-    let knights = ctx.our_pieces.knights();
-
     // Pinned knights can't move
     for knight in knights & !(orthogonal_pins | diagonal_pins) {
         let destinations = tables::knight_attacks(knight) & check_mask;
 
-        let capture_destinations = destinations & ctx.their_pieces;
+        let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(knight, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & !ctx.all_pieces;
+            let move_destinations = destinations & !all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(knight, dst));
             }
@@ -254,29 +250,29 @@ fn generate_knight_moves<const QUIET: bool>(
 
 fn generate_diagonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    diagonal_sliders: Bitboard,
+    their_pieces: Bitboard,
+    all_pieces: Bitboard,
     check_mask: Bitboard,
     orthogonal_pins: Bitboard,
     diagonal_pins: Bitboard,
-    ctx: &Ctx,
 ) {
     // Diagonal sliders which are pinned orthogonally would expose the king by moving
-    let diagonal_sliders = (ctx.our_pieces.bishops() | ctx.our_pieces.queens()) & !orthogonal_pins;
-
-    for diagonal_slider in diagonal_sliders {
-        let mut destinations = tables::bishop_attacks(diagonal_slider, ctx.all_pieces) & check_mask;
+    for diagonal_slider in diagonal_sliders & !orthogonal_pins {
+        let mut destinations = tables::bishop_attacks(diagonal_slider, all_pieces) & check_mask;
 
         // If the slider is pinned, it can only move along the pin ray
         if diagonal_pins.contains(diagonal_slider) {
             destinations &= diagonal_pins;
         }
 
-        let capture_destinations = destinations & ctx.their_pieces;
+        let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(diagonal_slider, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & !ctx.all_pieces;
+            let move_destinations = destinations & !all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(diagonal_slider, dst));
             }
@@ -286,28 +282,28 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
 
 fn generate_orthogonal_slider_moves<const QUIET: bool>(
     moves: &mut Vec<Move>,
+    orthogonal_sliders: Bitboard,
+    their_pieces: Bitboard,
+    all_pieces: Bitboard,
     check_mask: Bitboard,
     orthogonal_pins: Bitboard,
     diagonal_pins: Bitboard,
-    ctx: &Ctx,
 ) {
     // Orthogonal sliders which are pinned diagonally would expose the king by moving
-    let orthogonal_sliders = (ctx.our_pieces.rooks() | ctx.our_pieces.queens()) & !diagonal_pins;
-
-    for orthogonal_slider in orthogonal_sliders {
-        let mut destinations = tables::rook_attacks(orthogonal_slider, ctx.all_pieces) & check_mask;
+    for orthogonal_slider in orthogonal_sliders & !diagonal_pins {
+        let mut destinations = tables::rook_attacks(orthogonal_slider, all_pieces) & check_mask;
 
         if orthogonal_pins.contains(orthogonal_slider) {
             destinations &= orthogonal_pins;
         }
 
-        let capture_destinations = destinations & ctx.their_pieces;
+        let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
             moves.push(Move::new(orthogonal_slider, dst));
         }
 
         if QUIET {
-            let move_destinations = destinations & !ctx.all_pieces;
+            let move_destinations = destinations & !all_pieces;
             for dst in move_destinations {
                 moves.push(Move::new(orthogonal_slider, dst));
             }
@@ -315,24 +311,29 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
     }
 }
 
-fn generate_king_moves<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
-    let king = ctx.our_pieces.king().single();
+fn generate_king_moves<const QUIET: bool>(
+    moves: &mut Vec<Move>,
+    game: &Game,
+    king: Square,
+    their_pieces: Bitboard,
+    all_pieces: Bitboard,
+) {
     let destinations = tables::king_attacks(king);
 
     // When calculating the attacked squares, we need to remove our King from the board.
     // If we don't, squares behind the king look safe (since they are blocked by the king)
     // meaning we'd generate moves away from a slider while in check.
     let mut board_without_king = game.board.clone();
-    board_without_king.remove_at(ctx.king);
+    board_without_king.remove_at(king);
 
-    for dst in destinations & ctx.their_pieces {
+    for dst in destinations & their_pieces {
         if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
             moves.push(Move::new(king, dst));
         }
     }
 
     if QUIET {
-        for dst in destinations & !ctx.all_pieces {
+        for dst in destinations & !all_pieces {
             if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
                 moves.push(Move::new(king, dst));
             }
@@ -340,32 +341,32 @@ fn generate_king_moves<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ct
     }
 }
 
-fn generate_castles<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, ctx: &Ctx) {
+fn generate_castles<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, all_pieces: Bitboard) {
     let castle_rights_for_player = match game.player {
         Player::White => game.white_castle_rights,
         Player::Black => game.black_castle_rights,
     };
 
     if castle_rights_for_player.king_side {
-        generate_castle_move_for_side::<true>(moves, game, ctx);
+        generate_castle_move_for_side::<true>(moves, game, all_pieces);
     }
 
     if castle_rights_for_player.queen_side {
-        generate_castle_move_for_side::<false>(moves, game, ctx);
+        generate_castle_move_for_side::<false>(moves, game, all_pieces);
     }
 }
 
 fn generate_castle_move_for_side<const KINGSIDE: bool>(
     moves: &mut Vec<Move>,
     game: &Game,
-    ctx: &Ctx,
+    all_pieces: Bitboard,
 ) {
     let king_start_square = squares::king_start(game.player);
 
     let (required_empty_squares, target_square, middle_square) =
         bitboards::castle_squares::<KINGSIDE>(game.player);
 
-    if (required_empty_squares & ctx.all_pieces).is_empty()
+    if (required_empty_squares & all_pieces).is_empty()
         && attackers::generate_attackers_of(&game.board, game.player, middle_square).is_empty()
         && attackers::generate_attackers_of(&game.board, game.player, target_square).is_empty()
     {
