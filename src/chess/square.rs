@@ -328,15 +328,11 @@ pub mod squares {
         }
     }
 
-    pub const INIT_WHITE_QUEEN: Square = D1;
     pub const INIT_WHITE_KING: Square = E1;
-
     pub const WHITE_KINGSIDE_CASTLE_SQUARE: Square = G1;
     pub const WHITE_QUEENSIDE_CASTLE_SQUARE: Square = C1;
 
-    pub const INIT_BLACK_QUEEN: Square = D8;
     pub const INIT_BLACK_KING: Square = E8;
-
     pub const BLACK_KINGSIDE_CASTLE_SQUARE: Square = G8;
     pub const BLACK_QUEENSIDE_CASTLE_SQUARE: Square = C8;
 

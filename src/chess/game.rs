@@ -111,15 +111,7 @@ pub struct Game {
 
 impl Game {
     pub fn new() -> Self {
-        Self::from_state(
-            Board::start(),
-            Player::White,
-            CastleRights::default(),
-            CastleRights::default(),
-            None,
-            0,
-            0,
-        )
+        Self::from_fen(fen::START_POS).unwrap()
     }
 
     pub fn from_state(

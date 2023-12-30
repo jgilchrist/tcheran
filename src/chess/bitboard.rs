@@ -320,7 +320,6 @@ impl std::fmt::Display for Bitboard {
 pub mod bitboards {
     use super::*;
     use crate::chess::player::Player;
-    use crate::chess::square::squares;
     use crate::chess::square::squares::all::*;
 
     pub const fn castle_squares<const KINGSIDE: bool>(player: Player) -> (Bitboard, Square, Square) {
@@ -467,20 +466,6 @@ pub mod bitboards {
         A3_BB.0 | C3_BB.0 | E3_BB.0 | G3_BB.0 |
         B2_BB.0 | D2_BB.0 | F2_BB.0 | H2_BB.0 |
         A1_BB.0 | C1_BB.0 | E1_BB.0 | G1_BB.0 );
-
-    pub const INIT_WHITE_PAWNS: Bitboard = RANK_2;
-    pub const INIT_WHITE_KNIGHTS: Bitboard = Bitboard::new(B1_BB.0 | G1_BB.0);
-    pub const INIT_WHITE_BISHOPS: Bitboard = Bitboard::new(C1_BB.0 | F1_BB.0);
-    pub const INIT_WHITE_ROOKS: Bitboard = Bitboard::new(A1_BB.0 | H1_BB.0);
-    pub const INIT_WHITE_QUEEN: Bitboard = squares::INIT_WHITE_QUEEN.bb();
-    pub const INIT_WHITE_KING: Bitboard = squares::INIT_WHITE_KING.bb();
-
-    pub const INIT_BLACK_PAWNS: Bitboard = RANK_7;
-    pub const INIT_BLACK_KNIGHTS: Bitboard = Bitboard::new(B8_BB.0 | G8_BB.0);
-    pub const INIT_BLACK_BISHOPS: Bitboard = Bitboard::new(C8_BB.0 | F8_BB.0);
-    pub const INIT_BLACK_ROOKS: Bitboard = Bitboard::new(A8_BB.0 | H8_BB.0);
-    pub const INIT_BLACK_QUEEN: Bitboard = squares::INIT_BLACK_QUEEN.bb();
-    pub const INIT_BLACK_KING: Bitboard = squares::INIT_BLACK_KING.bb();
 
     const WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(F1_BB.0 | G1_BB.0);
     const BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES: Bitboard = Bitboard::new(F8_BB.0 | G8_BB.0);

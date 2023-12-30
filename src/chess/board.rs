@@ -5,7 +5,7 @@ use crate::chess::{
     square::Square,
 };
 
-use crate::chess::bitboard::{bitboards, Bitboard};
+use crate::chess::bitboard::Bitboard;
 use color_eyre::Result;
 
 #[derive(Clone)]
@@ -62,49 +62,6 @@ impl PlayerPieces {
 }
 
 impl Board {
-    pub fn start() -> Self {
-        let mut start = Self {
-            white_pieces: PlayerPieces::new([
-                bitboards::INIT_WHITE_PAWNS,
-                bitboards::INIT_WHITE_KNIGHTS,
-                bitboards::INIT_WHITE_BISHOPS,
-                bitboards::INIT_WHITE_ROOKS,
-                bitboards::INIT_WHITE_QUEEN,
-                bitboards::INIT_WHITE_KING,
-            ]),
-            black_pieces: PlayerPieces::new([
-                bitboards::INIT_BLACK_PAWNS,
-                bitboards::INIT_BLACK_KNIGHTS,
-                bitboards::INIT_BLACK_BISHOPS,
-                bitboards::INIT_BLACK_ROOKS,
-                bitboards::INIT_BLACK_QUEEN,
-                bitboards::INIT_BLACK_KING,
-            ]),
-            pieces: [None; Square::N],
-        };
-
-        let mut set_pieces = |squares: Bitboard, piece: Piece| {
-            for sq in squares {
-                start.pieces[sq.array_idx()] = Some(piece);
-            }
-        };
-
-        set_pieces(start.white_pieces.pawns(), Piece::WHITE_PAWN);
-        set_pieces(start.white_pieces.knights(), Piece::WHITE_KNIGHT);
-        set_pieces(start.white_pieces.bishops(), Piece::WHITE_BISHOP);
-        set_pieces(start.white_pieces.rooks(), Piece::WHITE_ROOK);
-        set_pieces(start.white_pieces.queens(), Piece::WHITE_QUEEN);
-        set_pieces(start.white_pieces.king(), Piece::WHITE_KING);
-        set_pieces(start.black_pieces.pawns(), Piece::BLACK_PAWN);
-        set_pieces(start.black_pieces.knights(), Piece::BLACK_KNIGHT);
-        set_pieces(start.black_pieces.bishops(), Piece::BLACK_BISHOP);
-        set_pieces(start.black_pieces.rooks(), Piece::BLACK_ROOK);
-        set_pieces(start.black_pieces.queens(), Piece::BLACK_QUEEN);
-        set_pieces(start.black_pieces.king(), Piece::BLACK_KING);
-
-        start
-    }
-
     #[inline(always)]
     pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
         match player {
