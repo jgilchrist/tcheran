@@ -1,5 +1,6 @@
 _default: list
 
+
 list:
 	@just --list
 
@@ -36,16 +37,23 @@ copy-bin name:
 	cargo build --release
 	cp target/release/engine bins/{{name}}
 
-playoff name1 name2 tc concurrency openingsfile:
+playoff-stc new baseline concurrency="2":
+	just playoff {{new}} {{baseline}} {{concurrency}} 8+0.08
+
+playoff-ltc new baseline concurrency="2":
+	just playoff {{new}} {{baseline}} {{concurrency}} 60+0.6
+
+[private]
+playoff new baseline concurrency tc:
 	cutechess-cli \
-		-engine name="{{name1}}" cmd="./bins/{{name1}}" \
-		-engine name="{{name2}}" cmd="./bins/{{name2}}" \
-		-openings file={{openingsfile}} order=random \
+		-engine name="$(basename {{new}})" cmd="{{new}}" \
+		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
+		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
-		-rounds 1000 -games 2 -repeat \
-		-pgnout ./bins/{{name1}}-vs-{{name2}}.pgn \
-		-sprt elo0=0 elo1=10 alpha=0.05 beta=0.05 \
+		-rounds 100000 -games 2 -repeat \
+		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-ltc.pgn" \
+		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
 			tc={{tc}} \
