@@ -2,7 +2,7 @@
 name = "engine"
 version = "1.0.0"
 edition = "2021"
-rust-version = "1.74"
+rust-version = "1.75"
 
 [dependencies]
 color-eyre = { version = "0.6.2", default-features = false }
