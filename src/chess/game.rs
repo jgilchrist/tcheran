@@ -19,8 +19,8 @@ impl CastleRightsSide {
     pub const N: usize = 2;
 
     #[inline(always)]
-    pub fn array_idx(&self) -> usize {
-        *self as usize
+    pub fn array_idx(self) -> usize {
+        self as usize
     }
 }
 
@@ -38,7 +38,7 @@ impl CastleRights {
         }
     }
 
-    pub fn can_castle_to_side(&self, side: CastleRightsSide) -> bool {
+    pub fn can_castle_to_side(self, side: CastleRightsSide) -> bool {
         match side {
             CastleRightsSide::Kingside => self.king_side,
             CastleRightsSide::Queenside => self.queen_side,
@@ -254,7 +254,7 @@ impl Game {
             .toggle_castle_rights(player, castle_rights_side);
     }
 
-    pub fn make_move(&mut self, mv: &Move) {
+    pub fn make_move(&mut self, mv: Move) {
         let from = mv.src;
         let to = mv.dst;
         let player = self.player;
@@ -266,7 +266,7 @@ impl Game {
         // Capture the irreversible aspects of the position so that they can be restored
         // if we undo this move.
         let history = History {
-            mv: *mv,
+            mv,
             captured: maybe_captured_piece,
             white_castle_rights: self.white_castle_rights,
             black_castle_rights: self.black_castle_rights,

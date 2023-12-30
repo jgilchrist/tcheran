@@ -7,13 +7,13 @@ pub enum Player {
 impl Player {
     pub const N: usize = 2;
 
-    pub fn other(&self) -> Self {
-        !(*self)
+    pub fn other(self) -> Self {
+        !self
     }
 
     #[inline(always)]
-    pub fn array_idx(&self) -> usize {
-        *self as usize
+    pub fn array_idx(self) -> usize {
+        self as usize
     }
 }
 

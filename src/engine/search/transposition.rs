@@ -28,7 +28,7 @@ pub struct TTMove {
 }
 
 impl TTMove {
-    pub fn from_move(mv: &Move) -> Self {
+    pub fn from_move(mv: Move) -> Self {
         Self {
             start_square_idx: mv.src.idx(),
             end_square_idx: mv.dst.idx(),

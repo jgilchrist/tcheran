@@ -29,7 +29,7 @@ fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize 
 
     let result = game
         .moves()
-        .iter()
+        .into_iter()
         .map(|m| {
             game.make_move(m);
             let result = perft(depth - 1, game, tt);

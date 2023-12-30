@@ -51,7 +51,7 @@ pub fn quiescence(
 
     let mut best_eval = Eval::MIN;
 
-    for mv in &moves {
+    for mv in moves {
         game.make_move(mv);
 
         let move_score = -quiescence(game, -beta, -alpha, plies + 1, time_control, state, control)?;

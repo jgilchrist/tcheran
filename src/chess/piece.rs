@@ -14,12 +14,12 @@ impl PieceKind {
     pub const N: usize = 6;
 
     #[inline(always)]
-    pub fn array_idx(&self) -> usize {
-        *self as usize
+    pub fn array_idx(self) -> usize {
+        self as usize
     }
 
     #[inline(always)]
-    pub fn value(&self) -> i16 {
+    pub fn value(self) -> i16 {
         match self {
             Self::Pawn => 100,
             Self::Knight | Self::Bishop => 300,
@@ -39,7 +39,7 @@ pub enum PromotionPieceKind {
 }
 
 impl PromotionPieceKind {
-    pub const fn piece(&self) -> PieceKind {
+    pub const fn piece(self) -> PieceKind {
         match self {
             Self::Knight => PieceKind::Knight,
             Self::Bishop => PieceKind::Bishop,

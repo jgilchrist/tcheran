@@ -157,7 +157,7 @@ impl Uci {
                 };
 
                 for mv in moves {
-                    game.make_move(mv);
+                    game.make_move(*mv);
                 }
 
                 self.game = game;
@@ -233,7 +233,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Move { mv } => {
-                    self.game.make_move(mv);
+                    self.game.make_move(*mv);
                     println!("{:?}", self.game.board);
                     println!("FEN: {}", crate::chess::fen::write(&self.game));
                     println!();

@@ -19,7 +19,7 @@ impl<TCx: Control, TRx: Reporter> Strategy<TCx, TRx> for TopEvalStrategy {
     ) {
         let mut moves = game.moves();
 
-        moves.sort_unstable_by_key(|m| {
+        moves.sort_unstable_by_key(|&m| {
             game.make_move(m);
             let result = eval::eval(game);
             game.undo_move();

@@ -26,33 +26,33 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub const fn is_empty(&self) -> bool {
+    pub const fn is_empty(self) -> bool {
         self.0 == 0
     }
 
     #[inline(always)]
-    pub const fn any(&self) -> bool {
+    pub const fn any(self) -> bool {
         self.0 != 0
     }
 
     #[inline(always)]
-    pub fn contains(&self, square: Square) -> bool {
-        (*self & square.bb()).any()
+    pub fn contains(self, square: Square) -> bool {
+        (self & square.bb()).any()
     }
 
     #[inline(always)]
-    pub fn single(&self) -> Square {
+    pub fn single(self) -> Square {
         debug_assert_eq!(self.count(), 1);
-        Square::from_bitboard(*self)
+        Square::from_bitboard(self)
     }
 
     #[inline(always)]
-    pub const fn invert(&self) -> Self {
+    pub const fn invert(self) -> Self {
         Self(!self.0)
     }
 
     #[inline(always)]
-    pub const fn lsb(&self) -> Self {
+    pub const fn lsb(self) -> Self {
         Self((1_u64).wrapping_shl(self.0.trailing_zeros()))
     }
 
@@ -75,18 +75,18 @@ impl Bitboard {
 
     #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
-    pub const fn count(&self) -> u8 {
+    pub const fn count(self) -> u8 {
         self.0.count_ones() as u8
     }
 
     #[inline(always)]
     #[allow(clippy::cast_possible_truncation)]
-    pub const fn trailing_zeros(&self) -> usize {
+    pub const fn trailing_zeros(self) -> usize {
         self.0.trailing_zeros() as usize
     }
 
     #[inline(always)]
-    pub fn in_direction(&self, direction: Direction) -> Self {
+    pub fn in_direction(self, direction: Direction) -> Self {
         match direction {
             Direction::North => self.north(),
             Direction::NorthEast => self.north_east(),
@@ -100,7 +100,7 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn forward(&self, player: Player) -> Self {
+    pub fn forward(self, player: Player) -> Self {
         match player {
             Player::White => self.north(),
             Player::Black => self.south(),
@@ -108,7 +108,7 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn backward(&self, player: Player) -> Self {
+    pub fn backward(self, player: Player) -> Self {
         match player {
             Player::White => self.south(),
             Player::Black => self.north(),
@@ -116,47 +116,47 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub const fn north(&self) -> Self {
+    pub const fn north(self) -> Self {
         Self(self.0 << 8)
     }
 
     #[inline(always)]
-    pub const fn south(&self) -> Self {
+    pub const fn south(self) -> Self {
         Self(self.0 >> 8)
     }
 
     #[inline(always)]
-    pub fn east(&self) -> Self {
+    pub fn east(self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 << 1) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    pub fn north_east(&self) -> Self {
+    pub fn north_east(self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 << 9) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    pub fn south_east(&self) -> Self {
+    pub fn south_east(self) -> Self {
         // If we go east and land on A, we wrapped around.
         Self(self.0 >> 7) & Self::NOT_A_FILE
     }
 
     #[inline(always)]
-    pub fn west(&self) -> Self {
+    pub fn west(self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 >> 1) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
-    pub fn south_west(&self) -> Self {
+    pub fn south_west(self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 >> 9) & Self::NOT_H_FILE
     }
 
     #[inline(always)]
-    pub fn north_west(&self) -> Self {
+    pub fn north_west(self) -> Self {
         // If we go west and land on H, we wrapped around.
         Self(self.0 << 7) & Self::NOT_H_FILE
     }

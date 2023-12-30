@@ -44,11 +44,11 @@ impl File {
     }
 
     #[inline(always)]
-    pub const fn idx(&self) -> u8 {
-        *self as u8
+    pub const fn idx(self) -> u8 {
+        self as u8
     }
 
-    pub const fn notation(&self) -> &'static str {
+    pub const fn notation(self) -> &'static str {
         match self {
             Self::A => "a",
             Self::B => "b",
@@ -118,11 +118,11 @@ impl Rank {
     }
 
     #[inline(always)]
-    pub const fn idx(&self) -> u8 {
-        *self as u8
+    pub const fn idx(self) -> u8 {
+        self as u8
     }
 
-    pub const fn notation(&self) -> &'static str {
+    pub const fn notation(self) -> &'static str {
         match self {
             Self::R1 => "1",
             Self::R2 => "2",
@@ -181,17 +181,17 @@ impl Square {
     }
 
     #[inline(always)]
-    pub const fn bb(&self) -> Bitboard {
+    pub const fn bb(self) -> Bitboard {
         Bitboard(1 << self.0)
     }
 
     #[inline(always)]
-    pub fn idx(&self) -> u8 {
+    pub fn idx(self) -> u8 {
         self.0
     }
 
     #[inline(always)]
-    pub const fn array_idx(&self) -> usize {
+    pub const fn array_idx(self) -> usize {
         self.0 as usize
     }
 
@@ -205,12 +205,12 @@ impl Square {
         File::from_idx(self.idx() % 8)
     }
 
-    pub fn notation(&self) -> String {
+    pub fn notation(self) -> String {
         format!("{}{}", self.file(), self.rank())
     }
 
     #[inline(always)]
-    pub fn forward(&self, player: Player) -> Self {
+    pub fn forward(self, player: Player) -> Self {
         match player {
             Player::White => self.north(),
             Player::Black => self.south(),
@@ -218,7 +218,7 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn backward(&self, player: Player) -> Self {
+    pub fn backward(self, player: Player) -> Self {
         match player {
             Player::White => self.south(),
             Player::Black => self.north(),
@@ -226,12 +226,12 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn north(&self) -> Self {
+    pub fn north(self) -> Self {
         Self(self.0 + 8)
     }
 
     #[inline(always)]
-    pub fn south(&self) -> Self {
+    pub fn south(self) -> Self {
         Self(self.0 - 8)
     }
 }

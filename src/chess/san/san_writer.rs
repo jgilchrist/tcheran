@@ -13,7 +13,7 @@ enum AmbiguityResolution {
 }
 
 #[allow(unused)]
-pub fn format_move(game: &Game, mv: &Move) -> String {
+pub fn format_move(game: &Game, mv: Move) -> String {
     let from = mv.src;
     let to = mv.dst;
 
@@ -41,7 +41,7 @@ pub fn format_move(game: &Game, mv: &Move) -> String {
 
     let capture_happened = captured_piece.is_some() || is_en_passant;
 
-    let ambiguity_resolution_required = required_ambiguity_resolution(game, *mv);
+    let ambiguity_resolution_required = required_ambiguity_resolution(game, mv);
 
     let piece_identifier: &'static str = match piece.kind {
         PieceKind::Pawn => {
@@ -146,7 +146,7 @@ mod tests {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
-        let san = format_move(&game, &mv);
+        let san = format_move(&game, mv);
 
         assert_eq!(&san, expected_san);
     }

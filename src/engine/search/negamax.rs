@@ -95,7 +95,7 @@ pub fn negamax(
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    for mv in &moves {
+    for mv in moves {
         game.make_move(mv);
 
         let move_score = if full_pv_search {
@@ -148,7 +148,7 @@ pub fn negamax(
         game.undo_move();
 
         if move_score > best_eval {
-            best_move = Some(*mv);
+            best_move = Some(mv);
             best_eval = move_score;
         }
 
@@ -180,7 +180,7 @@ pub fn negamax(
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
         eval: alpha,
-        best_move: best_move.map(|m| TTMove::from_move(&m)),
+        best_move: best_move.map(TTMove::from_move),
         age: tt.generation,
         depth,
     };

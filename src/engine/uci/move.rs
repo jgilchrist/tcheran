@@ -10,7 +10,7 @@ pub struct UciMove {
 }
 
 impl UciMove {
-    pub fn notation(&self) -> String {
+    pub fn notation(self) -> String {
         format!(
             "{}{}{}",
             self.src.notation(),

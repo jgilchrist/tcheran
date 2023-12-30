@@ -7,7 +7,7 @@ pub fn perft(depth: u8, game: &mut Game) -> usize {
     }
 
     game.moves()
-        .iter()
+        .into_iter()
         .map(|m| {
             game.make_move(m);
             let result = perft(depth - 1, game);
@@ -30,11 +30,11 @@ pub fn perft_div(depth: u8, game: &mut Game) -> Vec<(Move, usize)> {
         return perft_for_moves;
     }
 
-    for mv in &root_moves {
+    for mv in root_moves {
         game.make_move(mv);
         let number_for_mv = perft(depth - 1, game);
         game.undo_move();
-        perft_for_moves.push((*mv, number_for_mv));
+        perft_for_moves.push((mv, number_for_mv));
     }
 
     perft_for_moves
