@@ -19,6 +19,7 @@ pub struct GoCmdArguments {
     pub nodes: Option<u32>,
     pub movetime: Option<Duration>,
     pub infinite: bool,
+    pub wait: bool,
 }
 
 #[derive(Debug, PartialEq, Eq, Clone)]

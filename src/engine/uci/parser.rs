@@ -265,6 +265,11 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
                         acc.infinite = true;
                     })
                 }),
+                command_without_arguments("wait", |_| {
+                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
+                        acc.wait = true;
+                    })
+                }),
             )),
         ),
         || GoCmdArguments {
@@ -278,6 +283,7 @@ fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
             nodes: None,
             movetime: None,
             infinite: false,
+            wait: false,
         },
         |mut acc, GoCmdArgumentsModifyFn(f)| {
             f(&mut acc);

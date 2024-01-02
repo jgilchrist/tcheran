@@ -174,6 +174,7 @@ impl Uci {
                 nodes: _,
                 movetime,
                 infinite: _,
+                wait,
             }) => {
                 let strategy = self.strategy.clone();
                 let mut game = self.game.clone();
@@ -201,7 +202,7 @@ impl Uci {
 
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
-                std::thread::spawn(move || {
+                let join_handle = std::thread::spawn(move || {
                     let strategy_binding = strategy.unwrap();
                     let mut s = strategy_binding.lock().unwrap();
                     s.go(
@@ -213,6 +214,10 @@ impl Uci {
                         reporter,
                     );
                 });
+
+                if *wait {
+                    join_handle.join().unwrap();
+                }
             }
             UciCommand::Stop => {
                 {
