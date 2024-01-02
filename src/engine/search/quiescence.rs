@@ -46,7 +46,7 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = MoveProvider::new_loud(game, None);
+    let mut moves = MoveProvider::new_loud(None);
 
     let mut best_eval = Eval::MIN;
 

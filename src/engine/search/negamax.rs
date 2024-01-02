@@ -1,5 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
+use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
@@ -80,7 +81,7 @@ pub fn negamax(
         return Err(());
     }
 
-    let mut moves = MoveProvider::new(game, previous_best_move);
+    let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
