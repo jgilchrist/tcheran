@@ -182,7 +182,7 @@ impl Square {
 
     #[inline(always)]
     pub const fn bb(self) -> Bitboard {
-        Bitboard(1 << self.0)
+        Bitboard::new(1 << self.0)
     }
 
     #[inline(always)]

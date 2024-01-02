@@ -6,7 +6,7 @@ use crate::chess::{
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]
-pub struct Bitboard(pub u64);
+pub struct Bitboard(u64);
 
 impl Bitboard {
     const NOT_A_FILE: Self = bitboards::A_FILE.invert();
@@ -18,6 +18,11 @@ impl Bitboard {
     #[inline(always)]
     pub const fn new(bits: u64) -> Self {
         Self(bits)
+    }
+
+    #[inline(always)]
+    pub const fn as_u64(self) -> u64 {
+        self.0
     }
 
     #[inline(always)]

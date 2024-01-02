@@ -190,7 +190,7 @@ fn table_index_bishop(s: Square, blockers: Bitboard) -> usize {
     let not_mask = unsafe { BISHOP_NOT_MASKS.get_unchecked(square_idx) };
 
     let relevant_occupancies = blockers | *not_mask;
-    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(*magic);
+    let mut occupancies_index_offset: u64 = relevant_occupancies.as_u64().wrapping_mul(*magic);
     occupancies_index_offset >>= Square::N - BISHOP_SHIFT;
 
     index + occupancies_index_offset as usize
@@ -229,7 +229,7 @@ fn table_index_rook(s: Square, blockers: Bitboard) -> usize {
     let not_mask = unsafe { ROOK_NOT_MASKS.get_unchecked(square_idx) };
 
     let relevant_occupancies = blockers | *not_mask;
-    let mut occupancies_index_offset: u64 = relevant_occupancies.0.wrapping_mul(*magic);
+    let mut occupancies_index_offset: u64 = relevant_occupancies.as_u64().wrapping_mul(*magic);
     occupancies_index_offset >>= Square::N - ROOK_SHIFT;
 
     index + occupancies_index_offset as usize
