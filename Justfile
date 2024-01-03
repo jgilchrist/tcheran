@@ -52,7 +52,7 @@ playoff new baseline concurrency tc:
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds 100000 -games 2 -repeat \
-		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-ltc.pgn" \
+		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
 		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
