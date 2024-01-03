@@ -1,9 +1,12 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
-use crate::engine::search::move_ordering::{score_move, ScoredMove};
+use crate::engine::search::move_ordering::score_move;
+
+const MAX_MOVES: usize = u8::MAX as usize;
 
 pub struct MoveProvider {
-    moves: Vec<ScoredMove>,
+    moves: Vec<Move>,
+    scores: [i32; MAX_MOVES],
     previous_best_move: Option<Move>,
 
     move_idx: usize,
@@ -12,10 +15,11 @@ pub struct MoveProvider {
 
 impl MoveProvider {
     pub fn new(game: &Game, previous_best_move: Option<Move>) -> Self {
-        let moves = game.moves().into_iter().map(ScoredMove::new).collect();
+        let moves = game.moves();
 
         Self {
             moves,
+            scores: [0; MAX_MOVES],
             previous_best_move,
 
             move_idx: 0,
@@ -23,12 +27,13 @@ impl MoveProvider {
         }
     }
 
-    pub fn new_loud(game: &Game) -> Self {
-        let moves = game.loud_moves().into_iter().map(ScoredMove::new).collect();
+    pub fn new_loud(game: &Game, previous_best_move: Option<Move>) -> Self {
+        let moves = game.loud_moves();
 
         Self {
             moves,
-            previous_best_move: None,
+            scores: [0; MAX_MOVES],
+            previous_best_move,
 
             move_idx: 0,
             initialised_moves: false,
@@ -45,19 +50,32 @@ impl MoveProvider {
             return None;
         }
 
-        let next_best_move = &self.moves[self.move_idx];
-        self.move_idx += 1;
+        let mut best_move_score = self.scores[self.move_idx];
+        let mut best_move = self.moves[self.move_idx];
+        let mut best_move_idx = self.move_idx;
 
-        Some(next_best_move.mv)
+        for i in self.move_idx + 1..self.moves.len() {
+            let move_score = self.scores[i];
+
+            if move_score > best_move_score {
+                best_move_score = move_score;
+                best_move = self.moves[i];
+                best_move_idx = i;
+            }
+        }
+
+        if self.move_idx != best_move_idx {
+            self.moves.swap(self.move_idx, best_move_idx);
+            self.scores.swap(self.move_idx, best_move_idx);
+        }
+
+        self.move_idx += 1;
+        Some(best_move)
     }
 
     fn init(&mut self, game: &Game) {
-        // First, score each move
-        for mv in &mut self.moves {
-            mv.score = score_move(game, mv.mv, self.previous_best_move);
+        for (idx, mv) in self.moves.iter().enumerate() {
+            self.scores[idx] = score_move(game, *mv, self.previous_best_move);
         }
-
-        // Then, sort each move by its score
-        self.moves.sort_unstable_by_key(|m| -m.score);
     }
 }
