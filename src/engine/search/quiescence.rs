@@ -1,9 +1,10 @@
 use crate::chess::game::Game;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
+use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::time_control::TimeStrategy;
 
-use super::{move_ordering, Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{Control, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
@@ -44,13 +45,11 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = game.loud_moves();
-
-    move_ordering::order_moves(game, &mut moves, None, [None; 2]);
+    let mut moves = MoveProvider::new_loud(game, None);
 
     let mut best_eval = Eval::MIN;
 
-    for mv in moves {
+    while let Some(mv) = moves.next(game) {
         game.make_move(mv);
 
         let move_score = -quiescence(game, -beta, -alpha, plies + 1, time_control, state, control)?;

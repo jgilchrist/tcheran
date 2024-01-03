@@ -10,6 +10,7 @@ use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
 mod move_ordering;
+mod move_provider;
 mod negamax;
 mod quiescence;
 mod time_control;
