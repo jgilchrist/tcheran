@@ -33,7 +33,6 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
     * Quiescence search
     * Principal variation search (PVS)
     * Check extensions
-    * Move ordering
     * Transposition table
     * Null move pruning
 
@@ -41,6 +40,7 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
     * Previous best move
     * Most Valuable Victim - Least Valuable Aggressor (MVV-LVA)
     * Killer move heuristic
+    * Incremental sorting
 
 * Evaluation
     * Material difference
