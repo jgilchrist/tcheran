@@ -6,6 +6,7 @@ use crate::chess::{
 use crate::uci::commands::{DebugCommand, Position};
 use color_eyre::{eyre::bail, Result};
 use nom::bytes::complete::take_until;
+use nom::character::complete::alpha1;
 use nom::combinator::rest;
 use nom::{
     branch::alt,
@@ -298,9 +299,21 @@ fn cmd_stop(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::Stop, tag("stop"))(input)
 }
 
-fn cmd_d_pos(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("pos")(input)?;
-    Ok((input, UciCommand::D(DebugCommand::Position)))
+fn cmd_d_fen(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("fen")(input)?;
+    Ok((input, UciCommand::D(DebugCommand::PrintPosition)))
+}
+
+fn cmd_d_position(input: &str) -> IResult<&str, UciCommand> {
+    let (input, _) = tag("position")(input)?;
+    let (input, _) = space1(input)?;
+    let (input, pos) = alpha1(input)?;
+    Ok((
+        input,
+        UciCommand::D(DebugCommand::SetPosition {
+            position: pos.to_owned(),
+        }),
+    ))
 }
 
 fn cmd_d_move(input: &str) -> IResult<&str, UciCommand> {
@@ -339,7 +352,8 @@ fn cmd_d(input: &str) -> IResult<&str, UciCommand> {
     let (input, _) = space0(input)?;
 
     alt((
-        cmd_d_pos,
+        cmd_d_fen,
+        cmd_d_position,
         cmd_d_move,
         cmd_d_perft,
         cmd_d_perft_div,

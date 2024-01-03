@@ -24,7 +24,8 @@ pub struct GoCmdArguments {
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum DebugCommand {
-    Position,
+    PrintPosition,
+    SetPosition { position: String },
     Perft { depth: u8 },
     PerftDiv { depth: u8 },
     Move { mv: Move },

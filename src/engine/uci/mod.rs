@@ -232,11 +232,24 @@ impl Uci {
                 }
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
-                DebugCommand::Position => {
+                DebugCommand::PrintPosition => {
                     println!("{:?}", self.game.board);
                     println!("FEN: {}", self.game.to_fen());
                     println!();
                 }
+                DebugCommand::SetPosition { position } => match position.as_str() {
+                    "kiwipete" => {
+                        self.game = Game::from_fen(
+                            "r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -",
+                        )
+                        .unwrap();
+
+                        println!("{:?}", self.game.board);
+                    }
+                    _ => {
+                        bail!("Unknown debug position")
+                    }
+                },
                 DebugCommand::Move { mv } => {
                     self.game.make_move(*mv);
                     println!("{:?}", self.game.board);
