@@ -14,18 +14,6 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-#[derive(Debug)]
-pub struct ScoredMove {
-    pub mv: Move,
-    pub score: i32,
-}
-
-impl ScoredMove {
-    pub fn new(mv: Move) -> Self {
-        Self { mv, score: 0 }
-    }
-}
-
 pub fn score_move(
     game: &Game,
     mv: Move,
@@ -65,6 +53,17 @@ mod tests {
     use super::*;
     use crate::chess::game::Game;
     use crate::chess::square::squares::all::*;
+
+    struct ScoredMove {
+        pub mv: Move,
+        pub score: i32,
+    }
+
+    impl ScoredMove {
+        pub fn new(mv: Move) -> Self {
+            Self { mv, score: 0 }
+        }
+    }
 
     #[test]
     fn test_mvv_lva() {
