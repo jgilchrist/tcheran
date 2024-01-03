@@ -11,6 +11,8 @@ use crate::chess::{
     square::{File, Rank, Square},
 };
 
+use nom::character::complete::space0;
+use nom::combinator::opt;
 use nom::sequence::terminated;
 use nom::{
     branch::alt,
@@ -212,13 +214,16 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
                 preceded(space1, fen_color),
                 preceded(space1, fen_castling),
                 preceded(space1, fen_en_passant_target),
-                preceded(space1, fen_halfmove_clock),
-                preceded(space1, fen_fullmove_number),
+                opt(preceded(space1, fen_halfmove_clock)),
+                opt(preceded(space1, fen_fullmove_number)),
             )),
-            eof,
+            tuple((space0, eof)),
         )(input)?;
 
     let (white_castle_rights, black_castle_rights) = castle_rights;
+
+    let halfmove_clock = halfmove_clock.unwrap_or(0);
+    let fullmove_number = fullmove_number.unwrap_or(1);
 
     let plies = plies_from_fullmove_number(fullmove_number, player);
 
@@ -324,6 +329,13 @@ mod tests {
         assert!(
             parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1").is_ok()
         );
+    }
+
+    #[test]
+    fn parse_kiwipete_without_halfmove_and_fullmove() {
+        crate::init();
+
+        assert!(parse("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - ").is_ok());
     }
 
     #[test]

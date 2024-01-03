@@ -364,7 +364,7 @@ fn run_spec(engine_command: &str, spec: &WinAtChessSpec) -> bool {
     stdout().lock().flush().unwrap();
 
     let engine_stdin = cmd.stdin.as_mut().unwrap();
-    writeln!(engine_stdin, "position fen {} 0 1", spec.pos).unwrap();
+    writeln!(engine_stdin, "position fen {}", spec.pos).unwrap();
     writeln!(engine_stdin, "go movetime 1000 wait").unwrap();
     writeln!(engine_stdin, "quit").unwrap();
 
