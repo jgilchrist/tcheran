@@ -17,17 +17,6 @@ impl PieceKind {
     pub fn array_idx(self) -> usize {
         self as usize
     }
-
-    #[inline(always)]
-    pub fn value(self) -> i16 {
-        match self {
-            Self::Pawn => 100,
-            Self::Knight | Self::Bishop => 300,
-            Self::Rook => 500,
-            Self::Queen => 800,
-            Self::King => 10000,
-        }
-    }
 }
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]

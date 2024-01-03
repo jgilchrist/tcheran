@@ -1,6 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
+use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{
@@ -8,7 +9,7 @@ use crate::engine::search::transposition::{
 };
 use crate::engine::strategy::Control;
 
-use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
+use super::{SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -79,23 +80,15 @@ pub fn negamax(
         return Err(());
     }
 
-    let mut moves = game.moves();
-
-    if moves.is_empty() {
-        return Ok(if game.is_king_in_check() {
-            Eval::mated_in(plies)
-        } else {
-            Eval::DRAW
-        });
-    }
-
-    move_ordering::order_moves(game, &mut moves, previous_best_move);
-
+    let mut moves = MoveProvider::new(game, previous_best_move);
+    let mut number_of_legal_moves = 0;
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    for mv in moves {
+    while let Some(mv) = moves.next(game) {
+        number_of_legal_moves += 1;
+
         game.make_move(mv);
 
         let move_score = if full_pv_search {
@@ -175,6 +168,14 @@ pub fn negamax(
             // position are worse.
             full_pv_search = false;
         }
+    }
+
+    if number_of_legal_moves == 0 {
+        return Ok(if game.is_king_in_check() {
+            Eval::mated_in(plies)
+        } else {
+            Eval::DRAW
+        });
     }
 
     let tt_data = SearchTranspositionTableData {
