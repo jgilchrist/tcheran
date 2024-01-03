@@ -4,6 +4,7 @@
 
 * Add null move pruning
 * Add killer move ordering
+* Sort moves via individual move scoring
 
 ### Misc
 

@@ -1,63 +1,96 @@
-use crate::chess::piece::{Piece, PieceKind};
+use crate::chess::piece::PieceKind;
 use crate::chess::{game::Game, moves::Move};
-use std::cmp::Ordering;
 
-const PIECE_ORDER: [i16; PieceKind::N] = [0, 1, 2, 3, 4, 5];
+// Sentinel values
+const PREVIOUS_BEST_MOVE_SCORE: i32 = 200_000;
+const CAPTURE_SCORE: i32 = 100_000;
+const KILLER_MOVE_1_SCORE: i32 = 90001;
+const KILLER_MOVE_2_SCORE: i32 = 90000;
+const QUIET_SCORE: i32 = 0;
 
-pub fn order_moves(
-    game: &Game,
-    moves: &mut [Move],
-    previous_best_move: Option<Move>,
-    killer_moves: [Option<Move>; 2],
-) {
-    moves.sort_unstable_by(|m1, m2| {
-        // If there was some best move in this situation previously, always search it first
-        if let Some(m) = previous_best_move {
-            if m == *m1 {
-                return Ordering::Less;
-            }
-        }
+#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+const PIECES: i32 = PieceKind::N as i32;
 
-        let m1_victim = game.board.piece_at(m1.dst);
-        let m2_victim = game.board.piece_at(m2.dst);
+const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
+const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-        match (m1_victim, m2_victim) {
-            (None, None) => {
-                if Some(*m1) == killer_moves[0] {
-                    return Ordering::Less;
-                }
-
-                if Some(*m1) == killer_moves[1] {
-                    return Ordering::Less;
-                }
-
-                Ordering::Equal
-            }
-            (Some(_), None) => Ordering::Less,
-            (None, Some(_)) => Ordering::Greater,
-            (Some(p1), Some(p2)) => {
-                let m1_attacker = game.board.piece_at(m1.src).unwrap();
-                let m2_attacker = game.board.piece_at(m2.src).unwrap();
-
-                mvv_lva_ordering(p1, m1_attacker, p2, m2_attacker)
-            }
-        }
-    });
+#[derive(Debug)]
+pub struct ScoredMove {
+    pub mv: Move,
+    pub score: i32,
 }
 
-// When deciding which captures to explore first, the most likely captures to be valuable
-// are those which capture a very valuable piece with a not-so-valuable piece. The best
-// to check first is the most valuable victim (MVV) with the least valuable attacker (LVA).
-fn mvv_lva_ordering(
-    m1_victim: Piece,
-    m1_attacker: Piece,
-    m2_victim: Piece,
-    m2_attacker: Piece,
-) -> Ordering {
-    match PIECE_ORDER[m1_victim.kind.array_idx()].cmp(&PIECE_ORDER[m2_victim.kind.array_idx()]) {
-        Ordering::Less => Ordering::Greater,
-        Ordering::Equal => PIECE_ORDER[m1_attacker.kind.array_idx()]
-            .cmp(&PIECE_ORDER[m2_attacker.kind.array_idx()]),
-        Ordering::Greater => Ordering::Less,
+impl ScoredMove {
+    pub fn new(mv: Move) -> Self {
+        Self { mv, score: 0 }
+    }
+}
+
+pub fn score_move(
+    game: &Game,
+    mv: Move,
+    previous_best_move: Option<Move>,
+    killer_moves: [Option<Move>; 2],
+) -> i32 {
+    if previous_best_move == Some(mv) {
+        return PREVIOUS_BEST_MOVE_SCORE;
+    }
+
+    if killer_moves[0] == Some(mv) {
+        return KILLER_MOVE_1_SCORE;
+    }
+
+    if killer_moves[1] == Some(mv) {
+        return KILLER_MOVE_2_SCORE;
+    }
+
+    let captured_piece = game.board.piece_at(mv.dst);
+
+    if let Some(captured_piece) = captured_piece {
+        let moved_piece = game.board.piece_at(mv.src).unwrap();
+
+        let victim_score = MVV_ORDER[captured_piece.kind.array_idx()];
+        let attacker_score = LVA_ORDER[moved_piece.kind.array_idx()];
+
+        let mvv_lva = victim_score + attacker_score;
+
+        return CAPTURE_SCORE + mvv_lva;
+    }
+
+    QUIET_SCORE
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chess::game::Game;
+    use crate::chess::square::squares::all::*;
+
+    #[test]
+    fn test_mvv_lva() {
+        crate::init();
+
+        let game = Game::from_fen("k3B3/8/n1q1R1r1/1P6/1NQn4/7P/2r5/5K2 w - - 0 1").unwrap();
+        let mut moves: Vec<ScoredMove> =
+            game.loud_moves().into_iter().map(ScoredMove::new).collect();
+
+        for mv in &mut moves {
+            mv.score = score_move(&game, mv.mv, None, [None; 2]);
+        }
+
+        moves.sort_unstable_by_key(|m| -m.score);
+
+        assert_eq!(moves[0].mv, Move::new(B5, C6)); // PxQ
+        assert_eq!(moves[1].mv, Move::new(B4, C6)); // NxQ
+        assert_eq!(moves[2].mv, Move::new(E8, C6)); // BxQ
+        assert_eq!(moves[3].mv, Move::new(E6, C6)); // RxQ
+        assert_eq!(moves[4].mv, Move::new(C4, C6)); // QxQ
+        assert_eq!(moves[5].mv, Move::new(B4, C2)); // NxR
+        assert_eq!(moves[6].mv, Move::new(E8, G6)); // BxR
+        assert_eq!(moves[7].mv, Move::new(E6, G6)); // RxR
+        assert_eq!(moves[8].mv, Move::new(C4, C2)); // QxR
+        assert_eq!(moves[9].mv, Move::new(B5, A6)); // PxN
+        assert_eq!(moves[10].mv, Move::new(B4, A6)); // NxN
+        assert_eq!(moves[11].mv, Move::new(C4, D4)); // QxN
     }
 }

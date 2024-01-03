@@ -2,13 +2,14 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
+use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
 
-use super::{move_ordering, Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{Control, SearchState, MAX_SEARCH_DEPTH};
 
 mod params {
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
@@ -116,28 +117,16 @@ pub fn negamax(
         }
     }
 
-    let mut moves = game.moves();
-
-    if moves.is_empty() {
-        return Ok(if in_check {
-            Eval::mated_in(plies)
-        } else {
-            Eval::DRAW
-        });
-    }
-
-    move_ordering::order_moves(
-        game,
-        &mut moves,
-        previous_best_move,
-        state.killer_moves[plies as usize],
-    );
-
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    for mv in moves {
+    let mut moves = MoveProvider::new(game, previous_best_move, state.killer_moves[plies as usize]);
+    let mut number_of_legal_moves = 0;
+
+    while let Some(mv) = moves.next(game) {
+        number_of_legal_moves += 1;
+
         game.make_move(mv);
 
         let move_score = if full_pv_search {
@@ -225,6 +214,14 @@ pub fn negamax(
             // position are worse.
             full_pv_search = false;
         }
+    }
+
+    if number_of_legal_moves == 0 {
+        return Ok(if game.is_king_in_check() {
+            Eval::mated_in(plies)
+        } else {
+            Eval::DRAW
+        });
     }
 
     let tt_data = SearchTranspositionTableData {
