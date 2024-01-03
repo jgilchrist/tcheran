@@ -41,7 +41,7 @@ playoff-stc new baseline concurrency="2":
 	just playoff {{new}} {{baseline}} {{concurrency}} 8+0.08
 
 playoff-ltc new baseline concurrency="2":
-	just playoff {{new}} {{baseline}} {{concurrency}} 60+0.6
+	just playoff {{new}} {{baseline}} {{concurrency}} 40+0.4
 
 [private]
 playoff new baseline concurrency tc:
