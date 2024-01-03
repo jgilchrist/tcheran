@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.1]
+
 * Disable logging by default
 * Use Rust 1.75
 * Switch movegen to use orthogonal/diagonal pin approach from [this article](https://www.codeproject.com/Articles/5313417/Worlds-Fastest-Bitboard-Chess-Movegenerator)
@@ -62,5 +64,6 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v1.0...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v1.1...HEAD
+[1.1]: https://github.com/jgilchrist/chess-engine/compare/v1.0..v1.1
 [1.0]: https://github.com/jgilchrist/chess-engine/releases/tag/v1.0
