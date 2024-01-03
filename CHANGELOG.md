@@ -2,6 +2,32 @@
 
 ## [Unreleased]
 
+* Disable logging by default
+* Use Rust 1.75
+* Switch movegen to use orthogonal/diagonal pin approach from [this article](https://www.codeproject.com/Articles/5313417/Worlds-Fastest-Bitboard-Chess-Movegenerator)
+* Use `.get_unchecked()` for all static array accesses (-1.18% perft(8) time)
+* Store `Square` as a `u8` instead of a `Bitboard` internally
+* Use an array for `PlayerPieces` (-6.37% search(9) time)
+* Generate attackers for single squares instead of all attacks in movegen (+8.0 ELO)
+* Optimise castle move generation
+* Don't generate non-capture underpromotions in quiescence search
+* Remove the `Ctx` struct from movegen (-3.13% perft(7) time)
+* Reorganise everything into a single crate
+
+### Misc
+
+* Add SAN parsing and formatting
+* Add the 'Win At Chess' test suite
+* Add Justfile commands for STC and LTC tests
+* Use `u64` for node counts to prevent overflows with large perft results
+* Remove support for `go searchmoves` and `go mate`
+* Collapse castle detection for kingside/queenside into a single code path
+* Various refactoring and simplification around `Bitboard` and `Square` abstractions
+* Remove `EngineGame`
+* Add a `wait` extension to allow piping `go` commands to the engine for benchmarking
+* Make the halfmove clock and fullmove number optional in FEN parsing
+* Add a way to easily jump to useful debugging positions (e.g. `d position kiwipete`)
+
 ## [1.0]
 
 > 2023-12-07
