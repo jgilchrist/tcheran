@@ -16,6 +16,7 @@ mod params {
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
 }
 
+#[allow(invalid_reference_casting)]
 pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,

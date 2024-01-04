@@ -6,6 +6,7 @@ use crate::engine::search::time_control::TimeStrategy;
 
 use super::{Control, SearchState, MAX_SEARCH_DEPTH};
 
+#[allow(invalid_reference_casting)]
 pub fn quiescence(
     game: &mut Game,
     mut alpha: Eval,

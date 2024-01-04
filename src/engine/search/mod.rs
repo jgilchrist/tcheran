@@ -27,7 +27,7 @@ pub struct SearchState {
 }
 
 impl SearchState {
-    const fn new() -> Self {
+    fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
 

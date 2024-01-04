@@ -1,4 +1,5 @@
 use crate::chess::bitboard::bitboards;
+use crate::chess::movelist::MoveList;
 use crate::chess::piece::Piece;
 use crate::chess::square::squares;
 use crate::chess::zobrist::ZobristHash;
@@ -136,11 +137,17 @@ impl Game {
     }
 
     pub fn moves(&self) -> Vec<Move> {
-        generate_moves::<true>(self)
+        let mut movelist = MoveList::new();
+        generate_moves::<true>(self, &mut movelist);
+        movelist.to_vec()
     }
 
-    pub fn loud_moves(&self) -> Vec<Move> {
-        generate_moves::<false>(self)
+    pub fn fill_moves(&self, movelist: &mut MoveList) {
+        generate_moves::<true>(self, movelist);
+    }
+
+    pub fn fill_loud_moves(&self, movelist: &mut MoveList) {
+        generate_moves::<false>(self, movelist);
     }
 
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
