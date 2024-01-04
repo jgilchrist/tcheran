@@ -153,9 +153,10 @@ challenge:                         # Incoming challenges.
   modes:                           # Game modes to accept.
     - casual                       # Unrated games.
     - rated                        # Rated games - must comment if the engine doesn't try to win.
-# block_list:                      # List of users from which the challenges are always declined.
-#   - user1
-#   - user2
+  block_list:                      # List of users from which the challenges are always declined.
+    - Trollfish-Bot
+    - CPU2002
+    - CPU2006
 # allow_list:                      # List of users from which challenges are exclusively accepted, all others being declined. If empty, challenges from all users may be accepted.
 #   - user3
 #   - user4
