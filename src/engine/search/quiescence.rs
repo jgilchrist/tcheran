@@ -1,4 +1,5 @@
 use crate::chess::game::Game;
+use crate::chess::movelist::MoveList;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
@@ -46,7 +47,12 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut moves = MoveProvider::new_loud(game, None);
+    let movelist = state.movelists.get(plies as usize).unwrap();
+
+    // Safety: Only the movelist for the current depth is borrowed
+    let movelist: &mut MoveList = unsafe { &mut *(movelist as *const MoveList).cast_mut() };
+
+    let mut moves = MoveProvider::new_loud(game, movelist, None);
 
     let mut best_eval = Eval::MIN;
 

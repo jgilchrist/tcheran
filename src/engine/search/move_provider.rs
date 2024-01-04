@@ -5,8 +5,8 @@ use crate::engine::search::move_ordering::score_move;
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
-pub struct MoveProvider {
-    moves: MoveList,
+pub struct MoveProvider<'ml> {
+    moves: &'ml mut MoveList,
     scores: [i32; MAX_MOVES],
     previous_best_move: Option<Move>,
     killer_moves: [Option<Move>; 2],
@@ -15,14 +15,10 @@ pub struct MoveProvider {
     scored_moves: bool,
 }
 
-impl MoveProvider {
-    pub fn new(
-        game: &Game,
-        previous_best_move: Option<Move>,
-        killer_moves: [Option<Move>; 2],
-    ) -> Self {
-        let mut moves = MoveList::new();
-        game.fill_moves(&mut moves);
+impl<'ml> MoveProvider<'ml> {
+    pub fn new(game: &Game, moves: &'ml mut MoveList, previous_best_move: Option<Move>, killer_moves: [Option<Move>; 2]) -> Self {
+        moves.clear();
+        game.fill_moves(moves);
 
         Self {
             moves,
@@ -35,9 +31,13 @@ impl MoveProvider {
         }
     }
 
-    pub fn new_loud(game: &Game, previous_best_move: Option<Move>) -> Self {
-        let mut moves = MoveList::new();
-        game.fill_loud_moves(&mut moves);
+    pub fn new_loud(
+        game: &Game,
+        moves: &'ml mut MoveList,
+        previous_best_move: Option<Move>,
+    ) -> Self {
+        moves.clear();
+        game.fill_loud_moves(moves);
 
         Self {
             moves,

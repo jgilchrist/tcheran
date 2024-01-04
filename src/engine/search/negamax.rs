@@ -1,4 +1,5 @@
 use crate::chess::game::Game;
+use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
@@ -118,7 +119,12 @@ pub fn negamax(
         }
     }
 
-    let mut moves = MoveProvider::new(game, previous_best_move, state.killer_moves[plies as usize]);
+    let movelist = state.movelists.get(plies as usize).unwrap();
+
+    // Safety: Only the movelist for the current depth is borrowed
+    let movelist: &mut MoveList = unsafe { &mut *(movelist as *const MoveList).cast_mut() };
+
+    let mut moves = MoveProvider::new(game, movelist, previous_best_move, state.killer_moves[plies as usize]);
     let mut number_of_legal_moves = 0;
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;

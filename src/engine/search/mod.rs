@@ -6,6 +6,7 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
+use crate::chess::movelist::MoveList;
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
@@ -20,6 +21,7 @@ const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
 pub struct SearchState {
+    movelists: [MoveList; MAX_SEARCH_DEPTH as usize],
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
 
     nodes_visited: u64,
@@ -29,6 +31,7 @@ pub struct SearchState {
 impl SearchState {
     fn new() -> Self {
         Self {
+            movelists: std::array::from_fn(|_| MoveList::new()),
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
 
             max_depth_reached: 0,
