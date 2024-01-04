@@ -37,3 +37,4 @@ let_and_return = "allow"
 
 [profile.release]
 debug = 1
+incremental = true
