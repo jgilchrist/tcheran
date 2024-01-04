@@ -1,24 +1,23 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::movegen::{attackers, pins, tables};
+use crate::chess::movelist::MoveList;
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind, player::Player};
 
-pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
+pub fn generate_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
     let our_pieces = game.board.player_pieces(game.player);
     let their_pieces = game.board.player_pieces(game.player.other()).all();
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king().single();
 
-    let mut moves: Vec<Move> = Vec::with_capacity(64);
-
     let checkers = attackers::generate_attackers_of(&game.board, game.player, king);
     let number_of_checkers = checkers.count();
 
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
-        generate_king_moves::<QUIET>(&mut moves, game, king, their_pieces, all_pieces);
-        return moves;
+        generate_king_moves::<QUIET>(moves, game, king, their_pieces, all_pieces);
+        return;
     }
 
     let check_mask = if number_of_checkers == 1 {
@@ -31,7 +30,7 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
     let (orthogonal_pins, diagonal_pins) = pins::get_pins(&game.board, game.player, king);
 
     generate_pawn_moves::<QUIET>(
-        &mut moves,
+        moves,
         game,
         our_pieces.pawns(),
         king,
@@ -42,7 +41,7 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         diagonal_pins,
     );
     generate_knight_moves::<QUIET>(
-        &mut moves,
+        moves,
         our_pieces.knights(),
         their_pieces,
         all_pieces,
@@ -51,7 +50,7 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         diagonal_pins,
     );
     generate_diagonal_slider_moves::<QUIET>(
-        &mut moves,
+        moves,
         our_pieces.bishops() | our_pieces.queens(),
         their_pieces,
         all_pieces,
@@ -60,7 +59,7 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         diagonal_pins,
     );
     generate_orthogonal_slider_moves::<QUIET>(
-        &mut moves,
+        moves,
         our_pieces.rooks() | our_pieces.queens(),
         their_pieces,
         all_pieces,
@@ -68,17 +67,15 @@ pub fn generate_moves<const QUIET: bool>(game: &Game) -> Vec<Move> {
         orthogonal_pins,
         diagonal_pins,
     );
-    generate_king_moves::<QUIET>(&mut moves, game, king, their_pieces, all_pieces);
+    generate_king_moves::<QUIET>(moves, game, king, their_pieces, all_pieces);
 
     if QUIET && !checkers.any() {
-        generate_castles::<QUIET>(&mut moves, game, all_pieces);
+        generate_castles::<QUIET>(moves, game, all_pieces);
     }
-
-    moves
 }
 
 fn generate_pawn_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     game: &Game,
     pawns: Bitboard,
     king: Square,
@@ -222,7 +219,7 @@ fn generate_pawn_moves<const QUIET: bool>(
 }
 
 fn generate_knight_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     knights: Bitboard,
     their_pieces: Bitboard,
     all_pieces: Bitboard,
@@ -249,7 +246,7 @@ fn generate_knight_moves<const QUIET: bool>(
 }
 
 fn generate_diagonal_slider_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     diagonal_sliders: Bitboard,
     their_pieces: Bitboard,
     all_pieces: Bitboard,
@@ -281,7 +278,7 @@ fn generate_diagonal_slider_moves<const QUIET: bool>(
 }
 
 fn generate_orthogonal_slider_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     orthogonal_sliders: Bitboard,
     their_pieces: Bitboard,
     all_pieces: Bitboard,
@@ -312,7 +309,7 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
 }
 
 fn generate_king_moves<const QUIET: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     game: &Game,
     king: Square,
     their_pieces: Bitboard,
@@ -341,7 +338,7 @@ fn generate_king_moves<const QUIET: bool>(
     }
 }
 
-fn generate_castles<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, all_pieces: Bitboard) {
+fn generate_castles<const QUIET: bool>(moves: &mut MoveList, game: &Game, all_pieces: Bitboard) {
     let castle_rights_for_player = match game.player {
         Player::White => game.white_castle_rights,
         Player::Black => game.black_castle_rights,
@@ -357,7 +354,7 @@ fn generate_castles<const QUIET: bool>(moves: &mut Vec<Move>, game: &Game, all_p
 }
 
 fn generate_castle_move_for_side<const KINGSIDE: bool>(
-    moves: &mut Vec<Move>,
+    moves: &mut MoveList,
     game: &Game,
     all_pieces: Bitboard,
 ) {
@@ -384,7 +381,7 @@ mod tests {
     fn should_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = game.moves();
+        let moves = game.moves().to_vec();
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 
@@ -395,7 +392,7 @@ mod tests {
     fn should_not_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = generate_moves::<true>(&game);
+        let moves = game.moves().to_vec();
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 

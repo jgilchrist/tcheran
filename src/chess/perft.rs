@@ -3,10 +3,11 @@ use crate::chess::moves::Move;
 
 pub fn perft(depth: u8, game: &mut Game) -> usize {
     if depth == 1 {
-        return game.moves().len();
+        return game.moves().to_vec().len();
     }
 
     game.moves()
+        .to_vec()
         .into_iter()
         .map(|m| {
             game.make_move(m);
@@ -18,7 +19,7 @@ pub fn perft(depth: u8, game: &mut Game) -> usize {
 }
 
 pub fn perft_div(depth: u8, game: &mut Game) -> Vec<(Move, usize)> {
-    let root_moves = game.moves();
+    let root_moves = game.moves().to_vec();
 
     let mut perft_for_moves: Vec<(Move, usize)> = vec![];
 

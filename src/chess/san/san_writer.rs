@@ -101,7 +101,7 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
         return AmbiguityResolution::None;
     }
 
-    let moves = game.moves();
+    let moves = game.moves().to_vec();
 
     let potentially_ambiguous_moves: Vec<Move> = moves
         .into_iter()

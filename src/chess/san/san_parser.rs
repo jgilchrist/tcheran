@@ -112,6 +112,7 @@ fn parse_piece(c: char) -> Option<PieceKind> {
 fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square> {
     let piece_moves: Vec<(PieceKind, Move)> = game
         .moves()
+        .to_vec()
         .into_iter()
         .map(|mv| (game.board.piece_at(mv.src).unwrap().kind, mv))
         .collect();

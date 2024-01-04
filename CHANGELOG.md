@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Use a dedicated `MoveList` struct instead of `Vec<Move>`
+
 ### Misc
 
 * Split eval tapering into its own module
