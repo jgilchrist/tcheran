@@ -32,8 +32,6 @@
 
 ## [1.0]
 
-> 2023-12-07
-
 Initial release with the following major features:
 
 * Board
