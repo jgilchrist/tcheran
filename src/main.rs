@@ -6,6 +6,7 @@ mod engine;
 #[cfg(test)]
 mod tests;
 
+use crate::engine::uci::UciInputMode;
 use engine::uci;
 use engine::util::log::log;
 
@@ -42,7 +43,30 @@ fn main() -> Result<()> {
         log(format!("{info:?}"));
     }));
 
+    let args = std::env::args().collect::<Vec<_>>();
+    let uci_input_mode = match args.len() {
+        1 => UciInputMode::Stdin,
+        2 => {
+            let commands = args[1]
+                .replace("\\n", "\n")
+                .lines()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>();
+
+            UciInputMode::Commands(commands)
+        }
+        _ => {
+            let binary_name = args[0].clone();
+            eprintln!("usage:");
+            eprintln!("  {binary_name}                  - run in UCI mode");
+            eprintln!(
+                "  {binary_name} \"<uci commands>\" - run specific UCI commands and then exit"
+            );
+            std::process::exit(1);
+        }
+    };
+
     init();
 
-    uci::uci()
+    uci::uci(uci_input_mode)
 }

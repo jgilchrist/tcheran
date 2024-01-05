@@ -25,11 +25,11 @@ test-perft-tt:
 
 ############################### Profiling #####################################
 
-instruments:
-	cargo instruments -t "time" --release --time-limit 60000
+instruments +CMD:
+	cargo instruments -t "time" --release -- "{{CMD}}"
 
-instruments-debug:
-	cargo instruments -t "time" --time-limit 60000
+instruments-debug +CMD:
+	cargo instruments -t "time" -- "{{CMD}}"
 
 ################################# Misc #######################################
 

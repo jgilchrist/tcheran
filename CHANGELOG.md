@@ -27,6 +27,7 @@
 * Add a `wait` extension to allow piping `go` commands to the engine for benchmarking
 * Make the halfmove clock and fullmove number optional in FEN parsing
 * Add a way to easily jump to useful debugging positions (e.g. `d position kiwipete`)
+* Add the ability to pass UCI commands to run as command line arguments
 
 ## [1.0]
 

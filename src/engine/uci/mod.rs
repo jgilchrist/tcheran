@@ -104,6 +104,11 @@ pub struct Uci {
     debug: bool,
     game: Game,
     options: EngineOptions,
+
+    // If we're running without using stdin (i.e. passing the UCI commands as command line
+    // args) then we need to block on anything taking place on other threads, otherwise we'll
+    // exit immediately as the search takes place on another thread.
+    block_on_threads: bool,
 }
 
 impl Uci {
@@ -174,7 +179,6 @@ impl Uci {
                 nodes: _,
                 movetime,
                 infinite: _,
-                wait,
             }) => {
                 let strategy = self.strategy.clone();
                 let mut game = self.game.clone();
@@ -215,7 +219,7 @@ impl Uci {
                     );
                 });
 
-                if *wait {
+                if self.block_on_threads {
                     join_handle.join().unwrap();
                 }
             }
@@ -306,33 +310,61 @@ impl Uci {
         self.strategy = Some(Arc::new(Mutex::new(strategy)));
     }
 
-    fn main_loop(&mut self) -> Result<()> {
+    fn run_line(&mut self, line: &str) -> Result<bool> {
+        log(format!("< {}", &line));
+        let command = parser::parse(line);
+
+        match command {
+            Ok(ref c) => {
+                let execute_result = self
+                    .execute(c)
+                    .wrap_err_with(|| format!("Failed to run UCI command: {line}"))?;
+
+                if execute_result == ExecuteResult::Exit {
+                    return Ok(false);
+                }
+            }
+            Err(e) => {
+                eprintln!("{e}");
+                log("? Unknown command\n");
+            }
+        }
+
+        Ok(true)
+    }
+
+    fn main_loop_stdin(&mut self) -> Result<()> {
         let stdin_lines = std::io::stdin().lock().lines();
 
         for line in stdin_lines {
             let line = line?;
+            let should_continue = self.run_line(&line)?;
 
-            log(format!("< {}", &line));
-            let command = parser::parse(&line);
-
-            match command {
-                Ok(ref c) => {
-                    let execute_result = self
-                        .execute(c)
-                        .wrap_err_with(|| format!("Failed to run UCI command: {line}"))?;
-
-                    if execute_result == ExecuteResult::Exit {
-                        break;
-                    }
-                }
-                Err(e) => {
-                    eprintln!("{e}");
-                    log("? Unknown command\n");
-                }
+            if !should_continue {
+                break;
             }
         }
 
         Ok(())
+    }
+
+    fn main_loop_args(&mut self, lines: Vec<String>) -> Result<()> {
+        for line in lines {
+            let should_continue = self.run_line(&line)?;
+
+            if !should_continue {
+                break;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn main_loop(&mut self, uci_input_mode: UciInputMode) -> Result<()> {
+        match uci_input_mode {
+            UciInputMode::Stdin => self.main_loop_stdin(),
+            UciInputMode::Commands(cmds) => self.main_loop_args(cmds),
+        }
     }
 }
 
@@ -347,7 +379,12 @@ fn send_response(response: &UciResponse) {
     log(format!(" > {response}"));
 }
 
-pub fn uci() -> Result<()> {
+pub enum UciInputMode {
+    Commands(Vec<String>),
+    Stdin,
+}
+
+pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
     let mut uci = Uci {
         strategy: None,
         control: UciControl {
@@ -358,8 +395,13 @@ pub fn uci() -> Result<()> {
         debug: false,
         game: Game::new(),
         options: EngineOptions::default(),
+
+        block_on_threads: match uci_input_mode {
+            UciInputMode::Stdin => false,
+            UciInputMode::Commands(_) => true,
+        },
     };
 
     uci.set_strategy();
-    uci.main_loop()
+    uci.main_loop(uci_input_mode)
 }
