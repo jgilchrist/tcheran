@@ -14,6 +14,7 @@
 * Remove the `Ctx` struct from movegen (-3.13% perft(7) time)
 * Reorganise everything into a single crate
 * Re-enable incremental compilation for an unexplained performance boost in `sort_unstable_by`
+* Consider bishops more valuable than knights for MVV-LVA
 
 ### Misc
 

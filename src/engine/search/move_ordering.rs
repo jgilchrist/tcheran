@@ -1,6 +1,8 @@
-use crate::chess::piece::Piece;
+use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::{game::Game, moves::Move};
 use std::cmp::Ordering;
+
+const PIECE_ORDER: [i16; PieceKind::N] = [0, 1, 2, 3, 4, 5];
 
 pub fn order_moves(game: &Game, moves: &mut [Move], previous_best_move: Option<Move>) {
     moves.sort_unstable_by(|m1, m2| {
@@ -37,9 +39,10 @@ fn mvv_lva_ordering(
     m2_victim: Piece,
     m2_attacker: Piece,
 ) -> Ordering {
-    match m1_victim.kind.value().cmp(&m2_victim.kind.value()) {
+    match PIECE_ORDER[m1_victim.kind.array_idx()].cmp(&PIECE_ORDER[m2_victim.kind.array_idx()]) {
         Ordering::Less => Ordering::Greater,
-        Ordering::Equal => m1_attacker.kind.value().cmp(&m2_attacker.kind.value()),
+        Ordering::Equal => PIECE_ORDER[m1_attacker.kind.array_idx()]
+            .cmp(&PIECE_ORDER[m2_attacker.kind.array_idx()]),
         Ordering::Greater => Ordering::Less,
     }
 }
