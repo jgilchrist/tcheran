@@ -6,9 +6,8 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
-use crate::engine::strategy::Control;
 
-use super::{move_ordering, SearchState, MAX_SEARCH_DEPTH};
+use super::{move_ordering, Control, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,

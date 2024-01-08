@@ -1,6 +1,5 @@
 pub mod eval;
 pub mod options;
-pub mod strategy;
 pub mod uci;
 pub mod util;
 

@@ -4,9 +4,8 @@ use crate::chess::player::Player;
 use crate::chess::square::squares::all::*;
 use crate::engine::eval::{Eval, WhiteEval};
 use crate::engine::options::EngineOptions;
-use crate::engine::search::search;
 use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::strategy::{NullControl, NullReporter, SearchRestrictions, TimeControl};
+use crate::engine::search::{search, NullControl, NullReporter, SearchRestrictions, TimeControl};
 
 fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, WhiteEval) {
     crate::init();
