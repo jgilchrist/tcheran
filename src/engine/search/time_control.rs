@@ -1,6 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::player::Player;
-use crate::engine::strategy::{Clocks, TimeControl};
+use crate::engine::search::{Clocks, TimeControl};
 use std::time::{Duration, Instant};
 
 pub struct TimeStrategy {

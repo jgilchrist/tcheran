@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Remove the ability to specify alternate strategies
+
 ## [1.1]
 
 * Disable logging by default

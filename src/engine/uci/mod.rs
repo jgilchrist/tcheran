@@ -10,14 +10,8 @@ use crate::chess::perft;
 use color_eyre::Result;
 
 use crate::engine::options::EngineOptions;
-use crate::engine::strategy::{Clocks, SearchRestrictions, TimeControl};
 use crate::engine::util::sync::LockLatch;
-use crate::engine::{
-    eval,
-    strategy::{self, Strategy},
-    uci, util,
-    util::log::log,
-};
+use crate::engine::{eval, search, uci, util, util::log::log};
 use crate::uci::commands::DebugCommand;
 use crate::uci::options::UciOption;
 use crate::ENGINE_NAME;
@@ -35,6 +29,8 @@ pub mod parser;
 pub mod responses;
 
 use crate::chess::game::Game;
+use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::search::{Clocks, Control, Reporter, SearchRestrictions, TimeControl};
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -43,7 +39,7 @@ pub struct UciControl {
     stopped: Arc<LockLatch>,
 }
 
-impl strategy::Control for UciControl {
+impl search::Control for UciControl {
     fn stop(&self) {
         self.stopped.set();
     }
@@ -56,15 +52,15 @@ impl strategy::Control for UciControl {
 #[derive(Clone)]
 pub struct UciReporter;
 
-impl strategy::Reporter for UciReporter {
+impl search::Reporter for UciReporter {
     fn generic_report(&self, s: &str) {
         println!("{s}");
     }
 
-    fn report_search_progress(&self, progress: strategy::SearchInfo) {
+    fn report_search_progress(&self, progress: search::SearchInfo) {
         let score = match progress.score {
-            strategy::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
-            strategy::SearchScore::Mate(moves) => InfoScore::Mate(moves),
+            search::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
+            search::SearchScore::Mate(moves) => InfoScore::Mate(moves),
         };
 
         send_response(&UciResponse::Info(InfoFields {
@@ -80,7 +76,7 @@ impl strategy::Reporter for UciReporter {
         }));
     }
 
-    fn report_search_stats(&self, stats: strategy::SearchStats) {
+    fn report_search_stats(&self, stats: search::SearchStats) {
         send_response(&UciResponse::Info(InfoFields {
             time: Some(stats.time),
             nodes: Some(stats.nodes),
@@ -98,12 +94,13 @@ impl strategy::Reporter for UciReporter {
 }
 
 pub struct Uci {
-    strategy: Option<Arc<Mutex<Box<dyn Strategy<UciControl, UciReporter>>>>>,
     control: UciControl,
     reporter: UciReporter,
     debug: bool,
     game: Game,
     options: EngineOptions,
+
+    tt: Arc<Mutex<SearchTranspositionTable>>,
 
     // If we're running without using stdin (i.e. passing the UCI commands as command line
     // args) then we need to block on anything taking place on other threads, otherwise we'll
@@ -128,7 +125,6 @@ impl Uci {
 
                 // Options
                 send_response(&UciResponse::option::<uci::options::HashOption>());
-                send_response(&UciResponse::option::<uci::options::StrategyOption>());
                 send_response(&UciResponse::option::<uci::options::LogOption>());
 
                 send_response(&UciResponse::UciOk);
@@ -140,11 +136,6 @@ impl Uci {
             UciCommand::SetOption { name, value } => {
                 match name.as_str() {
                     options::HashOption::NAME => options::HashOption::set(&mut self.options, value),
-                    options::StrategyOption::NAME => {
-                        let result = options::StrategyOption::set(&mut self.options, value);
-                        self.set_strategy();
-                        result
-                    }
                     options::LogOption::NAME => options::LogOption::set(&mut self.options, value),
                     _ => {
                         bail!("Unknown option: {name}")
@@ -180,7 +171,6 @@ impl Uci {
                 movetime,
                 infinite: _,
             }) => {
-                let strategy = self.strategy.clone();
                 let mut game = self.game.clone();
                 let options = self.options.clone();
                 let control = self.control.clone();
@@ -206,17 +196,24 @@ impl Uci {
 
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
+                let tt = self.tt.clone();
+
                 let join_handle = std::thread::spawn(move || {
-                    let strategy_binding = strategy.unwrap();
-                    let mut s = strategy_binding.lock().unwrap();
-                    s.go(
+                    let mut tt_handle = tt.lock().unwrap();
+                    tt_handle.resize(options.hash_size);
+
+                    let (best_move, _eval) = search::search(
                         &mut game,
+                        &mut tt_handle,
                         &time_control,
                         &search_restrictions,
                         &options,
-                        control,
-                        reporter,
+                        &control,
+                        &reporter,
                     );
+
+                    reporter.best_move(best_move);
+                    control.stop();
                 });
 
                 if self.block_on_threads {
@@ -305,11 +302,6 @@ impl Uci {
         Ok(ExecuteResult::KeepGoing)
     }
 
-    fn set_strategy(&mut self) {
-        let strategy = self.options.strategy.create();
-        self.strategy = Some(Arc::new(Mutex::new(strategy)));
-    }
-
     fn run_line(&mut self, line: &str) -> Result<bool> {
         log(format!("< {}", &line));
         let command = parser::parse(line);
@@ -386,15 +378,16 @@ pub enum UciInputMode {
 
 pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
     let mut uci = Uci {
-        strategy: None,
         control: UciControl {
             stop: Arc::new(Mutex::new(false)),
             stopped: Arc::new(LockLatch::new()),
         },
         reporter: UciReporter {},
         debug: false,
-        game: Game::new(),
         options: EngineOptions::default(),
+
+        game: Game::new(),
+        tt: Arc::new(Mutex::new(SearchTranspositionTable::default())),
 
         block_on_threads: match uci_input_mode {
             UciInputMode::Stdin => false,
@@ -402,6 +395,5 @@ pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
         },
     };
 
-    uci.set_strategy();
     uci.main_loop(uci_input_mode)
 }
