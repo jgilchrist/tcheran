@@ -40,6 +40,7 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
 * Move ordering
     * Previous best move
     * Most Valuable Victim - Least Valuable Aggressor (MVV-LVA)
+    * Killer move heuristic
 
 * Evaluation
     * Material difference

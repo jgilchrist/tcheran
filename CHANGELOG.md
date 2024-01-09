@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Add null move pruning
+* Add killer move ordering
 
 ### Misc
 

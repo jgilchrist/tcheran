@@ -46,7 +46,7 @@ pub fn quiescence(
 
     let mut moves = game.loud_moves();
 
-    move_ordering::order_moves(game, &mut moves, None);
+    move_ordering::order_moves(game, &mut moves, None, [None; 2]);
 
     let mut best_eval = Eval::MIN;
 

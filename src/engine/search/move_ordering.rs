@@ -4,7 +4,12 @@ use std::cmp::Ordering;
 
 const PIECE_ORDER: [i16; PieceKind::N] = [0, 1, 2, 3, 4, 5];
 
-pub fn order_moves(game: &Game, moves: &mut [Move], previous_best_move: Option<Move>) {
+pub fn order_moves(
+    game: &Game,
+    moves: &mut [Move],
+    previous_best_move: Option<Move>,
+    killer_moves: [Option<Move>; 2],
+) {
     moves.sort_unstable_by(|m1, m2| {
         // If there was some best move in this situation previously, always search it first
         if let Some(m) = previous_best_move {
@@ -17,7 +22,17 @@ pub fn order_moves(game: &Game, moves: &mut [Move], previous_best_move: Option<M
         let m2_victim = game.board.piece_at(m2.dst);
 
         match (m1_victim, m2_victim) {
-            (None, None) => Ordering::Equal,
+            (None, None) => {
+                if Some(*m1) == killer_moves[0] {
+                    return Ordering::Less;
+                }
+
+                if Some(*m1) == killer_moves[1] {
+                    return Ordering::Less;
+                }
+
+                Ordering::Equal
+            }
             (Some(_), None) => Ordering::Less,
             (None, Some(_)) => Ordering::Greater,
             (Some(p1), Some(p2)) => {
