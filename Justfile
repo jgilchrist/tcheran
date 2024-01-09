@@ -48,7 +48,7 @@ playoff-sprt new baseline concurrency tc:
 	cutechess-cli \
 		-engine name="$(basename {{new}})" cmd="{{new}}" \
 		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
-		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd \
+		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds 100000 -games 2 -repeat \
@@ -70,7 +70,7 @@ playoff-elo new baseline rounds concurrency tc:
 	cutechess-cli \
 		-engine name="$(basename {{new}})" cmd="{{new}}" \
 		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
-		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd \
+		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds {{rounds}} -games 2 -repeat \
