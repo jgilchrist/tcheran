@@ -16,8 +16,11 @@ mod time_control;
 pub mod transposition;
 
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
+const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
 pub struct SearchState {
+    killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
+
     nodes_visited: u64,
     max_depth_reached: u8,
 }
@@ -25,6 +28,8 @@ pub struct SearchState {
 impl SearchState {
     const fn new() -> Self {
         Self {
+            killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
+
             max_depth_reached: 0,
             nodes_visited: 0,
         }

@@ -126,7 +126,12 @@ pub fn negamax(
         });
     }
 
-    move_ordering::order_moves(game, &mut moves, previous_best_move);
+    move_ordering::order_moves(
+        game,
+        &mut moves,
+        previous_best_move,
+        state.killer_moves[plies as usize],
+    );
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
@@ -200,6 +205,14 @@ pub fn negamax(
             };
 
             tt.insert(&game.zobrist, tt_data);
+
+            // 'Killers': if a move was so good that it caused a beta cutoff,
+            // but it wasn't a capture, we remember it so that we can try it
+            // before other quiet moves.
+            if game.board.piece_at(mv.dst).is_none() {
+                state.killer_moves[1] = state.killer_moves[0];
+                state.killer_moves[plies as usize][0] = Some(mv);
+            }
 
             return Ok(beta);
         }
