@@ -8,7 +8,7 @@ This engine has been tested by [CCRL](https://computerchess.org.uk/ccrl/):
 
 | Version | [CCRL Blitz](https://computerchess.org.uk/ccrl/404/) |
 | ------- | ---------------------------------------------------- |
-| v1.0    | 1978                                                 |
+| v1.0    | 1981                                                 |
 
 It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). Its current ratings are:
 
