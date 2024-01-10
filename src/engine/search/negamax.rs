@@ -119,18 +119,23 @@ pub fn negamax(
         }
     }
 
-    let movelist = state.movelists.get(plies as usize).unwrap();
+    let movelist = state.movelists.get_mut(plies as usize).unwrap();
 
     // Safety: Only the movelist for the current depth is borrowed
-    let movelist: &mut MoveList = unsafe { &mut *(movelist as *const MoveList).cast_mut() };
+    // let movelist: &mut MoveList = unsafe { &mut *(movelist as *const MoveList).cast_mut() };
 
-    let mut moves = MoveProvider::new(game, movelist, previous_best_move, state.killer_moves[plies as usize]);
+    let mut moves = MoveProvider::new(
+        game,
+        movelist,
+        previous_best_move,
+        state.killer_moves[plies as usize],
+    );
     let mut number_of_legal_moves = 0;
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    while let Some(mv) = moves.next(game) {
+    while let Some(mv) = moves.next(game, movelist) {
         number_of_legal_moves += 1;
 
         game.make_move(mv);
