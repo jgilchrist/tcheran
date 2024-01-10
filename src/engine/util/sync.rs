@@ -18,7 +18,6 @@ impl LockLatch {
 
     /// Block until latch is set.
     #[inline(always)]
-    #[allow(clippy::significant_drop_tightening)]
     pub fn wait(&self) {
         let mut guard = self.m.lock().unwrap();
         while !*guard {

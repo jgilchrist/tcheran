@@ -34,6 +34,7 @@ must_use_candidate = "allow"
 return_self_not_must_use = "allow"
 type_complexity = "allow"
 let_and_return = "allow"
+significant_drop_tightening = "allow"
 
 [profile.release]
 debug = 1
