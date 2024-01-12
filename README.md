@@ -35,6 +35,7 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
     * Check extensions
     * Transposition table
     * Null move pruning
+    * Reverse futility pruning
 
 * Move ordering
     * Previous best move

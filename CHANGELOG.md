@@ -6,6 +6,7 @@
 * Add killer move ordering
 * Sort moves via individual move scoring
 * Sort moves incrementally
+* Add reverse futility pruning
 
 ### Misc
 

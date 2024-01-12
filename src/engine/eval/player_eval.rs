@@ -22,6 +22,10 @@ impl Eval {
     const MATE: i16 = 32000;
     const MATE_THRESHOLD: i16 = Self::MATE - 100;
 
+    pub const fn new(eval: i16) -> Self {
+        Self(eval)
+    }
+
     #[cfg(test)]
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i16::from(ply))

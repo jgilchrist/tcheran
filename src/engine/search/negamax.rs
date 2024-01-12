@@ -12,8 +12,13 @@ use crate::engine::search::transposition::{
 use super::{Control, SearchState, MAX_SEARCH_DEPTH};
 
 mod params {
+    use crate::engine::eval::Eval;
+
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
+
+    pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
+    pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 }
 
 pub fn negamax(
@@ -90,6 +95,14 @@ pub fn negamax(
     if !is_root && !in_check {
         let eval = eval::eval(game);
 
+        // Reverse futility pruning
+        if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
+            && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i16::from(depth) > beta
+        {
+            return Ok(beta);
+        }
+
+        // Null move pruning
         if depth >= params::NULL_MOVE_PRUNING_DEPTH_LIMIT
             && eval > beta
             // Don't let a player play a null move in response to a null move
