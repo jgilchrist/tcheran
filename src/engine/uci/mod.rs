@@ -299,6 +299,12 @@ impl Uci {
                         eval_components.phased_piece_square.endgame(),
                         eval_components.piece_square
                     );
+                    println!(
+                        "Passed pawns:          Midgame={}  Endgame={}  Total={}",
+                        eval_components.phased_passed_pawns.midgame(),
+                        eval_components.phased_passed_pawns.endgame(),
+                        eval_components.passed_pawns,
+                    );
                     println!();
 
                     println!("Phase value: {}", eval_components.phase_value);
