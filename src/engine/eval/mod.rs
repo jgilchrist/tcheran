@@ -1,3 +1,4 @@
+pub mod passed_pawns;
 pub mod piece_square_tables;
 mod player_eval;
 mod tapered_eval;
@@ -14,6 +15,7 @@ pub use crate::engine::eval::tapered_eval::PhasedEval;
 
 pub fn init() {
     piece_square_tables::init();
+    passed_pawns::init();
 }
 
 #[derive(Debug, Clone)]
@@ -21,6 +23,7 @@ pub struct IncrementalEvalFields {
     pub phase_value: i16,
 
     pub piece_square_tables: PhasedEval,
+    pub passed_pawns: PhasedEval,
 }
 
 impl IncrementalEvalFields {
@@ -39,11 +42,13 @@ impl IncrementalEvalFields {
     pub fn init(board: &Board) -> Self {
         let phase_value = tapered_eval::phase_value(board);
         let piece_square_tables = piece_square_tables::eval(board);
+        let passed_pawns = passed_pawns::eval(board);
 
         Self {
             phase_value,
 
             piece_square_tables,
+            passed_pawns,
         }
     }
 }
@@ -54,8 +59,7 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables;
-
+    let eval = game.incremental_eval.piece_square_tables + game.incremental_eval.passed_pawns;
     tapered_eval::taper(game.incremental_eval.phase_value, eval)
 }
 
@@ -66,6 +70,9 @@ pub struct EvalComponents {
 
     pub phased_piece_square: PhasedEval,
     pub piece_square: WhiteEval,
+
+    pub phased_passed_pawns: PhasedEval,
+    pub passed_pawns: WhiteEval,
 }
 
 pub fn eval_components(game: &Game) -> EvalComponents {
@@ -75,11 +82,17 @@ pub fn eval_components(game: &Game) -> EvalComponents {
     let phased_piece_square = piece_square_tables::eval(&game.board);
     let piece_square = tapered_eval::taper(phase_value, phased_piece_square);
 
+    let phased_passed_pawns = passed_pawns::eval(&game.board);
+    let passed_pawns = tapered_eval::taper(phase_value, phased_passed_pawns);
+
     EvalComponents {
         eval,
         phase_value,
 
         phased_piece_square,
         piece_square,
+
+        phased_passed_pawns,
+        passed_pawns,
     }
 }

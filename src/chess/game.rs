@@ -7,6 +7,7 @@ use crate::chess::{
     board::Board, fen, movegen::generate_legal_moves, moves::Move, piece::PieceKind,
     player::Player, square::Square, zobrist,
 };
+use crate::engine::eval;
 use crate::engine::eval::IncrementalEvalFields;
 use color_eyre::Result;
 
@@ -71,6 +72,7 @@ pub struct History {
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub zobrist: ZobristHash,
+    pub pawn_zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
 }
 
@@ -84,6 +86,7 @@ pub struct Game {
     pub plies: u32,
 
     pub zobrist: ZobristHash,
+    pub pawn_zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
     pub history: Vec<History>,
 }
@@ -112,11 +115,13 @@ impl Game {
             plies,
 
             zobrist: ZobristHash::uninit(),
+            pawn_zobrist: ZobristHash::uninit(),
             incremental_eval: incremental_eval_fields,
             history: Vec::new(),
         };
 
         game.zobrist = zobrist::hash(&game);
+        game.pawn_zobrist = zobrist::hash_pawns(&game);
         game
     }
 
@@ -219,6 +224,10 @@ impl Game {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
         self.incremental_eval.set_at(sq, piece);
+
+        if piece.kind == PieceKind::Pawn {
+            self.pawn_zobrist.toggle_piece_on_square(sq, piece);
+        }
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
@@ -226,6 +235,11 @@ impl Game {
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
         self.incremental_eval.remove_at(sq, removed_piece);
+
+        if removed_piece.kind == PieceKind::Pawn {
+            self.pawn_zobrist.toggle_piece_on_square(sq, removed_piece);
+        }
+
         removed_piece
     }
 
@@ -257,6 +271,7 @@ impl Game {
         let to = mv.dst;
         let player = self.player;
         let other_player = player.other();
+        let previous_pawn_zobrist = self.pawn_zobrist.clone();
 
         let maybe_captured_piece = self.board.piece_at(to);
 
@@ -269,6 +284,7 @@ impl Game {
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
+            pawn_zobrist: self.pawn_zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
         };
 
@@ -355,6 +371,13 @@ impl Game {
             }
         }
 
+        // If our pawn hash changed, the pawn structure changed, so we need to re-evaluate
+        // our terms
+        if previous_pawn_zobrist != self.pawn_zobrist {
+            let passed_pawn_eval = eval::passed_pawns::eval(&self.board);
+            self.incremental_eval.passed_pawns = passed_pawn_eval;
+        }
+
         let should_reset_halfmove_clock =
             maybe_captured_piece.is_some() || moved_piece.kind == PieceKind::Pawn;
 
@@ -380,6 +403,7 @@ impl Game {
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
+            pawn_zobrist: self.pawn_zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
         };
 
@@ -408,6 +432,7 @@ impl Game {
         self.plies -= 1;
         self.player = player;
         self.zobrist = history.zobrist;
+        self.pawn_zobrist = history.pawn_zobrist;
         self.halfmove_clock = history.halfmove_clock;
         self.castle_rights = history.castle_rights;
         self.en_passant_target = history.en_passant_target;
@@ -454,6 +479,7 @@ impl Game {
         self.plies -= 1;
         self.player = self.player.other();
         self.zobrist = history.zobrist;
+        self.pawn_zobrist = history.pawn_zobrist;
         self.en_passant_target = history.en_passant_target;
         self.halfmove_clock = history.halfmove_clock;
         self.incremental_eval = history.incremental_eval;
