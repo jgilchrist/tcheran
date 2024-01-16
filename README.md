@@ -41,6 +41,7 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
     * Previous best move
     * Most Valuable Victim - Least Valuable Aggressor (MVV-LVA)
     * Killer move heuristic
+    * History heuristic
     * Incremental sorting
 
 * Evaluation

@@ -7,6 +7,7 @@
 * Sort moves via individual move scoring
 * Sort moves incrementally
 * Add reverse futility pruning
+* Add history heuristic move ordering
 
 ### Misc
 

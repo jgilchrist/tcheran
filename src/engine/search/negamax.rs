@@ -137,7 +137,7 @@ pub fn negamax(
     let mut moves = MoveProvider::new(game, previous_best_move, state.killer_moves[plies as usize]);
     let mut number_of_legal_moves = 0;
 
-    while let Some(mv) = moves.next(game) {
+    while let Some(mv) = moves.next(game, state) {
         number_of_legal_moves += 1;
 
         game.make_move(mv);
@@ -214,6 +214,9 @@ pub fn negamax(
             if game.board.piece_at(mv.dst).is_none() {
                 state.killer_moves[1] = state.killer_moves[0];
                 state.killer_moves[plies as usize][0] = Some(mv);
+
+                state.history[mv.src.array_idx()][mv.dst.array_idx()] +=
+                    i32::from(depth) * i32::from(depth);
             }
 
             return Ok(beta);

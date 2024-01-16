@@ -1,6 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::search::move_ordering::score_move;
+use crate::engine::search::SearchState;
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -47,9 +48,9 @@ impl MoveProvider {
         }
     }
 
-    pub fn next(&mut self, game: &Game) -> Option<Move> {
+    pub fn next(&mut self, game: &Game, search_state: &SearchState) -> Option<Move> {
         if !self.scored_moves {
-            self.score_moves(game);
+            self.score_moves(game, search_state);
             self.scored_moves = true;
         }
 
@@ -80,9 +81,15 @@ impl MoveProvider {
         Some(best_move)
     }
 
-    fn score_moves(&mut self, game: &Game) {
+    fn score_moves(&mut self, game: &Game, search_state: &SearchState) {
         for (i, mv) in self.moves.iter().enumerate() {
-            self.scores[i] = score_move(game, *mv, self.previous_best_move, self.killer_moves);
+            self.scores[i] = score_move(
+                game,
+                *mv,
+                self.previous_best_move,
+                self.killer_moves,
+                &search_state.history,
+            );
         }
     }
 }

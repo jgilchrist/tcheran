@@ -1,4 +1,5 @@
 use crate::chess::piece::PieceKind;
+use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
 
 // Sentinel values
@@ -19,6 +20,7 @@ pub fn score_move(
     mv: Move,
     previous_best_move: Option<Move>,
     killer_moves: [Option<Move>; 2],
+    history: &[[i32; Square::N]; Square::N],
 ) -> i32 {
     if previous_best_move == Some(mv) {
         return PREVIOUS_BEST_MOVE_SCORE;
@@ -45,7 +47,7 @@ pub fn score_move(
         return CAPTURE_SCORE + mvv_lva;
     }
 
-    QUIET_SCORE
+    QUIET_SCORE + history[mv.src.array_idx()][mv.dst.array_idx()]
 }
 
 #[cfg(test)]
@@ -74,7 +76,7 @@ mod tests {
             game.loud_moves().into_iter().map(ScoredMove::new).collect();
 
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, None, [None; 2]);
+            mv.score = score_move(&game, mv.mv, None, [None; 2], &[[0; Square::N]; Square::N]);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);
