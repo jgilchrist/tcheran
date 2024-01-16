@@ -43,6 +43,12 @@ test-stc new baseline concurrency="2":
 test-ltc new baseline concurrency="2":
 	just playoff-sprt {{new}} {{baseline}} {{concurrency}} 40+0.4
 
+test-stc-with-adjudication new baseline concurrency="2":
+	just playoff-sprt-with-adjudication {{new}} {{baseline}} {{concurrency}} 8+0.08
+
+test-ltc-with-adjudication new baseline concurrency="2":
+	just playoff-sprt-with-adjudication {{new}} {{baseline}} {{concurrency}} 40+0.4
+
 [private]
 playoff-sprt new baseline concurrency tc:
 	cutechess-cli \
@@ -52,6 +58,24 @@ playoff-sprt new baseline concurrency tc:
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
 		-rounds 100000 -games 2 -repeat \
+		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
+		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
+		-each \
+			proto=uci \
+			tc={{tc}} \
+			restart=on
+
+[private]
+playoff-sprt-with-adjudication new baseline concurrency tc:
+	cutechess-cli \
+		-engine name="$(basename {{new}})" cmd="{{new}}" \
+		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
+		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
+		-ratinginterval {{concurrency}} \
+		-concurrency {{concurrency}} \
+		-rounds 100000 -games 2 -repeat \
+		-draw movenumber=40 movecount=8 score=10 \
+		-resign movecount=3 score=400 twosided=true \
 		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
 		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
 		-each \
