@@ -19,7 +19,7 @@ impl CastleRightsSide {
     pub const N: usize = 2;
 
     #[inline(always)]
-    pub fn array_idx(self) -> usize {
+    pub const fn array_idx(self) -> usize {
         self as usize
     }
 }
