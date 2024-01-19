@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Split eval tapering into its own module
+
 ## [2.1]
 
 * Use transposition table entries from the same depth (~101 ELO)
