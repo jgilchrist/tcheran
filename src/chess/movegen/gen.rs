@@ -2,7 +2,7 @@ use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::movegen::{attackers, pins, tables};
 use crate::chess::movelist::MoveList;
 use crate::chess::square::{squares, Square};
-use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind, player::Player};
+use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
 pub fn generate_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
     let our_pieces = game.board.player_pieces(game.player);
@@ -339,10 +339,7 @@ fn generate_king_moves<const QUIET: bool>(
 }
 
 fn generate_castles<const QUIET: bool>(moves: &mut MoveList, game: &Game, all_pieces: Bitboard) {
-    let castle_rights_for_player = match game.player {
-        Player::White => game.white_castle_rights,
-        Player::Black => game.black_castle_rights,
-    };
+    let castle_rights_for_player = game.castle_rights[game.player.array_idx()];
 
     if castle_rights_for_player.king_side {
         generate_castle_move_for_side::<true>(moves, game, all_pieces);

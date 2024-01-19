@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
+* Store castle rights as an array indexed by player
 
 ### Misc
 

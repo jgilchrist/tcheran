@@ -144,21 +144,23 @@ pub fn hash(game: &Game) -> ZobristHash {
     }
 
     // Castle rights
+    let [white_castle_rights, black_castle_rights] = game.castle_rights;
+
     // White
-    if game.white_castle_rights.king_side {
+    if white_castle_rights.king_side {
         hash ^= castle_rights(Player::White, CastleRightsSide::Kingside);
     }
 
-    if game.white_castle_rights.queen_side {
+    if white_castle_rights.queen_side {
         hash ^= castle_rights(Player::White, CastleRightsSide::Queenside);
     }
 
     // Black
-    if game.black_castle_rights.king_side {
+    if black_castle_rights.king_side {
         hash ^= castle_rights(Player::Black, CastleRightsSide::Kingside);
     }
 
-    if game.black_castle_rights.queen_side {
+    if black_castle_rights.queen_side {
         hash ^= castle_rights(Player::Black, CastleRightsSide::Queenside);
     }
 

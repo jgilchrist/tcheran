@@ -83,11 +83,13 @@ fn format_current_player(game: &Game) -> String {
 }
 
 fn format_castle_rights(game: &Game) -> String {
+    let [white_castle_rights, black_castle_rights] = game.castle_rights;
+
     match (
-        game.white_castle_rights.king_side,
-        game.white_castle_rights.queen_side,
-        game.black_castle_rights.king_side,
-        game.black_castle_rights.queen_side,
+        white_castle_rights.king_side,
+        white_castle_rights.queen_side,
+        black_castle_rights.king_side,
+        black_castle_rights.queen_side,
     ) {
         (false, false, false, false) => "-".to_string(),
         (white_king, white_queen, black_king, black_queen) => format!(

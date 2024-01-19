@@ -130,13 +130,13 @@ fn fen_castle_right(input: &str) -> IResult<&str, FenCastleRight> {
     ))
 }
 
-fn fen_castling(input: &str) -> IResult<&str, (CastleRights, CastleRights)> {
+fn fen_castling(input: &str) -> IResult<&str, [CastleRights; Player::N]> {
     alt((
-        value((CastleRights::none(), CastleRights::none()), tag("-")),
+        value([CastleRights::none(), CastleRights::none()], tag("-")),
         map(many1(fen_castle_right), |rs| {
             let rights: HashSet<FenCastleRight> = rs.iter().copied().collect();
 
-            (
+            [
                 CastleRights {
                     king_side: rights.contains(&FenCastleRight::WhiteKingside),
                     queen_side: rights.contains(&FenCastleRight::WhiteQueenside),
@@ -145,7 +145,7 @@ fn fen_castling(input: &str) -> IResult<&str, (CastleRights, CastleRights)> {
                     king_side: rights.contains(&FenCastleRight::BlackKingside),
                     queen_side: rights.contains(&FenCastleRight::BlackQueenside),
                 },
-            )
+            ]
         }),
     ))(input)
 }
@@ -220,8 +220,6 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
             tuple((space0, eof)),
         )(input)?;
 
-    let (white_castle_rights, black_castle_rights) = castle_rights;
-
     let halfmove_clock = halfmove_clock.unwrap_or(0);
     let fullmove_number = fullmove_number.unwrap_or(1);
 
@@ -232,8 +230,7 @@ fn fen_parser(input: &str) -> IResult<&str, Game> {
         Game::from_state(
             board,
             player,
-            white_castle_rights,
-            black_castle_rights,
+            castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,

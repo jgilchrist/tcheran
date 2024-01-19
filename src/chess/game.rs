@@ -67,8 +67,7 @@ impl Default for CastleRights {
 pub struct History {
     pub mv: Option<Move>,
     pub captured: Option<Piece>,
-    pub white_castle_rights: CastleRights,
-    pub black_castle_rights: CastleRights,
+    pub castle_rights: [CastleRights; Player::N],
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub zobrist: ZobristHash,
@@ -78,8 +77,7 @@ pub struct History {
 pub struct Game {
     pub player: Player,
     pub board: Board,
-    pub white_castle_rights: CastleRights,
-    pub black_castle_rights: CastleRights,
+    pub castle_rights: [CastleRights; Player::N],
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub plies: u32,
@@ -97,8 +95,7 @@ impl Game {
     pub fn from_state(
         board: Board,
         player: Player,
-        white_castle_rights: CastleRights,
-        black_castle_rights: CastleRights,
+        castle_rights: [CastleRights; Player::N],
         en_passant_target: Option<Square>,
         halfmove_clock: u32,
         plies: u32,
@@ -108,8 +105,7 @@ impl Game {
         let mut game = Self {
             board,
             player,
-            white_castle_rights,
-            black_castle_rights,
+            castle_rights,
             en_passant_target,
             halfmove_clock,
             plies,
@@ -241,10 +237,7 @@ impl Game {
 
     // PERF: Make fetching the castle rights for a player more efficient
     fn try_remove_castle_rights(&mut self, player: Player, castle_rights_side: CastleRightsSide) {
-        let castle_rights = match player {
-            Player::White => &mut self.white_castle_rights,
-            Player::Black => &mut self.black_castle_rights,
-        };
+        let castle_rights = self.castle_rights.get_mut(player.array_idx()).unwrap();
 
         // We don't want to modify anything if the castle rights on this side were already lost
         if !castle_rights.can_castle_to_side(castle_rights_side) {
@@ -271,8 +264,7 @@ impl Game {
         let history = History {
             mv: Some(mv),
             captured: maybe_captured_piece,
-            white_castle_rights: self.white_castle_rights,
-            black_castle_rights: self.black_castle_rights,
+            castle_rights: self.castle_rights,
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
@@ -382,8 +374,7 @@ impl Game {
         let history = History {
             mv: None,
             captured: None,
-            white_castle_rights: self.white_castle_rights,
-            black_castle_rights: self.black_castle_rights,
+            castle_rights: self.castle_rights,
             en_passant_target: None,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
@@ -420,26 +411,31 @@ impl Game {
 
         self.halfmove_clock = history.halfmove_clock;
 
+        let [current_white_castle_rights, current_black_castle_rights] = self.castle_rights;
+        let [previous_white_castle_rights, previous_black_castle_rights] = history.castle_rights;
+
         // If either player lost their castle rights during the move, we restore them
-        if !self.white_castle_rights.king_side && history.white_castle_rights.king_side {
+        if current_white_castle_rights.king_side != previous_white_castle_rights.king_side {
             self.zobrist
                 .toggle_castle_rights(Player::White, CastleRightsSide::Kingside);
         }
-        if !self.white_castle_rights.queen_side && history.white_castle_rights.queen_side {
+
+        if current_white_castle_rights.queen_side != previous_white_castle_rights.queen_side {
             self.zobrist
                 .toggle_castle_rights(Player::White, CastleRightsSide::Queenside);
         }
-        if !self.black_castle_rights.king_side && history.black_castle_rights.king_side {
+
+        if current_black_castle_rights.king_side != previous_black_castle_rights.king_side {
             self.zobrist
                 .toggle_castle_rights(Player::Black, CastleRightsSide::Kingside);
         }
-        if !self.black_castle_rights.queen_side && history.black_castle_rights.queen_side {
+
+        if current_black_castle_rights.queen_side != previous_black_castle_rights.queen_side {
             self.zobrist
                 .toggle_castle_rights(Player::Black, CastleRightsSide::Queenside);
         }
 
-        self.white_castle_rights = history.white_castle_rights;
-        self.black_castle_rights = history.black_castle_rights;
+        self.castle_rights = history.castle_rights;
 
         // Undo castling, if we castled
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
