@@ -14,6 +14,8 @@ use super::{Control, SearchState, MAX_SEARCH_DEPTH};
 mod params {
     use crate::engine::eval::Eval;
 
+    pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
+
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
 
@@ -33,6 +35,16 @@ pub fn negamax(
     control: &impl Control,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
+
+    // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
+    // so we return Err to signal to the caller that the search did not complete.
+    if !is_root
+        && state.nodes_visited % params::CHECK_TERMINATION_NODE_FREQUENCY == 0
+        && (time_control.should_stop() || control.should_stop())
+    {
+        return Err(());
+    }
+
     state.max_depth_reached = state.max_depth_reached.max(plies);
 
     // Keep track of whether we're doing a full search. If we raised alpha at this node, we've found
@@ -79,15 +91,6 @@ pub fn negamax(
         }
 
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
-    }
-
-    // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
-    // so we return Err to signal to the caller that the search did not complete.
-    if !is_root
-        && state.nodes_visited % 10000 == 0
-        && (time_control.should_stop() || control.should_stop())
-    {
-        return Err(());
     }
 
     let in_check = game.is_king_in_check();
