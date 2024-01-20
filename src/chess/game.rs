@@ -71,6 +71,7 @@ pub struct History {
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub zobrist: ZobristHash,
+    pub incremental_eval: IncrementalEvalFields,
 }
 
 #[derive(Debug, Clone)]
@@ -268,6 +269,7 @@ impl Game {
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
+            incremental_eval: self.incremental_eval.clone(),
         };
 
         self.history.push(history);
@@ -378,6 +380,7 @@ impl Game {
             en_passant_target: None,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
+            incremental_eval: self.incremental_eval.clone(),
         };
 
         self.history.push(history);
@@ -402,46 +405,22 @@ impl Game {
         let player = self.player.other();
         let other_player = self.player;
 
+        self.plies -= 1;
         self.player = player;
-        self.zobrist.toggle_side_to_play();
+        self.zobrist = history.zobrist;
+        self.halfmove_clock = history.halfmove_clock;
+        self.castle_rights = history.castle_rights;
+        self.en_passant_target = history.en_passant_target;
+        self.incremental_eval = history.incremental_eval;
 
         let moved_piece = self.board.piece_at(to).unwrap();
-
-        self.plies -= 1;
-
-        self.halfmove_clock = history.halfmove_clock;
-
-        let [current_white_castle_rights, current_black_castle_rights] = self.castle_rights;
-        let [previous_white_castle_rights, previous_black_castle_rights] = history.castle_rights;
-
-        // If either player lost their castle rights during the move, we restore them
-        if current_white_castle_rights.king_side != previous_white_castle_rights.king_side {
-            self.zobrist
-                .toggle_castle_rights(Player::White, CastleRightsSide::Kingside);
-        }
-
-        if current_white_castle_rights.queen_side != previous_white_castle_rights.queen_side {
-            self.zobrist
-                .toggle_castle_rights(Player::White, CastleRightsSide::Queenside);
-        }
-
-        if current_black_castle_rights.king_side != previous_black_castle_rights.king_side {
-            self.zobrist
-                .toggle_castle_rights(Player::Black, CastleRightsSide::Kingside);
-        }
-
-        if current_black_castle_rights.queen_side != previous_black_castle_rights.queen_side {
-            self.zobrist
-                .toggle_castle_rights(Player::Black, CastleRightsSide::Queenside);
-        }
-
-        self.castle_rights = history.castle_rights;
 
         // Undo castling, if we castled
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
-                let rook = self.remove_at(rook_to);
-                self.set_at(rook_from, rook);
+                self.board.remove_at(rook_to);
+                self.board
+                    .set_at(rook_from, Piece::new(player, PieceKind::Rook));
             }
         }
 
@@ -449,27 +428,22 @@ impl Game {
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 let capture_square = to.backward(player);
-                self.set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
+                self.board
+                    .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
             }
         }
 
-        let en_passant_target_before_undo = self.en_passant_target;
-        self.en_passant_target = history.en_passant_target;
-
-        self.zobrist
-            .set_en_passant(en_passant_target_before_undo, history.en_passant_target);
-
         let moved_piece = self.board.piece_at(to).unwrap();
-        self.remove_at(to);
+        self.board.remove_at(to);
 
         if let Some(captured_piece) = history.captured {
-            self.set_at(to, captured_piece);
+            self.board.set_at(to, captured_piece);
         }
 
         if mv.promotion.is_some() {
-            self.set_at(from, Piece::new(player, PieceKind::Pawn));
+            self.board.set_at(from, Piece::new(player, PieceKind::Pawn));
         } else {
-            self.set_at(from, moved_piece);
+            self.board.set_at(from, moved_piece);
         }
     }
 
@@ -477,17 +451,12 @@ impl Game {
         let history = self.history.pop().unwrap();
         assert!(history.mv.is_none());
 
-        self.player = self.player.other();
-        self.zobrist.toggle_side_to_play();
-
-        let en_passant_target_before_undo = self.en_passant_target;
-        self.en_passant_target = history.en_passant_target;
-
-        self.zobrist
-            .set_en_passant(en_passant_target_before_undo, history.en_passant_target);
-
         self.plies -= 1;
+        self.player = self.player.other();
+        self.zobrist = history.zobrist;
+        self.en_passant_target = history.en_passant_target;
         self.halfmove_clock = history.halfmove_clock;
+        self.incremental_eval = history.incremental_eval;
     }
 }
 

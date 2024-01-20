@@ -2,13 +2,14 @@
 
 ## [Unreleased]
 
+* Restore zobrist hash, incremental evaluation fields and castle rights from history when undoing move (~17 Elo)
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
 * Store castle rights as an array indexed by player
-* Bundle midgame and endgame evals into a `PhasedEval` struct
 
 ### Misc
 
 * Split eval tapering into its own module
+* Bundle midgame and endgame evals into a `PhasedEval` struct
 
 ## [2.1]
 
