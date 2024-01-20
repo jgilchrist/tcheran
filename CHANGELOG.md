@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Use transposition table entries from the same depth (~101 ELO)
+
 ## [2.0]
 
 * Add null move pruning
