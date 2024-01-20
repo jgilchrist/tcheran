@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Use transposition table entries from the same depth (~101 ELO)
+* Always extend when in check (~29 ELO)
 
 ## [2.0]
 

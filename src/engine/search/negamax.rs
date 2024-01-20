@@ -53,15 +53,6 @@ pub fn negamax(
     // alpha & beta bounds, and thus search less of the tree.
     let mut full_pv_search = true;
 
-    // Check extension: If we're about to finish searching, but we are in check, we
-    // should keep going.
-    if depth == 0 {
-        let in_check = game.is_king_in_check();
-        if in_check && depth < MAX_SEARCH_DEPTH {
-            depth += 1;
-        }
-    }
-
     if !is_root {
         state.nodes_visited += 1;
     }
@@ -72,6 +63,13 @@ pub fn negamax(
             || game.is_stalemate_by_insufficient_material())
     {
         return Ok(Eval::DRAW);
+    }
+
+    // Check extension: If we're about to finish searching, but we are in check, we
+    // should keep going.
+    let in_check = game.is_king_in_check();
+    if in_check && depth < MAX_SEARCH_DEPTH {
+        depth += 1;
     }
 
     if depth == 0 {
@@ -92,8 +90,6 @@ pub fn negamax(
 
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
-
-    let in_check = game.is_king_in_check();
 
     if !is_root && !in_check {
         let eval = eval::eval(game);
