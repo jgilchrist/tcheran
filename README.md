@@ -1,4 +1,4 @@
-# <div align="center">chess-engine</div>
+# <div align="center">Tcheran</div>
 
 A UCI compatible engine developed by [@jgilchrist](https://github.com/jgilchrist), written in Rust.
 
