@@ -1,13 +1,15 @@
 use crate::chess::fen::START_POS;
 use crate::chess::game::Game;
-use crate::chess::perft::perft;
+use crate::chess::perft::{legal_perft, pseudo_legal_perft};
 
 fn test_perft(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
     let mut game = Game::from_fen(fen).unwrap();
-    let actual_positions = perft(depth, &mut game);
+    let actual_positions_legal = legal_perft(depth, &mut game);
+    let actual_positions_pseudo_legal = pseudo_legal_perft(depth, &mut game);
 
-    assert_eq!(expected_positions, actual_positions);
+    assert_eq!(expected_positions, actual_positions_legal);
+    assert_eq!(expected_positions, actual_positions_pseudo_legal);
 }
 
 #[test]
