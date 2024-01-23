@@ -5,6 +5,10 @@
 * Use transposition table entries from the same depth (~101 ELO)
 * Always extend when in check (~29 ELO)
 
+### Misc
+
+* Avoid double-counting 'root' quiescence nodes
+
 ## [2.0]
 
 * Add null move pruning

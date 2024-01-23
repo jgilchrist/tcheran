@@ -53,10 +53,6 @@ pub fn negamax(
     // alpha & beta bounds, and thus search less of the tree.
     let mut full_pv_search = true;
 
-    if !is_root {
-        state.nodes_visited += 1;
-    }
-
     if !is_root
         && (game.is_repeated_position()
             || game.is_stalemate_by_fifty_move_rule()
@@ -74,6 +70,10 @@ pub fn negamax(
 
     if depth == 0 {
         return quiescence(game, alpha, beta, plies, time_control, state, control);
+    }
+
+    if !is_root {
+        state.nodes_visited += 1;
     }
 
     let mut previous_best_move: Option<Move> = None;
