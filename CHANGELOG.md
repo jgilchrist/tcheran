@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.1]
+
 * Use transposition table entries from the same depth (~101 ELO)
 * Always extend when in check (~29 ELO)
 
@@ -84,7 +86,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.0...HEAD
-[2.0]: https://github.com/jgilchrist/chess-engine/compare/v1.0..v1.1
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.1...HEAD
+[2.1]: https://github.com/jgilchrist/chess-engine/compare/v2.0..v2.1
+[2.0]: https://github.com/jgilchrist/chess-engine/compare/v1.1..v2.0
 [1.1]: https://github.com/jgilchrist/chess-engine/compare/v1.0..v1.1
 [1.0]: https://github.com/jgilchrist/chess-engine/releases/tag/v1.0
