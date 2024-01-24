@@ -8,8 +8,8 @@
 
 ## [2.1]
 
-* Use transposition table entries from the same depth (~101 ELO)
-* Always extend when in check (~29 ELO)
+* Use transposition table entries from the same depth (~101 Elo)
+* Always extend when in check (~29 Elo)
 
 ### Misc
 
@@ -36,7 +36,7 @@
 * Use `.get_unchecked()` for all static array accesses (-1.18% perft(8) time)
 * Store `Square` as a `u8` instead of a `Bitboard` internally
 * Use an array for `PlayerPieces` (-6.37% search(9) time)
-* Generate attackers for single squares instead of all attacks in movegen (+8.0 ELO)
+* Generate attackers for single squares instead of all attacks in movegen (+8.0 Elo)
 * Optimise castle move generation
 * Don't generate non-capture underpromotions in quiescence search
 * Remove the `Ctx` struct from movegen (-3.13% perft(7) time)
