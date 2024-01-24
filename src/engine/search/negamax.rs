@@ -81,7 +81,7 @@ pub fn negamax(
     if let Some(tt_entry) = tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth >= depth {
             match tt_entry.bound {
-                NodeBound::Exact => return Ok(tt_entry.eval),
+                NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
                 NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
                 NodeBound::Lower if tt_entry.eval >= beta => return Ok(beta),
                 _ => {}
@@ -199,7 +199,7 @@ pub fn negamax(
         if move_score >= beta {
             let tt_data = SearchTranspositionTableData {
                 bound: NodeBound::Lower,
-                eval: move_score,
+                eval: move_score.with_mate_distance_from_position(plies),
                 best_move: None,
                 depth,
                 age: tt.generation,

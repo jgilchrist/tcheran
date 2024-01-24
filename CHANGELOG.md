@@ -6,6 +6,7 @@
 * Fix throwing away old en passant target during null moves (~19 Elo)
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
 * Store castle rights as an array indexed by player
+* Correct stored mate values in TT
 
 ### Misc
 
