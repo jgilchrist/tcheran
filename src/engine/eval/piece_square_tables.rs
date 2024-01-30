@@ -7,10 +7,13 @@ use crate::chess::{
     square::{File, Rank},
 };
 
-use super::WhiteEval;
+use super::PhasedEval;
 
 type PieceValueTableDefinition = [[i16; File::N]; Rank::N];
-type PieceValueTable = [i16; Square::N];
+type PhasePieceValueTable = [i16; Square::N];
+type PhasePieceValueTables = [[PhasePieceValueTable; PieceKind::N]; Player::N];
+
+type PieceValueTable = [PhasedEval; Square::N];
 type PieceValueTables = [[PieceValueTable; PieceKind::N]; Player::N];
 
 fn midgame_piece_value(kind: PieceKind) -> i16 {
@@ -175,11 +178,10 @@ mod tables {
 
     // These need to be initialised when we start up, since they can
     // be derived from the white tables.
-    pub static mut MIDGAME_TABLES: PieceValueTables = [[[0; Square::N]; PieceKind::N]; Player::N];
-    pub static mut ENDGAME_TABLES: PieceValueTables = [[[0; Square::N]; PieceKind::N]; Player::N];
+    pub static mut TABLES: PieceValueTables = [[[PhasedEval::new(0, 0); Square::N]; PieceKind::N]; Player::N];
 
-    pub fn negate(t: PieceValueTable) -> PieceValueTable {
-        let mut new_table: PieceValueTable = [0; Square::N];
+    pub fn negate(t: PhasePieceValueTable) -> PhasePieceValueTable {
+        let mut new_table: PhasePieceValueTable = [0; Square::N];
 
         for i in 0..Square::N {
             new_table[i] = -t[i];
@@ -188,8 +190,8 @@ mod tables {
         new_table
     }
     
-    pub fn add(t: PieceValueTable, v: i16) -> PieceValueTable {
-        let mut new_table: PieceValueTable = [0; Square::N];
+    pub fn add(t: PhasePieceValueTable, v: i16) -> PhasePieceValueTable {
+        let mut new_table: PhasePieceValueTable = [0; Square::N];
 
         for i in 0..Square::N {
             new_table[i] = t[i] + v;
@@ -208,8 +210,8 @@ mod tables {
         new_table
     }
 
-    pub fn flatten(definition: PieceValueTableDefinition) -> PieceValueTable {
-        let mut new_table: PieceValueTable = [0; Square::N];
+    pub fn flatten(definition: PieceValueTableDefinition) -> PhasePieceValueTable {
+        let mut new_table: PhasePieceValueTable = [0; Square::N];
 
         for i in 0..Square::N {
             new_table[i] = definition[i / File::N][i % Rank::N];
@@ -222,102 +224,100 @@ mod tables {
 pub fn init() {
     use tables::*;
 
-    fn white_pst(def: PieceValueTableDefinition, piece_value: i16) -> PieceValueTable {
+    fn white_pst(def: PieceValueTableDefinition, piece_value: i16) -> PhasePieceValueTable {
         add(flatten(flip(def)), piece_value)
     }
 
-    fn black_pst(def: PieceValueTableDefinition, piece_value: i16) -> PieceValueTable {
+    fn black_pst(def: PieceValueTableDefinition, piece_value: i16) -> PhasePieceValueTable {
         negate(add(flatten(def), piece_value))
     }
 
+    let mut midgame_tables: PhasePieceValueTables = [[[0; Square::N]; PieceKind::N]; Player::N];
+    let mut endgame_tables: PhasePieceValueTables = [[[0; Square::N]; PieceKind::N]; Player::N];
+
+    midgame_tables[Player::Black.array_idx()][PieceKind::Pawn.array_idx()] =
+        black_pst(PAWNS_MIDGAME, midgame_piece_value(PieceKind::Pawn));
+    midgame_tables[Player::Black.array_idx()][PieceKind::Knight.array_idx()] =
+        black_pst(KNIGHTS_MIDGAME, midgame_piece_value(PieceKind::Knight));
+    midgame_tables[Player::Black.array_idx()][PieceKind::Bishop.array_idx()] =
+        black_pst(BISHOPS_MIDGAME, midgame_piece_value(PieceKind::Bishop));
+    midgame_tables[Player::Black.array_idx()][PieceKind::Rook.array_idx()] =
+        black_pst(ROOKS_MIDGAME, midgame_piece_value(PieceKind::Rook));
+    midgame_tables[Player::Black.array_idx()][PieceKind::Queen.array_idx()] =
+        black_pst(QUEENS_MIDGAME, midgame_piece_value(PieceKind::Queen));
+    midgame_tables[Player::Black.array_idx()][PieceKind::King.array_idx()] =
+        black_pst(KING_MIDGAME, midgame_piece_value(PieceKind::King));
+
+    midgame_tables[Player::White.array_idx()][PieceKind::Pawn.array_idx()] =
+        white_pst(PAWNS_MIDGAME, midgame_piece_value(PieceKind::Pawn));
+    midgame_tables[Player::White.array_idx()][PieceKind::Knight.array_idx()] =
+        white_pst(KNIGHTS_MIDGAME, midgame_piece_value(PieceKind::Knight));
+    midgame_tables[Player::White.array_idx()][PieceKind::Bishop.array_idx()] =
+        white_pst(BISHOPS_MIDGAME, midgame_piece_value(PieceKind::Bishop));
+    midgame_tables[Player::White.array_idx()][PieceKind::Rook.array_idx()] =
+        white_pst(ROOKS_MIDGAME, midgame_piece_value(PieceKind::Rook));
+    midgame_tables[Player::White.array_idx()][PieceKind::Queen.array_idx()] =
+        white_pst(QUEENS_MIDGAME, midgame_piece_value(PieceKind::Queen));
+    midgame_tables[Player::White.array_idx()][PieceKind::King.array_idx()] =
+        white_pst(KING_MIDGAME, midgame_piece_value(PieceKind::King));
+
+    endgame_tables[Player::Black.array_idx()][PieceKind::Pawn.array_idx()] =
+        black_pst(PAWNS_ENDGAME, endgame_piece_value(PieceKind::Pawn));
+    endgame_tables[Player::Black.array_idx()][PieceKind::Knight.array_idx()] =
+        black_pst(KNIGHTS_ENDGAME, endgame_piece_value(PieceKind::Knight));
+    endgame_tables[Player::Black.array_idx()][PieceKind::Bishop.array_idx()] =
+        black_pst(BISHOPS_ENDGAME, endgame_piece_value(PieceKind::Bishop));
+    endgame_tables[Player::Black.array_idx()][PieceKind::Rook.array_idx()] =
+        black_pst(ROOKS_ENDGAME, endgame_piece_value(PieceKind::Rook));
+    endgame_tables[Player::Black.array_idx()][PieceKind::Queen.array_idx()] =
+        black_pst(QUEENS_ENDGAME, endgame_piece_value(PieceKind::Queen));
+    endgame_tables[Player::Black.array_idx()][PieceKind::King.array_idx()] =
+        black_pst(KING_ENDGAME, endgame_piece_value(PieceKind::King));
+
+    endgame_tables[Player::White.array_idx()][PieceKind::Pawn.array_idx()] =
+        white_pst(PAWNS_ENDGAME, endgame_piece_value(PieceKind::Pawn));
+    endgame_tables[Player::White.array_idx()][PieceKind::Knight.array_idx()] =
+        white_pst(KNIGHTS_ENDGAME, endgame_piece_value(PieceKind::Knight));
+    endgame_tables[Player::White.array_idx()][PieceKind::Bishop.array_idx()] =
+        white_pst(BISHOPS_ENDGAME, endgame_piece_value(PieceKind::Bishop));
+    endgame_tables[Player::White.array_idx()][PieceKind::Rook.array_idx()] =
+        white_pst(ROOKS_ENDGAME, endgame_piece_value(PieceKind::Rook));
+    endgame_tables[Player::White.array_idx()][PieceKind::Queen.array_idx()] =
+        white_pst(QUEENS_ENDGAME, endgame_piece_value(PieceKind::Queen));
+    endgame_tables[Player::White.array_idx()][PieceKind::King.array_idx()] =
+        white_pst(KING_ENDGAME, endgame_piece_value(PieceKind::King));
+
     unsafe {
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::Pawn.array_idx()] =
-            black_pst(PAWNS_MIDGAME, midgame_piece_value(PieceKind::Pawn));
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::Knight.array_idx()] =
-            black_pst(KNIGHTS_MIDGAME, midgame_piece_value(PieceKind::Knight));
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::Bishop.array_idx()] =
-            black_pst(BISHOPS_MIDGAME, midgame_piece_value(PieceKind::Bishop));
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::Rook.array_idx()] =
-            black_pst(ROOKS_MIDGAME, midgame_piece_value(PieceKind::Rook));
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::Queen.array_idx()] =
-            black_pst(QUEENS_MIDGAME, midgame_piece_value(PieceKind::Queen));
-        MIDGAME_TABLES[Player::Black.array_idx()][PieceKind::King.array_idx()] =
-            black_pst(KING_MIDGAME, midgame_piece_value(PieceKind::King));
-
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::Pawn.array_idx()] =
-            white_pst(PAWNS_MIDGAME, midgame_piece_value(PieceKind::Pawn));
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::Knight.array_idx()] =
-            white_pst(KNIGHTS_MIDGAME, midgame_piece_value(PieceKind::Knight));
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::Bishop.array_idx()] =
-            white_pst(BISHOPS_MIDGAME, midgame_piece_value(PieceKind::Bishop));
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::Rook.array_idx()] =
-            white_pst(ROOKS_MIDGAME, midgame_piece_value(PieceKind::Rook));
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::Queen.array_idx()] =
-            white_pst(QUEENS_MIDGAME, midgame_piece_value(PieceKind::Queen));
-        MIDGAME_TABLES[Player::White.array_idx()][PieceKind::King.array_idx()] =
-            white_pst(KING_MIDGAME, midgame_piece_value(PieceKind::King));
-
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::Pawn.array_idx()] =
-            black_pst(PAWNS_ENDGAME, endgame_piece_value(PieceKind::Pawn));
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::Knight.array_idx()] =
-            black_pst(KNIGHTS_ENDGAME, endgame_piece_value(PieceKind::Knight));
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::Bishop.array_idx()] =
-            black_pst(BISHOPS_ENDGAME, endgame_piece_value(PieceKind::Bishop));
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::Rook.array_idx()] =
-            black_pst(ROOKS_ENDGAME, endgame_piece_value(PieceKind::Rook));
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::Queen.array_idx()] =
-            black_pst(QUEENS_ENDGAME, endgame_piece_value(PieceKind::Queen));
-        ENDGAME_TABLES[Player::Black.array_idx()][PieceKind::King.array_idx()] =
-            black_pst(KING_ENDGAME, endgame_piece_value(PieceKind::King));
-
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::Pawn.array_idx()] =
-            white_pst(PAWNS_ENDGAME, endgame_piece_value(PieceKind::Pawn));
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::Knight.array_idx()] =
-            white_pst(KNIGHTS_ENDGAME, endgame_piece_value(PieceKind::Knight));
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::Bishop.array_idx()] =
-            white_pst(BISHOPS_ENDGAME, endgame_piece_value(PieceKind::Bishop));
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::Rook.array_idx()] =
-            white_pst(ROOKS_ENDGAME, endgame_piece_value(PieceKind::Rook));
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::Queen.array_idx()] =
-            white_pst(QUEENS_ENDGAME, endgame_piece_value(PieceKind::Queen));
-        ENDGAME_TABLES[Player::White.array_idx()][PieceKind::King.array_idx()] =
-            white_pst(KING_ENDGAME, endgame_piece_value(PieceKind::King));
+        for player in 0..Player::N {
+            for piece in 0..PieceKind::N {
+                for square in 0..Square::N {
+                    TABLES[player][piece][square] = PhasedEval::new(
+                        midgame_tables[player][piece][square],
+                        endgame_tables[player][piece][square],
+                    );
+                }
+            }
+        }
     }
 }
 
 #[inline(always)]
-pub fn piece_contributions(square: Square, piece: Piece) -> (WhiteEval, WhiteEval) {
+pub fn piece_contributions(square: Square, piece: Piece) -> PhasedEval {
     // Safe as idx is guaranteed to be in bounds - we have length 64 arrays and are
     // generating idx from Square
-
-    let midgame_contribution = unsafe {
-        tables::MIDGAME_TABLES[piece.player.array_idx()][piece.kind.array_idx()][square.array_idx()]
-    };
-
-    let endgame_contribution = unsafe {
-        tables::ENDGAME_TABLES[piece.player.array_idx()][piece.kind.array_idx()][square.array_idx()]
-    };
-
-    (
-        WhiteEval(midgame_contribution),
-        WhiteEval(endgame_contribution),
-    )
+    unsafe { tables::TABLES[piece.player.array_idx()][piece.kind.array_idx()][square.array_idx()] }
 }
 
-pub fn phase_evals(board: &Board) -> (WhiteEval, WhiteEval) {
-    let mut midgame_eval = WhiteEval(0);
-    let mut endgame_eval = WhiteEval(0);
+pub fn eval(board: &Board) -> PhasedEval {
+    let mut eval = PhasedEval::new(0, 0);
 
     for idx in 0..Square::N {
         let maybe_piece = board.pieces[idx];
 
         if let Some(piece) = maybe_piece {
-            let (midgame_contribution, endgame_contribution) =
-                piece_contributions(Square::from_array_index(idx), piece);
-            midgame_eval += midgame_contribution;
-            endgame_eval += endgame_contribution;
+            eval += piece_contributions(Square::from_array_index(idx), piece);
         }
     }
 
-    (midgame_eval, endgame_eval)
+    eval
 }
