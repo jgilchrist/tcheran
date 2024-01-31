@@ -178,7 +178,7 @@ mod tables {
 
     // These need to be initialised when we start up, since they can
     // be derived from the white tables.
-    pub static mut TABLES: PieceValueTables = [[[PhasedEval::new(0, 0); Square::N]; PieceKind::N]; Player::N];
+    pub static mut TABLES: PieceValueTables = [[[PhasedEval::ZERO; Square::N]; PieceKind::N]; Player::N];
 
     pub fn negate(t: PhasePieceValueTable) -> PhasePieceValueTable {
         let mut new_table: PhasePieceValueTable = [0; Square::N];
@@ -309,7 +309,7 @@ pub fn piece_contributions(square: Square, piece: Piece) -> PhasedEval {
 }
 
 pub fn eval(board: &Board) -> PhasedEval {
-    let mut eval = PhasedEval::new(0, 0);
+    let mut eval = PhasedEval::ZERO;
 
     for idx in 0..Square::N {
         let maybe_piece = board.pieces[idx];

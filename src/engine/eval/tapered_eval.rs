@@ -8,6 +8,8 @@ use crate::engine::eval::WhiteEval;
 pub struct PhasedEval(i16, i16);
 
 impl PhasedEval {
+    pub const ZERO: Self = Self(0, 0);
+
     pub const fn new(midgame: i16, endgame: i16) -> Self {
         Self(midgame, endgame)
     }
