@@ -8,6 +8,7 @@ This engine has been tested by [CCRL](https://computerchess.org.uk/ccrl/):
 
 | Version | [CCRL Blitz](https://computerchess.org.uk/ccrl/404/) |
 | ------- | ---------------------------------------------------- |
+| v2.1    | 2272                                                 |
 | v2.0    | -                                                    |
 | v1.1    | -                                                    |
 | v1.0    | 1879                                                 |
