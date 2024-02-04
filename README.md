@@ -2,16 +2,19 @@
 
 A UCI compatible engine developed by [@jgilchrist](https://github.com/jgilchrist), written in Rust.
 
-## Strength
+## Ratings
 
-This engine has been tested by [CCRL](https://computerchess.org.uk/ccrl/):
+Thank you to everybody who has tested the engine.
 
-| Version | [CCRL Blitz](https://computerchess.org.uk/ccrl/404/) |
-| ------- | ---------------------------------------------------- |
-| v2.1    | 2272                                                 |
-| v2.0    | -                                                    |
-| v1.1    | -                                                    |
-| v1.0    | 1879                                                 |
+| Version | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] |
+| ------- | -------------------------|----------------|
+| v2.1    | 2272                     | 2540           |
+| v2.0    | -                        | 2425           |
+| v1.1    | -                        | 2228           |
+| v1.0    | 1879                     | -              |
+
+[ccrl-blitz]: https://computerchess.org.uk/ccrl/404/
+[mcerl]: https://www.chessengeria.eu/mcerl
 
 It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). Its current ratings are:
 
