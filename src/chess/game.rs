@@ -377,7 +377,7 @@ impl Game {
             mv: None,
             captured: None,
             castle_rights: self.castle_rights,
-            en_passant_target: None,
+            en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),

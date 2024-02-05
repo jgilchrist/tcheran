@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Restore zobrist hash, incremental evaluation fields and castle rights from history when undoing move (~17 Elo)
+* Fix throwing away old en passant target during null moves (~19 Elo)
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
 * Store castle rights as an array indexed by player
 
