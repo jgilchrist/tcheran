@@ -12,6 +12,7 @@
 
 * Split eval tapering into its own module
 * Bundle midgame and endgame evals into a `PhasedEval` struct
+* Fix taking up more memory than needed when the transposition table is resized repeatedly
 
 ## [2.1]
 

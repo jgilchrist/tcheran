@@ -40,7 +40,9 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
 
         let number_of_entries = calculate_number_of_entries::<T>(size_mb);
 
-        self.data = vec![None; number_of_entries];
+        self.data.clear();
+        self.data.resize(number_of_entries, None);
+        self.data.shrink_to_fit();
         self.size = size_mb;
         self.occupied = 0;
         self.generation = 0;
