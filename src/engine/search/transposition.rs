@@ -63,3 +63,26 @@ impl TTOverwriteable for SearchTranspositionTableData {
 }
 
 pub type SearchTranspositionTable = TranspositionTable<SearchTranspositionTableData>;
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::engine::transposition_table;
+    use crate::engine::transposition_table::TranspositionTableEntry;
+
+    #[test]
+    fn assert_tt_size() {
+        assert_eq!(
+            std::mem::size_of::<TranspositionTableEntry<SearchTranspositionTableData>>(),
+            16
+        );
+    }
+
+    #[test]
+    fn assert_tt_entries_at_256mb() {
+        let number_of_entries =
+            transposition_table::calculate_number_of_entries::<SearchTranspositionTableData>(256);
+
+        assert_eq!(number_of_entries, 16_777_216);
+    }
+}
