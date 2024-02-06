@@ -58,11 +58,11 @@ impl Eval {
         let mut adjusted_value = self.0;
 
         if adjusted_value > Self::MATE_THRESHOLD {
-            adjusted_value += plies as i16;
+            adjusted_value += i16::from(plies);
         }
 
         if adjusted_value < -Self::MATE_THRESHOLD {
-            adjusted_value -= plies as i16;
+            adjusted_value -= i16::from(plies);
         }
 
         Self(adjusted_value)
@@ -72,11 +72,11 @@ impl Eval {
         let mut adjusted_value = self.0;
 
         if adjusted_value > Self::MATE_THRESHOLD {
-            adjusted_value -= plies as i16;
+            adjusted_value -= i16::from(plies);
         }
 
         if adjusted_value < -Self::MATE_THRESHOLD {
-            adjusted_value += plies as i16;
+            adjusted_value += i16::from(plies);
         }
 
         Self(adjusted_value)
