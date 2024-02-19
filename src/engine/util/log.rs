@@ -21,7 +21,6 @@ pub fn log<S: AsRef<str>>(s: S) {
 
     let mut f = fs::OpenOptions::new()
         .create(true)
-        .write(true)
         .append(true)
         .open(path)
         .unwrap();
