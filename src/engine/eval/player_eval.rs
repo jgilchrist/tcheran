@@ -20,7 +20,9 @@ impl Eval {
     pub(crate) const DRAW: Self = Self(0);
 
     const MATE: i16 = 32000;
+    const MATED: i16 = -Self::MATE;
     const MATE_THRESHOLD: i16 = Self::MATE - 100;
+    const MATED_THRESHOLD: i16 = -Self::MATE_THRESHOLD;
 
     pub const fn new(eval: i16) -> Self {
         Self(eval)
@@ -40,8 +42,8 @@ impl Eval {
             return Some((Self::MATE - self.0 + 1) / 2);
         }
 
-        if self.0 < -Self::MATE_THRESHOLD {
-            return Some((-Self::MATE - self.0) / 2);
+        if self.0 < Self::MATED_THRESHOLD {
+            return Some((Self::MATED - self.0) / 2);
         }
 
         None
@@ -61,7 +63,7 @@ impl Eval {
             adjusted_value += i16::from(plies);
         }
 
-        if adjusted_value < -Self::MATE_THRESHOLD {
+        if adjusted_value < Self::MATED_THRESHOLD {
             adjusted_value -= i16::from(plies);
         }
 
@@ -75,7 +77,7 @@ impl Eval {
             adjusted_value -= i16::from(plies);
         }
 
-        if adjusted_value < -Self::MATE_THRESHOLD {
+        if adjusted_value < Self::MATED_THRESHOLD {
             adjusted_value += i16::from(plies);
         }
 
