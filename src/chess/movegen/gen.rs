@@ -1,6 +1,7 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::movegen::{attackers, pins, tables};
 use crate::chess::movelist::MoveList;
+use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
@@ -164,9 +165,13 @@ fn generate_pawn_moves<const QUIET: bool>(
                 {
                     // We need to check that we do not reveal a check by making this en-passant capture
                     let mut board_without_en_passant_participants = game.board.clone();
+
+                    let our_pawn = Piece::new(game.player, PieceKind::Pawn);
+                    let their_pawn = Piece::new(game.player.other(), PieceKind::Pawn);
+
                     board_without_en_passant_participants
-                        .remove_at(potential_en_passant_capture_start);
-                    board_without_en_passant_participants.remove_at(captured_pawn);
+                        .remove_at(potential_en_passant_capture_start, our_pawn);
+                    board_without_en_passant_participants.remove_at(captured_pawn, their_pawn);
 
                     let king_in_check = attackers::generate_attackers_of(
                         &board_without_en_passant_participants,
@@ -317,11 +322,13 @@ fn generate_king_moves<const QUIET: bool>(
 ) {
     let destinations = tables::king_attacks(king);
 
+    let our_king = Piece::new(game.player, PieceKind::King);
+
     // When calculating the attacked squares, we need to remove our King from the board.
     // If we don't, squares behind the king look safe (since they are blocked by the king)
     // meaning we'd generate moves away from a slider while in check.
     let mut board_without_king = game.board.clone();
-    board_without_king.remove_at(king);
+    board_without_king.remove_at(king, our_king);
 
     for dst in destinations & their_pieces {
         if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {

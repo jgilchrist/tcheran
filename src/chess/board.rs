@@ -83,14 +83,9 @@ impl Board {
     }
 
     #[inline(always)]
-    pub fn remove_at(&mut self, square: Square) -> bool {
-        let Some(piece) = self.piece_at(square) else {
-            return false;
-        };
-
+    pub fn remove_at(&mut self, square: Square, piece: Piece) {
         self.pieces[piece.player.array_idx()].0[piece.kind.array_idx()].unset_inplace(square);
         self.squares[square.array_idx()] = None;
-        true
     }
 
     #[inline(always)]

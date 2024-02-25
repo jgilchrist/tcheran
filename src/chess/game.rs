@@ -231,7 +231,7 @@ impl Game {
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_at(sq).unwrap();
-        self.board.remove_at(sq);
+        self.board.remove_at(sq, removed_piece);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
         self.incremental_eval.remove_at(sq, removed_piece);
         removed_piece
@@ -418,9 +418,9 @@ impl Game {
         // Undo castling, if we castled
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
-                self.board.remove_at(rook_to);
-                self.board
-                    .set_at(rook_from, Piece::new(player, PieceKind::Rook));
+                let rook = Piece::new(player, PieceKind::Rook);
+                self.board.remove_at(rook_to, rook);
+                self.board.set_at(rook_from, rook);
             }
         }
 
@@ -434,7 +434,7 @@ impl Game {
         }
 
         let moved_piece = self.board.piece_at(to).unwrap();
-        self.board.remove_at(to);
+        self.board.remove_at(to, moved_piece);
 
         if let Some(captured_piece) = history.captured {
             self.board.set_at(to, captured_piece);
