@@ -267,53 +267,53 @@ mod tests {
         let default_game = Game::default();
 
         assert_eq!(
-            game.board.white_pieces.pawns(),
-            default_game.board.white_pieces.pawns()
+            game.board.white_pieces().pawns(),
+            default_game.board.white_pieces().pawns()
         );
         assert_eq!(
-            game.board.white_pieces.knights(),
-            default_game.board.white_pieces.knights()
+            game.board.white_pieces().knights(),
+            default_game.board.white_pieces().knights()
         );
         assert_eq!(
-            game.board.white_pieces.bishops(),
-            default_game.board.white_pieces.bishops()
+            game.board.white_pieces().bishops(),
+            default_game.board.white_pieces().bishops()
         );
         assert_eq!(
-            game.board.white_pieces.rooks(),
-            default_game.board.white_pieces.rooks()
+            game.board.white_pieces().rooks(),
+            default_game.board.white_pieces().rooks()
         );
         assert_eq!(
-            game.board.white_pieces.queens(),
-            default_game.board.white_pieces.queens()
+            game.board.white_pieces().queens(),
+            default_game.board.white_pieces().queens()
         );
         assert_eq!(
-            game.board.white_pieces.king(),
-            default_game.board.white_pieces.king()
+            game.board.white_pieces().king(),
+            default_game.board.white_pieces().king()
         );
 
         assert_eq!(
-            game.board.black_pieces.pawns(),
-            default_game.board.black_pieces.pawns()
+            game.board.black_pieces().pawns(),
+            default_game.board.black_pieces().pawns()
         );
         assert_eq!(
-            game.board.black_pieces.knights(),
-            default_game.board.black_pieces.knights()
+            game.board.black_pieces().knights(),
+            default_game.board.black_pieces().knights()
         );
         assert_eq!(
-            game.board.black_pieces.bishops(),
-            default_game.board.black_pieces.bishops()
+            game.board.black_pieces().bishops(),
+            default_game.board.black_pieces().bishops()
         );
         assert_eq!(
-            game.board.black_pieces.rooks(),
-            default_game.board.black_pieces.rooks()
+            game.board.black_pieces().rooks(),
+            default_game.board.black_pieces().rooks()
         );
         assert_eq!(
-            game.board.black_pieces.queens(),
-            default_game.board.black_pieces.queens()
+            game.board.black_pieces().queens(),
+            default_game.board.black_pieces().queens()
         );
         assert_eq!(
-            game.board.black_pieces.king(),
-            default_game.board.black_pieces.king()
+            game.board.black_pieces().king(),
+            default_game.board.black_pieces().king()
         );
 
         assert_eq!(game.plies, 0);

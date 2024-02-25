@@ -5,8 +5,8 @@ use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
 pub fn generate_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
-    let our_pieces = game.board.player_pieces(game.player);
-    let their_pieces = game.board.player_pieces(game.player.other()).all();
+    let our_pieces = game.board.pieces(game.player);
+    let their_pieces = game.board.pieces(game.player.other()).all();
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king().single();

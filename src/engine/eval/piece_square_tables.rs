@@ -312,10 +312,12 @@ pub fn eval(board: &Board) -> PhasedEval {
     let mut eval = PhasedEval::ZERO;
 
     for idx in 0..Square::N {
-        let maybe_piece = board.pieces[idx];
+        let square = Square::from_array_index(idx);
+
+        let maybe_piece = board.piece_at(square);
 
         if let Some(piece) = maybe_piece {
-            eval += piece_contributions(Square::from_array_index(idx), piece);
+            eval += piece_contributions(square, piece);
         }
     }
 

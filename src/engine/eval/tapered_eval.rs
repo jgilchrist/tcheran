@@ -82,7 +82,9 @@ pub fn phase_value(board: &Board) -> i16 {
     let mut v = 0;
 
     for idx in 0..Square::N {
-        let maybe_piece = board.pieces[idx];
+        let square = Square::from_array_index(idx);
+
+        let maybe_piece = board.piece_at(square);
 
         if let Some(piece) = maybe_piece {
             v += piece_phase_value_contribution(piece.kind);
