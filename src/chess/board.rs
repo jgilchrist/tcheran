@@ -85,6 +85,15 @@ impl Board {
         unsafe { *self.pieces.get_unchecked(square.array_idx()) }
     }
 
+    fn squares_for_piece_t<PLAYER: PlayerT>(&mut self, piece: Piece) -> &mut Bitboard {
+        let player_pieces = match PLAYER::IS_WHITE {
+            true => &mut self.white_pieces,
+            false => &mut self.black_pieces,
+        };
+
+        &mut player_pieces.0[piece.kind.array_idx()]
+    }
+
     fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
         let player_pieces = match piece.player {
             Player::White => &mut self.white_pieces,
@@ -95,6 +104,16 @@ impl Board {
     }
 
     pub fn remove_at(&mut self, square: Square) -> bool {
+        let Some(piece) = self.piece_at(square) else {
+            return false;
+        };
+
+        self.squares_for_piece(piece).unset_inplace(square);
+        self.pieces[square.array_idx()] = None;
+        true
+    }
+
+    pub fn remove_at_t<PLAYER: PlayerT>(&mut self, square: Square) -> bool {
         let Some(piece) = self.piece_at(square) else {
             return false;
         };
