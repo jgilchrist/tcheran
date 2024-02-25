@@ -10,9 +10,8 @@ use color_eyre::Result;
 
 #[derive(Clone)]
 pub struct Board {
-    pub white_pieces: PlayerPieces,
-    pub black_pieces: PlayerPieces,
-    pub pieces: [Option<Piece>; Square::N],
+    pieces: [PlayerPieces; Player::N],
+    squares: [Option<Piece>; Square::N],
 }
 
 // Many engines store these in an array (or 2D array) by piece & player.
@@ -63,31 +62,24 @@ impl PlayerPieces {
 
 impl Board {
     #[inline(always)]
-    pub const fn player_pieces(&self, player: Player) -> &PlayerPieces {
-        match player {
-            Player::White => &self.white_pieces,
-            Player::Black => &self.black_pieces,
-        }
+    pub fn pieces(&self, player: Player) -> &PlayerPieces {
+        &self.pieces[player.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn white_pieces(&self) -> &PlayerPieces {
+        self.pieces(Player::White)
+    }
+
+    #[inline(always)]
+    pub fn black_pieces(&self) -> &PlayerPieces {
+        self.pieces(Player::Black)
     }
 
     #[inline(always)]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
         // We know array_idx can only return up to Square::N - 1
-        unsafe { *self.pieces.get_unchecked(square.array_idx()) }
-    }
-
-    #[inline(always)]
-    fn player_pieces_for(&mut self, player: Player) -> &mut PlayerPieces {
-        match player {
-            Player::White => &mut self.white_pieces,
-            Player::Black => &mut self.black_pieces,
-        }
-    }
-
-    #[inline(always)]
-    fn squares_for_piece(&mut self, piece: Piece) -> &mut Bitboard {
-        let player_pieces = self.player_pieces_for(piece.player);
-        &mut player_pieces.0[piece.kind.array_idx()]
+        unsafe { *self.squares.get_unchecked(square.array_idx()) }
     }
 
     #[inline(always)]
@@ -96,19 +88,19 @@ impl Board {
             return false;
         };
 
-        self.squares_for_piece(piece).unset_inplace(square);
-        self.pieces[square.array_idx()] = None;
+        self.pieces[piece.player.array_idx()].0[piece.kind.array_idx()].unset_inplace(square);
+        self.squares[square.array_idx()] = None;
         true
     }
 
     #[inline(always)]
     pub fn set_at(&mut self, square: Square, piece: Piece) {
-        self.squares_for_piece(piece).set_inplace(square);
-        self.pieces[square.array_idx()] = Some(piece);
+        self.pieces[piece.player.array_idx()].0[piece.kind.array_idx()].set_inplace(square);
+        self.squares[square.array_idx()] = Some(piece);
     }
 
     pub fn king_in_check(&self, player: Player) -> bool {
-        let king = self.player_pieces(player).king().single();
+        let king = self.pieces(player).king().single();
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);
         enemy_attackers.any()
     }
@@ -164,7 +156,7 @@ impl std::fmt::Debug for Board {
 impl TryFrom<[Option<Piece>; Square::N]> for Board {
     type Error = color_eyre::eyre::Error;
 
-    fn try_from(pieces: [Option<Piece>; Square::N]) -> Result<Self> {
+    fn try_from(squares: [Option<Piece>; Square::N]) -> Result<Self> {
         let mut white_pawns = Bitboard::EMPTY;
         let mut white_knights = Bitboard::EMPTY;
         let mut white_bishops = Bitboard::EMPTY;
@@ -179,7 +171,7 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
         let mut black_queens = Bitboard::EMPTY;
         let mut black_king = Bitboard::EMPTY;
 
-        for (i, maybe_piece) in pieces.iter().enumerate() {
+        for (i, maybe_piece) in squares.iter().enumerate() {
             if let Some(p) = maybe_piece {
                 let square = Square::from_index(i.try_into()?).bb();
 
@@ -202,23 +194,25 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
         }
 
         Ok(Self {
-            white_pieces: PlayerPieces::new([
-                white_pawns,
-                white_knights,
-                white_bishops,
-                white_rooks,
-                white_queens,
-                white_king,
-            ]),
-            black_pieces: PlayerPieces([
-                black_pawns,
-                black_knights,
-                black_bishops,
-                black_rooks,
-                black_queens,
-                black_king,
-            ]),
-            pieces,
+            pieces: [
+                PlayerPieces::new([
+                    white_pawns,
+                    white_knights,
+                    white_bishops,
+                    white_rooks,
+                    white_queens,
+                    white_king,
+                ]),
+                PlayerPieces([
+                    black_pawns,
+                    black_knights,
+                    black_bishops,
+                    black_rooks,
+                    black_queens,
+                    black_king,
+                ]),
+            ],
+            squares,
         })
     }
 }

@@ -6,8 +6,8 @@ use crate::chess::player::Player;
 use crate::chess::square::Square;
 
 pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
-    let our_pieces = board.player_pieces(player).all();
-    let their_pieces = board.player_pieces(player.other());
+    let our_pieces = board.pieces(player).all();
+    let their_pieces = board.pieces(player.other());
     let all_their_pieces = their_pieces.all();
     let all_pieces = our_pieces | all_their_pieces;
 
@@ -50,7 +50,7 @@ mod tests {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
-        let king_square = game.board.player_pieces(game.player).king().single();
+        let king_square = game.board.pieces(game.player).king().single();
         let (orthogonal_pins, diagonal_pins) = get_pins(&game.board, game.player, king_square);
 
         assert_eq!(orthogonal_pins, expected_orthogonal_pins);

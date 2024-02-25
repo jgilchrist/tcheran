@@ -94,52 +94,52 @@ pub fn hash(game: &Game) -> ZobristHash {
 
     // Add piece components to hash
     // White
-    for s in game.board.white_pieces.pawns() {
+    for s in game.board.white_pieces().pawns() {
         hash ^= piece_on_square(Player::White, PieceKind::Pawn, s);
     }
 
-    for s in game.board.white_pieces.knights() {
+    for s in game.board.white_pieces().knights() {
         hash ^= piece_on_square(Player::White, PieceKind::Knight, s);
     }
 
-    for s in game.board.white_pieces.bishops() {
+    for s in game.board.white_pieces().bishops() {
         hash ^= piece_on_square(Player::White, PieceKind::Bishop, s);
     }
 
-    for s in game.board.white_pieces.rooks() {
+    for s in game.board.white_pieces().rooks() {
         hash ^= piece_on_square(Player::White, PieceKind::Rook, s);
     }
 
-    for s in game.board.white_pieces.queens() {
+    for s in game.board.white_pieces().queens() {
         hash ^= piece_on_square(Player::White, PieceKind::Queen, s);
     }
 
-    for s in game.board.white_pieces.king() {
+    for s in game.board.white_pieces().king() {
         hash ^= piece_on_square(Player::White, PieceKind::King, s);
     }
 
     // Black
-    for s in game.board.black_pieces.pawns() {
+    for s in game.board.black_pieces().pawns() {
         hash ^= piece_on_square(Player::Black, PieceKind::Pawn, s);
     }
 
-    for s in game.board.black_pieces.knights() {
+    for s in game.board.black_pieces().knights() {
         hash ^= piece_on_square(Player::Black, PieceKind::Knight, s);
     }
 
-    for s in game.board.black_pieces.bishops() {
+    for s in game.board.black_pieces().bishops() {
         hash ^= piece_on_square(Player::Black, PieceKind::Bishop, s);
     }
 
-    for s in game.board.black_pieces.rooks() {
+    for s in game.board.black_pieces().rooks() {
         hash ^= piece_on_square(Player::Black, PieceKind::Rook, s);
     }
 
-    for s in game.board.black_pieces.queens() {
+    for s in game.board.black_pieces().queens() {
         hash ^= piece_on_square(Player::Black, PieceKind::Queen, s);
     }
 
-    for s in game.board.black_pieces.king() {
+    for s in game.board.black_pieces().king() {
         hash ^= piece_on_square(Player::Black, PieceKind::King, s);
     }
 

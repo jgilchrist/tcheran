@@ -6,8 +6,8 @@ use crate::chess::square::Square;
 
 pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> Bitboard {
     let mut attackers = Bitboard::EMPTY;
-    let our_pieces = board.player_pieces(player);
-    let their_pieces = board.player_pieces(player.other());
+    let our_pieces = board.pieces(player);
+    let their_pieces = board.pieces(player.other());
     let all_pieces = our_pieces.all() | their_pieces.all();
 
     // Pawns: A square is attacked by pawns in the same positions as a pawn could capture if it was on
