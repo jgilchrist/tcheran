@@ -1,12 +1,13 @@
 use crate::chess::bitboard::Bitboard;
 use crate::chess::board::Board;
 use crate::chess::movegen::tables;
+use crate::chess::player::PlayerT;
 use crate::chess::square::Square;
 
-pub fn generate_attackers_of<const PLAYER: bool>(board: &Board, square: Square) -> Bitboard {
+pub fn generate_attackers_of<PLAYER: PlayerT>(board: &Board, square: Square) -> Bitboard {
     let mut attackers = Bitboard::EMPTY;
     let our_pieces = board.player_pieces::<PLAYER>();
-    let their_pieces = board.opponent_pieces::<PLAYER>();
+    let their_pieces = board.player_pieces::<PLAYER::Other>();
     let all_pieces = our_pieces.all() | their_pieces.all();
 
     // Pawns: A square is attacked by pawns in the same positions as a pawn could capture if it was on

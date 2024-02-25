@@ -1,7 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
-use crate::chess::player::Player;
+use crate::chess::player::{Black, Player, PlayerT, White};
 use crate::chess::san;
 use crate::chess::square::{squares, File, Rank, Square};
 use color_eyre::eyre::{bail, eyre};
@@ -199,7 +199,7 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
     parse_move_squares(game, mv)
 }
 
-fn parse_move_t<const PLAYER: bool>(game: &Game, mv: &str) -> Result<Move> {
+fn parse_move_t<PLAYER: PlayerT>(game: &Game, mv: &str) -> Result<Move> {
     if mv == san::KINGSIDE_CASTLE {
         return Ok(Move::new(
             squares::king_start::<PLAYER>(),
@@ -239,8 +239,8 @@ fn parse_move_t<const PLAYER: bool>(game: &Game, mv: &str) -> Result<Move> {
 #[allow(unused)]
 pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
     match game.player {
-        Player::White => parse_move_t::<true>(game, mv),
-        Player::Black => parse_move_t::<false>(game, mv),
+        Player::White => parse_move_t::<White>(game, mv),
+        Player::Black => parse_move_t::<Black>(game, mv),
     }
 }
 

@@ -1,25 +1,24 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::movegen::{attackers, pins, tables};
 use crate::chess::movelist::MoveList;
+use crate::chess::player::PlayerT;
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
-pub fn generate_moves<const PLAYER: bool, const QUIET: bool>(game: &Game) -> Vec<Move> {
+pub fn generate_moves<PLAYER: PlayerT, const QUIET: bool>(game: &Game, moves: &mut MoveList) {
     let our_pieces = game.board.player_pieces::<PLAYER>();
-    let their_pieces = game.board.opponent_pieces::<PLAYER>().all();
+    let their_pieces = game.board.player_pieces::<PLAYER::Other>().all();
     let all_pieces = our_pieces.all() | their_pieces;
 
     let king = our_pieces.king().single();
-
-    let mut moves: Vec<Move> = Vec::with_capacity(64);
 
     let checkers = attackers::generate_attackers_of::<PLAYER>(&game.board, king);
     let number_of_checkers = checkers.count();
 
     // If we're in check by more than one attacker, we can only get out of check via a king move
     if number_of_checkers > 1 {
-        generate_king_moves::<PLAYER, QUIET>(&mut moves, game, king, their_pieces, all_pieces);
-        return moves;
+        generate_king_moves::<PLAYER, QUIET>(moves, game, king, their_pieces, all_pieces);
+        return;
     }
 
     let check_mask = if number_of_checkers == 1 {
@@ -32,7 +31,7 @@ pub fn generate_moves<const PLAYER: bool, const QUIET: bool>(game: &Game) -> Vec
     let (orthogonal_pins, diagonal_pins) = pins::get_pins::<PLAYER>(&game.board, king);
 
     generate_pawn_moves::<PLAYER, QUIET>(
-        &mut moves,
+        moves,
         game,
         our_pieces.pawns(),
         king,
@@ -69,15 +68,15 @@ pub fn generate_moves<const PLAYER: bool, const QUIET: bool>(game: &Game) -> Vec
         orthogonal_pins,
         diagonal_pins,
     );
-    generate_king_moves::<PLAYER, QUIET>(&mut moves, game, king, their_pieces, all_pieces);
+    generate_king_moves::<PLAYER, QUIET>(moves, game, king, their_pieces, all_pieces);
 
     if QUIET && !checkers.any() {
-        generate_castles::<PLAYER, QUIET>(&mut moves, game, all_pieces);
+        generate_castles::<PLAYER, QUIET>(moves, game, all_pieces);
     }
 }
 
-fn generate_pawn_moves<const PLAYER: bool, const QUIET: bool>(
-    moves: &mut Vec<Move>,
+fn generate_pawn_moves<PLAYER: PlayerT, const QUIET: bool>(
+    moves: &mut MoveList,
     game: &Game,
     pawns: Bitboard,
     king: Square,
@@ -102,7 +101,7 @@ fn generate_pawn_moves<const PLAYER: bool, const QUIET: bool>(
 
     let capture_targets = their_pieces & check_mask;
 
-    let will_promote_rank = bitboards::opponent_pawn_back_rank::<PLAYER>();
+    let will_promote_rank = bitboards::pawn_back_rank::<PLAYER::Other>();
 
     // Promotion capture: Pawns on the enemy's start rank will promote when capturing
     for pawn in can_capture_pawns & will_promote_rank {
@@ -157,7 +156,7 @@ fn generate_pawn_moves<const PLAYER: bool, const QUIET: bool>(
 
         if (check_mask & (en_passant_target.bb() | captured_pawn.bb())).any() {
             let potential_capturers =
-                can_capture_pawns & tables::opponent_pawn_attacks::<PLAYER>(en_passant_target);
+                can_capture_pawns & tables::pawn_attacks::<PLAYER::Other>(en_passant_target);
 
             for potential_en_passant_capture_start in potential_capturers {
                 // Only consider this pawn if it is not pinned, or if it is pinned but captures along the pin ray
@@ -309,8 +308,8 @@ fn generate_orthogonal_slider_moves<const QUIET: bool>(
     }
 }
 
-fn generate_king_moves<const PLAYER: bool, const QUIET: bool>(
-    moves: &mut Vec<Move>,
+fn generate_king_moves<PLAYER: PlayerT, const QUIET: bool>(
+    moves: &mut MoveList,
     game: &Game,
     king: Square,
     their_pieces: Bitboard,
@@ -339,12 +338,12 @@ fn generate_king_moves<const PLAYER: bool, const QUIET: bool>(
     }
 }
 
-fn generate_castles<const PLAYER: bool, const QUIET: bool>(
+fn generate_castles<PLAYER: PlayerT, const QUIET: bool>(
     moves: &mut MoveList,
     game: &Game,
     all_pieces: Bitboard,
 ) {
-    let castle_rights_for_player = game.player_castle_rights::<PLAYER>();
+    let castle_rights_for_player = game.castle_rights[PLAYER::IDX];
 
     if castle_rights_for_player.king_side {
         generate_castle_move_for_side::<PLAYER, true>(moves, game, all_pieces);
@@ -355,8 +354,8 @@ fn generate_castles<const PLAYER: bool, const QUIET: bool>(
     }
 }
 
-fn generate_castle_move_for_side<const PLAYER: bool, const KINGSIDE: bool>(
-    moves: &mut Vec<Move>,
+fn generate_castle_move_for_side<PLAYER: PlayerT, const KINGSIDE: bool>(
+    moves: &mut MoveList,
     game: &Game,
     all_pieces: Bitboard,
 ) {
@@ -394,7 +393,7 @@ mod tests {
     fn should_not_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = game.moves();
+        let moves = game.moves().to_vec();
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 

@@ -27,3 +27,28 @@ impl std::ops::Not for Player {
         }
     }
 }
+
+pub trait PlayerT {
+    type Other: PlayerT;
+
+    const PLAYER: Player;
+    const IS_WHITE: bool;
+
+    const IDX: usize = Self::PLAYER.array_idx();
+}
+
+pub struct White;
+
+impl PlayerT for White {
+    type Other = Black;
+    const PLAYER: Player = Player::White;
+    const IS_WHITE: bool = true;
+}
+
+pub struct Black;
+
+impl PlayerT for Black {
+    type Other = White;
+    const PLAYER: Player = Player::Black;
+    const IS_WHITE: bool = false;
+}

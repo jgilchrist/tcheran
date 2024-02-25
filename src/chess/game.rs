@@ -1,6 +1,7 @@
 use crate::chess::bitboard::bitboards;
 use crate::chess::movelist::MoveList;
 use crate::chess::piece::Piece;
+use crate::chess::player::{Black, PlayerT, White};
 use crate::chess::square::squares;
 use crate::chess::zobrist::ZobristHash;
 use crate::chess::{
@@ -139,8 +140,8 @@ impl Game {
         let mut movelist = MoveList::new();
 
         match self.player {
-            Player::White => generate_moves::<true, true>(self),
-            Player::Black => generate_moves::<false, true>(self),
+            Player::White => generate_moves::<White, true>(self, &mut movelist),
+            Player::Black => generate_moves::<Black, true>(self, &mut movelist),
         };
 
         movelist
@@ -148,8 +149,7 @@ impl Game {
 
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         if self.halfmove_clock >= 100 {
-            let mut movelist = MoveList::new();
-            generate_moves::<true>(self, &mut movelist);
+            let movelist = self.moves();
             return movelist.has_moves();
         }
 
@@ -241,28 +241,8 @@ impl Game {
         removed_piece
     }
 
-    fn try_remove_castle_rights<const PLAYER: bool>(
-        &mut self,
-        castle_rights_side: CastleRightsSide,
-    ) {
-        let castle_rights = self.player_castle_rights_mut::<PLAYER>();
-
-        // We don't want to modify anything if the castle rights on this side were already lost
-        if !castle_rights.can_castle_to_side(castle_rights_side) {
-            return;
-        }
-
-        castle_rights.remove_rights(castle_rights_side);
-
-        self.zobrist
-            .toggle_castle_rights::<PLAYER>(castle_rights_side);
-    }
-
-    fn try_remove_opponents_castle_rights<const PLAYER: bool>(
-        &mut self,
-        castle_rights_side: CastleRightsSide,
-    ) {
-        let castle_rights = self.opponent_castle_rights_mut::<PLAYER>();
+    fn try_remove_castle_rights<PLAYER: PlayerT>(&mut self, castle_rights_side: CastleRightsSide) {
+        let castle_rights = self.castle_rights.get_mut(PLAYER::IDX).unwrap();
 
         // We don't want to modify anything if the castle rights on this side were already lost
         if !castle_rights.can_castle_to_side(castle_rights_side) {
@@ -277,12 +257,12 @@ impl Game {
 
     pub fn make_move(&mut self, mv: Move) {
         match self.player {
-            Player::White => self.make_move_t::<true>(mv),
-            Player::Black => self.make_move_t::<false>(mv),
+            Player::White => self.make_move_t::<White>(mv),
+            Player::Black => self.make_move_t::<Black>(mv),
         }
     }
 
-    pub fn make_move_t<const PLAYER: bool>(&mut self, mv: Move) {
+    pub fn make_move_t<PLAYER: PlayerT>(&mut self, mv: Move) {
         let from = mv.src;
         let to = mv.dst;
         let player = self.player;
@@ -334,7 +314,7 @@ impl Game {
         {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = self.board.opponent_pieces::<PLAYER>().pawns();
+            let enemy_pawns = self.board.player_pieces::<PLAYER::Other>().pawns();
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
@@ -379,10 +359,10 @@ impl Game {
 
         // Check if we removed our enemy's ability to castle, i.e. if we took one of their rooks
         if maybe_captured_piece.is_some() {
-            if to == squares::opponent_kingside_rook_start::<PLAYER>() {
-                self.try_remove_opponents_castle_rights::<PLAYER>(CastleRightsSide::Kingside);
-            } else if to == squares::opponent_queenside_rook_start::<PLAYER>() {
-                self.try_remove_opponents_castle_rights::<PLAYER>(CastleRightsSide::Queenside);
+            if to == squares::kingside_rook_start::<PLAYER::Other>() {
+                self.try_remove_castle_rights::<PLAYER::Other>(CastleRightsSide::Kingside);
+            } else if to == squares::queenside_rook_start::<PLAYER::Other>() {
+                self.try_remove_castle_rights::<PLAYER::Other>(CastleRightsSide::Queenside);
             }
         }
 
@@ -427,12 +407,12 @@ impl Game {
 
     pub fn undo_move(&mut self) {
         match self.player {
-            Player::White => self.undo_move_t::<false>(),
-            Player::Black => self.undo_move_t::<true>(),
+            Player::White => self.undo_move_t::<Black>(),
+            Player::Black => self.undo_move_t::<White>(),
         }
     }
 
-    pub fn undo_move_t<const PLAYER: bool>(&mut self) {
+    pub fn undo_move_t<PLAYER: PlayerT>(&mut self) {
         let history = self.history.pop().unwrap();
         let mv = history.mv.unwrap();
         let from = mv.src;
@@ -441,7 +421,6 @@ impl Game {
         // The player that made this move is the one whose turn it was before
         // we start undoing the move.
         let player = self.player.other();
-        let opponent = self.player;
 
         self.plies -= 1;
         self.player = player;
@@ -458,7 +437,7 @@ impl Game {
             if let Some((rook_from, rook_to)) = squares::castle_squares::<PLAYER>(to) {
                 self.board.remove_at(rook_to);
                 self.board
-                    .set_at(rook_from, Piece::new(player, PieceKind::Rook));
+                    .set_at(rook_from, Piece::new_t::<PLAYER>(PieceKind::Rook));
             }
         }
 
@@ -466,8 +445,10 @@ impl Game {
         if let Some(en_passant_target) = history.en_passant_target {
             if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
                 let capture_square = to.backward::<PLAYER>();
-                self.board
-                    .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
+                self.board.set_at(
+                    capture_square,
+                    Piece::new_t::<PLAYER::Other>(PieceKind::Pawn),
+                );
             }
         }
 
@@ -479,7 +460,8 @@ impl Game {
         }
 
         if mv.promotion.is_some() {
-            self.board.set_at(from, Piece::new(player, PieceKind::Pawn));
+            self.board
+                .set_at(from, Piece::new_t::<PLAYER>(PieceKind::Pawn));
         } else {
             self.board.set_at(from, moved_piece);
         }

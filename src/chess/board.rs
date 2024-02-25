@@ -6,6 +6,7 @@ use crate::chess::{
 };
 
 use crate::chess::bitboard::Bitboard;
+use crate::chess::player::{Black, PlayerT, White};
 use color_eyre::Result;
 
 #[derive(Clone)]
@@ -71,18 +72,10 @@ impl Board {
     }
 
     #[inline(always)]
-    pub const fn player_pieces<const PLAYER: bool>(&self) -> &PlayerPieces {
-        match PLAYER {
+    pub const fn player_pieces<PLAYER: PlayerT>(&self) -> &PlayerPieces {
+        match PLAYER::IS_WHITE {
             true => &self.white_pieces,
             false => &self.black_pieces,
-        }
-    }
-
-    #[inline(always)]
-    pub const fn opponent_pieces<const PLAYER: bool>(&self) -> &PlayerPieces {
-        match PLAYER {
-            true => &self.black_pieces,
-            false => &self.white_pieces,
         }
     }
 
@@ -125,12 +118,12 @@ impl Board {
 
     pub fn king_in_check(&self, player: Player) -> bool {
         match player {
-            Player::White => self.king_in_check_t::<true>(),
-            Player::Black => self.king_in_check_t::<false>(),
+            Player::White => self.king_in_check_t::<White>(),
+            Player::Black => self.king_in_check_t::<Black>(),
         }
     }
 
-    fn king_in_check_t<const PLAYER: bool>(&self) -> bool {
+    fn king_in_check_t<PLAYER: PlayerT>(&self) -> bool {
         let king = self.player_pieces::<PLAYER>().king().single();
         let enemy_attackers = movegen::generate_attackers_of::<PLAYER>(self, king);
         enemy_attackers.any()

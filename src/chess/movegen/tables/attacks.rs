@@ -1,7 +1,8 @@
 use crate::chess::bitboard::Bitboard;
+use crate::chess::player::PlayerT;
 use crate::chess::{direction::Direction, square::Square};
 
-pub fn generate_pawn_attacks<const PLAYER: bool>(square: Square) -> Bitboard {
+pub fn generate_pawn_attacks<PLAYER: PlayerT>(square: Square) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;
     let sq = square.bb();
 

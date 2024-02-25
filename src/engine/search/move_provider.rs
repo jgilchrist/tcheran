@@ -2,6 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::movegen;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
+use crate::chess::player::{Black, Player, White};
 use crate::engine::search::move_ordering::score_move;
 use crate::engine::search::SearchState;
 
@@ -24,7 +25,11 @@ impl MoveProvider {
         killer_moves: [Option<Move>; 2],
     ) -> Self {
         let mut moves = MoveList::new();
-        movegen::generate_moves::<true>(game, &mut moves);
+
+        match game.player {
+            Player::White => movegen::generate_moves::<White, true>(game, &mut moves),
+            Player::Black => movegen::generate_moves::<Black, true>(game, &mut moves),
+        };
 
         Self {
             moves,
@@ -39,7 +44,11 @@ impl MoveProvider {
 
     pub fn new_loud(game: &Game) -> Self {
         let mut moves = MoveList::new();
-        movegen::generate_moves::<false>(game, &mut moves);
+
+        match game.player {
+            Player::White => movegen::generate_moves::<White, false>(game, &mut moves),
+            Player::Black => movegen::generate_moves::<Black, false>(game, &mut moves),
+        };
 
         Self {
             moves,

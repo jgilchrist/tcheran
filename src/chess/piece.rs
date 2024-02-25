@@ -1,4 +1,4 @@
-use crate::chess::player::Player;
+use crate::chess::player::{Player, PlayerT};
 
 #[derive(Debug, PartialEq, Eq, Clone, Copy)]
 pub enum PieceKind {
@@ -63,8 +63,8 @@ impl Piece {
         Self { kind, player }
     }
 
-    pub const fn new_t<const PLAYER: bool>(kind: PieceKind) -> Self {
-        match PLAYER {
+    pub const fn new_t<PLAYER: PlayerT>(kind: PieceKind) -> Self {
+        match PLAYER::IS_WHITE {
             true => Self {
                 kind,
                 player: Player::White,

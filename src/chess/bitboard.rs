@@ -1,3 +1,4 @@
+use crate::chess::player::PlayerT;
 use crate::chess::square::Square;
 use crate::chess::{
     direction::Direction,
@@ -104,16 +105,16 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn forward<const PLAYER: bool>(self) -> Self {
-        match PLAYER {
+    pub fn forward<PLAYER: PlayerT>(self) -> Self {
+        match PLAYER::IS_WHITE {
             true => self.north(),
             false => self.south(),
         }
     }
 
     #[inline(always)]
-    pub fn backward<const PLAYER: bool>(self) -> Self {
-        match PLAYER {
+    pub fn backward<PLAYER: PlayerT>(self) -> Self {
+        match PLAYER::IS_WHITE {
             true => self.south(),
             false => self.north(),
         }
@@ -327,36 +328,29 @@ pub mod bitboards {
     use crate::chess::player::Player;
     use crate::chess::square::squares::all::*;
 
-    pub const fn castle_squares<const PLAYER: bool, const KINGSIDE: bool>() -> (Bitboard, Square, Square) {
+    pub const fn castle_squares<PLAYER: PlayerT, const KINGSIDE: bool>() -> (Bitboard, Square, Square) {
         if KINGSIDE {
-            match PLAYER {
+            match PLAYER::IS_WHITE {
                 true => (WHITE_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_KINGSIDE_CASTLE_TARGET_SQUARE, WHITE_KINGSIDE_CASTLE_MIDDLE_SQUARE),
                 false => (BLACK_KINGSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_KINGSIDE_CASTLE_TARGET_SQUARE, BLACK_KINGSIDE_CASTLE_MIDDLE_SQUARE),
             }
         } else {
-            match PLAYER {
+            match PLAYER::IS_WHITE {
                 true => (WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE, WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
                 false => (BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE, BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
             }
         }
     }
 
-    pub const fn pawn_back_rank<const PLAYER: bool>() -> Bitboard {
-        match PLAYER {
+    pub const fn pawn_back_rank<PLAYER: PlayerT>() -> Bitboard {
+        match PLAYER::IS_WHITE {
             true => RANK_2,
             false => RANK_7,
         }
     }
 
-    pub const fn opponent_pawn_back_rank<const PLAYER: bool>() -> Bitboard {
-        match PLAYER {
-            true => RANK_7,
-            false => RANK_2,
-        }
-    }
-
-    pub const fn pawn_double_push_rank<const PLAYER: bool>() -> Bitboard {
-        match PLAYER {
+    pub const fn pawn_double_push_rank<PLAYER: PlayerT>() -> Bitboard {
+        match PLAYER::IS_WHITE {
             true => RANK_4,
             false => RANK_5,
         }

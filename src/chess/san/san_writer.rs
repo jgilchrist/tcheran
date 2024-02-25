@@ -1,7 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
-use crate::chess::player::Player;
+use crate::chess::player::{Black, Player, PlayerT, White};
 use crate::chess::san;
 use crate::chess::square::squares;
 
@@ -13,7 +13,7 @@ enum AmbiguityResolution {
     Exact, // Two pieces on the same file or rank can move to the same square - specify the exact source square
 }
 
-fn format_move_t<const PLAYER: bool>(game: &Game, mv: Move) -> String {
+fn format_move_t<PLAYER: PlayerT>(game: &Game, mv: Move) -> String {
     let from = mv.src;
     let to = mv.dst;
 
@@ -95,8 +95,8 @@ fn format_move_t<const PLAYER: bool>(game: &Game, mv: Move) -> String {
 #[allow(unused)]
 pub fn format_move(game: &Game, mv: Move) -> String {
     match game.player {
-        Player::White => format_move_t::<true>(game, mv),
-        Player::Black => format_move_t::<false>(game, mv),
+        Player::White => format_move_t::<White>(game, mv),
+        Player::Black => format_move_t::<Black>(game, mv),
     }
 }
 
