@@ -126,6 +126,7 @@ impl Uci {
                 // Options
                 send_response(&UciResponse::option::<uci::options::HashOption>());
                 send_response(&UciResponse::option::<uci::options::LogOption>());
+                send_response(&UciResponse::option::<uci::options::MoveOverheadOption>());
 
                 send_response(&UciResponse::UciOk);
             }
@@ -137,6 +138,9 @@ impl Uci {
                 match name.as_str() {
                     options::HashOption::NAME => options::HashOption::set(&mut self.options, value),
                     options::LogOption::NAME => options::LogOption::set(&mut self.options, value),
+                    options::MoveOverheadOption::NAME => {
+                        options::MoveOverheadOption::set(&mut self.options, value)
+                    }
                     _ => {
                         bail!("Unknown option: {name}")
                     }

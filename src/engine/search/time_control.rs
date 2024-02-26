@@ -1,25 +1,25 @@
 use crate::chess::game::Game;
 use crate::chess::player::Player;
+use crate::engine::options::EngineOptions;
 use crate::engine::search::{Clocks, TimeControl};
 use std::time::{Duration, Instant};
 
 pub struct TimeStrategy {
     player: Player,
     time_control: TimeControl,
+    move_overhead: Duration,
 
     started_at: Option<Instant>,
     stop_searching_at: Option<Instant>,
 }
 
 impl TimeStrategy {
-    // Account for the possibility that there's some overhead making the move
-    // e.g. sending the best move over the internet.
-    const MOVE_OVERHEAD: Duration = Duration::from_millis(50);
-
-    pub fn new(game: &Game, time_control: &TimeControl) -> Self {
+    pub fn new(game: &Game, time_control: &TimeControl, options: &EngineOptions) -> Self {
         Self {
             time_control: time_control.clone(),
             player: game.player,
+            move_overhead: Duration::from_millis(options.move_overhead as u64),
+
             started_at: None,
             stop_searching_at: None,
         }
@@ -53,8 +53,8 @@ impl TimeStrategy {
         };
 
         time_remaining = time_remaining
-            .saturating_sub(Self::MOVE_OVERHEAD)
-            .max(Self::MOVE_OVERHEAD);
+            .saturating_sub(self.move_overhead)
+            .max(self.move_overhead);
 
         if let Some(moves_to_go) = clocks.moves_to_go {
             // Try to use a roughly even amount of time per move

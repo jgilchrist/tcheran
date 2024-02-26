@@ -62,3 +62,20 @@ impl UciOption for LogOption {
         Ok(())
     }
 }
+
+pub struct MoveOverheadOption;
+
+impl UciOption for MoveOverheadOption {
+    const NAME: &'static str = "Move Overhead";
+    const DEF: UciOptionType = UciOptionType::Spin {
+        default: crate::engine::options::defaults::MOVE_OVERHEAD,
+        min: 0,
+        max: 1000,
+    };
+
+    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
+        let move_overhead = value.parse::<usize>()?;
+        options.move_overhead = move_overhead;
+        Ok(())
+    }
+}
