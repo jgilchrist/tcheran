@@ -21,7 +21,7 @@ fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, WhiteEval) {
         &SearchRestrictions { depth: Some(depth) },
         &EngineOptions::default(),
         &NullControl,
-        &NullReporter,
+        &mut NullReporter,
     );
 
     assert_eq!(best_move, mv);

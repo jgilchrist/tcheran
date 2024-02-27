@@ -49,5 +49,6 @@ pub enum UciCommand {
     D(DebugCommand),
     Stop,
     PonderHit,
+    Bench,
     Quit,
 }

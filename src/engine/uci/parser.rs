@@ -359,6 +359,10 @@ fn cmd_ponderhit(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::PonderHit, tag("ponderhit"))(input)
 }
 
+fn cmd_bench(input: &str) -> IResult<&str, UciCommand> {
+    value(UciCommand::Bench, tag("bench"))(input)
+}
+
 fn cmd_quit(input: &str) -> IResult<&str, UciCommand> {
     value(UciCommand::Quit, tag("quit"))(input)
 }
@@ -376,6 +380,7 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
         cmd_go,
         cmd_stop,
         cmd_ponderhit,
+        cmd_bench,
         cmd_d,
         cmd_quit,
     ))(input)?;
