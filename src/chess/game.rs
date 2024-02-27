@@ -256,7 +256,6 @@ impl Game {
         let player = self.player;
         let other_player = player.other();
 
-        let moved_piece = self.board.piece_at(from).unwrap();
         let maybe_captured_piece = self.board.piece_at(to);
 
         // Capture the irreversible aspects of the position so that they can be restored
@@ -273,7 +272,7 @@ impl Game {
 
         self.history.push(history);
 
-        self.remove_at(from);
+        let moved_piece = self.remove_at(from);
 
         if maybe_captured_piece.is_some() {
             self.remove_at(to);
