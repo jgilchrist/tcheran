@@ -4,7 +4,10 @@ use crate::chess::player::Player;
 use crate::chess::square::{Rank, Square};
 use crate::engine::eval::PhasedEval;
 
-static mut PASSED_PAWN_MASKS: [[Bitboard; Square::N]; Player::N] =
+static mut ENEMY_PASSED_PAWN_MASKS: [[Bitboard; Square::N]; Player::N] =
+    [[Bitboard::EMPTY; Square::N]; Player::N];
+
+static mut OWN_PAWN_BLOCKER_MASKS: [[Bitboard; Square::N]; Player::N] =
     [[Bitboard::EMPTY; Square::N]; Player::N];
 
 #[rustfmt::skip]
@@ -19,19 +22,37 @@ const PASSED_PAWN_BONUSES: [PhasedEval; 8] = [
     PhasedEval::new(0, 0)
 ];
 
-fn generate_passed_pawn_mask(player: Player, square: Square) -> Bitboard {
+struct PassedPawnMasks {
+    // A pawn is not passed if any enemy pawns are in front of it or could capture
+    // if it were to advance
+    enemy_pawns_mask: Bitboard,
+
+    // A pawn is not passed if one of our own pawns is in front of it
+    own_pawns_blockers_mask: Bitboard,
+}
+
+impl PassedPawnMasks {
+    pub fn empty() -> Self {
+        Self {
+            enemy_pawns_mask: Bitboard::EMPTY,
+            own_pawns_blockers_mask: Bitboard::EMPTY,
+        }
+    }
+}
+
+fn generate_passed_pawn_masks(player: Player, square: Square) -> PassedPawnMasks {
     let pawn_back_rank = bitboards::pawn_back_rank(player);
     let their_pawn_back_rank = bitboards::pawn_back_rank(player.other());
     let our_bank_rank = pawn_back_rank.backward(player);
 
     // Pawns cannot be on our back rank
     if (square.bb() & our_bank_rank).any() {
-        return Bitboard::EMPTY;
+        return PassedPawnMasks::empty();
     }
 
     // Pawns on their pawn rank cannot be blocked, as pawns cannot be on their back rank
     if (square.bb() & their_pawn_back_rank).any() {
-        return Bitboard::EMPTY;
+        return PassedPawnMasks::empty();
     }
 
     let file = square.file().bitboard();
@@ -54,12 +75,26 @@ fn generate_passed_pawn_mask(player: Player, square: Square) -> Bitboard {
         relevant_ranks = relevant_ranks.forward(player);
     }
 
-    relevant_files & relevant_ranks
+    let enemy_pawns_mask = relevant_files & relevant_ranks;
+    let own_pawns_blockers_mask = file & relevant_ranks;
+
+    PassedPawnMasks {
+        enemy_pawns_mask,
+        own_pawns_blockers_mask,
+    }
 }
 
-fn passed_pawn_mask(player: Player, square: Square) -> Bitboard {
+fn enemy_passed_pawn_mask(player: Player, square: Square) -> Bitboard {
     *unsafe {
-        PASSED_PAWN_MASKS
+        ENEMY_PASSED_PAWN_MASKS
+            .get_unchecked(player.array_idx())
+            .get_unchecked(square.array_idx())
+    }
+}
+
+fn our_pawn_blocker_mask(player: Player, square: Square) -> Bitboard {
+    *unsafe {
+        OWN_PAWN_BLOCKER_MASKS
             .get_unchecked(player.array_idx())
             .get_unchecked(square.array_idx())
     }
@@ -76,7 +111,9 @@ pub fn eval(board: &Board) -> PhasedEval {
 
     // White
     for pawn in white_pawns {
-        if (passed_pawn_mask(Player::White, pawn) & black_pawns).is_empty() {
+        if (enemy_passed_pawn_mask(Player::White, pawn) & black_pawns).is_empty()
+            && (our_pawn_blocker_mask(Player::White, pawn) & white_pawns).is_empty()
+        {
             let distance_from_promotion = Rank::R8.array_idx().abs_diff(pawn.rank().array_idx());
             white_bonus += PASSED_PAWN_BONUSES[distance_from_promotion];
         }
@@ -84,7 +121,9 @@ pub fn eval(board: &Board) -> PhasedEval {
 
     // Black
     for pawn in black_pawns {
-        if (passed_pawn_mask(Player::Black, pawn) & white_pawns).is_empty() {
+        if (enemy_passed_pawn_mask(Player::Black, pawn) & white_pawns).is_empty()
+            && (our_pawn_blocker_mask(Player::Black, pawn) & black_pawns).is_empty()
+        {
             let distance_from_promotion = Rank::R1.array_idx().abs_diff(pawn.rank().array_idx());
             black_bonus += PASSED_PAWN_BONUSES[distance_from_promotion];
         }
@@ -96,9 +135,12 @@ pub fn eval(board: &Board) -> PhasedEval {
 pub fn init() {
     for player in [Player::White, Player::Black] {
         for square in Bitboard::FULL {
-            let mask = generate_passed_pawn_mask(player, square);
+            let masks = generate_passed_pawn_masks(player, square);
             unsafe {
-                PASSED_PAWN_MASKS[player.array_idx()][square.array_idx()] = mask;
+                ENEMY_PASSED_PAWN_MASKS[player.array_idx()][square.array_idx()] =
+                    masks.enemy_pawns_mask;
+                OWN_PAWN_BLOCKER_MASKS[player.array_idx()][square.array_idx()] =
+                    masks.own_pawns_blockers_mask;
             }
         }
     }
