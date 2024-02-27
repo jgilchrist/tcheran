@@ -62,24 +62,24 @@ pub fn absolute_eval(game: &Game) -> WhiteEval {
 #[derive(Debug)]
 pub struct EvalComponents {
     pub eval: WhiteEval,
-    pub piece_square_midgame: WhiteEval,
-    pub piece_square_endgame: WhiteEval,
     pub phase_value: i16,
-    pub piece_square_tables: WhiteEval,
+
+    pub phased_piece_square: PhasedEval,
+    pub piece_square: WhiteEval,
 }
 
 pub fn eval_components(game: &Game) -> EvalComponents {
     let eval = absolute_eval(game);
     let phase_value = tapered_eval::phase_value(&game.board);
 
-    let piece_square_tables = piece_square_tables::eval(&game.board);
-    let pst_eval = tapered_eval::taper(phase_value, piece_square_tables);
+    let phased_piece_square = piece_square_tables::eval(&game.board);
+    let piece_square = tapered_eval::taper(phase_value, phased_piece_square);
 
     EvalComponents {
         eval,
-        piece_square_midgame: piece_square_tables.midgame(),
-        piece_square_endgame: piece_square_tables.endgame(),
         phase_value,
-        piece_square_tables: pst_eval,
+
+        phased_piece_square,
+        piece_square,
     }
 }

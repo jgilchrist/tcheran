@@ -291,14 +291,18 @@ impl Uci {
                 DebugCommand::Eval => {
                     let eval_components = eval::eval_components(&self.game);
 
-                    println!("Eval: {}", eval_components.eval);
+                    println!();
+
                     println!(
-                        "  Piece square tables: {}",
-                        eval_components.piece_square_tables
+                        "Piece square tables:   Midgame={}  Endgame={}  Total={}",
+                        eval_components.phased_piece_square.midgame(),
+                        eval_components.phased_piece_square.endgame(),
+                        eval_components.piece_square
                     );
-                    println!("    Midgame: {}", eval_components.piece_square_midgame);
-                    println!("    Endgame: {}", eval_components.piece_square_endgame);
-                    println!("    Phase value: {}", eval_components.phase_value);
+                    println!();
+
+                    println!("Phase value: {}", eval_components.phase_value);
+                    println!("Eval: {}", eval_components.eval);
                 }
             },
             UciCommand::PonderHit => {}
