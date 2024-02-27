@@ -116,8 +116,7 @@ impl Game {
             history: Vec::new(),
         };
 
-        let zobrist = zobrist::hash(&game);
-        game.zobrist = zobrist;
+        game.zobrist = zobrist::hash(&game);
         game
     }
 
