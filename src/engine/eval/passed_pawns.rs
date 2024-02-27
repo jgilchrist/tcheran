@@ -100,36 +100,36 @@ fn our_pawn_blocker_mask(player: Player, square: Square) -> Bitboard {
     }
 }
 
-// perf: We don't need to recalculate this unless a pawn moves or is taken, so this can be part
-// of the incremental eval fields
 pub fn eval(board: &Board) -> PhasedEval {
-    let white_pawns = board.player_pieces(Player::White).pawns();
-    let black_pawns = board.player_pieces(Player::Black).pawns();
-
-    let mut white_bonus = PhasedEval::ZERO;
-    let mut black_bonus = PhasedEval::ZERO;
-
-    // White
-    for pawn in white_pawns {
-        if (enemy_passed_pawn_mask(Player::White, pawn) & black_pawns).is_empty()
-            && (our_pawn_blocker_mask(Player::White, pawn) & white_pawns).is_empty()
-        {
-            let distance_from_promotion = Rank::R8.array_idx().abs_diff(pawn.rank().array_idx());
-            white_bonus += PASSED_PAWN_BONUSES[distance_from_promotion];
-        }
-    }
-
-    // Black
-    for pawn in black_pawns {
-        if (enemy_passed_pawn_mask(Player::Black, pawn) & white_pawns).is_empty()
-            && (our_pawn_blocker_mask(Player::Black, pawn) & black_pawns).is_empty()
-        {
-            let distance_from_promotion = Rank::R1.array_idx().abs_diff(pawn.rank().array_idx());
-            black_bonus += PASSED_PAWN_BONUSES[distance_from_promotion];
-        }
-    }
+    let white_bonus = calculate_passed_pawn_bonus(board, Player::White);
+    let black_bonus = calculate_passed_pawn_bonus(board, Player::Black);
 
     white_bonus - black_bonus
+}
+
+fn calculate_passed_pawn_bonus(board: &Board, player: Player) -> PhasedEval {
+    let mut bonus = PhasedEval::ZERO;
+
+    let our_pawns = board.player_pieces(player).pawns();
+    let their_pawns = board.player_pieces(player.other()).pawns();
+
+    let their_back_rank = match player {
+        Player::White => Rank::R8,
+        Player::Black => Rank::R1,
+    };
+
+    for pawn in our_pawns {
+        if (enemy_passed_pawn_mask(player, pawn) & their_pawns).is_empty()
+            && (our_pawn_blocker_mask(player, pawn) & our_pawns).is_empty()
+        {
+            let distance_from_promotion = their_back_rank
+                .array_idx()
+                .abs_diff(pawn.rank().array_idx());
+            bonus += PASSED_PAWN_BONUSES[distance_from_promotion];
+        }
+    }
+
+    bonus
 }
 
 pub fn init() {
