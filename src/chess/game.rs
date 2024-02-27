@@ -373,10 +373,10 @@ impl Game {
 
         // If our pawn hash changed, the pawn structure changed, so we need to re-evaluate
         // our terms
-        if previous_pawn_zobrist != self.pawn_zobrist {
-            let passed_pawn_eval = eval::passed_pawns::eval(&self.board);
-            self.incremental_eval.passed_pawns = passed_pawn_eval;
-        }
+        // if previous_pawn_zobrist != self.pawn_zobrist {
+        let passed_pawn_eval = eval::passed_pawns::eval(&self.board);
+        self.incremental_eval.passed_pawns = passed_pawn_eval;
+        // }
 
         let should_reset_halfmove_clock =
             maybe_captured_piece.is_some() || moved_piece.kind == PieceKind::Pawn;
