@@ -8,7 +8,7 @@ mod tests;
 
 use crate::engine::uci::UciInputMode;
 use engine::uci;
-use engine::util::log::log;
+use engine::util::log;
 
 pub const ENGINE_NAME: &str = "Tcheran";
 
@@ -40,7 +40,7 @@ fn main() -> Result<()> {
 
     std::panic::set_hook(Box::new(|info| {
         println!("{info}");
-        log(format!("{info:?}"));
+        log::crashlog(format!("{info:?}"));
     }));
 
     let args = std::env::args().collect::<Vec<_>>();
