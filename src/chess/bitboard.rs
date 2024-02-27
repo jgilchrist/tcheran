@@ -342,6 +342,13 @@ pub mod bitboards {
         }
     }
 
+    pub const fn back_rank(player: Player) -> Bitboard {
+        match player {
+            Player::White => RANK_1,
+            Player::Black => RANK_8,
+        }
+    }
+
     pub const fn pawn_back_rank(player: Player) -> Bitboard {
         match player {
             Player::White => RANK_2,
