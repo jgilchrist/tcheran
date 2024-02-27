@@ -18,7 +18,7 @@ pub fn search(
     state: &mut SearchState,
     time_control: &TimeStrategy,
     control: &impl Control,
-    reporter: &impl Reporter,
+    reporter: &mut impl Reporter,
 ) -> (Move, Eval) {
     let mut overall_best_move: Option<Move> = None;
     let mut overall_eval: Option<Eval> = None;

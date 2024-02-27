@@ -99,8 +99,8 @@ impl Control for NullControl {
 pub trait Reporter {
     fn generic_report(&self, s: &str);
 
-    fn report_search_progress(&self, progress: SearchInfo);
-    fn report_search_stats(&self, stats: SearchStats);
+    fn report_search_progress(&mut self, progress: SearchInfo);
+    fn report_search_stats(&mut self, stats: SearchStats);
 
     fn best_move(&self, mv: Move);
 }
@@ -110,9 +110,33 @@ pub struct NullReporter;
 impl Reporter for NullReporter {
     fn generic_report(&self, _: &str) {}
 
-    fn report_search_progress(&self, _: SearchInfo) {}
+    fn report_search_progress(&mut self, _: SearchInfo) {}
 
-    fn report_search_stats(&self, _: SearchStats) {}
+    fn report_search_stats(&mut self, _: SearchStats) {}
+
+    fn best_move(&self, _: Move) {}
+}
+
+pub struct BenchReporter {
+    pub nodes: u64,
+    pub nps: u64,
+}
+
+impl BenchReporter {
+    pub fn new() -> Self {
+        Self { nodes: 0, nps: 0 }
+    }
+}
+
+impl Reporter for BenchReporter {
+    fn generic_report(&self, _: &str) {}
+
+    fn report_search_progress(&mut self, stats: SearchInfo) {
+        self.nodes = stats.stats.nodes;
+        self.nps = stats.stats.nodes_per_second;
+    }
+
+    fn report_search_stats(&mut self, _: SearchStats) {}
 
     fn best_move(&self, _: Move) {}
 }
@@ -124,7 +148,7 @@ pub fn search(
     search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
     control: &impl Control,
-    reporter: &impl Reporter,
+    reporter: &mut impl Reporter,
 ) -> (Move, WhiteEval) {
     let mut state = SearchState::new();
 

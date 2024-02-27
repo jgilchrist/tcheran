@@ -30,7 +30,9 @@ pub mod responses;
 
 use crate::chess::game::Game;
 use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::search::{Clocks, Control, Reporter, SearchRestrictions, TimeControl};
+use crate::engine::search::{
+    BenchReporter, Clocks, Control, NullControl, Reporter, SearchRestrictions, TimeControl,
+};
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -57,7 +59,7 @@ impl search::Reporter for UciReporter {
         println!("{s}");
     }
 
-    fn report_search_progress(&self, progress: search::SearchInfo) {
+    fn report_search_progress(&mut self, progress: search::SearchInfo) {
         let score = match progress.score {
             search::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
             search::SearchScore::Mate(moves) => InfoScore::Mate(moves),
@@ -76,7 +78,7 @@ impl search::Reporter for UciReporter {
         }));
     }
 
-    fn report_search_stats(&self, stats: search::SearchStats) {
+    fn report_search_stats(&mut self, stats: search::SearchStats) {
         send_response(&UciResponse::Info(InfoFields {
             time: Some(stats.time),
             nodes: Some(stats.nodes),
@@ -178,7 +180,7 @@ impl Uci {
                 let mut game = self.game.clone();
                 let options = self.options.clone();
                 let control = self.control.clone();
-                let reporter = self.reporter.clone();
+                let mut reporter = self.reporter.clone();
 
                 let clocks = Clocks {
                     white_clock: *wtime,
@@ -213,7 +215,7 @@ impl Uci {
                         &search_restrictions,
                         &options,
                         &control,
-                        &reporter,
+                        &mut reporter,
                     );
 
                     reporter.best_move(best_move);
@@ -300,6 +302,34 @@ impl Uci {
                 }
             },
             UciCommand::PonderHit => {}
+            // For OpenBench to understand NPS values for different workers
+            UciCommand::Bench => {
+                let mut bench_reporter = BenchReporter::new();
+                let null_control = NullControl;
+
+                let tt = self.tt.clone();
+                let mut tt_handle = tt.lock().unwrap();
+                tt_handle.resize(16);
+
+                let mut game = Game::new();
+                let time_control = TimeControl::Infinite;
+                let search_restrictions = SearchRestrictions { depth: Some(11) };
+
+                let (_, _) = search::search(
+                    &mut game,
+                    &mut tt_handle,
+                    &time_control,
+                    &search_restrictions,
+                    &self.options,
+                    &null_control,
+                    &mut bench_reporter,
+                );
+
+                let nodes = bench_reporter.nodes;
+                let nps = bench_reporter.nps;
+
+                println!("{nodes} nodes {nps} nps");
+            }
             UciCommand::Quit => return Ok(ExecuteResult::Exit),
         }
 
