@@ -1,4 +1,4 @@
-use crate::chess::bitboard::Bitboard;
+use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::player::Player;
 
 pub const FILES: [File; File::N] = [
@@ -48,6 +48,11 @@ impl File {
         self as u8
     }
 
+    #[inline(always)]
+    pub const fn array_idx(self) -> usize {
+        self as usize
+    }
+
     pub const fn notation(self) -> &'static str {
         match self {
             Self::A => "a",
@@ -58,6 +63,19 @@ impl File {
             Self::F => "f",
             Self::G => "g",
             Self::H => "h",
+        }
+    }
+
+    pub const fn bitboard(self) -> Bitboard {
+        match self {
+            Self::A => bitboards::A_FILE,
+            Self::B => bitboards::B_FILE,
+            Self::C => bitboards::C_FILE,
+            Self::D => bitboards::D_FILE,
+            Self::E => bitboards::E_FILE,
+            Self::F => bitboards::F_FILE,
+            Self::G => bitboards::G_FILE,
+            Self::H => bitboards::H_FILE,
         }
     }
 }
@@ -122,6 +140,11 @@ impl Rank {
         self as u8
     }
 
+    #[inline(always)]
+    pub const fn array_idx(self) -> usize {
+        self as usize
+    }
+
     pub const fn notation(self) -> &'static str {
         match self {
             Self::R1 => "1",
@@ -132,6 +155,19 @@ impl Rank {
             Self::R6 => "6",
             Self::R7 => "7",
             Self::R8 => "8",
+        }
+    }
+
+    pub const fn bitboard(self) -> Bitboard {
+        match self {
+            Self::R1 => bitboards::RANK_1,
+            Self::R2 => bitboards::RANK_2,
+            Self::R3 => bitboards::RANK_3,
+            Self::R4 => bitboards::RANK_4,
+            Self::R5 => bitboards::RANK_5,
+            Self::R6 => bitboards::RANK_6,
+            Self::R7 => bitboards::RANK_7,
+            Self::R8 => bitboards::RANK_8,
         }
     }
 }
