@@ -13,13 +13,13 @@ static mut OWN_PAWN_BLOCKER_MASKS: [[Bitboard; Square::N]; Player::N] =
 #[rustfmt::skip]
 const PASSED_PAWN_BONUSES: [PhasedEval; 8] = [
     PhasedEval::new(0, 0),
-    PhasedEval::new(260, 280),
-    PhasedEval::new(170, 180),
-    PhasedEval::new(60, 70),
-    PhasedEval::new(15, 40),
-    PhasedEval::new(15, 30),
-    PhasedEval::new(10, 30),
-    PhasedEval::new(0, 0)
+    PhasedEval::new(74, 260),
+    PhasedEval::new(53, 176),
+    PhasedEval::new(19, 84),
+    PhasedEval::new(-15, 43),
+    PhasedEval::new(-15, 12),
+    PhasedEval::new(-1, 5),
+    PhasedEval::new(0, 0),
 ];
 
 struct PassedPawnMasks {
