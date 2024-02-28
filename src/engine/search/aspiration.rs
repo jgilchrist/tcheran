@@ -42,7 +42,7 @@ pub fn aspiration_search(
 
         if eval <= alpha {
             alpha = alpha - width;
-        } else if eval > beta {
+        } else if eval >= beta {
             beta = beta + width;
         } else {
             return Ok(eval);
