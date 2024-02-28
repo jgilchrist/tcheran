@@ -89,7 +89,7 @@ fn aspiration_search(
 ) -> Result<Eval, ()> {
     let mut alpha = Eval::MIN;
     let mut beta = Eval::MAX;
-    let mut width = Eval(30);
+    let mut width = Eval(50);
 
     if depth >= 4 {
         alpha = Eval::max(Eval::MIN, guess.unwrap() - width);
@@ -97,6 +97,7 @@ fn aspiration_search(
     }
 
     loop {
+        println!("window: guess={:?} {:?} {:?}", guess, alpha, beta);
         let Ok(eval) = negamax::negamax(
             game,
             alpha,
