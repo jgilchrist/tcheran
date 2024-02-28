@@ -27,16 +27,17 @@ pub fn search(
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
-        let Ok(eval) = negamax::negamax(
+        let Ok(eval) = aspiration_search(
             game,
-            Eval::MIN,
-            Eval::MAX,
             depth,
-            0,
+            overall_eval,
             tt,
-            time_control,
+            search_restrictions,
+            _options,
             state,
+            time_control,
             control,
+            reporter,
         ) else {
             break;
         };
@@ -72,6 +73,63 @@ pub fn search(
     }
 
     (overall_best_move.unwrap(), overall_eval.unwrap())
+}
+
+fn aspiration_search(
+    game: &mut Game,
+    depth: u8,
+    guess: Option<Eval>,
+    tt: &mut SearchTranspositionTable,
+    search_restrictions: &SearchRestrictions,
+    _options: &EngineOptions,
+    state: &mut SearchState,
+    time_control: &TimeStrategy,
+    control: &impl Control,
+    reporter: &mut impl Reporter,
+) -> Result<Eval, ()> {
+    let mut alpha = Eval::MIN;
+    let mut beta = Eval::MAX;
+    let mut width = Eval(30);
+
+    if depth >= 4 {
+        alpha = Eval::max(Eval::MIN, guess.unwrap() - width);
+        beta = Eval::min(Eval::MAX, guess.unwrap() + width);
+    }
+
+    loop {
+        let Ok(eval) = negamax::negamax(
+            game,
+            alpha,
+            beta,
+            depth,
+            0,
+            tt,
+            time_control,
+            state,
+            control,
+        ) else {
+            return Err(());
+        };
+
+        // IF we fail low or high, grow the bounds upward/downward
+        if eval <= alpha {
+            alpha = alpha - width;
+        } else if eval > beta {
+            beta = beta + width;
+        } else {
+            return Ok(eval);
+        }
+
+        // Grow the window (exponentially)
+        width = width * 2;
+
+        // If the window exceeds the max width, give up and open the window
+        // up completely.
+        if width > Eval(900) {
+            alpha = Eval::MIN;
+            beta = Eval::MAX;
+        }
+    }
 }
 
 fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {
