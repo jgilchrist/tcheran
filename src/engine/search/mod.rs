@@ -9,6 +9,7 @@ use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::transposition::SearchTranspositionTable;
 
+mod aspiration;
 mod iterative_deepening;
 mod move_ordering;
 pub mod move_provider;
@@ -25,6 +26,9 @@ mod params {
     use crate::engine::eval::Eval;
 
     pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
+
+    pub const ASPIRATION_MIN_DEPTH: u8 = 5;
+    pub const ASPIRATION_WINDOW_SIZE: Eval = Eval::new(25);
 
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;

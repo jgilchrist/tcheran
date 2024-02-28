@@ -2,11 +2,12 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
+use crate::engine::search::aspiration::aspiration_search;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::engine::search::{
-    negamax, Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore,
-    SearchState, SearchStats, MAX_SEARCH_DEPTH,
+    Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
+    SearchStats, MAX_SEARCH_DEPTH,
 };
 use crate::engine::util;
 
@@ -21,20 +22,19 @@ pub fn search(
     reporter: &mut impl Reporter,
 ) -> Option<Move> {
     let mut best_move: Option<Move> = None;
+    let mut overall_eval: Option<Eval> = None;
 
     let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
-        let Ok(eval) = negamax::negamax(
+        let Ok(eval) = aspiration_search(
             game,
-            Eval::MIN,
-            Eval::MAX,
             depth,
-            0,
+            overall_eval,
             persistent_state,
-            time_control,
             state,
+            time_control,
             control,
         ) else {
             break;
@@ -48,6 +48,7 @@ pub fn search(
 
         let pv = get_pv(depth, game.clone(), &persistent_state.tt, state);
         best_move = Some(*pv.first().unwrap());
+        overall_eval = Some(eval);
 
         reporter.report_search_progress(SearchInfo {
             depth,

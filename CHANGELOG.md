@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Add aspiration windows (~5 Elo)
 * Return `best_eval` in quiescence (~5 Elo)
 * Fail soft on TT cuts (~2 Elo)
 * Prefer TT nodes with a higher depth (~2 Elo)
