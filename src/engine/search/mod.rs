@@ -20,6 +20,18 @@ pub mod transposition;
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
+mod params {
+    use crate::engine::eval::Eval;
+
+    pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
+
+    pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
+    pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
+
+    pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
+    pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
+}
+
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
     history: [[i32; Square::N]; Square::N],

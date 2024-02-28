@@ -9,19 +9,7 @@ use crate::engine::search::transposition::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
 
-use super::{Control, SearchState, MAX_SEARCH_DEPTH};
-
-mod params {
-    use crate::engine::eval::Eval;
-
-    pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
-
-    pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
-    pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
-
-    pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
-    pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
-}
+use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
