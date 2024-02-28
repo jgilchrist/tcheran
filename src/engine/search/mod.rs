@@ -9,6 +9,7 @@ use crate::chess::game::Game;
 use crate::chess::square::Square;
 use crate::engine::search::transposition::SearchTranspositionTable;
 
+mod aspiration;
 mod iterative_deepening;
 mod move_ordering;
 mod move_provider;
@@ -24,6 +25,9 @@ mod params {
     use crate::engine::eval::Eval;
 
     pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
+
+    pub const ASPIRATION_MIN_DEPTH: u8 = 4;
+    pub const ASPIRATION_WINDOW_SIZE: Eval = Eval::new(40);
 
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
