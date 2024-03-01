@@ -6,6 +6,7 @@ use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
 use crate::chess::square::Square;
+use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
@@ -160,7 +161,7 @@ impl Reporter for CapturingReporter {
 }
 
 pub fn search(
-    game: &mut Game,
+    game: &Game,
     tt: &mut SearchTranspositionTable,
     time_control: &TimeControl,
     search_restrictions: &SearchRestrictions,
@@ -175,8 +176,14 @@ pub fn search(
 
     tt.new_generation();
 
+    // The game is modified as moves are played during search. When the search terminates,
+    // the game will be left in a dirty state since we will not undo the moves played to
+    // reach the terminating node in the search tree. To keep our original 'game' copy clean
+    // we perform the search on a copy of the game.
+    let mut search_game = game.clone();
+
     let best_move = iterative_deepening::search(
-        game,
+        &mut search_game,
         tt,
         search_restrictions,
         options,
@@ -186,5 +193,13 @@ pub fn search(
         reporter,
     );
 
-    best_move
+    best_move.unwrap_or_else(|| panic_move(game, &state))
+}
+
+// If we have so little time to search that we couldn't determine a best move, we'll need to spend
+// a bit of extra time so that we still make a move.
+// Rather than returning a random move, we return the first move that is returned after move ordering
+fn panic_move(game: &Game, search_state: &SearchState) -> Move {
+    let mut move_provider = MoveProvider::new(game, None, [None, None]);
+    move_provider.next(game, search_state).unwrap()
 }

@@ -177,7 +177,7 @@ impl Uci {
                 movetime,
                 infinite: _,
             }) => {
-                let mut game = self.game.clone();
+                let game = self.game.clone();
                 let options = self.options.clone();
                 let control = self.control.clone();
                 let mut reporter = self.reporter.clone();
@@ -209,7 +209,7 @@ impl Uci {
                     tt_handle.resize(options.hash_size);
 
                     let best_move = search::search(
-                        &mut game,
+                        &game,
                         &mut tt_handle,
                         &time_control,
                         &search_restrictions,
@@ -315,12 +315,12 @@ impl Uci {
                 let mut tt_handle = tt.lock().unwrap();
                 tt_handle.resize(16);
 
-                let mut game = Game::new();
+                let game = Game::new();
                 let time_control = TimeControl::Infinite;
                 let search_restrictions = SearchRestrictions { depth: Some(11) };
 
                 let _ = search::search(
-                    &mut game,
+                    &game,
                     &mut tt_handle,
                     &time_control,
                     &search_restrictions,

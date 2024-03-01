@@ -7,6 +7,7 @@
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
 * Store castle rights as an array indexed by player
 * Correct stored mate values in TT
+* Make a panic move if there wasn't enough time to find a PV move during search
 
 ### Misc
 
@@ -15,7 +16,6 @@
 * Fix taking up more memory than needed when the transposition table is resized repeatedly
 * Remove the default 50ms move overhead and add a UCI option to configure it
 * Always log crashes to a .crash.log file
-* Add a minimum move time of 10ms to ensure we get a best move
 
 ## [2.1]
 
