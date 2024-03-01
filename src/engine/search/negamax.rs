@@ -125,8 +125,16 @@ pub fn negamax(
     let mut number_of_legal_moves = 0;
 
     while let Some(mv) = moves.next(game, state) {
-        number_of_legal_moves += 1;
+        let depth_reduction = if depth > params::LATE_MOVE_PRUNING_STOP_DEPTH
+            && number_of_legal_moves > params::LATE_MOVE_PRUNING_AFTER_MOVES
+            && game.board.piece_at(mv.dst).is_none()
+        {
+            params::LATE_MOVE_PRUNING_REDUCTION
+        } else {
+            0
+        };
 
+        number_of_legal_moves += 1;
         game.make_move(mv);
 
         let move_score = if full_pv_search {
@@ -149,7 +157,7 @@ pub fn negamax(
                 game,
                 -alpha - Eval(1),
                 -alpha,
-                depth - 1,
+                depth - 1 - depth_reduction,
                 plies + 1,
                 tt,
                 time_control,

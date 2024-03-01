@@ -30,6 +30,10 @@ mod params {
 
     pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
+
+    pub const LATE_MOVE_PRUNING_STOP_DEPTH: u8 = 2;
+    pub const LATE_MOVE_PRUNING_AFTER_MOVES: u8 = 4;
+    pub const LATE_MOVE_PRUNING_REDUCTION: u8 = 1;
 }
 
 pub struct SearchState {
