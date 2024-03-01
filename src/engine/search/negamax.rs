@@ -123,6 +123,7 @@ pub fn negamax(
 
     let mut moves = MoveProvider::new(game, previous_best_move, state.killer_moves[plies as usize]);
     let mut number_of_legal_moves = 0;
+    let mut quiets_evaluted: Vec<Move> = Vec::new();
 
     while let Some(mv) = moves.next(game, state) {
         number_of_legal_moves += 1;
@@ -183,6 +184,8 @@ pub fn negamax(
             best_eval = move_score;
         }
 
+        let is_quiet = game.board.piece_at(mv.dst).is_none();
+
         // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
             let tt_data = SearchTranspositionTableData {
@@ -198,15 +201,23 @@ pub fn negamax(
             // 'Killers': if a move was so good that it caused a beta cutoff,
             // but it wasn't a capture, we remember it so that we can try it
             // before other quiet moves.
-            if game.board.piece_at(mv.dst).is_none() {
+            if is_quiet {
                 state.killer_moves[1] = state.killer_moves[0];
                 state.killer_moves[plies as usize][0] = Some(mv);
 
-                state.history[mv.src.array_idx()][mv.dst.array_idx()] +=
-                    i32::from(depth) * i32::from(depth);
+                let history_bonus = i32::from(depth) * i32::from(depth);
+                state.history[mv.src.array_idx()][mv.dst.array_idx()] += history_bonus;
+                for previous_quiet_move in quiets_evaluted {
+                    state.history[previous_quiet_move.src.array_idx()]
+                        [previous_quiet_move.dst.array_idx()] -= history_bonus;
+                }
             }
 
             return Ok(beta);
+        }
+
+        if is_quiet {
+            quiets_evaluted.push(mv);
         }
 
         if move_score > alpha {
