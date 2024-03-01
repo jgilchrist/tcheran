@@ -4,6 +4,59 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{negamax, params, Control, SearchState};
 
+struct Window {
+    alpha: Eval,
+    beta: Eval,
+
+    width: Option<Eval>,
+}
+
+impl Window {
+    pub fn no_window() -> Self {
+        Self {
+            alpha: Eval::MIN,
+            beta: Eval::MAX,
+
+            width: None,
+        }
+    }
+
+    pub fn around(eval: Eval, width: Eval) -> Self {
+        Self {
+            alpha: Self::clamp_alpha(eval - width),
+            beta: Self::clamp_beta(eval + width),
+
+            width: Some(width),
+        }
+    }
+
+    pub fn widen_down(&mut self) {
+        if let Some(width) = self.width {
+            self.increase_window_widening_rate();
+            self.alpha = Self::clamp_alpha(self.alpha - width);
+        }
+    }
+
+    pub fn widen_up(&mut self) {
+        if let Some(width) = self.width {
+            self.increase_window_widening_rate();
+            self.beta = Self::clamp_beta(self.beta + width);
+        }
+    }
+
+    fn increase_window_widening_rate(&mut self) {
+        self.width = Some(self.width.unwrap() * 2);
+    }
+
+    fn clamp_alpha(eval: Eval) -> Eval {
+        std::cmp::max(Eval::MIN, eval)
+    }
+
+    fn clamp_beta(eval: Eval) -> Eval {
+        std::cmp::min(Eval::MAX, eval)
+    }
+}
+
 pub fn aspiration_search(
     game: &mut Game,
     depth: u8,
@@ -13,21 +66,17 @@ pub fn aspiration_search(
     time_control: &TimeStrategy,
     control: &impl Control,
 ) -> Result<Eval, ()> {
-    let mut alpha = Eval::MIN;
-    let mut beta = Eval::MAX;
-    let mut width = params::ASPIRATION_WINDOW_SIZE;
-
-    if depth >= params::ASPIRATION_MIN_DEPTH {
-        let eval = eval.unwrap();
-        alpha = Eval::max(Eval::MIN, eval - width);
-        beta = Eval::min(Eval::MAX, eval + width);
-    }
+    let mut window = if depth < params::ASPIRATION_MIN_DEPTH {
+        Window::no_window()
+    } else {
+        Window::around(eval.unwrap(), params::ASPIRATION_WINDOW_SIZE)
+    };
 
     loop {
         let Ok(eval) = negamax::negamax(
             game,
-            alpha,
-            beta,
+            window.alpha,
+            window.beta,
             depth,
             0,
             tt,
@@ -38,12 +87,10 @@ pub fn aspiration_search(
             return Err(());
         };
 
-        width = width * 2;
-
-        if eval <= alpha {
-            alpha = alpha - width;
-        } else if eval >= beta {
-            beta = beta + width;
+        if eval <= window.alpha {
+            window.widen_down();
+        } else if eval >= window.beta {
+            window.widen_up();
         } else {
             return Ok(eval);
         }
