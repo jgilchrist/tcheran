@@ -198,7 +198,7 @@ pub fn negamax(
             // but it wasn't a capture, we remember it so that we can try it
             // before other quiet moves.
             if game.board.piece_at(mv.dst).is_none() {
-                state.killer_moves[1] = state.killer_moves[0];
+                state.killer_moves[plies as usize][1] = state.killer_moves[plies as usize][0];
                 state.killer_moves[plies as usize][0] = Some(mv);
 
                 state.history[mv.src.array_idx()][mv.dst.array_idx()] +=

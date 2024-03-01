@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Fix a bug which overwrote killer moves with moves from another ply (~7 Elo)
+
 ### Misc
 
 * Allow making multiple moves with `d move [moves]`
