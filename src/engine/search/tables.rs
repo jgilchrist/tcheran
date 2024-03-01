@@ -28,6 +28,14 @@ impl HistoryTable {
         self.0[player.array_idx()][mv.src.array_idx()][mv.dst.array_idx()] = new_score;
     }
 
+    pub fn add_malus_for(&mut self, player: Player, mv: Move, depth: u8) {
+        let malus = Self::bonus(depth);
+        let existing_score = self.get(player, mv);
+        let new_score = std::cmp::max(existing_score - malus, 0);
+
+        self.0[player.array_idx()][mv.src.array_idx()][mv.dst.array_idx()] = new_score;
+    }
+
     pub fn decay(&mut self, decay_factor: i32) {
         for from_square in 0..Square::N {
             for to_square in 0..Square::N {

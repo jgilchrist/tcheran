@@ -123,6 +123,7 @@ pub fn negamax(
 
     let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
+    let mut quiets_tried: Vec<Move> = Vec::new();
 
     while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
         number_of_legal_moves += 1;
@@ -189,6 +190,11 @@ pub fn negamax(
             break;
         }
 
+        let is_quiet = game.board.piece_at(mv.dst).is_none();
+        if is_quiet {
+            quiets_tried.push(mv);
+        }
+
         if move_score > alpha {
             alpha = move_score;
             tt_node_bound = NodeBound::Exact;
@@ -220,6 +226,12 @@ pub fn negamax(
             persistent_state
                 .history_table
                 .add_bonus_for(game.player, mv, depth);
+
+            for previous_quiet_move in quiets_tried {
+                persistent_state
+                    .history_table
+                    .add_malus_for(game.player, mv, depth);
+            }
         }
     }
 
