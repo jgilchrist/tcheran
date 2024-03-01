@@ -8,6 +8,8 @@
 
 * Persist and decay history heuristic data (~6 Elo)
 
+* Do null move pruning when static eval == beta (~5 Elo)
+
 * Avoid yielding the prior best move from the transposition table twice (~2 Elo)
 
 * Killer move fixes: bound history scores and don't allow dupes (~0 Elo)
