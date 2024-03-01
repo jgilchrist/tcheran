@@ -19,9 +19,8 @@ pub fn search(
     time_control: &TimeStrategy,
     control: &impl Control,
     reporter: &mut impl Reporter,
-) -> (Move, Eval) {
-    let mut overall_best_move: Option<Move> = None;
-    let mut overall_eval: Option<Eval> = None;
+) -> Move {
+    let mut best_move: Option<Move> = None;
 
     let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
     state.max_depth_reached = 0;
@@ -49,10 +48,7 @@ pub fn search(
 
         let pv = get_pv(depth, game.clone(), tt);
 
-        let best_move = pv.first().unwrap();
-
-        overall_best_move = Some(*best_move);
-        overall_eval = Some(eval);
+        best_move = Some(*pv.first().unwrap());
 
         reporter.report_search_progress(SearchInfo {
             depth,
@@ -71,7 +67,7 @@ pub fn search(
         });
     }
 
-    (overall_best_move.unwrap(), overall_eval.unwrap())
+    best_move.unwrap()
 }
 
 fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {

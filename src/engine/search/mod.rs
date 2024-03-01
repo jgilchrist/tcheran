@@ -1,7 +1,6 @@
 use crate::chess::moves::Move;
 use std::time::Duration;
 
-use crate::engine::eval::WhiteEval;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
@@ -52,6 +51,7 @@ impl SearchState {
     }
 }
 
+#[derive(Debug, Eq, PartialEq)]
 pub enum SearchScore {
     Centipawns(i16),
     Mate(i16),
@@ -129,21 +129,27 @@ impl Reporter for NullReporter {
     fn best_move(&self, _: Move) {}
 }
 
-pub struct BenchReporter {
+pub struct CapturingReporter {
+    pub score: Option<SearchScore>,
     pub nodes: u64,
     pub nps: u64,
 }
 
-impl BenchReporter {
+impl CapturingReporter {
     pub fn new() -> Self {
-        Self { nodes: 0, nps: 0 }
+        Self {
+            score: None,
+            nodes: 0,
+            nps: 0,
+        }
     }
 }
 
-impl Reporter for BenchReporter {
+impl Reporter for CapturingReporter {
     fn generic_report(&self, _: &str) {}
 
     fn report_search_progress(&mut self, stats: SearchInfo) {
+        self.score = Some(stats.score);
         self.nodes = stats.stats.nodes;
         self.nps = stats.stats.nodes_per_second;
     }
@@ -161,7 +167,7 @@ pub fn search(
     options: &EngineOptions,
     control: &impl Control,
     reporter: &mut impl Reporter,
-) -> (Move, WhiteEval) {
+) -> Move {
     let mut state = SearchState::new();
 
     let mut time_strategy = TimeStrategy::new(game, time_control, options);
@@ -169,7 +175,7 @@ pub fn search(
 
     tt.new_generation();
 
-    let (best_move, eval) = iterative_deepening::search(
+    let best_move = iterative_deepening::search(
         game,
         tt,
         search_restrictions,
@@ -180,5 +186,5 @@ pub fn search(
         reporter,
     );
 
-    (best_move, eval.to_white_eval(game.player))
+    best_move
 }

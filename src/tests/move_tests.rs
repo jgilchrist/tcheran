@@ -1,31 +1,33 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
-use crate::chess::player::Player;
 use crate::chess::square::squares::all::*;
-use crate::engine::eval::{Eval, WhiteEval};
 use crate::engine::options::EngineOptions;
 use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::search::{search, NullControl, NullReporter, SearchRestrictions, TimeControl};
+use crate::engine::search::{
+    search, CapturingReporter, NullControl, SearchRestrictions, SearchScore, TimeControl,
+};
 
-fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, WhiteEval) {
+fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, SearchScore) {
     crate::init();
     let mut game = Game::from_fen(fen).unwrap();
 
     let mut tt = SearchTranspositionTable::new();
     tt.resize(128);
 
-    let (best_move, eval) = search(
+    let mut capturing_reporter = CapturingReporter::new();
+
+    let best_move = search(
         &mut game,
         &mut tt,
         &TimeControl::Infinite,
         &SearchRestrictions { depth: Some(depth) },
         &EngineOptions::default(),
         &NullControl,
-        &mut NullReporter,
+        &mut capturing_reporter,
     );
 
     assert_eq!(best_move, mv);
-    (best_move, eval)
+    (best_move, capturing_reporter.score.unwrap())
 }
 
 #[test]
@@ -36,5 +38,5 @@ fn test_mate_on_100th_halfmove_detected() {
         Move::new(E8, H8),
     );
 
-    assert_eq!(eval, Eval::mate_in(1).to_white_eval(Player::White));
+    assert_eq!(eval, SearchScore::Mate(1));
 }

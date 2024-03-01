@@ -31,7 +31,7 @@ pub mod responses;
 use crate::chess::game::Game;
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{
-    BenchReporter, Clocks, Control, NullControl, Reporter, SearchRestrictions, TimeControl,
+    CapturingReporter, Clocks, Control, NullControl, Reporter, SearchRestrictions, TimeControl,
 };
 pub use r#move::UciMove;
 
@@ -208,7 +208,7 @@ impl Uci {
                     let mut tt_handle = tt.lock().unwrap();
                     tt_handle.resize(options.hash_size);
 
-                    let (best_move, _eval) = search::search(
+                    let best_move = search::search(
                         &mut game,
                         &mut tt_handle,
                         &time_control,
@@ -308,7 +308,7 @@ impl Uci {
             UciCommand::PonderHit => {}
             // For OpenBench to understand NPS values for different workers
             UciCommand::Bench => {
-                let mut bench_reporter = BenchReporter::new();
+                let mut bench_reporter = CapturingReporter::new();
                 let null_control = NullControl;
 
                 let tt = self.tt.clone();
@@ -319,7 +319,7 @@ impl Uci {
                 let time_control = TimeControl::Infinite;
                 let search_restrictions = SearchRestrictions { depth: Some(11) };
 
-                let (_, _) = search::search(
+                let _ = search::search(
                     &mut game,
                     &mut tt_handle,
                     &time_control,

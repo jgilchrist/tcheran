@@ -28,7 +28,7 @@ impl Eval {
         Self(eval)
     }
 
-    #[cfg(test)]
+    #[allow(unused)]
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i16::from(ply))
     }
@@ -84,6 +84,7 @@ impl Eval {
         Self(adjusted_value)
     }
 
+    #[allow(unused)]
     pub fn to_white_eval(self, player: Player) -> WhiteEval {
         match player {
             Player::White => WhiteEval(self.0),
