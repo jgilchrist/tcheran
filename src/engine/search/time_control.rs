@@ -14,8 +14,6 @@ pub struct TimeStrategy {
 }
 
 impl TimeStrategy {
-    const MINIMUM_MOVE_TIME: Duration = Duration::from_millis(10);
-
     pub fn new(game: &Game, time_control: &TimeControl, options: &EngineOptions) -> Self {
         Self {
             time_control: time_control.clone(),
@@ -68,7 +66,7 @@ impl TimeStrategy {
             time_remaining.mul_f64(0.03333) + increment,
         );
 
-        std::cmp::max(time_to_use, Self::MINIMUM_MOVE_TIME)
+        time_to_use
     }
 
     pub fn should_stop(&self) -> bool {

@@ -2,6 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
+use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::engine::search::{
@@ -21,6 +22,7 @@ pub fn search(
     reporter: &mut impl Reporter,
 ) -> Move {
     let mut best_move: Option<Move> = None;
+    let root_game = game.clone();
 
     let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
     state.max_depth_reached = 0;
@@ -46,8 +48,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game.clone(), tt);
-
+        let pv = get_pv(depth, root_game.clone(), tt);
         best_move = Some(*pv.first().unwrap());
 
         reporter.report_search_progress(SearchInfo {
@@ -67,7 +68,17 @@ pub fn search(
         });
     }
 
-    best_move.unwrap()
+    let Some(best_move) = best_move else {
+        let backup_move = no_pv_move(&root_game, state);
+        return backup_move;
+    };
+
+    best_move
+}
+
+fn no_pv_move(game: &Game, search_state: &SearchState) -> Move {
+    let mut move_provider = MoveProvider::new(game, None, [None, None]);
+    move_provider.next(game, search_state).unwrap()
 }
 
 fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {
