@@ -40,14 +40,6 @@ pub fn negamax(
     // alpha & beta bounds, and thus search less of the tree.
     let mut full_pv_search = true;
 
-    if !is_root
-        && (game.is_repeated_position()
-            || game.is_stalemate_by_fifty_move_rule()
-            || game.is_stalemate_by_insufficient_material())
-    {
-        return Ok(Eval::DRAW);
-    }
-
     // Check extension: If we're about to finish searching, but we are in check, we
     // should keep going.
     let in_check = game.is_king_in_check();
@@ -61,6 +53,14 @@ pub fn negamax(
 
     if !is_root {
         state.nodes_visited += 1;
+    }
+
+    if !is_root
+        && (game.is_repeated_position()
+            || game.is_stalemate_by_fifty_move_rule()
+            || game.is_stalemate_by_insufficient_material())
+    {
+        return Ok(Eval::DRAW);
     }
 
     let mut previous_best_move: Option<Move> = None;
