@@ -46,7 +46,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game.clone(), tt);
+        let pv = get_pv(depth, game.clone(), tt, state);
         best_move = Some(*pv.first().unwrap());
 
         reporter.report_search_progress(SearchInfo {
@@ -69,11 +69,13 @@ pub fn search(
     best_move
 }
 
-fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable) -> Vec<Move> {
+fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable, state: &SearchState) -> Vec<Move> {
     let mut current_position = game;
     let mut pv = Vec::new();
 
-    for _ in 0..depth {
+    let depth_reached = std::cmp::min(depth, state.max_depth_reached);
+
+    for _ in 0..depth_reached {
         let Some(tt_entry) = tt.get(&current_position.zobrist) else {
             break;
         };

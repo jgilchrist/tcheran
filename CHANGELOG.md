@@ -17,6 +17,7 @@
 * Remove the default 50ms move overhead and add a UCI option to configure it
 * Always log crashes to a .crash.log file
 * Check for time termination in the root
+* Don't try reporting PV beyond actual depth searched
 
 ## [2.1]
 
