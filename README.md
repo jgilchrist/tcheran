@@ -6,13 +6,14 @@ A UCI compatible engine developed by [@jgilchrist](https://github.com/jgilchrist
 
 Thank you to everybody who has tested the engine.
 
-| Version | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] | [CEDR][cedr] |
-| ------- | -------------------------|----------------|--------------|
-| v2.1    | 2272                     | 2540           | -            |
-| v2.0    | -                        | 2425           | -            |
-| v1.1    | -                        | 2228           | 2261         |
-| v1.0    | 1879                     | -              | -            |
+| Version | [CCRL 40/15][ccrl-ltc] | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] | [CEDR][cedr] |
+| ------- | ---------------------- | -------------------------|----------------|--------------|
+| v2.1    | 2275                   | 2230                     | 2542           | -            |
+| v2.0    | -                      | -                        | 2434           | -            |
+| v1.1    | -                      | -                        | 2237           | 2258         |
+| v1.0    | -                      | 1871                     | -              | -            |
 
+[ccrl-ltc]: https://computerchess.org.uk/ccrl/4040/
 [ccrl-blitz]: https://computerchess.org.uk/ccrl/404/
 [mcerl]: https://www.chessengeria.eu/mcerl
 [cedr]: https://chessengines.blogspot.com/p/rating-jcer.html
