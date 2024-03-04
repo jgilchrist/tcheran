@@ -16,6 +16,7 @@
 * Fix taking up more memory than needed when the transposition table is resized repeatedly
 * Remove the default 50ms move overhead and add a UCI option to configure it
 * Always log crashes to a .crash.log file
+* Check for time termination in the root
 
 ## [2.1]
 
