@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.2]
+
 * Restore zobrist hash, incremental evaluation fields and castle rights from history when undoing move (~17 Elo)
 * Fix throwing away old en passant target during null moves (~19 Elo)
 * Use a dedicated `MoveList` struct instead of `Vec<Move>`
@@ -103,7 +105,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.1...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.2...HEAD
+[2.2]: https://github.com/jgilchrist/chess-engine/compare/v2.1..v2.2
 [2.1]: https://github.com/jgilchrist/chess-engine/compare/v2.0..v2.1
 [2.0]: https://github.com/jgilchrist/chess-engine/compare/v1.1..v2.0
 [1.1]: https://github.com/jgilchrist/chess-engine/compare/v1.0..v1.1
