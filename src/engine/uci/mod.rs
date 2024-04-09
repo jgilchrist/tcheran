@@ -257,8 +257,11 @@ impl Uci {
                         bail!("Unknown debug position")
                     }
                 },
-                DebugCommand::Move { mv } => {
-                    self.game.make_move(*mv);
+                DebugCommand::Move { moves } => {
+                    for mv in moves {
+                        self.game.make_move(*mv);
+                    }
+
                     println!("{:?}", self.game.board);
                     println!("FEN: {}", crate::chess::fen::write(&self.game));
                     println!();

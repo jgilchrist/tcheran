@@ -313,9 +313,9 @@ fn cmd_d_position(input: &str) -> IResult<&str, UciCommand> {
 fn cmd_d_move(input: &str) -> IResult<&str, UciCommand> {
     let (input, _) = tag("move")(input)?;
     let (input, _) = space1(input)?;
-    let (input, mv) = uci_move(input)?;
+    let (input, moves) = uci_moves(input)?;
 
-    Ok((input, UciCommand::D(DebugCommand::Move { mv })))
+    Ok((input, UciCommand::D(DebugCommand::Move { moves })))
 }
 
 fn cmd_d_perft(input: &str) -> IResult<&str, UciCommand> {

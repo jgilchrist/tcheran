@@ -27,7 +27,7 @@ pub enum DebugCommand {
     SetPosition { position: String },
     Perft { depth: u8 },
     PerftDiv { depth: u8 },
-    Move { mv: Move },
+    Move { moves: Vec<Move> },
     Eval,
 }
 

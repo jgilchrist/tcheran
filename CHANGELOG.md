@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Allow making multiple moves with `d move [moves]`
+
 ## [2.2]
 
 * Restore zobrist hash, incremental evaluation fields and castle rights from history when undoing move (~17 Elo)
