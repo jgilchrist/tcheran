@@ -4,7 +4,7 @@ use crate::chess::movelist::MoveList;
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
-pub fn generate_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
+pub fn generate_legal_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
     let our_pieces = game.board.pieces(game.player);
     let their_pieces = game.board.pieces(game.player.other()).all();
     let all_pieces = our_pieces.all() | their_pieces;
@@ -378,22 +378,24 @@ mod tests {
     fn should_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = game.moves().to_vec();
+        let mut movelist = MoveList::new();
+        generate_legal_moves::<true>(&game, &mut movelist);
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 
-        assert!(moves.iter().any(|m| *m == mv));
+        assert!(movelist.to_vec().iter().any(|m| *m == mv));
     }
 
     #[inline(always)]
     fn should_not_allow_move(fen: &str, squares: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
-        let moves = game.moves().to_vec();
+        let mut movelist = MoveList::new();
+        generate_legal_moves::<true>(&game, &mut movelist);
         let (src, dst) = squares;
         let mv = Move::new(src, dst);
 
-        assert!(moves.iter().all(|m| *m != mv));
+        assert!(movelist.to_vec().iter().all(|m| *m != mv));
     }
 
     #[test]

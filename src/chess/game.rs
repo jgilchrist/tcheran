@@ -4,8 +4,8 @@ use crate::chess::piece::Piece;
 use crate::chess::square::squares;
 use crate::chess::zobrist::ZobristHash;
 use crate::chess::{
-    board::Board, fen, movegen::generate_moves, moves::Move, piece::PieceKind, player::Player,
-    square::Square, zobrist,
+    board::Board, fen, movegen::generate_legal_moves, moves::Move, piece::PieceKind,
+    player::Player, square::Square, zobrist,
 };
 use crate::engine::eval::IncrementalEvalFields;
 use color_eyre::Result;
@@ -136,14 +136,14 @@ impl Game {
     // movelist and allow them to iterate easily over the resulting list of moves
     pub fn moves(&self) -> MoveList {
         let mut movelist = MoveList::new();
-        generate_moves::<true>(self, &mut movelist);
+        generate_legal_moves::<true>(self, &mut movelist);
         movelist
     }
 
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         if self.halfmove_clock >= 100 {
             let mut movelist = MoveList::new();
-            generate_moves::<true>(self, &mut movelist);
+            generate_legal_moves::<true>(self, &mut movelist);
             return movelist.has_moves();
         }
 

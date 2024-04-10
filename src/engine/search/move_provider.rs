@@ -24,7 +24,7 @@ impl MoveProvider {
         killer_moves: [Option<Move>; 2],
     ) -> Self {
         let mut moves = MoveList::new();
-        movegen::generate_moves::<true>(game, &mut moves);
+        movegen::generate_legal_moves::<true>(game, &mut moves);
 
         Self {
             moves,
@@ -39,7 +39,7 @@ impl MoveProvider {
 
     pub fn new_loud(game: &Game) -> Self {
         let mut moves = MoveList::new();
-        movegen::generate_moves::<false>(game, &mut moves);
+        movegen::generate_legal_moves::<false>(game, &mut moves);
 
         Self {
             moves,
