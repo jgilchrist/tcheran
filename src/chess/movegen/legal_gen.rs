@@ -4,6 +4,14 @@ use crate::chess::movelist::MoveList;
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
+// Convenience method to prevent tests from having to construct their own
+// movelist and allow them to iterate easily over the resulting list of moves
+pub fn get_legal_moves(game: &Game) -> MoveList {
+    let mut movelist = MoveList::new();
+    generate_legal_moves::<true>(game, &mut movelist);
+    movelist
+}
+
 pub fn generate_legal_moves<const QUIET: bool>(game: &Game, moves: &mut MoveList) {
     let our_pieces = game.board.pieces(game.player);
     let their_pieces = game.board.pieces(game.player.other()).all();

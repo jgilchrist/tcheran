@@ -1,8 +1,8 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
-use crate::chess::san;
 use crate::chess::square::{squares, File, Rank, Square};
+use crate::chess::{movegen, san};
 use color_eyre::eyre::{bail, eyre};
 use color_eyre::Result;
 use std::collections::HashSet;
@@ -110,8 +110,7 @@ fn parse_piece(c: char) -> Option<PieceKind> {
 }
 
 fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square> {
-    let piece_moves: Vec<(PieceKind, Move)> = game
-        .moves()
+    let piece_moves: Vec<(PieceKind, Move)> = movegen::get_legal_moves(game)
         .to_vec()
         .into_iter()
         .map(|mv| (game.board.piece_at(mv.src).unwrap().kind, mv))

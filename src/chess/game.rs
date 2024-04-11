@@ -132,14 +132,6 @@ impl Game {
         self.plies / 2 + 1
     }
 
-    // Convenience method to prevent tests from having to construct their own
-    // movelist and allow them to iterate easily over the resulting list of moves
-    pub fn moves(&self) -> MoveList {
-        let mut movelist = MoveList::new();
-        generate_legal_moves::<true>(self, &mut movelist);
-        movelist
-    }
-
     pub fn is_stalemate_by_fifty_move_rule(&self) -> bool {
         if self.halfmove_clock >= 100 {
             let mut movelist = MoveList::new();
