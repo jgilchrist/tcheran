@@ -246,14 +246,23 @@ fn generate_pawn_captures(
                         .remove_at(potential_en_passant_capture_start);
                     board_without_en_passant_participants.remove_at(captured_pawn);
 
-                    let king_in_check = attackers::generate_attackers_of(
-                        &board_without_en_passant_participants,
-                        game.player,
-                        king,
-                    )
+                    let en_passant_board_pieces =
+                        board_without_en_passant_participants.pieces(game.player.other());
+
+                    let en_passant_board_blockers =
+                        board_without_en_passant_participants.white_pieces().all()
+                            | board_without_en_passant_participants.black_pieces().all();
+
+                    // When removing pawns, the only resulting attack can be from an orthogonal slider along the rank the
+                    // captured pawn is removed from
+                    let captured_pawn_rank = captured_pawn.rank().bitboard();
+
+                    let revealed_check_by_orthogonal_slider = (captured_pawn_rank
+                        & tables::rook_attacks(king, en_passant_board_blockers)
+                        & (en_passant_board_pieces.rooks() | en_passant_board_pieces.queens()))
                     .any();
 
-                    if !king_in_check {
+                    if !revealed_check_by_orthogonal_slider {
                         moves.push(Move::new(
                             potential_en_passant_capture_start,
                             en_passant_target,
