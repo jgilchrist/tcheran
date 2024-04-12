@@ -19,7 +19,7 @@ type PerftTranspositionTable = TranspositionTable<PerftTranspositionTableData>;
 
 fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize {
     if depth == 1 {
-        return movegen::get_legal_moves(game).len();
+        return game.moves().len();
     }
 
     if let Some(tt_data) = tt.get(&game.zobrist) {
@@ -28,7 +28,8 @@ fn perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize 
         }
     }
 
-    let result = movegen::get_legal_moves(game)
+    let result = game
+        .moves()
         .to_vec()
         .into_iter()
         .map(|m| {

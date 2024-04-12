@@ -1,8 +1,8 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
+use crate::chess::san;
 use crate::chess::square::squares;
-use crate::chess::{movegen, san};
 
 #[derive(Debug, Eq, PartialEq)]
 enum AmbiguityResolution {
@@ -101,7 +101,7 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
         return AmbiguityResolution::None;
     }
 
-    let moves = movegen::get_legal_moves(game).to_vec();
+    let moves = game.moves().to_vec();
 
     let potentially_ambiguous_moves: Vec<Move> = moves
         .into_iter()

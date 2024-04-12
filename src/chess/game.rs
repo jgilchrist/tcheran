@@ -244,6 +244,14 @@ impl Game {
             .toggle_castle_rights(player, castle_rights_side);
     }
 
+    // Convenience method to prevent tests from having to construct their own
+    // movelist and allow them to iterate easily over the resulting list of moves
+    pub fn moves(&self) -> MoveList {
+        let mut movelist = MoveList::new();
+        generate_legal_moves(self, &mut movelist);
+        movelist
+    }
+
     pub fn make_move(&mut self, mv: Move) {
         let from = mv.src;
         let to = mv.dst;
