@@ -54,7 +54,6 @@ pub fn score_move(
 mod tests {
     use super::*;
     use crate::chess::game::Game;
-    use crate::chess::movegen;
     use crate::chess::square::squares::all::*;
 
     struct ScoredMove {
@@ -73,7 +72,8 @@ mod tests {
         crate::init();
 
         let game = Game::from_fen("k3B3/8/n1q1R1r1/1P6/1NQn4/7P/2r5/5K2 w - - 0 1").unwrap();
-        let mut moves: Vec<ScoredMove> = movegen::get_legal_moves(&game)
+        let mut moves: Vec<ScoredMove> = game
+            .moves()
             .to_vec()
             .into_iter()
             .map(ScoredMove::new)

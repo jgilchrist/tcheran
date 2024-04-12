@@ -268,7 +268,7 @@ impl Uci {
                 }
                 DebugCommand::Perft { depth } => {
                     let started_at = Instant::now();
-                    let result = perft::legal_perft(*depth, &mut self.game);
+                    let result = perft::perft(*depth, &mut self.game);
                     let time_taken = started_at.elapsed();
 
                     let nodes_per_second =
@@ -280,7 +280,7 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::PerftDiv { depth } => {
-                    let result = perft::legal_perft_div(*depth, &mut self.game);
+                    let result = perft::perft_div(*depth, &mut self.game);
                     let mut total = 0;
 
                     for (mv, number_for_mv) in result {

@@ -8,7 +8,6 @@
 ### Misc
 
 * Allow making multiple moves with `d move [moves]`
-* Re-add an unused pseudo-legal movegen implementation to run tests against
 
 ## [2.2]
 
