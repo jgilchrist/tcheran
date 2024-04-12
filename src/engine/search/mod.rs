@@ -200,6 +200,6 @@ pub fn search(
 // a bit of extra time so that we still make a move.
 // Rather than returning a random move, we return the first move that is returned after move ordering
 fn panic_move(game: &Game, search_state: &SearchState) -> Move {
-    let mut move_provider = MoveProvider::new(game, None, [None, None]);
-    move_provider.next(game, search_state).unwrap()
+    let mut move_provider = MoveProvider::new(None);
+    move_provider.next(game, search_state, 0).unwrap()
 }

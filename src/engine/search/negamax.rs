@@ -120,10 +120,10 @@ pub fn negamax(
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    let mut moves = MoveProvider::new(game, previous_best_move, state.killer_moves[plies as usize]);
+    let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
 
-    while let Some(mv) = moves.next(game, state) {
+    while let Some(mv) = moves.next(game, state, plies as usize) {
         number_of_legal_moves += 1;
 
         game.make_move(mv);
