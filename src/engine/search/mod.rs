@@ -97,13 +97,19 @@ pub struct SearchStats {
 
 pub trait Control {
     fn stop(&self);
+    fn reset(&self);
+
     fn should_stop(&self) -> bool;
+    fn set_stopped(&self);
 }
 
 pub struct NullControl;
 
 impl Control for NullControl {
     fn stop(&self) {}
+    fn reset(&self) {}
+
+    fn set_stopped(&self) {}
 
     fn should_stop(&self) -> bool {
         false

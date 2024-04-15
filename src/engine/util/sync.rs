@@ -31,4 +31,11 @@ impl LockLatch {
         *self.m.lock().unwrap() = true;
         self.v.notify_all();
     }
+
+    // Resets the value of the lock
+    #[inline(always)]
+    pub fn reset(&self) {
+        *self.m.lock().unwrap() = false;
+        self.v.notify_all();
+    }
 }

@@ -2,6 +2,7 @@
 
 use color_eyre::eyre::{bail, Context};
 use std::io::BufRead;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Instant;
 
@@ -37,17 +38,35 @@ pub use r#move::UciMove;
 
 #[derive(Clone)]
 pub struct UciControl {
-    stop: Arc<Mutex<bool>>,
-    stopped: Arc<LockLatch>,
+    stop: Arc<AtomicBool>,
+    is_stopped: Arc<LockLatch>,
+}
+
+impl UciControl {
+    pub fn new() -> Self {
+        Self {
+            stop: Arc::new(AtomicBool::new(false)),
+            is_stopped: Arc::new(LockLatch::new()),
+        }
+    }
 }
 
 impl search::Control for UciControl {
     fn stop(&self) {
-        self.stopped.set();
+        self.stop.store(true, Ordering::Relaxed);
+    }
+
+    fn reset(&self) {
+        self.stop.store(false, Ordering::Relaxed);
+        self.is_stopped.reset();
     }
 
     fn should_stop(&self) -> bool {
-        *self.stop.lock().unwrap()
+        self.stop.load(Ordering::Relaxed)
+    }
+
+    fn set_stopped(&self) {
+        self.is_stopped.set();
     }
 }
 
@@ -219,7 +238,7 @@ impl Uci {
                     );
 
                     reporter.best_move(best_move);
-                    control.stop();
+                    control.set_stopped();
                 });
 
                 if self.block_on_threads {
@@ -227,16 +246,9 @@ impl Uci {
                 }
             }
             UciCommand::Stop => {
-                {
-                    let mut stop = self.control.stop.lock().unwrap();
-                    *stop = true;
-                }
-                self.control.stopped.wait();
-                self.control.stopped = Arc::new(LockLatch::new());
-                {
-                    let mut stop = self.control.stop.lock().unwrap();
-                    *stop = false;
-                }
+                self.control.stop();
+                self.control.is_stopped.wait();
+                self.control.reset();
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::PrintPosition => {
@@ -419,10 +431,7 @@ pub enum UciInputMode {
 
 pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
     let mut uci = Uci {
-        control: UciControl {
-            stop: Arc::new(Mutex::new(false)),
-            stopped: Arc::new(LockLatch::new()),
-        },
+        control: UciControl::new(),
         reporter: UciReporter {},
         debug: false,
         options: EngineOptions::default(),

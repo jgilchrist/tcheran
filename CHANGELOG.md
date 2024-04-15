@@ -8,6 +8,7 @@
 
 ### Misc
 
+* Use atomics instead of a mutex for the shared 'stop' flag
 * Allow making multiple moves with `d move [moves]`
 
 ## [2.2]
