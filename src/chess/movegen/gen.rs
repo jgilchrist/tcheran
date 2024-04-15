@@ -530,28 +530,25 @@ fn generate_castle_move_for_side<const KINGSIDE: bool>(
 mod tests {
     use super::*;
     use crate::chess::square::squares::all::*;
-    use crate::chess::square::Square;
 
     #[inline(always)]
-    fn should_allow_move(fen: &str, squares: (Square, Square)) {
+    fn should_allow_move(fen: &str, mv: impl Into<Move>) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let (src, dst) = squares;
-        let mv = Move::new(src, dst);
+        let mv = mv.into();
 
         assert!(movelist.to_vec().iter().any(|m| *m == mv));
     }
 
     #[inline(always)]
-    fn should_not_allow_move(fen: &str, squares: (Square, Square)) {
+    fn should_not_allow_move(fen: &str, mv: impl Into<Move>) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let (src, dst) = squares;
-        let mv = Move::new(src, dst);
+        let mv = mv.into();
 
         assert!(movelist.to_vec().iter().all(|m| *m != mv));
     }

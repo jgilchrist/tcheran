@@ -25,6 +25,18 @@ impl Move {
     }
 }
 
+impl From<(Square, Square)> for Move {
+    fn from((src, dst): (Square, Square)) -> Self {
+        Self::new(src, dst)
+    }
+}
+
+impl From<(Square, Square, PromotionPieceKind)> for Move {
+    fn from((src, dst, promotion): (Square, Square, PromotionPieceKind)) -> Self {
+        Self::promotion(src, dst, promotion)
+    }
+}
+
 impl std::fmt::Debug for Move {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(

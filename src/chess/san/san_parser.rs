@@ -244,13 +244,13 @@ mod tests {
     use crate::chess::piece::PromotionPieceKind;
     use crate::chess::square::squares::all::*;
 
-    fn test_parse_san(fen: &'static str, expected_mv: Move, san: &'static str) {
+    fn test_parse_san(fen: &'static str, expected_mv: impl Into<Move>, san: &'static str) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
         let mv = parse_move(&game, san).unwrap();
 
-        assert_eq!(mv, expected_mv);
+        assert_eq!(mv, expected_mv.into());
     }
 
     #[test]
@@ -262,21 +262,21 @@ mod tests {
     fn san_simple_pawn_capture() {
         test_parse_san(
             "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2",
-            Move::new(E4, D5),
+            (E4, D5),
             "exd5",
         );
     }
 
     #[test]
     fn san_simple_knight_move() {
-        test_parse_san(fen::START_POS, Move::new(B1, C3), "Nc3");
+        test_parse_san(fen::START_POS, (B1, C3), "Nc3");
     }
 
     #[test]
     fn san_test_en_passant() {
         test_parse_san(
             "rnbqkbnr/ppp2ppp/4p3/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3",
-            Move::new(E5, D6),
+            (E5, D6),
             "exd6",
         );
     }
@@ -285,71 +285,40 @@ mod tests {
     fn san_promotion() {
         let promotion_fen = "k7/7P/8/8/8/8/8/7K w - - 0 1";
 
-        test_parse_san(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Knight),
-            "h8=N",
-        );
-
-        test_parse_san(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Bishop),
-            "h8=B",
-        );
-
-        test_parse_san(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Rook),
-            "h8=R+",
-        );
-
-        test_parse_san(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Queen),
-            "h8=Q+",
-        );
+        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
+        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
+        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
+        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
     }
 
     #[test]
     fn san_file_ambiguity() {
-        test_parse_san(
-            "R6R/8/8/8/8/8/8/1k4K1 w - - 0 1",
-            Move::new(A8, B8),
-            "Rab8+",
-        );
+        test_parse_san("R6R/8/8/8/8/8/8/1k4K1 w - - 0 1", (A8, B8), "Rab8+");
     }
 
     #[test]
     fn san_rank_ambiguity() {
-        test_parse_san(
-            "R7/8/8/8/8/1k4K1/8/R7 w - - 0 1",
-            Move::new(A1, A3),
-            "R1a3+",
-        );
+        test_parse_san("R7/8/8/8/8/1k4K1/8/R7 w - - 0 1", (A1, A3), "R1a3+");
     }
 
     #[test]
     fn san_exact_ambiguity() {
-        test_parse_san(
-            "1k1K4/8/8/8/4Q2Q/8/8/7Q w - - 0 1",
-            Move::new(H4, E1),
-            "Qh4e1",
-        );
+        test_parse_san("1k1K4/8/8/8/4Q2Q/8/8/7Q w - - 0 1", (H4, E1), "Qh4e1");
     }
 
     #[test]
     fn san_castling() {
         let fen = "1k6/8/8/8/8/8/8/R3K2R w KQ - 0 1";
 
-        test_parse_san(fen, Move::new(E1, G1), "O-O");
-        test_parse_san(fen, Move::new(E1, C1), "O-O-O");
+        test_parse_san(fen, (E1, G1), "O-O");
+        test_parse_san(fen, (E1, C1), "O-O-O");
     }
 
     #[test]
     fn san_plus_for_check() {
         test_parse_san(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
-            Move::promotion(G7, G8, PromotionPieceKind::Queen),
+            (G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",
         );
     }
