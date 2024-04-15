@@ -79,7 +79,7 @@ impl MoveProvider {
                     self.moves.get(i),
                     self.previous_best_move,
                     state.killer_moves[plies],
-                    &state.history,
+                    &state.history[game.player.array_idx()],
                 );
             }
 
@@ -131,7 +131,7 @@ impl MoveProvider {
                     self.moves.get(i),
                     self.previous_best_move,
                     state.killer_moves[plies],
-                    &state.history,
+                    &state.history[game.player.array_idx()],
                 );
             }
         }

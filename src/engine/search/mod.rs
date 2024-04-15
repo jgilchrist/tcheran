@@ -5,6 +5,7 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
+use crate::chess::player::Player;
 use crate::chess::square::Square;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::transposition::SearchTranspositionTable;
@@ -34,7 +35,7 @@ mod params {
 
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
-    history: [[i32; Square::N]; Square::N],
+    history: [[[i32; Square::N]; Square::N]; Player::N],
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -44,7 +45,7 @@ impl SearchState {
     const fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
-            history: [[0; Square::N]; Square::N],
+            history: [[[0; Square::N]; Square::N]; Player::N],
 
             max_depth_reached: 0,
             nodes_visited: 0,

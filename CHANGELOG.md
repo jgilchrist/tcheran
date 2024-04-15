@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Implement lazy (staged) move generation (~25 Elo)
+* Index the history heuristic array by player (~9 Elo)
 * Fix a bug which overwrote killer moves with moves from another ply (~7 Elo)
 
 ### Misc

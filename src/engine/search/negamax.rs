@@ -201,7 +201,7 @@ pub fn negamax(
                 state.killer_moves[plies as usize][1] = state.killer_moves[plies as usize][0];
                 state.killer_moves[plies as usize][0] = Some(mv);
 
-                state.history[mv.src.array_idx()][mv.dst.array_idx()] +=
+                state.history[game.player.array_idx()][mv.src.array_idx()][mv.dst.array_idx()] +=
                     i32::from(depth) * i32::from(depth);
             }
 
