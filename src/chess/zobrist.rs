@@ -185,12 +185,12 @@ pub fn hash_pawns(game: &Game) -> ZobristHash {
 
     // Add piece components to hash
     // White
-    for s in game.board.white_pieces.pawns() {
+    for s in game.board.white_pieces().pawns() {
         hash ^= piece_on_square(Player::White, PieceKind::Pawn, s);
     }
 
     // Black
-    for s in game.board.black_pieces.pawns() {
+    for s in game.board.black_pieces().pawns() {
         hash ^= piece_on_square(Player::Black, PieceKind::Pawn, s);
     }
 

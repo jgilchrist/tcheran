@@ -110,8 +110,8 @@ pub fn eval(board: &Board) -> PhasedEval {
 fn calculate_passed_pawn_bonus(board: &Board, player: Player) -> PhasedEval {
     let mut bonus = PhasedEval::ZERO;
 
-    let our_pawns = board.player_pieces(player).pawns();
-    let their_pawns = board.player_pieces(player.other()).pawns();
+    let our_pawns = board.pieces(player).pawns();
+    let their_pawns = board.pieces(player.other()).pawns();
 
     let their_back_rank = match player {
         Player::White => Rank::R8,
