@@ -30,10 +30,12 @@ pub mod parser;
 pub mod responses;
 
 use crate::chess::game::Game;
+use crate::engine::eval::PhasedEval;
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{
     CapturingReporter, Clocks, Control, NullControl, Reporter, SearchRestrictions, TimeControl,
 };
+use crate::engine::transposition_table::TranspositionTable;
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -122,6 +124,7 @@ pub struct Uci {
     options: EngineOptions,
 
     tt: Arc<Mutex<SearchTranspositionTable>>,
+    pawn_tt: Arc<Mutex<TranspositionTable<PhasedEval>>>,
 
     // If we're running without using stdin (i.e. passing the UCI commands as command line
     // args) then we need to block on anything taking place on other threads, otherwise we'll
@@ -222,14 +225,19 @@ impl Uci {
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
                 let tt = self.tt.clone();
+                let pawn_tt = self.pawn_tt.clone();
 
                 let join_handle = std::thread::spawn(move || {
                     let mut tt_handle = tt.lock().unwrap();
                     tt_handle.resize(options.hash_size);
 
+                    let mut pawn_tt_handle = pawn_tt.lock().unwrap();
+                    pawn_tt_handle.resize(16);
+
                     let best_move = search::search(
                         &game,
                         &mut tt_handle,
+                        &mut pawn_tt_handle,
                         &time_control,
                         &search_restrictions,
                         &options,
@@ -304,7 +312,8 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Eval => {
-                    let eval_components = eval::eval_components(&self.game);
+                    let mut pawn_tt_handle = self.pawn_tt.lock().unwrap();
+                    let eval_components = eval::eval_components(&self.game, &mut pawn_tt_handle);
 
                     println!();
 
@@ -330,6 +339,10 @@ impl Uci {
                 let mut tt_handle = tt.lock().unwrap();
                 tt_handle.resize(16);
 
+                let pawn_tt = self.pawn_tt.clone();
+                let mut pawn_tt_handle = pawn_tt.lock().unwrap();
+                pawn_tt_handle.resize(16);
+
                 let game = Game::new();
                 let time_control = TimeControl::Infinite;
                 let search_restrictions = SearchRestrictions { depth: Some(11) };
@@ -337,6 +350,7 @@ impl Uci {
                 let _ = search::search(
                     &game,
                     &mut tt_handle,
+                    &mut pawn_tt_handle,
                     &time_control,
                     &search_restrictions,
                     &self.options,
@@ -438,6 +452,7 @@ pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
 
         game: Game::new(),
         tt: Arc::new(Mutex::new(SearchTranspositionTable::default())),
+        pawn_tt: Arc::new(Mutex::new(TranspositionTable::<PhasedEval>::default())),
 
         block_on_threads: match uci_input_mode {
             UciInputMode::Stdin => false,

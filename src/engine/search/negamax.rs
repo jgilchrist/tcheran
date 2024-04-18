@@ -1,13 +1,14 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
-use crate::engine::eval::Eval;
+use crate::engine::eval::{Eval, PhasedEval};
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{
     NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
 };
+use crate::engine::transposition_table::TranspositionTable;
 
 use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
 
@@ -18,6 +19,7 @@ pub fn negamax(
     mut depth: u8,
     plies: u8,
     tt: &mut SearchTranspositionTable,
+    pawn_tt: &mut TranspositionTable<PhasedEval>,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
@@ -56,7 +58,16 @@ pub fn negamax(
     }
 
     if depth == 0 {
-        return quiescence(game, alpha, beta, plies, time_control, state, control);
+        return quiescence(
+            game,
+            alpha,
+            beta,
+            plies,
+            pawn_tt,
+            time_control,
+            state,
+            control,
+        );
     }
 
     if !is_root {
@@ -79,7 +90,7 @@ pub fn negamax(
     }
 
     if !is_root && !in_check {
-        let eval = eval::eval(game);
+        let eval = eval::eval(game, pawn_tt);
 
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
@@ -103,6 +114,7 @@ pub fn negamax(
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
                 plies + 1,
                 tt,
+                pawn_tt,
                 time_control,
                 state,
                 control,
@@ -136,6 +148,7 @@ pub fn negamax(
                 depth - 1,
                 plies + 1,
                 tt,
+                pawn_tt,
                 time_control,
                 state,
                 control,
@@ -151,6 +164,7 @@ pub fn negamax(
                 depth - 1,
                 plies + 1,
                 tt,
+                pawn_tt,
                 time_control,
                 state,
                 control,
@@ -166,6 +180,7 @@ pub fn negamax(
                     depth - 1,
                     plies + 1,
                     tt,
+                    pawn_tt,
                     time_control,
                     state,
                     control,
