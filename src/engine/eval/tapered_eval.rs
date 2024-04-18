@@ -2,10 +2,17 @@ use crate::chess::board::Board;
 use crate::chess::piece::PieceKind;
 use crate::chess::square::Square;
 use crate::engine::eval::WhiteEval;
+use crate::engine::transposition_table::TTOverwriteable;
 
 /// A midgame and endgame evaluation
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct PhasedEval(i32);
+
+impl TTOverwriteable for PhasedEval {
+    fn should_overwrite_with(&self, _: &Self) -> bool {
+        true
+    }
+}
 
 impl PhasedEval {
     pub const ZERO: Self = Self(0);

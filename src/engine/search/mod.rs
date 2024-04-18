@@ -5,10 +5,12 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
+use crate::engine::eval::PhasedEval;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::transposition_table::TranspositionTable;
 
 mod aspiration;
 mod iterative_deepening;
@@ -50,6 +52,7 @@ mod params {
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
+    pub pawn_tt: TranspositionTable<PhasedEval>,
     pub history_table: HistoryTable,
 }
 
@@ -57,6 +60,7 @@ impl PersistentState {
     pub fn new(tt_size_mb: usize) -> Self {
         Self {
             tt: SearchTranspositionTable::new(tt_size_mb),
+            pawn_tt: TranspositionTable::<PhasedEval>::new(16),
             history_table: HistoryTable::new(),
         }
     }
