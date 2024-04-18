@@ -86,7 +86,7 @@ pub fn negamax(
     }
 
     if !is_root && !in_check {
-        let eval = eval::eval(game);
+        let eval = eval::eval(game, &mut persistent_state.pawn_tt);
 
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH

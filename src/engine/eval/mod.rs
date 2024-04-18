@@ -11,6 +11,7 @@ use crate::chess::game::Game;
 use crate::chess::piece::Piece;
 use crate::chess::square::Square;
 pub use crate::engine::eval::tapered_eval::PhasedEval;
+use crate::engine::transposition_table::TranspositionTable;
 
 pub fn init() {
     piece_square_tables::init();
@@ -48,14 +49,26 @@ impl IncrementalEvalFields {
     }
 }
 
-pub fn eval(game: &Game) -> Eval {
-    let absolute_eval = absolute_eval(game);
+pub fn eval(game: &Game, pawn_structure_tt: &mut TranspositionTable<PhasedEval>) -> Eval {
+    let absolute_eval = absolute_eval(game, pawn_structure_tt);
     Eval::from_white_eval(absolute_eval, game.player)
 }
 
-pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables;
+pub fn absolute_eval(
+    game: &Game,
+    pawn_structure_tt: &mut TranspositionTable<PhasedEval>,
+) -> WhiteEval {
+    let pawn_structure_eval = pawn_structure_tt.get(&game.pawn_zobrist);
+    let pawn_structure_eval = if let Some(e) = pawn_structure_eval {
+        *e
+    } else {
+        // TODO
+        let e = PhasedEval::ZERO;
+        pawn_structure_tt.insert(&game.pawn_zobrist, e);
+        e
+    };
 
+    let eval = game.incremental_eval.piece_square_tables + pawn_structure_eval;
     tapered_eval::taper(game.incremental_eval.phase_value, eval)
 }
 
@@ -68,8 +81,11 @@ pub struct EvalComponents {
     pub piece_square: WhiteEval,
 }
 
-pub fn eval_components(game: &Game) -> EvalComponents {
-    let eval = absolute_eval(game);
+pub fn eval_components(
+    game: &Game,
+    pawn_structure_tt: &mut TranspositionTable<PhasedEval>,
+) -> EvalComponents {
+    let eval = absolute_eval(game, pawn_structure_tt);
     let phase_value = tapered_eval::phase_value(&game.board);
 
     let phased_piece_square = piece_square_tables::eval(&game.board);

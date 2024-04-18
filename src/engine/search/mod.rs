@@ -7,8 +7,10 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
+use crate::engine::eval::PhasedEval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::transposition_table::TranspositionTable;
 
 mod iterative_deepening;
 mod move_ordering;
@@ -37,13 +39,18 @@ mod params {
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
+    pub pawn_tt: TranspositionTable<PhasedEval>,
     pub history: [[[i32; Square::N]; Square::N]; Player::N],
 }
 
 impl PersistentState {
     pub fn new() -> Self {
+        let mut pawn_tt = TranspositionTable::<PhasedEval>::default();
+        pawn_tt.resize(16);
+
         Self {
             tt: SearchTranspositionTable::default(),
+            pawn_tt,
             history: [[[0; Square::N]; Square::N]; Player::N],
         }
     }
