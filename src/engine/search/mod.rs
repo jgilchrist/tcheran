@@ -7,8 +7,10 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
+use crate::engine::eval::PhasedEval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::transposition_table::TranspositionTable;
 
 mod iterative_deepening;
 mod move_ordering;
