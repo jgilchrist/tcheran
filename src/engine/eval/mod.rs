@@ -1,3 +1,4 @@
+mod passed_pawns;
 pub mod piece_square_tables;
 mod player_eval;
 mod tapered_eval;
@@ -15,6 +16,7 @@ use crate::engine::transposition_table::TranspositionTable;
 
 pub fn init() {
     piece_square_tables::init();
+    passed_pawns::init();
 }
 
 #[derive(Debug, Clone)]
@@ -62,8 +64,7 @@ pub fn absolute_eval(
     let pawn_structure_eval = if let Some(e) = pawn_structure_eval {
         *e
     } else {
-        // TODO
-        let e = PhasedEval::ZERO;
+        let e = passed_pawns::eval(&game.board);
         pawn_structure_tt.insert(&game.pawn_zobrist, e);
         e
     };
@@ -79,6 +80,9 @@ pub struct EvalComponents {
 
     pub phased_piece_square: PhasedEval,
     pub piece_square: WhiteEval,
+
+    pub phased_passed_pawns: PhasedEval,
+    pub passed_pawns: WhiteEval,
 }
 
 pub fn eval_components(
@@ -91,11 +95,17 @@ pub fn eval_components(
     let phased_piece_square = piece_square_tables::eval(&game.board);
     let piece_square = tapered_eval::taper(phase_value, phased_piece_square);
 
+    let phased_passed_pawns = passed_pawns::eval(&game.board);
+    let passed_pawns = tapered_eval::taper(phase_value, phased_passed_pawns);
+
     EvalComponents {
         eval,
         phase_value,
 
         phased_piece_square,
         piece_square,
+
+        phased_passed_pawns,
+        passed_pawns,
     }
 }
