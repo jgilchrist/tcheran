@@ -37,6 +37,8 @@ pub struct Parameters {
     queen_pst: [PhasedEval; Square::N],
     king_pst: [PhasedEval; Square::N],
 
+    passed_pawn_pst: [PhasedEval; Square::N],
+
     knight_mobility: [PhasedEval; 9],
     bishop_mobility: [PhasedEval; 14],
     rook_mobility: [PhasedEval; 15],
@@ -58,6 +60,8 @@ impl Parameters {
             rook_pst: [PhasedEval::ZERO; Square::N],
             queen_pst: [PhasedEval::ZERO; Square::N],
             king_pst: [PhasedEval::ZERO; Square::N],
+
+            passed_pawn_pst: [PhasedEval::ZERO; Square::N],
 
             knight_mobility: [PhasedEval::ZERO; 9],
             bishop_mobility: [PhasedEval::ZERO; 14],
@@ -87,6 +91,7 @@ impl Parameters {
             .copy_to(&mut parameter_components.rook_pst)
             .copy_to(&mut parameter_components.queen_pst)
             .copy_to(&mut parameter_components.king_pst)
+            .copy_to(&mut parameter_components.passed_pawn_pst)
             .copy_to(&mut parameter_components.knight_mobility)
             .copy_to(&mut parameter_components.bishop_mobility)
             .copy_to(&mut parameter_components.rook_mobility)
@@ -227,6 +232,7 @@ impl std::fmt::Display for Parameters {
         print_pst(f, &self.rook_pst, "ROOKS")?;
         print_pst(f, &self.queen_pst, "QUEENS")?;
         print_pst(f, &self.king_pst, "KING")?;
+        print_pst(f, &self.passed_pawn_pst, "PASSED_PAWNS")?;
         print_array(f, &self.knight_mobility, "KNIGHT_MOBILITY")?;
         print_array(f, &self.bishop_mobility, "BISHOP_MOBILITY")?;
         print_array(f, &self.rook_mobility, "ROOK_MOBILITY")?;

@@ -1,6 +1,7 @@
 mod material;
 mod mobility_and_king_safety;
 mod params;
+pub mod pawn_structure;
 mod phased_eval;
 pub mod piece_square_tables;
 mod player_eval;
@@ -18,6 +19,7 @@ pub use crate::engine::eval::phased_eval::PhasedEval;
 
 pub fn init() {
     piece_square_tables::init();
+    pawn_structure::init();
 }
 
 #[derive(Debug, Clone)]
@@ -60,7 +62,8 @@ pub fn eval(game: &Game) -> Eval {
 pub fn absolute_eval(game: &Game) -> WhiteEval {
     let eval = game.incremental_eval.piece_square_tables
         + material::eval(game)
-        + mobility_and_king_safety::eval(game);
+        + mobility_and_king_safety::eval(game)
+        + pawn_structure::eval(game);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }
@@ -96,6 +99,7 @@ pub struct EvalComponents {
     pub phase_value: i16,
 
     pub piece_square: EvalComponent,
+    pub passed_pawns: EvalComponent,
 }
 
 pub fn eval_components(game: &Game) -> EvalComponents {
@@ -103,11 +107,13 @@ pub fn eval_components(game: &Game) -> EvalComponents {
     let phase_value = game.incremental_eval.phase_value;
 
     let piece_square_eval = piece_square_tables::eval_by_player(&game.board);
+    let passed_pawns_eval = pawn_structure::eval_passed_pawns_by_player(&game.board);
 
     EvalComponents {
         eval,
         phase_value,
 
         piece_square: EvalComponent::from_phased_eval(piece_square_eval, phase_value),
+        passed_pawns: EvalComponent::from_phased_eval(passed_pawns_eval, phase_value),
     }
 }

@@ -416,12 +416,20 @@ impl Uci {
                     println!("Phase value: {}", eval_components.phase_value);
                     println!();
 
-                    let pst = eval_components.piece_square;
                     println!("                         Midgame     Endgame    Actual");
+
+                    let pst = eval_components.piece_square;
                     println!("Piece square tables:");
                     println!("  White:                 {}       {}         {}", pst.phased_player_eval.white().midgame(), pst.phased_player_eval.white().endgame(), pst.player_eval.white());
                     println!("  Black:                 {}       {}         {}", pst.phased_player_eval.black().midgame(), pst.phased_player_eval.black().endgame(), pst.player_eval.black());
                     println!("  Total:                                        {}", pst.eval);
+                    println!();
+
+                    let passed_pawns = eval_components.passed_pawns;
+                    println!("Passed pawns:");
+                    println!("  White:                 {}       {}         {}", passed_pawns.phased_player_eval.white().midgame(), passed_pawns.phased_player_eval.white().endgame(), passed_pawns.player_eval.white());
+                    println!("  Black:                 {}       {}         {}", passed_pawns.phased_player_eval.black().midgame(), passed_pawns.phased_player_eval.black().endgame(), passed_pawns.player_eval.black());
+                    println!("  Total:                                        {}", passed_pawns.eval);
                     println!();
 
                     println!("Eval: {}", eval_components.eval);

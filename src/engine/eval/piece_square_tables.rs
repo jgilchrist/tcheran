@@ -11,7 +11,7 @@ use crate::engine::eval::params::{
     PieceSquareTableDefinition, BISHOPS, KING, KNIGHTS, PAWNS, PIECE_VALUES, QUEENS, ROOKS,
 };
 
-type PieceSquareTable = [PhasedEval; Square::N];
+pub type PieceSquareTable = [PhasedEval; Square::N];
 type PieceValueTables = [[PieceSquareTable; PieceKind::N]; Player::N];
 
 // These need to be initialised when we start up, since they can

@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Evaluate passed pawns (38.30 +- 13.27)
+
 ## [5.0]
 
 * Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)

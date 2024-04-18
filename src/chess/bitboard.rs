@@ -348,6 +348,13 @@ pub mod bitboards {
         }
     }
 
+    pub const fn back_rank(player: Player) -> Bitboard {
+        match player {
+            Player::White => RANK_1,
+            Player::Black => RANK_8,
+        }
+    }
+
     pub const fn pawn_back_rank(player: Player) -> Bitboard {
         match player {
             Player::White => RANK_2,
@@ -435,17 +442,11 @@ pub mod bitboards {
     pub const H8_BB: Bitboard = H8.bb();
 
     pub const A_FILE: Bitboard = Bitboard::new(A1_BB.0 | A2_BB.0 | A3_BB.0 | A4_BB.0 | A5_BB.0 | A6_BB.0 | A7_BB.0 | A8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const B_FILE: Bitboard = Bitboard::new(B1_BB.0 | B2_BB.0 | B3_BB.0 | B4_BB.0 | B5_BB.0 | B6_BB.0 | B7_BB.0 | B8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const C_FILE: Bitboard = Bitboard::new(C1_BB.0 | C2_BB.0 | C3_BB.0 | C4_BB.0 | C5_BB.0 | C6_BB.0 | C7_BB.0 | C8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const D_FILE: Bitboard = Bitboard::new(D1_BB.0 | D2_BB.0 | D3_BB.0 | D4_BB.0 | D5_BB.0 | D6_BB.0 | D7_BB.0 | D8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const E_FILE: Bitboard = Bitboard::new(E1_BB.0 | E2_BB.0 | E3_BB.0 | E4_BB.0 | E5_BB.0 | E6_BB.0 | E7_BB.0 | E8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const F_FILE: Bitboard = Bitboard::new(F1_BB.0 | F2_BB.0 | F3_BB.0 | F4_BB.0 | F5_BB.0 | F6_BB.0 | F7_BB.0 | F8_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const G_FILE: Bitboard = Bitboard::new(G1_BB.0 | G2_BB.0 | G3_BB.0 | G4_BB.0 | G5_BB.0 | G6_BB.0 | G7_BB.0 | G8_BB.0);
     pub const H_FILE: Bitboard = Bitboard::new(H1_BB.0 | H2_BB.0 | H3_BB.0 | H4_BB.0 | H5_BB.0 | H6_BB.0 | H7_BB.0 | H8_BB.0);
 

@@ -1,4 +1,4 @@
-use crate::chess::bitboard::Bitboard;
+use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::player::Player;
 
 pub const FILES: [File; File::N] = [
@@ -58,6 +58,19 @@ impl File {
             Self::F => "f",
             Self::G => "g",
             Self::H => "h",
+        }
+    }
+
+    pub fn bitboard(&self) -> Bitboard {
+        match self {
+            Self::A => bitboards::A_FILE,
+            Self::B => bitboards::B_FILE,
+            Self::C => bitboards::C_FILE,
+            Self::D => bitboards::D_FILE,
+            Self::E => bitboards::E_FILE,
+            Self::F => bitboards::F_FILE,
+            Self::G => bitboards::G_FILE,
+            Self::H => bitboards::H_FILE,
         }
     }
 }
@@ -120,6 +133,11 @@ impl Rank {
     #[inline(always)]
     pub const fn idx(self) -> u8 {
         self as u8
+    }
+
+    #[inline(always)]
+    pub const fn array_idx(self) -> usize {
+        self as usize
     }
 
     pub const fn notation(self) -> &'static str {

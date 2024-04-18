@@ -5,6 +5,7 @@ use crate::chess::movegen::tables;
 use crate::chess::piece::PieceKind;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
+use crate::engine::eval;
 use crate::utils::tuner::NonZeroCoefficient;
 
 #[derive(Default, Copy, Clone)]
@@ -32,6 +33,8 @@ pub struct Trace {
     queen_pst: [TraceComponent; Square::N],
     king_pst: [TraceComponent; Square::N],
 
+    passed_pawn_pst: [TraceComponent; Square::N],
+
     knight_mobility: [TraceComponent; 9],
     bishop_mobility: [TraceComponent; 14],
     rook_mobility: [TraceComponent; 15],
@@ -52,9 +55,16 @@ impl Trace {
 
         let occupancy = board.occupancy();
 
+        let their_pawns = board.pawns(player.other());
+
         for sq in board.pawns(player) {
             trace.material[PieceKind::Pawn.array_idx()].incr(player);
             trace.pawn_pst[sq.array_idx()].incr(player);
+
+            // Evaluate passer masks from white's perspective
+            if eval::pawn_structure::is_passed(sq, Player::White, their_pawns) {
+                trace.passed_pawn_pst[sq.array_idx()].incr(player);
+            }
         }
 
         for sq in board.knights(player) {
@@ -129,6 +139,8 @@ impl Trace {
             queen_pst: [TraceComponent::default(); Square::N],
             king_pst: [TraceComponent::default(); Square::N],
 
+            passed_pawn_pst: [TraceComponent::default(); Square::N],
+
             knight_mobility: [TraceComponent::default(); 9],
             bishop_mobility: [TraceComponent::default(); 14],
             rook_mobility: [TraceComponent::default(); 15],
@@ -154,6 +166,7 @@ impl Trace {
             .add(&self.rook_pst)
             .add(&self.queen_pst)
             .add(&self.king_pst)
+            .add(&self.passed_pawn_pst)
             .add(&self.knight_mobility)
             .add(&self.bishop_mobility)
             .add(&self.rook_mobility)
