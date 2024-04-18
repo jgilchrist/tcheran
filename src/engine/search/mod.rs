@@ -7,8 +7,10 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
+use crate::engine::eval::PhasedEval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::transposition_table::TranspositionTable;
 
 mod iterative_deepening;
 mod move_ordering;
@@ -170,6 +172,7 @@ impl Reporter for CapturingReporter {
 pub fn search(
     game: &Game,
     tt: &mut SearchTranspositionTable,
+    pawn_tt: &mut TranspositionTable<PhasedEval>,
     time_control: &TimeControl,
     search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
@@ -192,6 +195,7 @@ pub fn search(
     let best_move = iterative_deepening::search(
         &mut search_game,
         tt,
+        pawn_tt,
         search_restrictions,
         options,
         &mut state,
