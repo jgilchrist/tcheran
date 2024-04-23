@@ -1,3 +1,4 @@
+mod pawn_structure;
 pub mod piece_square_tables;
 mod player_eval;
 mod tapered_eval;
@@ -54,7 +55,7 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables;
+    let eval = game.incremental_eval.piece_square_tables + pawn_structure::eval(&game.board);
 
     tapered_eval::taper(game.incremental_eval.phase_value, eval)
 }
