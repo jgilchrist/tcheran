@@ -1,3 +1,4 @@
+mod pawn_structure;
 pub mod piece_square_tables;
 mod player_eval;
 mod tapered_eval;
@@ -62,8 +63,7 @@ pub fn absolute_eval(
     let pawn_structure_eval = if let Some(e) = pawn_structure_eval {
         *e
     } else {
-        // TODO
-        let e = PhasedEval::ZERO;
+        let e = pawn_structure::eval(&game.board);
         pawn_structure_tt.insert(&game.pawn_zobrist, e);
         e
     };
