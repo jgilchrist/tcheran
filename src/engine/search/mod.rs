@@ -117,9 +117,12 @@ impl Control for NullControl {
 }
 
 pub trait Reporter {
+    #[allow(unused)]
     fn generic_report(&self, s: &str);
 
     fn report_search_progress(&mut self, progress: SearchInfo);
+
+    #[allow(unused)]
     fn report_search_stats(&mut self, stats: SearchStats);
 
     fn best_move(&self, mv: Move);
