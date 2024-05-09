@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.3]
+
 * Implement lazy (staged) move generation (~25 Elo)
 * Index the history heuristic array by player (~9 Elo)
 * Fix a bug which overwrote killer moves with moves from another ply (~7 Elo)
@@ -114,7 +116,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.2...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.3...HEAD
+[2.3]: https://github.com/jgilchrist/chess-engine/compare/v2.2..v2.3
 [2.2]: https://github.com/jgilchrist/chess-engine/compare/v2.1..v2.2
 [2.1]: https://github.com/jgilchrist/chess-engine/compare/v2.0..v2.1
 [2.0]: https://github.com/jgilchrist/chess-engine/compare/v1.1..v2.0
