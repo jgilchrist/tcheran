@@ -4,7 +4,7 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::time_control::TimeStrategy;
 
-use super::{Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
@@ -31,7 +31,9 @@ pub fn quiescence(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if state.nodes_visited % 10000 == 0 && (time_control.should_stop() || control.should_stop()) {
+    if state.nodes_visited % params::CHECK_TERMINATION_NODE_FREQUENCY == 0
+        && (time_control.should_stop() || control.should_stop())
+    {
         return Err(());
     }
 
