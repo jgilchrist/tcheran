@@ -19,9 +19,9 @@ pub fn negamax(
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
-    pv: bool,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
+    let is_pv = alpha != beta - Eval(1);
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
@@ -74,7 +74,7 @@ pub fn negamax(
     let mut previous_best_move: Option<Move> = None;
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
-        if !is_root && !pv && tt_entry.depth >= depth {
+        if !is_root && !is_pv && tt_entry.depth >= depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
                 NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
@@ -86,7 +86,7 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
-    if !is_root && !in_check && !pv {
+    if !is_pv && !is_root && !in_check {
         let eval = eval::eval(game);
 
         // Reverse futility pruning
@@ -114,7 +114,6 @@ pub fn negamax(
                 time_control,
                 state,
                 control,
-                false,
             )?;
 
             game.undo_null_move();
@@ -148,7 +147,6 @@ pub fn negamax(
                 time_control,
                 state,
                 control,
-                number_of_legal_moves == 1,
             )?
         } else {
             // We already found a good move (i.e. we raised alpha).
@@ -164,7 +162,6 @@ pub fn negamax(
                 time_control,
                 state,
                 control,
-                false,
             )?;
 
             // Turns out the move we just searched could be better than our current PV, so we re-search
@@ -180,7 +177,6 @@ pub fn negamax(
                     time_control,
                     state,
                     control,
-                    false,
                 )?
             } else {
                 pvs_score

@@ -36,7 +36,6 @@ pub fn search(
             time_control,
             state,
             control,
-            true,
         ) else {
             break;
         };
