@@ -8,6 +8,7 @@
     * Disable incremental compilation in release mode
     * Switch to panic=abort
     * Stop generating debug symbols
+    * Set codegen-units=1
 
 ## [2.3]
 
