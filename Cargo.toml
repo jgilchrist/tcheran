@@ -39,3 +39,4 @@ significant_drop_tightening = "allow"
 [profile.release]
 # debug = 1
 panic = "abort"
+codegen-units = 1
