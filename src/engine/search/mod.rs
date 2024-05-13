@@ -33,9 +33,22 @@ mod params {
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 }
 
+pub struct PersistentState {
+    tt: &mut SearchTranspositionTable,
+    history: [[[i32; Square::N]; Square::N]; Player::N],
+}
+
+impl PersistentState {
+    const fn new() -> Self {
+        Self {
+            tt: SearchTranspositionTable::default(),
+            history: [[[0; Square::N]; Square::N]; Player::N],
+        }
+    }
+}
+
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
-    history: [[[i32; Square::N]; Square::N]; Player::N],
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -45,7 +58,6 @@ impl SearchState {
     const fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
-            history: [[[0; Square::N]; Square::N]; Player::N],
 
             max_depth_reached: 0,
             nodes_visited: 0,

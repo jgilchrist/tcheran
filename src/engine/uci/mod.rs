@@ -121,7 +121,7 @@ pub struct Uci {
     game: Game,
     options: EngineOptions,
 
-    tt: Arc<Mutex<SearchTranspositionTable>>,
+    persistent_state: Arc<Mutex<PersistentState>>,
 
     // If we're running without using stdin (i.e. passing the UCI commands as command line
     // args) then we need to block on anything taking place on other threads, otherwise we'll
@@ -437,7 +437,7 @@ pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
         options: EngineOptions::default(),
 
         game: Game::new(),
-        tt: Arc::new(Mutex::new(SearchTranspositionTable::default())),
+        persistent_state: Arc::new(Mutex::new(PersistentState::new())),
 
         block_on_threads: match uci_input_mode {
             UciInputMode::Stdin => false,
