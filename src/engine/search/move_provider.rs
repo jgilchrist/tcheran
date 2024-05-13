@@ -4,7 +4,7 @@ use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
 use crate::engine::search::move_ordering::score_move;
-use crate::engine::search::SearchState;
+use crate::engine::search::{PersistentState, SearchState};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -59,7 +59,13 @@ impl MoveProvider {
         }
     }
 
-    pub fn next(&mut self, game: &Game, state: &SearchState, plies: usize) -> Option<Move> {
+    pub fn next(
+        &mut self,
+        game: &Game,
+        persistent_state: &PersistentState,
+        state: &SearchState,
+        plies: usize,
+    ) -> Option<Move> {
         if self.stage == GenStage::BestMove {
             self.stage = GenStage::GenCaptures;
 
@@ -79,7 +85,7 @@ impl MoveProvider {
                     self.moves.get(i),
                     self.previous_best_move,
                     state.killer_moves[plies],
-                    &state.history[game.player.array_idx()],
+                    &persistent_state.history[game.player.array_idx()],
                 );
             }
 
@@ -131,7 +137,7 @@ impl MoveProvider {
                     self.moves.get(i),
                     self.previous_best_move,
                     state.killer_moves[plies],
-                    &state.history[game.player.array_idx()],
+                    &persistent_state.history[game.player.array_idx()],
                 );
             }
         }
