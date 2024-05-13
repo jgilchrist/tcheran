@@ -37,5 +37,5 @@ let_and_return = "allow"
 significant_drop_tightening = "allow"
 
 [profile.release]
-debug = 1
+# debug = 1
 incremental = true
