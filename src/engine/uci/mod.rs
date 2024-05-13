@@ -30,9 +30,9 @@ pub mod parser;
 pub mod responses;
 
 use crate::chess::game::Game;
-use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{
-    CapturingReporter, Clocks, Control, NullControl, Reporter, SearchRestrictions, TimeControl,
+    CapturingReporter, Clocks, Control, NullControl, PersistentState, Reporter, SearchRestrictions,
+    TimeControl,
 };
 pub use r#move::UciMove;
 
@@ -221,15 +221,15 @@ impl Uci {
 
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
-                let tt = self.tt.clone();
+                let persistent_state = self.persistent_state.clone();
 
                 let join_handle = std::thread::spawn(move || {
-                    let mut tt_handle = tt.lock().unwrap();
-                    tt_handle.resize(options.hash_size);
+                    let mut persistent_state_handle = persistent_state.lock().unwrap();
+                    persistent_state_handle.tt.resize(options.hash_size);
 
                     let best_move = search::search(
                         &game,
-                        &mut tt_handle,
+                        &mut persistent_state_handle,
                         &time_control,
                         &search_restrictions,
                         &options,
@@ -326,9 +326,9 @@ impl Uci {
                 let mut bench_reporter = CapturingReporter::new();
                 let null_control = NullControl;
 
-                let tt = self.tt.clone();
-                let mut tt_handle = tt.lock().unwrap();
-                tt_handle.resize(16);
+                let persistent_state = self.persistent_state.clone();
+                let mut persistent_state_handle = persistent_state.lock().unwrap();
+                persistent_state_handle.tt.resize(16);
 
                 let game = Game::new();
                 let time_control = TimeControl::Infinite;
@@ -336,7 +336,7 @@ impl Uci {
 
                 let _ = search::search(
                     &game,
-                    &mut tt_handle,
+                    &mut persistent_state_handle,
                     &time_control,
                     &search_restrictions,
                     &self.options,

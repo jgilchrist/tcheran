@@ -34,21 +34,20 @@ mod params {
 }
 
 pub struct PersistentState {
-    tt: &mut SearchTranspositionTable,
-    history: [[[i32; Square::N]; Square::N]; Player::N],
+    pub tt: SearchTranspositionTable,
 }
 
 impl PersistentState {
-    const fn new() -> Self {
+    pub fn new() -> Self {
         Self {
             tt: SearchTranspositionTable::default(),
-            history: [[[0; Square::N]; Square::N]; Player::N],
         }
     }
 }
 
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
+    history: [[[i32; Square::N]; Square::N]; Player::N],
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -58,6 +57,7 @@ impl SearchState {
     const fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
+            history: [[[0; Square::N]; Square::N]; Player::N],
 
             max_depth_reached: 0,
             nodes_visited: 0,
@@ -184,7 +184,7 @@ impl Reporter for CapturingReporter {
 
 pub fn search(
     game: &Game,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     time_control: &TimeControl,
     search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
@@ -196,6 +196,7 @@ pub fn search(
     let mut time_strategy = TimeStrategy::new(game, time_control, options);
     time_strategy.init();
 
+    let tt = &mut persistent_state.tt;
     tt.new_generation();
 
     // The game is modified as moves are played during search. When the search terminates,

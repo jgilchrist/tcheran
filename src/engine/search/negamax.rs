@@ -5,11 +5,9 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{
-    NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
-};
+use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
-use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -17,12 +15,14 @@ pub fn negamax(
     beta: Eval,
     mut depth: u8,
     plies: u8,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
+
+    let tt = &mut persistent_state.tt;
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
