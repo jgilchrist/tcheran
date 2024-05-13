@@ -2,23 +2,22 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::square::squares::all::*;
 use crate::engine::options::EngineOptions;
-use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{
-    search, CapturingReporter, NullControl, SearchRestrictions, SearchScore, TimeControl,
+    search, CapturingReporter, NullControl, PersistentState, SearchRestrictions, SearchScore,
+    TimeControl,
 };
 
 fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, SearchScore) {
     crate::init();
-    let mut game = Game::from_fen(fen).unwrap();
-
-    let mut tt = SearchTranspositionTable::new();
-    tt.resize(128);
+    let game = Game::from_fen(fen).unwrap();
+    let mut persistent_state = PersistentState::new();
+    persistent_state.tt.resize(16);
 
     let mut capturing_reporter = CapturingReporter::new();
 
     let best_move = search(
-        &mut game,
-        &mut tt,
+        &game,
+        &mut persistent_state,
         &TimeControl::Infinite,
         &SearchRestrictions { depth: Some(depth) },
         &EngineOptions::default(),
