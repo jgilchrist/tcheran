@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Persist and decay history heuristic data (~6 Elo)
+
 ### Misc
 
 * Changed various Cargo options
