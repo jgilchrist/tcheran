@@ -22,8 +22,6 @@ pub fn negamax(
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
 
-    let tt = &mut persistent_state.tt;
-
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
     if (is_root || (state.nodes_visited % params::CHECK_TERMINATION_NODE_FREQUENCY == 0))
@@ -65,7 +63,7 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = tt.get(&game.zobrist) {
+    if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth >= depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
@@ -102,7 +100,7 @@ pub fn negamax(
                 -beta + Eval(1),
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -135,7 +133,7 @@ pub fn negamax(
                 -alpha,
                 depth - 1,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -150,7 +148,7 @@ pub fn negamax(
                 -alpha,
                 depth - 1,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -165,7 +163,7 @@ pub fn negamax(
                     -alpha,
                     depth - 1,
                     plies + 1,
-                    tt,
+                    persistent_state,
                     time_control,
                     state,
                     control,
@@ -189,10 +187,10 @@ pub fn negamax(
                 eval: move_score.with_mate_distance_from_position(plies),
                 best_move: None,
                 depth,
-                age: tt.generation,
+                age: persistent_state.tt.generation,
             };
 
-            tt.insert(&game.zobrist, tt_data);
+            persistent_state.tt.insert(&game.zobrist, tt_data);
 
             // 'Killers': if a move was so good that it caused a beta cutoff,
             // but it wasn't a capture, we remember it so that we can try it
@@ -230,11 +228,11 @@ pub fn negamax(
         bound: tt_node_bound,
         eval: alpha,
         best_move: best_move.map(TTMove::from_move),
-        age: tt.generation,
+        age: persistent_state.tt.generation,
         depth,
     };
 
-    tt.insert(&game.zobrist, tt_data);
+    persistent_state.tt.insert(&game.zobrist, tt_data);
 
     Ok(alpha)
 }

@@ -207,7 +207,7 @@ pub fn search(
 
     let best_move = iterative_deepening::search(
         &mut search_game,
-        tt,
+        persistent_state,
         search_restrictions,
         options,
         &mut state,
