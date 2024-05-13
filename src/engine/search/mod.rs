@@ -33,6 +33,18 @@ mod params {
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 }
 
+pub struct PersistentState {
+    pub tt: SearchTranspositionTable,
+}
+
+impl PersistentState {
+    pub fn new() -> Self {
+        Self {
+            tt: SearchTranspositionTable::default(),
+        }
+    }
+}
+
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
     history: [[[i32; Square::N]; Square::N]; Player::N],
@@ -172,7 +184,7 @@ impl Reporter for CapturingReporter {
 
 pub fn search(
     game: &Game,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     time_control: &TimeControl,
     search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
@@ -184,7 +196,7 @@ pub fn search(
     let mut time_strategy = TimeStrategy::new(game, time_control, options);
     time_strategy.init();
 
-    tt.new_generation();
+    persistent_state.tt.new_generation();
 
     // The game is modified as moves are played during search. When the search terminates,
     // the game will be left in a dirty state since we will not undo the moves played to
@@ -194,7 +206,7 @@ pub fn search(
 
     let best_move = iterative_deepening::search(
         &mut search_game,
-        tt,
+        persistent_state,
         search_restrictions,
         options,
         &mut state,

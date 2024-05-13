@@ -5,14 +5,14 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::engine::search::{
-    negamax, Control, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
-    SearchStats, MAX_SEARCH_DEPTH,
+    negamax, Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore,
+    SearchState, SearchStats, MAX_SEARCH_DEPTH,
 };
 use crate::engine::util;
 
 pub fn search(
     game: &mut Game,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     search_restrictions: &SearchRestrictions,
     _options: &EngineOptions,
     state: &mut SearchState,
@@ -32,7 +32,7 @@ pub fn search(
             Eval::MAX,
             depth,
             0,
-            tt,
+            persistent_state,
             time_control,
             state,
             control,
@@ -46,7 +46,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game.clone(), tt, state);
+        let pv = get_pv(depth, game.clone(), &persistent_state.tt, state);
         best_move = Some(*pv.first().unwrap());
 
         reporter.report_search_progress(SearchInfo {
@@ -54,7 +54,7 @@ pub fn search(
             seldepth: state.max_depth_reached,
             score,
             pv: pv.clone(),
-            hashfull: tt.occupancy(),
+            hashfull: persistent_state.tt.occupancy(),
             stats: SearchStats {
                 time: time_control.elapsed(),
                 nodes: state.nodes_visited,

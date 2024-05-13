@@ -5,11 +5,9 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{
-    NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
-};
+use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
-use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -17,7 +15,7 @@ pub fn negamax(
     beta: Eval,
     mut depth: u8,
     plies: u8,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
@@ -65,7 +63,7 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = tt.get(&game.zobrist) {
+    if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth >= depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
@@ -102,7 +100,7 @@ pub fn negamax(
                 -beta + Eval(1),
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -135,7 +133,7 @@ pub fn negamax(
                 -alpha,
                 depth - 1,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -150,7 +148,7 @@ pub fn negamax(
                 -alpha,
                 depth - 1,
                 plies + 1,
-                tt,
+                persistent_state,
                 time_control,
                 state,
                 control,
@@ -165,7 +163,7 @@ pub fn negamax(
                     -alpha,
                     depth - 1,
                     plies + 1,
-                    tt,
+                    persistent_state,
                     time_control,
                     state,
                     control,
@@ -189,10 +187,10 @@ pub fn negamax(
                 eval: move_score.with_mate_distance_from_position(plies),
                 best_move: None,
                 depth,
-                age: tt.generation,
+                age: persistent_state.tt.generation,
             };
 
-            tt.insert(&game.zobrist, tt_data);
+            persistent_state.tt.insert(&game.zobrist, tt_data);
 
             // 'Killers': if a move was so good that it caused a beta cutoff,
             // but it wasn't a capture, we remember it so that we can try it
@@ -230,11 +228,11 @@ pub fn negamax(
         bound: tt_node_bound,
         eval: alpha,
         best_move: best_move.map(TTMove::from_move),
-        age: tt.generation,
+        age: persistent_state.tt.generation,
         depth,
     };
 
-    tt.insert(&game.zobrist, tt_data);
+    persistent_state.tt.insert(&game.zobrist, tt_data);
 
     Ok(alpha)
 }
