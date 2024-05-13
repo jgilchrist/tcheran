@@ -31,23 +31,26 @@ mod params {
 
     pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
+
+    pub const HISTORY_DECAY_FACTOR: i32 = 8;
 }
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
+    pub history: [[[i32; Square::N]; Square::N]; Player::N],
 }
 
 impl PersistentState {
     pub fn new() -> Self {
         Self {
             tt: SearchTranspositionTable::default(),
+            history: [[[0; Square::N]; Square::N]; Player::N],
         }
     }
 }
 
 pub struct SearchState {
     killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
-    history: [[[i32; Square::N]; Square::N]; Player::N],
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -57,7 +60,6 @@ impl SearchState {
     const fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
-            history: [[[0; Square::N]; Square::N]; Player::N],
 
             max_depth_reached: 0,
             nodes_visited: 0,
@@ -198,6 +200,15 @@ pub fn search(
 
     persistent_state.tt.new_generation();
 
+    for from_square in 0..Square::N {
+        for to_square in 0..Square::N {
+            for player in 0..Player::N {
+                persistent_state.history[player][from_square][to_square] /=
+                    params::HISTORY_DECAY_FACTOR;
+            }
+        }
+    }
+
     // The game is modified as moves are played during search. When the search terminates,
     // the game will be left in a dirty state since we will not undo the moves played to
     // reach the terminating node in the search tree. To keep our original 'game' copy clean
@@ -215,13 +226,15 @@ pub fn search(
         reporter,
     );
 
-    best_move.unwrap_or_else(|| panic_move(game, &state))
+    best_move.unwrap_or_else(|| panic_move(game, persistent_state, &state))
 }
 
 // If we have so little time to search that we couldn't determine a best move, we'll need to spend
 // a bit of extra time so that we still make a move.
 // Rather than returning a random move, we return the first move that is returned after move ordering
-fn panic_move(game: &Game, search_state: &SearchState) -> Move {
+fn panic_move(game: &Game, persistent_state: &PersistentState, search_state: &SearchState) -> Move {
     let mut move_provider = MoveProvider::new(None);
-    move_provider.next(game, search_state, 0).unwrap()
+    move_provider
+        .next(game, persistent_state, search_state, 0)
+        .unwrap()
 }

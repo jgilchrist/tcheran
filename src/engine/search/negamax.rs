@@ -54,7 +54,16 @@ pub fn negamax(
     }
 
     if depth == 0 {
-        return quiescence(game, alpha, beta, plies, time_control, state, control);
+        return quiescence(
+            game,
+            alpha,
+            beta,
+            plies,
+            time_control,
+            persistent_state,
+            state,
+            control,
+        );
     }
 
     if !is_root {
@@ -121,7 +130,7 @@ pub fn negamax(
     let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
 
-    while let Some(mv) = moves.next(game, state, plies as usize) {
+    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
         number_of_legal_moves += 1;
 
         game.make_move(mv);
@@ -199,8 +208,8 @@ pub fn negamax(
                 state.killer_moves[plies as usize][1] = state.killer_moves[plies as usize][0];
                 state.killer_moves[plies as usize][0] = Some(mv);
 
-                state.history[game.player.array_idx()][mv.src.array_idx()][mv.dst.array_idx()] +=
-                    i32::from(depth) * i32::from(depth);
+                persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
+                    [mv.dst.array_idx()] += i32::from(depth) * i32::from(depth);
             }
 
             return Ok(beta);
