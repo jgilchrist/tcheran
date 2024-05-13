@@ -38,5 +38,4 @@ significant_drop_tightening = "allow"
 
 [profile.release]
 # debug = 1
-incremental = true
 panic = "abort"
