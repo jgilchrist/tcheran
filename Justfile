@@ -33,6 +33,15 @@ instruments-debug +CMD:
 
 ################################# Misc #######################################
 
+sprt-progression ll ld dd wd ww:
+	@just sprt 0.0 5.0 {{ll}} {{ld}} {{dd}} {{wd}} {{ww}}
+
+sprt-regression ll ld dd wd ww:
+	@just sprt -5.0 0.0 {{ll}} {{ld}} {{dd}} {{wd}} {{ww}}
+
+sprt elo0 elo1 ll ld dd wd ww:
+	@./etc/sprt.py --elo0 {{elo0}} --elo1 {{elo1}} --results {{ll}} {{ld}} {{dd}} {{wd}} {{ww}}
+
 copy-bin name:
 	cargo build --release
 	cp target/release/engine bins/{{name}}
