@@ -2,6 +2,13 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Changed various Cargo options
+    * Disable incremental compilation in release mode
+    * Switch to panic=abort
+    * Stop generating debug symbols
+
 ## [2.3]
 
 * Implement lazy (staged) move generation (~25 Elo)
