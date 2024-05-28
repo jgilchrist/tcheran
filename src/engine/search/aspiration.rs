@@ -8,6 +8,7 @@ struct Window {
     alpha: Eval,
     beta: Eval,
 
+    widenings: u8,
     width: Option<Eval>,
 }
 
@@ -17,6 +18,7 @@ impl Window {
             alpha: Eval::MIN,
             beta: Eval::MAX,
 
+            widenings: 0,
             width: None,
         }
     }
@@ -26,25 +28,37 @@ impl Window {
             alpha: Self::clamp_alpha(eval - width),
             beta: Self::clamp_beta(eval + width),
 
+            widenings: 0,
             width: Some(width),
         }
     }
 
     pub fn widen_down(&mut self) {
         if let Some(width) = self.width {
-            self.increase_window_widening_rate();
-            self.alpha = Self::clamp_alpha(self.alpha - width);
+            if self.widenings <= 2 {
+                self.increase_window_widening_rate();
+                self.alpha = Self::clamp_alpha(self.alpha - width);
+            } else {
+                self.alpha = Eval::MIN;
+                self.beta = Eval::MAX;
+            }
         }
     }
 
     pub fn widen_up(&mut self) {
         if let Some(width) = self.width {
-            self.increase_window_widening_rate();
-            self.beta = Self::clamp_beta(self.beta + width);
+            if self.widenings <= 2 {
+                self.increase_window_widening_rate();
+                self.beta = Self::clamp_beta(self.beta + width);
+            } else {
+                self.alpha = Eval::MIN;
+                self.beta = Eval::MAX;
+            }
         }
     }
 
     fn increase_window_widening_rate(&mut self) {
+        self.widenings += 1;
         self.width = Some(self.width.unwrap() * 2);
     }
 
