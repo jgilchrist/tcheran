@@ -1,6 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
-use crate::engine::eval::{Eval, PhasedEval};
+use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
@@ -8,7 +8,6 @@ use crate::engine::search::{
     negamax, Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore,
     SearchState, SearchStats, MAX_SEARCH_DEPTH,
 };
-use crate::engine::transposition_table::TranspositionTable;
 use crate::engine::util;
 
 pub fn search(

@@ -37,12 +37,17 @@ mod params {
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
+    pub pawn_tt: TranspositionTable<PhasedEval>,
 }
 
 impl PersistentState {
     pub fn new() -> Self {
+        let mut pawn_tt = TranspositionTable::<PhasedEval>::default();
+        pawn_tt.resize(16);
+
         Self {
             tt: SearchTranspositionTable::default(),
+            pawn_tt,
         }
     }
 }

@@ -1,18 +1,17 @@
 use crate::chess::game::Game;
 use crate::engine::eval;
-use crate::engine::eval::{Eval, PhasedEval};
+use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::transposition_table::TranspositionTable;
 
-use super::{params, Control, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
     plies: u8,
-    pawn_tt: &mut TranspositionTable<PhasedEval>,
+    persistent_state: &mut PersistentState,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
@@ -21,7 +20,7 @@ pub fn quiescence(
     state.nodes_visited += 1;
 
     if plies == MAX_SEARCH_DEPTH {
-        return Ok(eval::eval(game, pawn_tt));
+        return Ok(eval::eval(game, &mut persistent_state.pawn_tt));
     }
 
     if game.is_repeated_position()
@@ -39,7 +38,7 @@ pub fn quiescence(
         return Err(());
     }
 
-    let eval = eval::eval(game, pawn_tt);
+    let eval = eval::eval(game, &mut persistent_state.pawn_tt);
 
     if eval >= beta {
         return Ok(beta);
@@ -60,7 +59,7 @@ pub fn quiescence(
             -beta,
             -alpha,
             plies + 1,
-            pawn_tt,
+            persistent_state,
             time_control,
             state,
             control,

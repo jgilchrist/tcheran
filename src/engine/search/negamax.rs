@@ -1,14 +1,11 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
-use crate::engine::eval::{Eval, PhasedEval};
+use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{
-    NodeBound, SearchTranspositionTable, SearchTranspositionTableData, TTMove,
-};
-use crate::engine::transposition_table::TranspositionTable;
+use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
 use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
@@ -62,7 +59,7 @@ pub fn negamax(
             alpha,
             beta,
             plies,
-            pawn_tt,
+            persistent_state,
             time_control,
             state,
             control,
@@ -89,7 +86,7 @@ pub fn negamax(
     }
 
     if !is_root && !in_check {
-        let eval = eval::eval(game, pawn_tt);
+        let eval = eval::eval(game, &mut persistent_state.pawn_tt);
 
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH

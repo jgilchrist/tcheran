@@ -30,13 +30,10 @@ pub mod parser;
 pub mod responses;
 
 use crate::chess::game::Game;
-use crate::engine::eval::PhasedEval;
-use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::search::{
     CapturingReporter, Clocks, Control, NullControl, PersistentState, Reporter, SearchRestrictions,
     TimeControl,
 };
-use crate::engine::transposition_table::TranspositionTable;
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -230,9 +227,6 @@ impl Uci {
                     let mut persistent_state_handle = persistent_state.lock().unwrap();
                     persistent_state_handle.tt.resize(options.hash_size);
 
-                    let mut pawn_tt_handle = pawn_tt.lock().unwrap();
-                    pawn_tt_handle.resize(16);
-
                     let best_move = search::search(
                         &game,
                         &mut persistent_state_handle,
@@ -310,8 +304,9 @@ impl Uci {
                     println!();
                 }
                 DebugCommand::Eval => {
-                    let mut pawn_tt_handle = self.pawn_tt.lock().unwrap();
-                    let eval_components = eval::eval_components(&self.game, &mut pawn_tt_handle);
+                    let mut persistent_state_handle = self.persistent_state.lock().unwrap();
+                    let eval_components =
+                        eval::eval_components(&self.game, &mut persistent_state_handle.pawn_tt);
 
                     println!();
 
@@ -336,10 +331,7 @@ impl Uci {
                 let persistent_state = self.persistent_state.clone();
                 let mut persistent_state_handle = persistent_state.lock().unwrap();
                 persistent_state_handle.tt.resize(16);
-
-                let pawn_tt = self.pawn_tt.clone();
-                let mut pawn_tt_handle = pawn_tt.lock().unwrap();
-                pawn_tt_handle.resize(16);
+                persistent_state_handle.pawn_tt.resize(16);
 
                 let game = Game::new();
                 let time_control = TimeControl::Infinite;
