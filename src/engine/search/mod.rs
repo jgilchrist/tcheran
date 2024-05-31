@@ -45,9 +45,12 @@ impl PersistentState {
     }
 }
 
+pub type KillerMoveTable = [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE];
+pub type HistoryTable = [[[i32; Square::N]; Square::N]; Player::N];
+
 pub struct SearchState {
-    killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
-    history: [[[i32; Square::N]; Square::N]; Player::N],
+    killer_moves: KillerMoveTable,
+    history: HistoryTable,
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -222,6 +225,15 @@ pub fn search(
 // a bit of extra time so that we still make a move.
 // Rather than returning a random move, we return the first move that is returned after move ordering
 fn panic_move(game: &Game, search_state: &SearchState) -> Move {
-    let mut move_provider = MoveProvider::new(None);
-    move_provider.next(game, search_state, 0).unwrap()
+    let mut move_provider = MoveProvider::new();
+
+    move_provider
+        .next(
+            game,
+            None,
+            &search_state.killer_moves,
+            &search_state.history,
+            0,
+        )
+        .unwrap()
 }

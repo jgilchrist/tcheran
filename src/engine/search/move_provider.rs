@@ -4,7 +4,7 @@ use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
 use crate::engine::search::move_ordering::score_move;
-use crate::engine::search::SearchState;
+use crate::engine::search::{HistoryTable, KillerMoveTable};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -22,7 +22,6 @@ pub struct MoveProvider {
     moves: MoveList,
     movegencache: MovegenCache,
     scores: [i32; MAX_MOVES],
-    previous_best_move: Option<Move>,
     only_captures: bool,
 
     stage: GenStage,
@@ -31,12 +30,11 @@ pub struct MoveProvider {
 }
 
 impl MoveProvider {
-    pub fn new(previous_best_move: Option<Move>) -> Self {
+    pub fn new() -> Self {
         Self {
             moves: MoveList::new(),
             movegencache: MovegenCache::new(),
             scores: [0; MAX_MOVES],
-            previous_best_move,
             only_captures: false,
 
             stage: GenStage::BestMove,
@@ -50,7 +48,6 @@ impl MoveProvider {
             moves: MoveList::new(),
             movegencache: MovegenCache::new(),
             scores: [0; MAX_MOVES],
-            previous_best_move: None,
             only_captures: true,
 
             stage: GenStage::BestMove,
@@ -59,11 +56,18 @@ impl MoveProvider {
         }
     }
 
-    pub fn next(&mut self, game: &Game, state: &SearchState, plies: usize) -> Option<Move> {
+    pub fn next(
+        &mut self,
+        game: &Game,
+        previous_best_move: Option<Move>,
+        killer_moves: &KillerMoveTable,
+        history: &HistoryTable,
+        plies: usize,
+    ) -> Option<Move> {
         if self.stage == GenStage::BestMove {
             self.stage = GenStage::GenCaptures;
 
-            if let Some(previous_best_move) = self.previous_best_move {
+            if let Some(previous_best_move) = previous_best_move {
                 return Some(previous_best_move);
             }
         }
@@ -77,9 +81,9 @@ impl MoveProvider {
                 self.scores[i] = score_move(
                     game,
                     self.moves.get(i),
-                    self.previous_best_move,
-                    state.killer_moves[plies],
-                    &state.history[game.player.array_idx()],
+                    previous_best_move,
+                    killer_moves[plies],
+                    &history[game.player.array_idx()],
                 );
             }
 
@@ -102,7 +106,7 @@ impl MoveProvider {
                     let mv = self.moves.get(i);
                     let move_score = self.scores[i];
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                    if move_score > best_move_score && Some(mv) != previous_best_move {
                         best_move_score = move_score;
                         best_move = mv;
                         best_move_idx = i;
@@ -129,9 +133,9 @@ impl MoveProvider {
                 self.scores[i] = score_move(
                     game,
                     self.moves.get(i),
-                    self.previous_best_move,
-                    state.killer_moves[plies],
-                    &state.history[game.player.array_idx()],
+                    previous_best_move,
+                    killer_moves[plies],
+                    &history[game.player.array_idx()],
                 );
             }
         }
@@ -148,7 +152,7 @@ impl MoveProvider {
                     let mv = self.moves.get(i);
                     let move_score = self.scores[i];
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                    if move_score > best_move_score && Some(mv) != previous_best_move {
                         best_move_score = move_score;
                         best_move = mv;
                         best_move_idx = i;
