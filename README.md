@@ -8,6 +8,7 @@ Thank you to everybody who has tested the engine.
 
 | Version | [CCRL 40/15][ccrl-ltc] | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] | [CEDR][cedr] |
 | ------- | ---------------------- | -------------------------|----------------|--------------|
+| v2.3    | -                      | 2325                     | -              | -            |
 | v2.2    | -                      | 2266                     | -              | -            |
 | v2.1    | 2275                   | 2230                     | 2542           | -            |
 | v2.0    | -                      | -                        | 2434           | -            |
