@@ -124,6 +124,8 @@ pub fn negamax(
     while let Some(mv) = moves.next(game, state, plies as usize) {
         number_of_legal_moves += 1;
 
+        let is_capture = game.board.piece_at(mv.dst).is_some();
+
         game.make_move(mv);
 
         let move_score = if full_pv_search {
@@ -139,6 +141,8 @@ pub fn negamax(
                 control,
             )?
         } else {
+            let lmr_reduction = u8::from(depth > 2 && number_of_legal_moves > 4 && !is_capture);
+
             // We already found a good move (i.e. we raised alpha).
             // Now, we just need to prove that the other moves are worse.
             // We search them with a reduced window to prove that they are at least worse.
@@ -146,7 +150,7 @@ pub fn negamax(
                 game,
                 -alpha - Eval(1),
                 -alpha,
-                depth - 1,
+                depth - 1 - lmr_reduction,
                 plies + 1,
                 persistent_state,
                 time_control,
