@@ -10,4 +10,5 @@ pub mod transposition_table;
 
 pub fn init() {
     eval::init();
+    search::init();
 }

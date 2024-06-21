@@ -1,3 +1,9 @@
+pub mod lmr_table;
+
+pub fn init() {
+    lmr_table::init();
+}
+
 use crate::chess::moves::Move;
 use crate::chess::player::Player;
 use crate::chess::square::Square;

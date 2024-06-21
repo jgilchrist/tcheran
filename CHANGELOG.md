@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Add late move reductions (100.80 +- 22.10 Elo)
 * Do not allow TT cutoffs in PV nodes (~0 Elo)
 
 ### Misc
