@@ -25,7 +25,7 @@ pub fn search(
     let mut best_move: Option<Move> = None;
     let mut overall_eval: Option<Eval> = None;
 
-    let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
+    let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH as u8) as i8;
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {

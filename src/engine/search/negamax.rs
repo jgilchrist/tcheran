@@ -14,7 +14,7 @@ pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
-    mut depth: u8,
+    mut depth: i8,
     plies: u8,
     persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
@@ -33,7 +33,7 @@ pub fn negamax(
         return Err(());
     }
 
-    state.max_depth_reached = state.max_depth_reached.max(plies);
+    state.max_depth_reached = state.max_depth_reached.max(plies as i8);
 
     if !is_root
         && (game.is_repeated_position()
@@ -50,7 +50,7 @@ pub fn negamax(
         depth += 1;
     }
 
-    if depth == 0 {
+    if depth <= 0 {
         return quiescence(
             game,
             alpha,
@@ -151,6 +151,12 @@ pub fn negamax(
                 control,
             )?
         } else {
+            let lmr_reduction = if depth > 2 && number_of_legal_moves > 4 && !is_capture {
+                1 + depth / 8 + number_of_legal_moves / 16
+            } else {
+                0
+            };
+
             // We already found a good move (i.e. we raised alpha).
             // Now, we just need to prove that the other moves are worse.
             // We search them with a reduced window to prove that they are at least worse.
