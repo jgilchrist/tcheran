@@ -5,6 +5,7 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::quiescence::quiescence;
+use crate::engine::search::tables::lmr_table::lmr_reduction;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
@@ -145,6 +146,15 @@ pub fn negamax(
                 state,
             )?
         } else {
+            let reduction = if depth >= params::LMR_DEPTH
+                && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
+                && !in_check
+            {
+                lmr_reduction(depth, number_of_legal_moves)
+            } else {
+                1
+            };
+
             // We already found a good move (i.e. we raised alpha).
             // Now, we just need to prove that the other moves are worse.
             // We search them with a reduced window to prove that they are at least worse.
@@ -152,7 +162,7 @@ pub fn negamax(
                 game,
                 -alpha - Eval(1),
                 -alpha,
-                depth - 1,
+                depth.saturating_sub(reduction),
                 plies + 1,
                 persistent_state,
                 &mut node_pv,

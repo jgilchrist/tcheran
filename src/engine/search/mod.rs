@@ -38,6 +38,9 @@ mod params {
     pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 
+    pub const LMR_DEPTH: u8 = 3;
+    pub const LMR_MOVE_THRESHOLD: usize = 3;
+
     pub const HISTORY_DECAY_FACTOR: i32 = 8;
 
     pub const MAX_TIME_PER_MOVE: f32 = 0.5;
@@ -210,6 +213,10 @@ pub fn search(
     let best_move = pv.first();
 
     best_move.unwrap_or_else(|| panic_move(game, persistent_state, &state))
+}
+
+pub fn init() {
+    tables::init();
 }
 
 // If we have so little time to search that we couldn't determine a best move, we'll need to spend
