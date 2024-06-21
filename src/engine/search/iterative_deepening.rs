@@ -22,7 +22,7 @@ pub fn search(
 ) -> Option<Move> {
     let mut best_move: Option<Move> = None;
 
-    let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
+    let max_search_depth = search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH as u8) as i8;
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
@@ -50,8 +50,8 @@ pub fn search(
         best_move = Some(*pv.first().unwrap());
 
         reporter.report_search_progress(SearchInfo {
-            depth,
-            seldepth: state.max_depth_reached,
+            depth: depth as u8,
+            seldepth: state.max_depth_reached as u8,
             score,
             pv: pv.clone(),
             hashfull: persistent_state.tt.occupancy(),
@@ -69,7 +69,7 @@ pub fn search(
     best_move
 }
 
-fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable, state: &SearchState) -> Vec<Move> {
+fn get_pv(depth: i8, game: Game, tt: &SearchTranspositionTable, state: &SearchState) -> Vec<Move> {
     let mut current_position = game;
     let mut pv = Vec::new();
 

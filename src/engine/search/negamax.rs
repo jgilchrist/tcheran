@@ -13,7 +13,7 @@ pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
-    mut depth: u8,
+    mut depth: i8,
     plies: u8,
     persistent_state: &mut PersistentState,
     time_control: &TimeStrategy,
@@ -30,7 +30,7 @@ pub fn negamax(
         return Err(());
     }
 
-    state.max_depth_reached = state.max_depth_reached.max(plies);
+    state.max_depth_reached = state.max_depth_reached.max(plies as i8);
 
     // Keep track of whether we're doing a full search. If we raised alpha at this node, we've found
     // a new PV (or re-confirmed the PV we found at a previous search depth) - so for the remainder
@@ -53,7 +53,7 @@ pub fn negamax(
         depth += 1;
     }
 
-    if depth == 0 {
+    if depth <= 0 {
         return quiescence(
             game,
             alpha,
@@ -150,7 +150,11 @@ pub fn negamax(
                 control,
             )?
         } else {
-            let lmr_reduction = u8::from(depth > 2 && number_of_legal_moves > 4 && !is_capture);
+            let lmr_reduction = if depth > 2 && number_of_legal_moves > 4 && !is_capture {
+                1 + depth / 8 + number_of_legal_moves / 16
+            } else {
+                0
+            };
 
             // We already found a good move (i.e. we raised alpha).
             // Now, we just need to prove that the other moves are worse.

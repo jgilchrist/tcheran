@@ -18,7 +18,7 @@ mod quiescence;
 mod time_control;
 pub mod transposition;
 
-const MAX_SEARCH_DEPTH: u8 = u8::MAX;
+const MAX_SEARCH_DEPTH: i8 = i8::MAX;
 const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
 mod params {
@@ -26,10 +26,10 @@ mod params {
 
     pub const CHECK_TERMINATION_NODE_FREQUENCY: u64 = 10000;
 
-    pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
-    pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
+    pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: i8 = 3;
+    pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: i8 = 2;
 
-    pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
+    pub const REVERSE_FUTILITY_PRUNE_DEPTH: i8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 
     pub const HISTORY_DECAY_FACTOR: i32 = 8;
@@ -53,7 +53,7 @@ pub struct SearchState {
     pub killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
 
     nodes_visited: u64,
-    max_depth_reached: u8,
+    max_depth_reached: i8,
 }
 
 impl SearchState {
