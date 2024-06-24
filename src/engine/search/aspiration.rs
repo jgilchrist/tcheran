@@ -1,8 +1,7 @@
 use crate::chess::game::Game;
 use crate::engine::eval::Eval;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::search::{negamax, params, Control, SearchState};
+use crate::engine::search::{negamax, params, Control, PersistentState, SearchState};
 
 struct Window {
     alpha: Eval,
@@ -75,7 +74,7 @@ pub fn aspiration_search(
     game: &mut Game,
     depth: u8,
     eval: Option<Eval>,
-    tt: &mut SearchTranspositionTable,
+    persistent_state: &mut PersistentState,
     state: &mut SearchState,
     time_control: &TimeStrategy,
     control: &impl Control,
@@ -93,7 +92,7 @@ pub fn aspiration_search(
             window.beta,
             depth,
             0,
-            tt,
+            persistent_state,
             time_control,
             state,
             control,

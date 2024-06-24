@@ -6,8 +6,8 @@ use crate::engine::search::aspiration::aspiration_search;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::engine::search::{
-    negamax, Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore,
-    SearchState, SearchStats, MAX_SEARCH_DEPTH,
+    Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
+    SearchStats, MAX_SEARCH_DEPTH,
 };
 use crate::engine::util;
 
@@ -28,9 +28,15 @@ pub fn search(
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
-        let Ok(eval) =
-            aspiration_search(game, depth, overall_eval, tt, state, time_control, control)
-        else {
+        let Ok(eval) = aspiration_search(
+            game,
+            depth,
+            overall_eval,
+            persistent_state,
+            state,
+            time_control,
+            control,
+        ) else {
             break;
         };
 
