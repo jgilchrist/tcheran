@@ -29,6 +29,7 @@ mod params {
 
     pub const ASPIRATION_MIN_DEPTH: u8 = 5;
     pub const ASPIRATION_WINDOW_SIZE: Eval = Eval::new(25);
+    pub const ASPIRATION_WINDOW_MAX_SIZE: Eval = Eval::new(700);
 
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
