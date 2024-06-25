@@ -9,7 +9,7 @@ use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableDa
 
 use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
-pub fn negamax(
+pub fn negamax<const PV: bool>(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
@@ -21,7 +21,6 @@ pub fn negamax(
     control: &impl Control,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
-    let is_pv = alpha != beta - Eval(1);
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
@@ -74,7 +73,7 @@ pub fn negamax(
     let mut previous_best_move: Option<Move> = None;
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
-        if !is_root && !is_pv && tt_entry.depth >= depth {
+        if !PV && !is_root && tt_entry.depth >= depth {
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
                 NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
@@ -86,7 +85,7 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
-    if !is_pv && !is_root && !in_check {
+    if !PV && !is_root && !in_check {
         let eval = eval::eval(game);
 
         // Reverse futility pruning
@@ -104,7 +103,7 @@ pub fn negamax(
         {
             game.make_null_move();
 
-            let null_score = -negamax(
+            let null_score = -negamax::<false>(
                 game,
                 -beta,
                 -beta + Eval(1),
@@ -137,7 +136,7 @@ pub fn negamax(
         game.make_move(mv);
 
         let move_score = if full_pv_search {
-            -negamax(
+            -negamax::<PV>(
                 game,
                 -beta,
                 -alpha,
@@ -152,7 +151,7 @@ pub fn negamax(
             // We already found a good move (i.e. we raised alpha).
             // Now, we just need to prove that the other moves are worse.
             // We search them with a reduced window to prove that they are at least worse.
-            let pvs_score = -negamax(
+            let pvs_score = -negamax::<false>(
                 game,
                 -alpha - Eval(1),
                 -alpha,
@@ -167,7 +166,7 @@ pub fn negamax(
             // Turns out the move we just searched could be better than our current PV, so we re-search
             // with the normal alpha/beta bounds.
             if pvs_score > alpha && pvs_score < beta {
-                -negamax(
+                -negamax::<PV>(
                     game,
                     -beta,
                     -alpha,
