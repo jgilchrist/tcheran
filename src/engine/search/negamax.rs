@@ -72,21 +72,26 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
-        if !is_root && tt_entry.depth >= depth {
-            match tt_entry.bound {
-                NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
-                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
-                NodeBound::Lower if tt_entry.eval >= beta => return Ok(beta),
+    let tt_entry = persistent_state.tt.get(&game.zobrist);
+
+    if let Some(entry) = tt_entry {
+        if !is_root && entry.depth >= depth {
+            match entry.bound {
+                NodeBound::Exact => return Ok(entry.eval.with_mate_distance_from_root(plies)),
+                NodeBound::Upper if entry.eval <= alpha => return Ok(alpha),
+                NodeBound::Lower if entry.eval >= beta => return Ok(beta),
                 _ => {}
             }
         }
 
-        previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
+        previous_best_move = entry.best_move.as_ref().map(TTMove::to_move);
     }
 
     if !is_root && !in_check {
-        let eval = eval::eval(game);
+        let eval = match tt_entry {
+            Some(e) => e.eval,
+            None => eval::eval(game),
+        };
 
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
