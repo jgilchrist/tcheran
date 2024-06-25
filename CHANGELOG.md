@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)
+* Evaluate piece mobility (41.36 +- 13.82)
 
 ### Misc
 
