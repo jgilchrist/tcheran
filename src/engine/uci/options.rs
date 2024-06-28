@@ -46,6 +46,23 @@ impl UciOption for HashOption {
     }
 }
 
+pub struct ThreadsOption;
+
+impl UciOption for ThreadsOption {
+    const NAME: &'static str = "Threads";
+    const DEF: UciOptionType = UciOptionType::Spin {
+        default: crate::engine::options::defaults::THREADS,
+        min: 1,
+        max: 1,
+    };
+
+    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
+        let threads = value.parse::<usize>()?;
+        options.threads = threads;
+        Ok(())
+    }
+}
+
 pub struct LogOption;
 
 impl UciOption for LogOption {

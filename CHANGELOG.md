@@ -6,6 +6,8 @@
 
 ### Misc
 
+* Added a 'Threads' UCI option (which isn't used)
+
 * Changed various Cargo options
     * Disable incremental compilation in release mode
     * Switch to panic=abort

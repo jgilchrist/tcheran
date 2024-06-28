@@ -146,6 +146,7 @@ impl Uci {
 
                 // Options
                 send_response(&UciResponse::option::<uci::options::HashOption>());
+                send_response(&UciResponse::option::<uci::options::ThreadsOption>());
                 send_response(&UciResponse::option::<uci::options::LogOption>());
                 send_response(&UciResponse::option::<uci::options::MoveOverheadOption>());
 
@@ -158,6 +159,9 @@ impl Uci {
             UciCommand::SetOption { name, value } => {
                 match name.as_str() {
                     options::HashOption::NAME => options::HashOption::set(&mut self.options, value),
+                    options::ThreadsOption::NAME => {
+                        options::ThreadsOption::set(&mut self.options, value)
+                    }
                     options::LogOption::NAME => options::LogOption::set(&mut self.options, value),
                     options::MoveOverheadOption::NAME => {
                         options::MoveOverheadOption::set(&mut self.options, value)
