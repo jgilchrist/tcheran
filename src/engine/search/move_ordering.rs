@@ -1,11 +1,14 @@
 use crate::chess::piece::PieceKind;
 use crate::chess::{game::Game, moves::Move};
+use crate::engine::eval::Eval;
 use crate::engine::search::tables::HistoryTable;
+use crate::engine::see::see;
 
 // Sentinel values
-pub const CAPTURE_SCORE: i32 = 1_000_000_000;
-pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
-pub const QUIET_SCORE: i32 = 0;
+pub const GOOD_CAPTURE_SCORE: i32 = 1_000_000_000;
+pub const HISTORY_MAX_SCORE: i32 = GOOD_CAPTURE_SCORE - 1;
+pub const QUIET_SCORE: i32 = 100_000_000;
+pub const BAD_CAPTURE_SCORE: i32 = 0;
 
 #[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 const PIECES: i32 = PieceKind::N as i32;
@@ -24,7 +27,11 @@ pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
 
         let mvv_lva = victim_score + attacker_score;
 
-        return CAPTURE_SCORE + mvv_lva;
+        return if see(game, mv, Eval(0)) {
+            GOOD_CAPTURE_SCORE
+        } else {
+            BAD_CAPTURE_SCORE
+        } + mvv_lva;
     }
 
     QUIET_SCORE + history.get(game.player, mv)
