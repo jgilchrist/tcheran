@@ -3,6 +3,7 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
+use crate::chess::square::Square;
 use crate::engine::search::move_ordering::score_move;
 use crate::engine::search::{PersistentState, SearchState};
 
@@ -177,5 +178,31 @@ impl MoveProvider {
         }
 
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chess::game::Game;
+    use crate::chess::square::squares::all::*;
+
+    #[test]
+    fn test_moveprovider_from_startpos() {
+        crate::init();
+
+        let game = Game::new();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MoveProvider::new(None);
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        for m in move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 20);
     }
 }

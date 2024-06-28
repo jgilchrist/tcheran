@@ -1,4 +1,6 @@
 use crate::chess::game::Game;
+use crate::chess::movegen;
+use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
@@ -130,8 +132,11 @@ pub fn negamax(
     let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
 
+    let mut moves_tried: Vec<Move> = Vec::new();
+
     while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
         number_of_legal_moves += 1;
+        moves_tried.push(mv);
 
         game.make_move(mv);
 
@@ -231,6 +236,32 @@ pub fn negamax(
         } else {
             Eval::DRAW
         });
+    }
+
+    let mut ms = MoveList::new();
+    movegen::generate_legal_moves(game, &mut ms);
+
+    if ms.len() != number_of_legal_moves {
+        println!("pos: {:?}", game);
+        println!("moves_tried_len: {:?}", moves_tried.len());
+
+        for m in moves_tried {
+            println!("{:?}", m);
+        }
+
+        println!();
+
+        for m in ms.to_vec() {
+            println!("{:?}", m);
+        }
+
+        // for m in moves.
+
+        panic!(
+            "number of legal moves reported was {} but there are actually {} legal moves",
+            number_of_legal_moves,
+            ms.len(),
+        );
     }
 
     let tt_data = SearchTranspositionTableData {
