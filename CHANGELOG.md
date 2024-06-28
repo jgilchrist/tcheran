@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Collect the principal variation during search (~18 Elo)
+* Skip losing captures in quiescence (~8 Elo)
 * Add aspiration windows (~5 Elo)
 * Return `best_eval` in quiescence (~5 Elo)
 * Fail soft on TT cuts (~2 Elo)

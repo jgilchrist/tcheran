@@ -3,8 +3,10 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
+use crate::engine::eval::Eval;
 use crate::engine::search::move_ordering::score_move;
 use crate::engine::search::{PersistentState, SearchState};
+use crate::engine::see::see;
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -87,7 +89,7 @@ impl MovePicker {
         }
 
         if self.stage == GenStage::Captures {
-            if let Some(mv) = self.next_best_move(self.captures_end) {
+            if let Some(mv) = self.next_best_move(game, self.captures_end, self.only_captures) {
                 return Some(mv);
             }
 
@@ -144,7 +146,7 @@ impl MovePicker {
         }
 
         if self.stage == GenStage::Quiets {
-            if let Some(mv) = self.next_best_move(self.moves.len()) {
+            if let Some(mv) = self.next_best_move(game, self.moves.len(), false) {
                 return Some(mv);
             }
 
@@ -158,7 +160,12 @@ impl MovePicker {
         unreachable!()
     }
 
-    fn next_best_move(&mut self, limit: usize) -> Option<Move> {
+    fn next_best_move(
+        &mut self,
+        game: &Game,
+        limit: usize,
+        skip_bad_captures: bool,
+    ) -> Option<Move> {
         loop {
             if self.idx == limit {
                 return None;
@@ -189,6 +196,10 @@ impl MovePicker {
             // We always return the best move first, before doing move generation.
             // We don't want to return it again from the movelist, so skip it.
             if Some(best_move) == self.previous_best_move {
+                continue;
+            }
+
+            if skip_bad_captures && !see(game, best_move, Eval(1)) {
                 continue;
             }
 
@@ -232,5 +243,87 @@ mod tests {
         }
 
         assert_eq!(moves.len(), 20);
+    }
+
+    #[test]
+    fn test_movepicker_does_not_skip_bad_captures_when_no_good_captures() {
+        crate::init();
+
+        let game = Game::from_fen("rnbqkbnr/pp1ppppp/8/2p5/3P4/5N2/PPP1PPPP/RNBQKB1R b KQkq - 0 2")
+            .unwrap();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MovePicker::new(None);
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 23);
+    }
+
+    #[test]
+    fn test_movepicker_does_not_return_to_start_if_no_bad_captures() {
+        crate::init();
+
+        let game =
+            Game::from_fen("rnbqkb1r/ppp1pppp/5n2/3p4/4P3/2N5/PPPP1PPP/R1BQKBNR w KQkq - 0 3")
+                .unwrap();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MovePicker::new(None);
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 33);
+    }
+
+    #[test]
+    fn test_movepicker_yields_en_passant_correctly() {
+        crate::init();
+
+        let game =
+            Game::from_fen("r1bqkb1r/ppp1pppp/2n2n2/2Pp4/8/5N2/PP1PPPPP/RNBQKB1R w KQkq d6 0 4")
+                .unwrap();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MovePicker::new(None);
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 24);
+    }
+
+    #[test]
+    fn test_movepicker_generates_caps_in_quiescence() {
+        crate::init();
+
+        let game =
+            Game::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2").unwrap();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MovePicker::new_loud();
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 1);
     }
 }
