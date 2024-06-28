@@ -235,6 +235,6 @@ pub fn search(
 fn panic_move(game: &Game, persistent_state: &PersistentState, search_state: &SearchState) -> Move {
     let mut move_provider = MoveProvider::new(None);
     move_provider
-        .next(game, persistent_state, search_state, 0, false)
+        .next(game, persistent_state, search_state, 0)
         .unwrap()
 }

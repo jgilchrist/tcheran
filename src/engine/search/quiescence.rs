@@ -50,8 +50,10 @@ pub fn quiescence(
 
     let mut best_eval = Eval::MIN;
 
+    println!("new move provider");
     let mut moves = MoveProvider::new_loud();
-    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize, false) {
+    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
+        println!("mv");
         game.make_move(mv);
 
         let move_score = -quiescence(

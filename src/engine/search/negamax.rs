@@ -134,7 +134,7 @@ pub fn negamax(
 
     let mut moves_tried: Vec<Move> = Vec::new();
 
-    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize, depth == 2) {
+    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
         number_of_legal_moves += 1;
         moves_tried.push(mv);
 
