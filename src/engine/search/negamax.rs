@@ -134,7 +134,7 @@ pub fn negamax(
 
     let mut moves_tried: Vec<Move> = Vec::new();
 
-    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
+    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize, depth == 2) {
         number_of_legal_moves += 1;
         moves_tried.push(mv);
 
@@ -243,6 +243,9 @@ pub fn negamax(
 
     if ms.len() != number_of_legal_moves {
         println!("pos: {:?}", game);
+        println!("root: {:?}", is_root);
+        println!("previous_best_move: {:?}", previous_best_move);
+        println!("killers: {:?}", state.killer_moves[0]);
         println!("moves_tried_len: {:?}", moves_tried.len());
 
         for m in moves_tried {

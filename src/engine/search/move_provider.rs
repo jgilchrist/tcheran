@@ -3,7 +3,6 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
-use crate::chess::square::Square;
 use crate::engine::search::move_ordering::score_move;
 use crate::engine::search::{PersistentState, SearchState};
 
@@ -66,11 +65,15 @@ impl MoveProvider {
         persistent_state: &PersistentState,
         state: &SearchState,
         plies: usize,
+        debug: bool,
     ) -> Option<Move> {
         if self.stage == GenStage::BestMove {
             self.stage = GenStage::GenCaptures;
 
             if let Some(previous_best_move) = self.previous_best_move {
+                if debug {
+                    println!("yielding {:?}", previous_best_move);
+                }
                 return Some(previous_best_move);
             }
         }
@@ -79,6 +82,8 @@ impl MoveProvider {
             self.stage = GenStage::Captures;
 
             movegen::generate_captures(game, &mut self.moves, &mut self.movegencache);
+
+            println!("generated captures. now have {} moves", self.moves.len());
 
             for i in 0..self.moves.len() {
                 self.scores[i] = score_move(
@@ -109,7 +114,7 @@ impl MoveProvider {
                     let mv = self.moves.get(i);
                     let move_score = self.scores[i];
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                    if move_score > best_move_score {
                         best_move_score = move_score;
                         best_move = mv;
                         best_move_idx = i;
@@ -122,6 +127,10 @@ impl MoveProvider {
                 }
 
                 self.idx += 1;
+
+                if debug {
+                    println!("yielding capture {:?}", best_move);
+                }
 
                 return Some(best_move);
             }
@@ -132,6 +141,12 @@ impl MoveProvider {
 
             movegen::generate_quiets(game, &mut self.moves, &self.movegencache);
 
+            println!(
+                "generated quiets. now have {} moves. captures end at {}",
+                self.moves.len(),
+                self.captures_end
+            );
+
             for i in self.captures_end..self.moves.len() {
                 self.scores[i] = score_move(
                     game,
@@ -140,6 +155,8 @@ impl MoveProvider {
                     state.killer_moves[plies],
                     &persistent_state.history[game.player.array_idx()],
                 );
+
+                println!("scored {:?} as {}", self.moves.get(i), self.scores[i]);
             }
         }
 
@@ -147,29 +164,44 @@ impl MoveProvider {
             if self.idx >= self.moves.len() {
                 self.stage = GenStage::Done;
             } else {
-                let mut best_move_score = self.scores[self.idx];
-                let mut best_move = self.moves.get(self.idx);
-                let mut best_move_idx = self.idx;
+                loop {
+                    let mut best_move_score = self.scores[self.idx];
+                    let mut best_move = self.moves.get(self.idx);
+                    let mut best_move_idx = self.idx;
 
-                for i in self.idx + 1..self.moves.len() {
-                    let mv = self.moves.get(i);
-                    let move_score = self.scores[i];
+                    println!(
+                        "best move score: {}, best move: {:?}, idx: {}",
+                        best_move_score, best_move, best_move_idx
+                    );
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
-                        best_move_score = move_score;
-                        best_move = mv;
-                        best_move_idx = i;
+                    for i in self.idx + 1..self.moves.len() {
+                        let mv = self.moves.get(i);
+                        let move_score = self.scores[i];
+
+                        if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                            best_move_score = move_score;
+                            best_move = mv;
+                            best_move_idx = i;
+                        }
                     }
+
+                    if self.idx != best_move_idx {
+                        self.moves.swap(self.idx, best_move_idx);
+                        self.scores.swap(self.idx, best_move_idx);
+                    }
+
+                    self.idx += 1;
+
+                    if Some(best_move) == self.previous_best_move {
+                        continue;
+                    }
+
+                    if debug {
+                        println!("yielding quiet {:?}", best_move);
+                    }
+
+                    return Some(best_move);
                 }
-
-                if self.idx != best_move_idx {
-                    self.moves.swap(self.idx, best_move_idx);
-                    self.scores.swap(self.idx, best_move_idx);
-                }
-
-                self.idx += 1;
-
-                return Some(best_move);
             }
         }
 
@@ -188,18 +220,18 @@ mod tests {
     use crate::chess::square::squares::all::*;
 
     #[test]
-    fn test_moveprovider_from_startpos() {
+    fn test_moveprovider_does_not_double_yield_best_move() {
         crate::init();
 
         let game = Game::new();
 
         let mut moves: Vec<Move> = Vec::new();
-        let mut move_provider = MoveProvider::new(None);
+        let mut move_provider = MoveProvider::new(Some((G1, F3).into()));
 
         let search_state = SearchState::new();
         let persistent_state = PersistentState::new();
 
-        for m in move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0, true) {
             moves.push(m);
         }
 
