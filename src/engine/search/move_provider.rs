@@ -67,28 +67,17 @@ impl MoveProvider {
         plies: usize,
     ) -> Option<Move> {
         if self.stage == GenStage::BestMove {
-            println!("------------------------------------------ {}", plies);
-            println!("{}", game.to_fen());
-            println!("onlycaptures: {}", self.only_captures);
-            println!("stage: best move");
             self.stage = GenStage::GenCaptures;
 
             if let Some(previous_best_move) = self.previous_best_move {
-                println!("  yielding previous best move {:?}", previous_best_move);
                 return Some(previous_best_move);
-            } else {
-                println!("  no previous best move");
             }
         }
 
         if self.stage == GenStage::GenCaptures {
-            println!("stage: generating captures");
             self.stage = GenStage::Captures;
 
             movegen::generate_captures(game, &mut self.moves, &mut self.movegencache);
-
-            println!("{}", game.to_fen());
-            println!("  generated captures. now have {} moves", self.moves.len());
 
             for i in 0..self.moves.len() {
                 self.scores[i] = score_move(
@@ -98,27 +87,17 @@ impl MoveProvider {
                     state.killer_moves[plies],
                     &persistent_state.history[game.player.array_idx()],
                 );
-
-                println!(
-                    "  scored capture {:?} as {}",
-                    self.moves.get(i),
-                    self.scores[i]
-                );
             }
 
             self.captures_end = self.moves.len();
         }
 
         if self.stage == GenStage::Captures {
-            println!("stage: yielding captures");
-
             loop {
                 if self.idx == self.captures_end {
                     self.stage = if self.only_captures {
-                        println!("setting stage to done");
                         GenStage::Done
                     } else {
-                        println!("setting stage to genquiets");
                         GenStage::GenQuiets
                     };
                     break;
@@ -126,11 +105,6 @@ impl MoveProvider {
                     let mut best_move_score = self.scores[self.idx];
                     let mut best_move = self.moves.get(self.idx);
                     let mut best_move_idx = self.idx;
-
-                    println!(
-                        "best move score: {}, best move: {:?}, idx: {}",
-                        best_move_score, best_move, best_move_idx
-                    );
 
                     for i in self.idx + 1..self.moves.len() {
                         let mv = self.moves.get(i);
@@ -154,24 +128,15 @@ impl MoveProvider {
                         continue;
                     }
 
-                    println!("yielding capture {:?}", best_move);
-
                     return Some(best_move);
                 }
             }
         }
 
         if self.stage == GenStage::GenQuiets {
-            println!("stage: generating quiets");
             self.stage = GenStage::Quiets;
 
             movegen::generate_quiets(game, &mut self.moves, &self.movegencache);
-
-            println!(
-                "generated quiets. now have {} moves. captures end at {}",
-                self.moves.len(),
-                self.captures_end
-            );
 
             for i in self.captures_end..self.moves.len() {
                 self.scores[i] = score_move(
@@ -181,13 +146,10 @@ impl MoveProvider {
                     state.killer_moves[plies],
                     &persistent_state.history[game.player.array_idx()],
                 );
-
-                println!("scored quiet {:?} as {}", self.moves.get(i), self.scores[i]);
             }
         }
 
         if self.stage == GenStage::Quiets {
-            println!("stage: yielding quiets");
             loop {
                 if self.idx >= self.moves.len() {
                     self.stage = GenStage::Done;
@@ -196,11 +158,6 @@ impl MoveProvider {
                     let mut best_move_score = self.scores[self.idx];
                     let mut best_move = self.moves.get(self.idx);
                     let mut best_move_idx = self.idx;
-
-                    println!(
-                        "best move score: {}, best move: {:?}, idx: {}",
-                        best_move_score, best_move, best_move_idx
-                    );
 
                     for i in self.idx + 1..self.moves.len() {
                         let mv = self.moves.get(i);
@@ -224,16 +181,12 @@ impl MoveProvider {
                         continue;
                     }
 
-                    println!("yielding quiet {:?}", best_move);
-
                     return Some(best_move);
                 }
             }
         }
 
         if self.stage == GenStage::Done {
-            println!("stage: done");
-            println!("---------------------------- {}", plies);
             return None;
         }
 
