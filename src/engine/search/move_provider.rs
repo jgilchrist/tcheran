@@ -102,11 +102,11 @@ impl MoveProvider {
                     };
                     break;
                 } else {
-                    let mut best_move_score = self.scores[self.idx];
-                    let mut best_move = self.moves.get(self.idx);
                     let mut best_move_idx = self.idx;
+                    let mut best_move = self.moves.get(self.idx);
+                    let mut best_move_score = self.scores[self.idx];
 
-                    for i in self.idx + 1..self.moves.len() {
+                    for i in self.idx + 1..self.captures_end {
                         let mv = self.moves.get(i);
                         let move_score = self.scores[i];
 
