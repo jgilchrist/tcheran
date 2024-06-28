@@ -1,6 +1,4 @@
 use crate::chess::game::Game;
-use crate::chess::movegen;
-use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
