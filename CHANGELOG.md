@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Add late move reductions (100.80 +- 22.10 Elo)
+* Use SEE to order bad captures later in moves to try (6.69 +- 4.80 Elo)
 * Do not allow TT cutoffs in PV nodes (~0 Elo)
 
 ### Misc
