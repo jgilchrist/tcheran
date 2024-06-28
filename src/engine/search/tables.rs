@@ -33,6 +33,12 @@ impl KillersTable {
         self.0[plies][1] = killer_0;
         self.0[plies][0] = Some(mv);
     }
+
+    pub fn clear(&mut self, plies: u8) {
+        let plies = plies as usize;
+        self.0[plies][0] = None;
+        self.0[plies][1] = None;
+    }
 }
 
 pub struct HistoryTable([[[i32; Square::N]; Square::N]; Player::N]);
