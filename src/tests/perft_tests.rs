@@ -113,6 +113,8 @@ fn movepicker_perft(
             best_move = Some(quiets_movelist.get(0));
         }
 
+        // state.killer_moves.clear(depth);
+
         if quiets_movelist.len() >= 3 {
             state.killer_moves.try_push(depth, quiets_movelist.get(2));
         }
@@ -122,21 +124,20 @@ fn movepicker_perft(
         }
     }
 
-    let mut moves_at_this_node = 0;
+    let mut moves_at_this_node = Vec::new();
     let mut movepicker = MovePicker::new(best_move);
     while let Some(mv) = movepicker.next(game, persistent_state, state, depth) {
         game.make_move(mv);
         moves += movepicker_perft(depth - 1, game, persistent_state, state);
         game.undo_move();
 
-        moves_at_this_node += 1;
+        moves_at_this_node.push(mv);
     }
 
     if test_individual_node_move_counts {
-        assert_eq!(
-            moves_at_this_node,
-            captures_movelist.len() + quiets_movelist.len()
-        );
+        let legal_moves = game.moves().to_vec();
+
+        assert_eq!(moves_at_this_node.len(), legal_moves.len(), "At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, state.killer_moves.get_0(depth), state.killer_moves.get_1(depth));
     }
 
     moves

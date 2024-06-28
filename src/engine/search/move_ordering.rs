@@ -1,11 +1,16 @@
 use crate::chess::piece::PieceKind;
 use crate::chess::{game::Game, moves::Move};
-use crate::engine::search::tables::HistoryTable;
+use crate::engine::eval::Eval;
+use crate::engine::search::tables::{HistoryTable, KillersTable};
+use crate::engine::see::see;
 
 // Sentinel values
-pub const CAPTURE_SCORE: i32 = 1_000_000_000;
-pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
-pub const QUIET_SCORE: i32 = 0;
+pub const GOOD_CAPTURE_SCORE: i32 = 1_000_000_000;
+pub const KILLER_0_SCORE: i32 = GOOD_CAPTURE_SCORE - 1;
+pub const KILLER_1_SCORE: i32 = GOOD_CAPTURE_SCORE - 2;
+pub const HISTORY_MAX_SCORE: i32 = GOOD_CAPTURE_SCORE - 3;
+pub const QUIET_SCORE: i32 = 100_000_000;
+pub const BAD_CAPTURE_SCORE: i32 = 0;
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 const PIECES: i32 = PieceKind::N as i32;
@@ -13,7 +18,13 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
+pub fn score_move(
+    game: &Game,
+    mv: Move,
+    plies: u8,
+    killers: &KillersTable,
+    history: &HistoryTable,
+) -> i32 {
     let captured_piece = game.board.piece_at(mv.dst);
 
     if let Some(captured_piece) = captured_piece {
@@ -24,7 +35,19 @@ pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
 
         let mvv_lva = victim_score + attacker_score;
 
-        return CAPTURE_SCORE + mvv_lva;
+        return if see(game, mv, Eval(0)) {
+            GOOD_CAPTURE_SCORE
+        } else {
+            BAD_CAPTURE_SCORE
+        } + mvv_lva;
+    }
+
+    if Some(mv) == killers.get_0(plies) {
+        return KILLER_0_SCORE;
+    }
+
+    if Some(mv) == killers.get_1(plies) {
+        return KILLER_1_SCORE;
     }
 
     QUIET_SCORE + history.get(game.player, mv)
@@ -59,10 +82,11 @@ mod tests {
             .map(ScoredMove::new)
             .collect();
 
+        let killers_table = KillersTable::new();
         let history_table = HistoryTable::new();
 
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, &history_table);
+            mv.score = score_move(&game, mv.mv, 0, &killers_table, &history_table);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);
