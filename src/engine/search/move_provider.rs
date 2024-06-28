@@ -93,36 +93,43 @@ impl MoveProvider {
         }
 
         if self.stage == GenStage::Captures {
-            if self.idx == self.captures_end {
-                self.stage = if self.only_captures {
-                    GenStage::Done
+            loop {
+                if self.idx == self.captures_end {
+                    self.stage = if self.only_captures {
+                        GenStage::Done
+                    } else {
+                        GenStage::GenQuiets
+                    };
+                    break;
                 } else {
-                    GenStage::GenQuiets
-                }
-            } else {
-                let mut best_move_idx = self.idx;
-                let mut best_move = self.moves.get(self.idx);
-                let mut best_move_score = self.scores[self.idx];
+                    let mut best_move_idx = self.idx;
+                    let mut best_move = self.moves.get(self.idx);
+                    let mut best_move_score = self.scores[self.idx];
 
-                for i in self.idx + 1..self.captures_end {
-                    let mv = self.moves.get(i);
-                    let move_score = self.scores[i];
+                    for i in self.idx + 1..self.captures_end {
+                        let mv = self.moves.get(i);
+                        let move_score = self.scores[i];
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
-                        best_move_score = move_score;
-                        best_move = mv;
-                        best_move_idx = i;
+                        if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                            best_move_score = move_score;
+                            best_move = mv;
+                            best_move_idx = i;
+                        }
                     }
+
+                    if self.idx != best_move_idx {
+                        self.moves.swap(self.idx, best_move_idx);
+                        self.scores.swap(self.idx, best_move_idx);
+                    }
+
+                    self.idx += 1;
+
+                    if Some(best_move) == self.previous_best_move {
+                        continue;
+                    }
+
+                    return Some(best_move);
                 }
-
-                if self.idx != best_move_idx {
-                    self.moves.swap(self.idx, best_move_idx);
-                    self.scores.swap(self.idx, best_move_idx);
-                }
-
-                self.idx += 1;
-
-                return Some(best_move);
             }
         }
 
@@ -143,32 +150,39 @@ impl MoveProvider {
         }
 
         if self.stage == GenStage::Quiets {
-            if self.idx >= self.moves.len() {
-                self.stage = GenStage::Done;
-            } else {
-                let mut best_move_score = self.scores[self.idx];
-                let mut best_move = self.moves.get(self.idx);
-                let mut best_move_idx = self.idx;
+            loop {
+                if self.idx >= self.moves.len() {
+                    self.stage = GenStage::Done;
+                    break;
+                } else {
+                    let mut best_move_score = self.scores[self.idx];
+                    let mut best_move = self.moves.get(self.idx);
+                    let mut best_move_idx = self.idx;
 
-                for i in self.idx + 1..self.moves.len() {
-                    let mv = self.moves.get(i);
-                    let move_score = self.scores[i];
+                    for i in self.idx + 1..self.moves.len() {
+                        let mv = self.moves.get(i);
+                        let move_score = self.scores[i];
 
-                    if move_score > best_move_score && Some(mv) != self.previous_best_move {
-                        best_move_score = move_score;
-                        best_move = mv;
-                        best_move_idx = i;
+                        if move_score > best_move_score && Some(mv) != self.previous_best_move {
+                            best_move_score = move_score;
+                            best_move = mv;
+                            best_move_idx = i;
+                        }
                     }
+
+                    if self.idx != best_move_idx {
+                        self.moves.swap(self.idx, best_move_idx);
+                        self.scores.swap(self.idx, best_move_idx);
+                    }
+
+                    self.idx += 1;
+
+                    if Some(best_move) == self.previous_best_move {
+                        continue;
+                    }
+
+                    return Some(best_move);
                 }
-
-                if self.idx != best_move_idx {
-                    self.moves.swap(self.idx, best_move_idx);
-                    self.scores.swap(self.idx, best_move_idx);
-                }
-
-                self.idx += 1;
-
-                return Some(best_move);
             }
         }
 
@@ -177,5 +191,31 @@ impl MoveProvider {
         }
 
         None
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chess::game::Game;
+    use crate::chess::square::squares::all::*;
+
+    #[test]
+    fn test_moveprovider_does_not_double_yield_best_move() {
+        crate::init();
+
+        let game = Game::new();
+
+        let mut moves: Vec<Move> = Vec::new();
+        let mut move_provider = MoveProvider::new(Some((G1, F3).into()));
+
+        let search_state = SearchState::new();
+        let persistent_state = PersistentState::new();
+
+        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+            moves.push(m);
+        }
+
+        assert_eq!(moves.len(), 20);
     }
 }
