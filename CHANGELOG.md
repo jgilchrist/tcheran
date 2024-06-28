@@ -14,6 +14,8 @@
     * Stop generating debug symbols
     * Set codegen-units=1
 
+* Report 'uci name' as 'name version' instead of 'name (version)'
+
 ## [2.3]
 
 * Implement lazy (staged) move generation (~25 Elo)

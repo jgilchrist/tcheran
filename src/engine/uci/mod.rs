@@ -140,7 +140,7 @@ impl Uci {
 
                 let version = crate::engine_version();
                 send_response(&UciResponse::Id(IdParam::Name(format!(
-                    "{ENGINE_NAME} ({version})"
+                    "{ENGINE_NAME} {version}"
                 ))));
                 send_response(&UciResponse::Id(IdParam::Author("Jonathan Gilchrist")));
 
