@@ -187,8 +187,6 @@ impl std::fmt::Display for Rank {
 #[derive(PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Square(u8);
 
-impl Square {}
-
 impl Square {
     pub const N: usize = 64;
 

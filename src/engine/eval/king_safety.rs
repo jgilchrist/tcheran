@@ -20,15 +20,15 @@ fn tropism(board: &Board, player: Player) -> i16 {
 
     for sq in their_dangerous_pieces {
         let piece_danger = match board.piece_at(sq).unwrap().kind {
-            PieceKind::Queen | PieceKind::Rook => 2,
-            PieceKind::Bishop | PieceKind::Knight => 1,
+            PieceKind::Queen | PieceKind::Rook => 5,
+            PieceKind::Bishop | PieceKind::Knight => 2,
             _ => unreachable!(),
         };
 
         eval += i16::from((14 - sq.manhattan_distance_to(our_king)) * piece_danger);
     }
 
-    eval
+    -eval
 }
 
 pub fn eval(board: &Board) -> PhasedEval {
