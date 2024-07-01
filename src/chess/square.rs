@@ -187,6 +187,8 @@ impl std::fmt::Display for Rank {
 #[derive(PartialEq, Eq, Clone, Copy, Hash)]
 pub struct Square(u8);
 
+impl Square {}
+
 impl Square {
     pub const N: usize = 64;
 
@@ -269,6 +271,12 @@ impl Square {
     #[inline(always)]
     pub fn south(self) -> Self {
         Self(self.0 - 8)
+    }
+
+    #[inline(always)]
+    pub fn manhattan_distance_to(&self, other: Square) -> u8 {
+        self.rank().idx().abs_diff(other.rank().idx())
+            + self.file().idx().abs_diff(other.file().idx())
     }
 }
 

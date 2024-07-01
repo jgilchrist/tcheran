@@ -1,7 +1,7 @@
 use crate::chess::board::Board;
 use crate::chess::piece::PieceKind;
 use crate::chess::square::Square;
-use crate::engine::eval::WhiteEval;
+use crate::engine::eval::{Eval, WhiteEval};
 
 /// A midgame and endgame evaluation
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -12,6 +12,10 @@ impl PhasedEval {
 
     pub const fn new(midgame: i16, endgame: i16) -> Self {
         Self(midgame, endgame)
+    }
+
+    pub const fn uniform(eval: i16) -> Self {
+        Self::new(eval, eval)
     }
 
     pub fn midgame(self) -> WhiteEval {
