@@ -6,19 +6,18 @@ A UCI compatible engine developed by [@jgilchrist](https://github.com/jgilchrist
 
 Thank you to everybody who has tested the engine.
 
-| Version | [CCRL 40/15][ccrl-ltc] | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] | [CEDR][cedr] |
-| ------- | ---------------------- | -------------------------|----------------|--------------|
-| v2.3    | 2329                   | 2325                     | -              | -            |
-| v2.2    | -                      | 2266                     | -              | -            |
-| v2.1    | 2275                   | 2230                     | 2542           | -            |
-| v2.0    | -                      | -                        | 2434           | -            |
-| v1.1    | -                      | -                        | 2237           | 2258         |
-| v1.0    | -                      | 1871                     | -              | -            |
+| Version | [CCRL 40/15][ccrl-ltc] | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] |
+| ------- | ---------------------- | -------------------------|----------------|
+| v2.3    | 2329                   | 2325                     | -              |
+| v2.2    | -                      | 2266                     | -              |
+| v2.1    | 2275                   | 2230                     | 2542           |
+| v2.0    | -                      | -                        | 2434           |
+| v1.1    | -                      | -                        | 2237           |
+| v1.0    | -                      | 1871                     | -              |
 
 [ccrl-ltc]: https://computerchess.org.uk/ccrl/4040/
 [ccrl-blitz]: https://computerchess.org.uk/ccrl/404/
 [mcerl]: https://www.chessengeria.eu/mcerl
-[cedr]: https://chessengines.blogspot.com/p/rating-jcer.html
 
 It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). Its current ratings are:
 
