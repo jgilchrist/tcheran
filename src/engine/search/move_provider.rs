@@ -78,119 +78,107 @@ impl MoveProvider {
             self.stage = GenStage::Captures;
 
             movegen::generate_captures(game, &mut self.moves, &mut self.movegencache);
-
-            for i in 0..self.moves.len() {
-                self.scores[i] = score_move(
-                    game,
-                    self.moves.get(i),
-                    self.previous_best_move,
-                    state.killer_moves[plies],
-                    &persistent_state.history[game.player.array_idx()],
-                );
-            }
-
             self.captures_end = self.moves.len();
+            self.score_moves(0, self.captures_end, game, persistent_state, state, plies);
         }
 
         if self.stage == GenStage::Captures {
-            loop {
-                if self.idx == self.captures_end {
-                    self.stage = if self.only_captures {
-                        GenStage::Done
-                    } else {
-                        GenStage::GenQuiets
-                    };
-                    break;
-                } else {
-                    let mut best_move_idx = self.idx;
-                    let mut best_move = self.moves.get(self.idx);
-                    let mut best_move_score = self.scores[self.idx];
-
-                    for i in self.idx + 1..self.captures_end {
-                        let mv = self.moves.get(i);
-                        let move_score = self.scores[i];
-
-                        if move_score > best_move_score && Some(mv) != self.previous_best_move {
-                            best_move_score = move_score;
-                            best_move = mv;
-                            best_move_idx = i;
-                        }
-                    }
-
-                    if self.idx != best_move_idx {
-                        self.moves.swap(self.idx, best_move_idx);
-                        self.scores.swap(self.idx, best_move_idx);
-                    }
-
-                    self.idx += 1;
-
-                    if Some(best_move) == self.previous_best_move {
-                        continue;
-                    }
-
-                    return Some(best_move);
-                }
+            if let Some(mv) = self.next_best_move(self.captures_end) {
+                return Some(mv);
             }
+
+            self.stage = if self.only_captures {
+                GenStage::Done
+            } else {
+                GenStage::GenQuiets
+            };
         }
 
         if self.stage == GenStage::GenQuiets {
             self.stage = GenStage::Quiets;
 
             movegen::generate_quiets(game, &mut self.moves, &self.movegencache);
-
-            for i in self.captures_end..self.moves.len() {
-                self.scores[i] = score_move(
-                    game,
-                    self.moves.get(i),
-                    self.previous_best_move,
-                    state.killer_moves[plies],
-                    &persistent_state.history[game.player.array_idx()],
-                );
-            }
+            self.score_moves(
+                self.captures_end,
+                self.moves.len(),
+                game,
+                persistent_state,
+                state,
+                plies,
+            );
         }
 
         if self.stage == GenStage::Quiets {
-            loop {
-                if self.idx >= self.moves.len() {
-                    self.stage = GenStage::Done;
-                    break;
-                } else {
-                    let mut best_move_score = self.scores[self.idx];
-                    let mut best_move = self.moves.get(self.idx);
-                    let mut best_move_idx = self.idx;
-
-                    for i in self.idx + 1..self.moves.len() {
-                        let mv = self.moves.get(i);
-                        let move_score = self.scores[i];
-
-                        if move_score > best_move_score && Some(mv) != self.previous_best_move {
-                            best_move_score = move_score;
-                            best_move = mv;
-                            best_move_idx = i;
-                        }
-                    }
-
-                    if self.idx != best_move_idx {
-                        self.moves.swap(self.idx, best_move_idx);
-                        self.scores.swap(self.idx, best_move_idx);
-                    }
-
-                    self.idx += 1;
-
-                    if Some(best_move) == self.previous_best_move {
-                        continue;
-                    }
-
-                    return Some(best_move);
-                }
+            if let Some(mv) = self.next_best_move(self.moves.len()) {
+                return Some(mv);
             }
+
+            self.stage = GenStage::Done;
         }
 
         if self.stage == GenStage::Done {
             return None;
         }
 
-        None
+        unreachable!()
+    }
+
+    fn next_best_move(&mut self, limit: usize) -> Option<Move> {
+        loop {
+            if self.idx == limit {
+                return None;
+            }
+
+            // Start with the next move that we haven't tried yet
+            let mut best_move_idx = self.idx;
+            let mut best_move_score = self.scores[self.idx];
+
+            // Check if there's a better move later on in the list
+            for i in self.idx + 1..limit {
+                let move_score = self.scores[i];
+
+                if move_score > best_move_score {
+                    best_move_score = move_score;
+                    best_move_idx = i;
+                }
+            }
+
+            let best_move = self.moves.get(best_move_idx);
+
+            // Move our best move to the start of the moves we haven't tried
+            self.moves.swap(self.idx, best_move_idx);
+            self.scores.swap(self.idx, best_move_idx);
+
+            self.idx += 1;
+
+            // We always return the best move first, before doing move generation.
+            // We don't want to return it again from the movelist, so skip it.
+            if Some(best_move) == self.previous_best_move {
+                continue;
+            }
+
+            return Some(best_move);
+        }
+    }
+
+    fn score_moves(
+        &mut self,
+        start: usize,
+        end: usize,
+        game: &Game,
+        persistent_state: &PersistentState,
+        state: &SearchState,
+        plies: usize,
+    ) {
+        for i in start..end {
+            self.scores[i] = score_move(
+                game,
+                self.moves.get(i),
+                self.previous_best_move,
+                state.killer_moves[plies],
+                &persistent_state.history[game.player.array_idx()],
+            );
+        }
     }
 }
 

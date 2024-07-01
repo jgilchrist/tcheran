@@ -4,6 +4,8 @@
 
 * Expand move scoring range from 200000 to 1000000000 (~10 Elo)
 
+* Refactor duplicate code in MoveProvider (~9 Elo)
+
 * Persist and decay history heuristic data (~6 Elo)
 
 * Avoid yielding the prior best move from the transposition table twice (~2 Elo)

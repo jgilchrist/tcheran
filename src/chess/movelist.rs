@@ -39,6 +39,11 @@ impl MoveList {
 
     pub fn swap(&mut self, idx1: usize, idx2: usize) {
         debug_assert!(idx1 < self.length && idx2 < self.length);
+
+        if idx1 == idx2 {
+            return;
+        }
+
         self.moves.swap(idx1, idx2);
     }
 
