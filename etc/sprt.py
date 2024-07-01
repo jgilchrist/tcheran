@@ -163,6 +163,10 @@ def logistic_elo(x):
     return -400 * math.log10(1 / x - 1)
 
 
+CONSOLE_GREEN="\033[92m"
+CONSOLE_RED="\033[91m"
+CONSOLE_RESET="\033[0m"
+
 if __name__ == '__main__':
     import argparse
 
@@ -176,6 +180,10 @@ if __name__ == '__main__':
     elo0 = args.elo0
     elo1 = args.elo1
 
+    test_confidence = 0.05
+    lowerllr = math.log(test_confidence / (1.0 - test_confidence))
+    upperllr = math.log((1.0 - test_confidence) / test_confidence)
+
     if len(results) == 3:
         lowerelo, elo, upperelo = Elo(results)
         llr = TrinomialSPRT(results, elo0, elo1)
@@ -186,4 +194,12 @@ if __name__ == '__main__':
         parser.error("argument --results: expected 3 or 5 arguments")
 
     elo_interval = elo - lowerelo
-    print(f"ELO: {elo:.2f} +- {elo_interval:.2f}    LLR: {llr:.2f}")
+
+    if llr > upperllr:
+        print(f"{CONSOLE_GREEN}PASSED{CONSOLE_RESET}")
+
+    if llr < lowerllr:
+        print(f"{CONSOLE_RED}FAILED{CONSOLE_RESET}")
+
+    print(f"LLR: {llr:.2f} ({lowerllr:0.2f}, {upperllr:0.2f}) [{elo0}, {elo1}]")
+    print(f"Elo: {elo:.2f} +- {elo_interval:.2f}")
