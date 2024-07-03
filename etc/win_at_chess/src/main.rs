@@ -354,19 +354,14 @@ fn parse_spec(line: &str) -> WinAtChessSpec {
 }
 
 fn run_spec(engine_command: &str, spec: &WinAtChessSpec) -> bool {
-    let mut cmd = Command::new(engine_command)
-        .stdin(Stdio::piped())
+    let cmd = Command::new(engine_command)
+        .args([format!("position fen {}\ngo movetime 1000\nquit", spec.pos)])
         .stdout(Stdio::piped())
         .spawn()
         .unwrap();
 
     print!("{}: ", spec.id);
     stdout().lock().flush().unwrap();
-
-    let engine_stdin = cmd.stdin.as_mut().unwrap();
-    writeln!(engine_stdin, "position fen {}", spec.pos).unwrap();
-    writeln!(engine_stdin, "go movetime 1000 wait").unwrap();
-    writeln!(engine_stdin, "quit").unwrap();
 
     let output = cmd.wait_with_output().unwrap();
 
