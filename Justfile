@@ -15,13 +15,7 @@ run:
 ################################## Tests ######################################
 
 test:
-	@cargo test
-
-test-perft:
-	@cargo test --release tests::perft_tests -- --include-ignored
-
-test-perft-tt:
-	@cargo test --release tests::zobrist_perft_tests -- --include-ignored
+	@cargo test --release
 
 ############################### Profiling #####################################
 
