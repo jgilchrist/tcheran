@@ -6,6 +6,8 @@
 
 * Refactor duplicate code in MoveProvider (~9 Elo)
 
+* Score quiets after yielding killers and avoid scoring captures with killer scores (~7 Elo)
+
 * Persist and decay history heuristic data (~6 Elo)
 
 * Do null move pruning when static eval == beta (~5 Elo)

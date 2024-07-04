@@ -3,11 +3,8 @@ use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
 
 // Sentinel values
-const PREVIOUS_BEST_MOVE_SCORE: i32 = i32::MAX;
 const CAPTURE_SCORE: i32 = 1_000_000_000;
-const KILLER_MOVE_1_SCORE: i32 = CAPTURE_SCORE - 1;
-const KILLER_MOVE_2_SCORE: i32 = CAPTURE_SCORE - 2;
-pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 3;
+pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
 const QUIET_SCORE: i32 = 0;
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
@@ -16,25 +13,7 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(
-    game: &Game,
-    mv: Move,
-    previous_best_move: Option<Move>,
-    killer_moves: [Option<Move>; 2],
-    history: &[[i32; Square::N]; Square::N],
-) -> i32 {
-    if previous_best_move == Some(mv) {
-        return PREVIOUS_BEST_MOVE_SCORE;
-    }
-
-    if killer_moves[0] == Some(mv) {
-        return KILLER_MOVE_1_SCORE;
-    }
-
-    if killer_moves[1] == Some(mv) {
-        return KILLER_MOVE_2_SCORE;
-    }
-
+pub fn score_move(game: &Game, mv: Move, history: &[[i32; Square::N]; Square::N]) -> i32 {
     let captured_piece = game.board.piece_at(mv.dst);
 
     if let Some(captured_piece) = captured_piece {
@@ -81,7 +60,7 @@ mod tests {
             .collect();
 
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, None, [None; 2], &[[0; Square::N]; Square::N]);
+            mv.score = score_move(&game, mv.mv, &[[0; Square::N]; Square::N]);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);
