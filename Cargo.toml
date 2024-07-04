@@ -10,6 +10,9 @@ git-version = "0.3.8"
 nom = "7.1.1"
 rand = "0.8.5"
 
+[dev-dependencies]
+paste = "1.0.15"
+
 [lints.rust]
 future_incompatible = "warn"
 let_underscore = "warn"
