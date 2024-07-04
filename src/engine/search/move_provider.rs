@@ -14,6 +14,9 @@ enum GenStage {
     GenCaptures,
     Captures,
     GenQuiets,
+    Killer1,
+    Killer2,
+    ScoreQuiets,
     Quiets,
     Done,
 }
@@ -78,8 +81,9 @@ impl MoveProvider {
             self.stage = GenStage::Captures;
 
             movegen::generate_captures(game, &mut self.moves, &mut self.movegencache);
+
             self.captures_end = self.moves.len();
-            self.score_moves(0, self.captures_end, game, persistent_state, state, plies);
+            self.score_moves(0, self.captures_end, game, persistent_state);
         }
 
         if self.stage == GenStage::Captures {
@@ -95,17 +99,48 @@ impl MoveProvider {
         }
 
         if self.stage == GenStage::GenQuiets {
-            self.stage = GenStage::Quiets;
+            self.stage = GenStage::Killer1;
 
             movegen::generate_quiets(game, &mut self.moves, &self.movegencache);
-            self.score_moves(
-                self.captures_end,
-                self.moves.len(),
-                game,
-                persistent_state,
-                state,
-                plies,
-            );
+        }
+
+        if self.stage == GenStage::Killer1 {
+            self.stage = GenStage::Killer2;
+
+            if let Some(killer1) = state.killer_moves[plies][0] {
+                for i in self.idx..self.moves.len() {
+                    if self.moves.get(i) == killer1 {
+                        self.moves.swap(self.idx, i);
+                        self.idx += 1;
+
+                        if Some(killer1) != self.previous_best_move {
+                            return Some(killer1);
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.stage == GenStage::Killer2 {
+            self.stage = GenStage::ScoreQuiets;
+
+            if let Some(killer2) = state.killer_moves[plies][1] {
+                for i in self.idx..self.moves.len() {
+                    if self.moves.get(i) == killer2 {
+                        self.moves.swap(self.idx, i);
+                        self.idx += 1;
+
+                        if Some(killer2) != self.previous_best_move {
+                            return Some(killer2);
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.stage == GenStage::ScoreQuiets {
+            self.stage = GenStage::Quiets;
+            self.score_moves(self.idx, self.moves.len(), game, persistent_state);
         }
 
         if self.stage == GenStage::Quiets {
@@ -167,15 +202,11 @@ impl MoveProvider {
         end: usize,
         game: &Game,
         persistent_state: &PersistentState,
-        state: &SearchState,
-        plies: usize,
     ) {
         for i in start..end {
             self.scores[i] = score_move(
                 game,
                 self.moves.get(i),
-                self.previous_best_move,
-                state.killer_moves[plies],
                 &persistent_state.history[game.player.array_idx()],
             );
         }
