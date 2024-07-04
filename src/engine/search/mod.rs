@@ -12,7 +12,7 @@ use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
 mod move_ordering;
-mod move_provider;
+pub mod move_provider;
 mod negamax;
 mod quiescence;
 mod time_control;
@@ -50,14 +50,14 @@ impl PersistentState {
 }
 
 pub struct SearchState {
-    killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
+    pub killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
 
     nodes_visited: u64,
     max_depth_reached: u8,
 }
 
 impl SearchState {
-    const fn new() -> Self {
+    pub const fn new() -> Self {
         Self {
             killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
 

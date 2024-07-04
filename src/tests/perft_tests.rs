@@ -1,6 +1,11 @@
 use crate::chess::fen::START_POS;
 use crate::chess::game::Game;
+use crate::chess::movegen;
+use crate::chess::movegen::MovegenCache;
+use crate::chess::movelist::MoveList;
 use crate::chess::perft::perft;
+use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::{PersistentState, SearchState};
 use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 use paste::paste;
 
@@ -72,6 +77,83 @@ fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
     assert_eq!(expected_positions, actual_positions);
 }
 
+fn moveprovider_perft(
+    depth: u8,
+    game: &mut Game,
+    persistent_state: &PersistentState,
+    state: &mut SearchState,
+) -> usize {
+    if depth == 0 {
+        return 1;
+    }
+
+    let mut moves = 0;
+
+    let test_individual_node_move_counts = true;
+    let mut movegen_cache = MovegenCache::new();
+    let mut captures_movelist = MoveList::new();
+    let mut quiets_movelist = MoveList::new();
+
+    let mut best_move = None;
+    if test_individual_node_move_counts {
+        movegen::generate_captures(game, &mut captures_movelist, &mut movegen_cache);
+        movegen::generate_quiets(game, &mut quiets_movelist, &movegen_cache);
+
+        // We want to make sure that we don't generate the best_move more than once, or any of the
+        // killer moves more than once.
+        //
+        // There's no easy way to do that without specific scenarios to reproduce (which if found are
+        // unit tests). But for refactoring there may be new scenarios which aren't captured in unit tests.
+        //
+        // To get good coverage, we use the length of the move list to determine whether to try captures/quiets
+        // in best move/killers.
+        if captures_movelist.len() >= 3 {
+            best_move = Some(captures_movelist.get(0));
+        } else if quiets_movelist.len() >= 3 {
+            best_move = Some(quiets_movelist.get(0));
+        }
+
+        if quiets_movelist.len() >= 3 {
+            state.killer_moves[depth as usize][0] = Some(quiets_movelist.get(2));
+        }
+
+        if quiets_movelist.len() >= 4 {
+            state.killer_moves[depth as usize][1] = Some(quiets_movelist.get(3));
+        }
+    }
+
+    let mut moves_at_this_node = 0;
+    let mut moveprovider = MoveProvider::new(best_move);
+    while let Some(mv) = moveprovider.next(game, persistent_state, state, depth as usize) {
+        game.make_move(mv);
+        moves += moveprovider_perft(depth - 1, game, persistent_state, state);
+        game.undo_move();
+
+        moves_at_this_node += 1;
+    }
+
+    if test_individual_node_move_counts {
+        assert_eq!(
+            moves_at_this_node,
+            captures_movelist.len() + quiets_movelist.len()
+        );
+    }
+
+    moves
+}
+
+fn test_perft_with_moveprovider(fen: &str, depth: u8, expected_positions: usize) {
+    crate::init();
+
+    let persistent_state = PersistentState::new();
+    let mut state = SearchState::new();
+
+    let mut game = Game::from_fen(fen).unwrap();
+    let actual_positions = moveprovider_perft(depth, &mut game, &persistent_state, &mut state);
+
+    assert_eq!(expected_positions, actual_positions);
+}
+
 macro_rules! perft_position {
     ($name:ident, $pos:expr, $depth:expr, $nodes:expr) => {
         paste! {
@@ -83,6 +165,12 @@ macro_rules! perft_position {
             #[test]
             fn [<perft_tt_ $name>]() {
                 test_perft_with_tt($pos, $depth, $nodes);
+            }
+
+            #[test]
+            #[ignore]
+            fn [<perft_moveprovider_ $name>]() {
+                test_perft_with_moveprovider($pos, $depth, $nodes);
             }
         }
     };
