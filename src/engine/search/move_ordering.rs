@@ -7,6 +7,7 @@ const PREVIOUS_BEST_MOVE_SCORE: i32 = 200_000;
 const CAPTURE_SCORE: i32 = 100_000;
 const KILLER_MOVE_1_SCORE: i32 = 90001;
 const KILLER_MOVE_2_SCORE: i32 = 90000;
+pub const HISTORY_MAX_SCORE: i32 = KILLER_MOVE_2_SCORE - 1;
 const QUIET_SCORE: i32 = 0;
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]

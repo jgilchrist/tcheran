@@ -4,6 +4,8 @@
 
 * Persist and decay history heuristic data (~6 Elo)
 
+* Killer move fixes: bound history scores and don't allow dupes (~0 Elo)
+
 ### Misc
 
 * Added a 'Threads' UCI option (which isn't used)

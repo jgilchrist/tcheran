@@ -7,7 +7,7 @@ use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
-use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{move_ordering, params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -205,11 +205,20 @@ pub fn negamax(
             // but it wasn't a capture, we remember it so that we can try it
             // before other quiet moves.
             if game.board.piece_at(mv.dst).is_none() {
-                state.killer_moves[plies as usize][1] = state.killer_moves[plies as usize][0];
-                state.killer_moves[plies as usize][0] = Some(mv);
+                let killer_1 = state.killer_moves[plies as usize][0];
+
+                if Some(mv) != killer_1 {
+                    state.killer_moves[plies as usize][1] = killer_1;
+                    state.killer_moves[plies as usize][0] = Some(mv);
+                }
+
+                let new_history = persistent_state.history[game.player.array_idx()]
+                    [mv.src.array_idx()][mv.dst.array_idx()]
+                    + i32::from(depth) * i32::from(depth);
 
                 persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
-                    [mv.dst.array_idx()] += i32::from(depth) * i32::from(depth);
+                    [mv.dst.array_idx()] =
+                    std::cmp::min(new_history, move_ordering::HISTORY_MAX_SCORE);
             }
 
             return Ok(beta);
