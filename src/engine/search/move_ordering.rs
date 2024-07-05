@@ -1,8 +1,9 @@
-use crate::chess::piece::PieceKind;
+use crate::chess::piece::{PieceKind, PromotionPieceKind};
 use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
 
 // Sentinel values
+const PROMOTION_SCORE: i32 = 1_100_000_000;
 const CAPTURE_SCORE: i32 = 1_000_000_000;
 pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
 const QUIET_SCORE: i32 = 0;
@@ -13,10 +14,17 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(game: &Game, mv: Move, history: &[[i32; Square::N]; Square::N]) -> i32 {
-    let captured_piece = game.board.piece_at(mv.dst);
+pub fn score_capture(game: &Game, mv: Move) -> i32 {
+    if let Some(captured_piece) = game.board.piece_at(mv.dst) {
+        let promotion_bonus = mv.promotion.map_or(0, |m| match m {
+            PromotionPieceKind::Knight => 300,
+            PromotionPieceKind::Bishop => 200,
+            PromotionPieceKind::Rook => 100,
 
-    if let Some(captured_piece) = captured_piece {
+            // Explore capture + queen promotion before just queen promotion
+            PromotionPieceKind::Queen => 200_000_000,
+        });
+
         let moved_piece = game.board.piece_at(mv.src).unwrap();
 
         let victim_score = MVV_ORDER[captured_piece.kind.array_idx()];
@@ -24,9 +32,24 @@ pub fn score_move(game: &Game, mv: Move, history: &[[i32; Square::N]; Square::N]
 
         let mvv_lva = victim_score + attacker_score;
 
-        return CAPTURE_SCORE + mvv_lva;
+        return CAPTURE_SCORE + mvv_lva + promotion_bonus;
     }
 
+    if mv.promotion.is_some() {
+        return PROMOTION_SCORE;
+    }
+
+    let moved_piece = game.board.piece_at(mv.src).unwrap();
+    if moved_piece.kind == PieceKind::Pawn && Some(mv.dst) == game.en_passant_target {
+        return CAPTURE_SCORE
+            + MVV_ORDER[PieceKind::Pawn.array_idx()]
+            + LVA_ORDER[PieceKind::Pawn.array_idx()];
+    }
+
+    unreachable!();
+}
+
+pub fn score_quiet(mv: Move, history: &[[i32; Square::N]; Square::N]) -> i32 {
     QUIET_SCORE + history[mv.src.array_idx()][mv.dst.array_idx()]
 }
 
@@ -56,11 +79,12 @@ mod tests {
             .moves()
             .to_vec()
             .into_iter()
+            .filter(|m| game.board.piece_at(m.dst).is_some())
             .map(ScoredMove::new)
             .collect();
 
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, &[[0; Square::N]; Square::N]);
+            mv.score = score_capture(&game, mv.mv);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);
