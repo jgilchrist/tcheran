@@ -3,11 +3,11 @@ use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
 
 // Sentinel values
-const PREVIOUS_BEST_MOVE_SCORE: i32 = 200_000;
-const CAPTURE_SCORE: i32 = 100_000;
-const KILLER_MOVE_1_SCORE: i32 = 90001;
-const KILLER_MOVE_2_SCORE: i32 = 90000;
-pub const HISTORY_MAX_SCORE: i32 = KILLER_MOVE_2_SCORE - 1;
+const PREVIOUS_BEST_MOVE_SCORE: i32 = i32::MAX;
+const CAPTURE_SCORE: i32 = 1_000_000_000;
+const KILLER_MOVE_1_SCORE: i32 = CAPTURE_SCORE - 1;
+const KILLER_MOVE_2_SCORE: i32 = CAPTURE_SCORE - 2;
+pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 3;
 const QUIET_SCORE: i32 = 0;
 
 #[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]

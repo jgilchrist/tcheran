@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Expand move scoring range from 200000 to 1000000000 (~10 Elo)
+
 * Persist and decay history heuristic data (~6 Elo)
 
 * Killer move fixes: bound history scores and don't allow dupes (~0 Elo)
