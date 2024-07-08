@@ -3,29 +3,21 @@
 ## [Unreleased]
 
 * Expand move scoring range from 200000 to 1000000000 (~10 Elo)
-
 * Refactor duplicate code in MoveProvider (~9 Elo)
-
 * Score quiets after yielding killers and avoid scoring captures with killer scores (~7 Elo)
-
 * Persist and decay history heuristic data (~6 Elo)
-
 * Do null move pruning when static eval == beta (~5 Elo)
-
 * Avoid yielding the prior best move from the transposition table twice (~2 Elo)
-
 * Killer move fixes: bound history scores and don't allow dupes (~0 Elo)
 
 ### Misc
 
 * Added a 'Threads' UCI option (which isn't used)
-
 * Changed various Cargo options
     * Disable incremental compilation in release mode
     * Switch to panic=abort
     * Stop generating debug symbols
     * Set codegen-units=1
-
 * Report 'uci name' as 'name version' instead of 'name (version)'
 
 ## [2.3]
