@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-## [v2.4]
+## [2.4]
 
 * Expand move scoring range from 200000 to 1000000000 (~10 Elo)
 * Refactor duplicate code in MoveProvider (~9 Elo)
