@@ -12,7 +12,7 @@ use color_eyre::Result;
 
 use crate::engine::options::EngineOptions;
 use crate::engine::util::sync::LockLatch;
-use crate::engine::{eval, search, uci, util, util::log::log};
+use crate::engine::{eval, search, uci, util};
 use crate::uci::commands::DebugCommand;
 use crate::uci::options::UciOption;
 use crate::ENGINE_NAME;
@@ -147,7 +147,6 @@ impl Uci {
                 // Options
                 send_response(&UciResponse::option::<uci::options::HashOption>());
                 send_response(&UciResponse::option::<uci::options::ThreadsOption>());
-                send_response(&UciResponse::option::<uci::options::LogOption>());
                 send_response(&UciResponse::option::<uci::options::MoveOverheadOption>());
 
                 send_response(&UciResponse::UciOk);
@@ -162,7 +161,6 @@ impl Uci {
                     options::ThreadsOption::NAME => {
                         options::ThreadsOption::set(&mut self.options, value)
                     }
-                    options::LogOption::NAME => options::LogOption::set(&mut self.options, value),
                     options::MoveOverheadOption::NAME => {
                         options::MoveOverheadOption::set(&mut self.options, value)
                     }
@@ -173,7 +171,6 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
-                log(self.game.to_fen());
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
@@ -186,7 +183,6 @@ impl Uci {
                 }
 
                 self.game = game;
-                log(self.game.to_fen());
             }
             UciCommand::Go(GoCmdArguments {
                 ponder: _,
@@ -360,7 +356,6 @@ impl Uci {
     }
 
     fn run_line(&mut self, line: &str) -> Result<bool> {
-        log(format!("< {}", &line));
         let command = parser::parse(line);
 
         match command {
@@ -375,7 +370,6 @@ impl Uci {
             }
             Err(e) => {
                 eprintln!("{e}");
-                log("? Unknown command\n");
             }
         }
 
@@ -425,7 +419,6 @@ enum ExecuteResult {
 
 fn send_response(response: &UciResponse) {
     println!("{response}");
-    log(format!(" > {response}"));
 }
 
 pub enum UciInputMode {

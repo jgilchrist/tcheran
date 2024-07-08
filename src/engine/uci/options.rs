@@ -63,23 +63,6 @@ impl UciOption for ThreadsOption {
     }
 }
 
-pub struct LogOption;
-
-impl UciOption for LogOption {
-    const NAME: &'static str = "Log";
-
-    const DEF: UciOptionType = UciOptionType::Check {
-        default: crate::engine::options::defaults::ENABLE_LOGGING,
-    };
-
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
-        let should_enable_logging = value.parse::<bool>()?;
-        options.enable_logging = should_enable_logging;
-        crate::engine::util::log::set_logging_enabled(options.enable_logging);
-        Ok(())
-    }
-}
-
 pub struct MoveOverheadOption;
 
 impl UciOption for MoveOverheadOption {
