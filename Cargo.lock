@@ -62,7 +62,7 @@ dependencies = [
 
 [[package]]
 name = "engine"
-version = "2.3.0"
+version = "2.4.0"
 dependencies = [
  "color-eyre",
  "git-version",
