@@ -37,8 +37,8 @@ pub fn eval(board: &Board) -> PhasedEval {
     let white_tropism = tropism(board, Player::White);
     let black_tropism = tropism(board, Player::Black);
 
-    eval += PhasedEval::uniform(white_tropism);
-    eval -= PhasedEval::uniform(black_tropism);
+    eval += PhasedEval::new(white_tropism, 0);
+    eval -= PhasedEval::new(black_tropism, 0);
 
     // let all_pieces = board.white_pieces().all() & board.black_pieces().all();
     //
