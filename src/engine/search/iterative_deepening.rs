@@ -26,7 +26,7 @@ pub fn search(
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
-        let Ok(eval) = negamax::negamax(
+        let Ok(eval) = negamax::negamax::<true>(
             game,
             Eval::MIN,
             Eval::MAX,
