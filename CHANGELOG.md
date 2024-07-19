@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Pack midgame and endgame `PhasedEval` `i16`s into a single `i32` (~19 Elo)
+
 ## [2.4]
 
 * Expand move scoring range from 200000 to 1000000000 (~10 Elo)
