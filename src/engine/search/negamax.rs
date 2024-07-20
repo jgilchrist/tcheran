@@ -66,6 +66,7 @@ pub fn negamax(
     }
 
     let mut previous_best_move: Option<Move> = None;
+    let mut got_tt_entry = false;
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth >= depth {
@@ -79,6 +80,7 @@ pub fn negamax(
             }
         }
 
+        got_tt_entry = true;
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
@@ -118,6 +120,10 @@ pub fn negamax(
                 return Ok(null_score);
             }
         }
+    }
+
+    if !is_root && !got_tt_entry && depth >= 4 {
+        depth -= 1;
     }
 
     let mut tt_node_bound = NodeBound::Upper;
