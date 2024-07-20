@@ -85,6 +85,9 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
+    state.killer_moves[plies as usize + 1][0] = None;
+    state.killer_moves[plies as usize + 1][1] = None;
+
     if !is_root && !in_check {
         let eval = eval::eval(game);
 
