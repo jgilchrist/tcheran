@@ -194,7 +194,7 @@ pub fn negamax(
             let tt_data = SearchTranspositionTableData {
                 bound: NodeBound::Lower,
                 eval: move_score.with_mate_distance_from_position(plies),
-                best_move: None,
+                best_move: best_move.map(TTMove::from_move),
                 depth,
                 age: persistent_state.tt.generation,
             };

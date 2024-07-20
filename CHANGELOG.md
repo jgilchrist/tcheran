@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Fix not storing moves that caused beta cutoffs in the TT (~50 Elo)
 * Pack midgame and endgame `PhasedEval` `i16`s into a single `i32` (~19 Elo)
 
 ## [2.4]
