@@ -32,12 +32,6 @@ pub fn negamax(
 
     state.max_depth_reached = state.max_depth_reached.max(plies);
 
-    // Keep track of whether we're doing a full search. If we raised alpha at this node, we've found
-    // a new PV (or re-confirmed the PV we found at a previous search depth) - so for the remainder
-    // of moves we search, we just need to check that they're worse. We can do this with more restrictive
-    // alpha & beta bounds, and thus search less of the tree.
-    let mut full_pv_search = true;
-
     if !is_root
         && (game.is_repeated_position()
             || game.is_stalemate_by_fifty_move_rule()
@@ -135,7 +129,7 @@ pub fn negamax(
 
         game.make_move(mv);
 
-        let move_score = if full_pv_search {
+        let move_score = if number_of_legal_moves == 1 {
             -negamax(
                 game,
                 -beta,
@@ -227,10 +221,6 @@ pub fn negamax(
         if move_score > alpha {
             alpha = move_score;
             tt_node_bound = NodeBound::Exact;
-
-            // We've found a PV move, so we can try and prove that the rest of the moves in this
-            // position are worse.
-            full_pv_search = false;
         }
     }
 
