@@ -185,37 +185,8 @@ pub fn negamax(
 
         // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
-            let tt_data = SearchTranspositionTableData {
-                bound: NodeBound::Lower,
-                eval: move_score.with_mate_distance_from_position(plies),
-                best_move: best_move.map(TTMove::from_move),
-                depth,
-                age: persistent_state.tt.generation,
-            };
-
-            persistent_state.tt.insert(&game.zobrist, tt_data);
-
-            // 'Killers': if a move was so good that it caused a beta cutoff,
-            // but it wasn't a capture, we remember it so that we can try it
-            // before other quiet moves.
-            if game.board.piece_at(mv.dst).is_none() {
-                let killer_1 = state.killer_moves[plies as usize][0];
-
-                if Some(mv) != killer_1 {
-                    state.killer_moves[plies as usize][1] = killer_1;
-                    state.killer_moves[plies as usize][0] = Some(mv);
-                }
-
-                let new_history = persistent_state.history[game.player.array_idx()]
-                    [mv.src.array_idx()][mv.dst.array_idx()]
-                    + i32::from(depth) * i32::from(depth);
-
-                persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
-                    [mv.dst.array_idx()] =
-                    std::cmp::min(new_history, move_ordering::HISTORY_MAX_SCORE);
-            }
-
-            return Ok(beta);
+            tt_node_bound = NodeBound::Lower;
+            break;
         }
 
         if move_score > alpha {
@@ -232,9 +203,32 @@ pub fn negamax(
         });
     }
 
+    if tt_node_bound == NodeBound::Lower {
+        let mv = best_move.unwrap();
+
+        // 'Killers': if a move was so good that it caused a beta cutoff,
+        // but it wasn't a capture, we remember it so that we can try it
+        // before other quiet moves.
+        if game.board.piece_at(mv.dst).is_none() {
+            let killer_1 = state.killer_moves[plies as usize][0];
+
+            if Some(mv) != killer_1 {
+                state.killer_moves[plies as usize][1] = killer_1;
+                state.killer_moves[plies as usize][0] = Some(mv);
+            }
+
+            let new_history = persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
+                [mv.dst.array_idx()]
+                + i32::from(depth) * i32::from(depth);
+
+            persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
+                [mv.dst.array_idx()] = std::cmp::min(new_history, move_ordering::HISTORY_MAX_SCORE);
+        }
+    }
+
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
-        eval: alpha,
+        eval: best_eval.with_mate_distance_from_position(plies),
         best_move: best_move.map(TTMove::from_move),
         age: persistent_state.tt.generation,
         depth,
@@ -242,5 +236,5 @@ pub fn negamax(
 
     persistent_state.tt.insert(&game.zobrist, tt_data);
 
-    Ok(alpha)
+    Ok(best_eval)
 }

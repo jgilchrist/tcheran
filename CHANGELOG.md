@@ -5,6 +5,7 @@
 * Fix not storing moves that caused beta cutoffs in the TT (~50 Elo)
 * Pack midgame and endgame `PhasedEval` `i16`s into a single `i32` (~19 Elo)
 * Do PVS by searching first move with the full window and the remainder with a zero-window (~4 Elo)
+* Perform all TT updates in the same place in `negamax` (~1 Elo)
 
 ## [2.4]
 
