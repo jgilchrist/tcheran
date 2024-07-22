@@ -230,10 +230,14 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
 
     let (src, dst) = parse_squares(game, mv)?;
 
-    Ok(match promotion {
-        None => Move::new(src, dst),
-        Some(promoted_to) => Move::promotion(src, dst, promoted_to),
-    })
+    let legal_moves = game.moves().to_vec();
+
+    let matching_move = legal_moves
+        .into_iter()
+        .find(|m| m.src == src && m.dst == dst && m.promotion == promotion)
+        .expect("Illegal move");
+
+    Ok(matching_move)
 }
 
 #[cfg(test)]

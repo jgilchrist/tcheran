@@ -179,7 +179,14 @@ impl Uci {
                 };
 
                 for mv in moves {
-                    game.make_move(*mv);
+                    let legal_moves = game.moves().to_vec();
+
+                    let matching_move = legal_moves
+                        .into_iter()
+                        .find(|m| m.src == mv.src && m.dst == mv.dst && m.promotion == mv.promotion)
+                        .expect("Illegal move");
+
+                    game.make_move(matching_move);
                 }
 
                 self.game = game;
@@ -271,7 +278,16 @@ impl Uci {
                 },
                 DebugCommand::Move { moves } => {
                     for mv in moves {
-                        self.game.make_move(*mv);
+                        let legal_moves = self.game.moves().to_vec();
+
+                        let matching_move = legal_moves
+                            .into_iter()
+                            .find(|m| {
+                                m.src == mv.src && m.dst == mv.dst && m.promotion == mv.promotion
+                            })
+                            .expect("Illegal move");
+
+                        self.game.make_move(matching_move);
                     }
 
                     println!("{:?}", self.game.board);
