@@ -289,12 +289,10 @@ impl Game {
 
         // If we moved a pawn to the en passant target, this was an en passant capture, so we
         // remove the captured pawn from the board.
-        if let Some(en_passant_target) = self.en_passant_target {
-            if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.backward(player);
-                self.remove_at(capture_square);
-            }
+        if mv.is_en_passant {
+            // Remove the piece behind the square the pawn just moved to
+            let capture_square = to.backward(player);
+            self.remove_at(capture_square);
         }
 
         let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
@@ -324,7 +322,7 @@ impl Game {
         // PERF: Here, we figure out if the move was castling. It may be more performant to
         // tell this function that the move was castling, but it loses the cleanliness of
         // just telling the board the start and end destination for the piece.
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
+        if mv.is_castling {
             // We're castling!
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
                 let rook = self.remove_at(rook_from);
