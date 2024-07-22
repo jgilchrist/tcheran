@@ -187,7 +187,7 @@ pub fn negamax(
         if move_score >= beta {
             let tt_data = SearchTranspositionTableData {
                 bound: NodeBound::Lower,
-                eval: move_score.with_mate_distance_from_position(plies),
+                eval: best_eval.with_mate_distance_from_position(plies),
                 best_move: best_move.map(TTMove::from_move),
                 depth,
                 age: persistent_state.tt.generation,
@@ -234,7 +234,7 @@ pub fn negamax(
 
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
-        eval: alpha,
+        eval: best_eval,
         best_move: best_move.map(TTMove::from_move),
         age: persistent_state.tt.generation,
         depth,
@@ -242,5 +242,5 @@ pub fn negamax(
 
     persistent_state.tt.insert(&game.zobrist, tt_data);
 
-    Ok(alpha)
+    Ok(best_eval)
 }
