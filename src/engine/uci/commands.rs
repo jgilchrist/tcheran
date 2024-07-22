@@ -1,4 +1,4 @@
-use crate::chess::moves::Move;
+use crate::engine::uci::UciMove;
 use std::time::Duration;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
@@ -27,7 +27,7 @@ pub enum DebugCommand {
     SetPosition { position: String },
     Perft { depth: u8 },
     PerftDiv { depth: u8 },
-    Move { moves: Vec<Move> },
+    Move { moves: Vec<UciMove> },
     Eval,
 }
 
@@ -43,7 +43,7 @@ pub enum UciCommand {
     UciNewGame,
     Position {
         position: Position,
-        moves: Vec<Move>,
+        moves: Vec<UciMove>,
     },
     Go(GoCmdArguments),
     D(DebugCommand),

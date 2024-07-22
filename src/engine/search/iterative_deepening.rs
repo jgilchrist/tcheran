@@ -85,7 +85,7 @@ fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable, state: &SearchSt
             return pv;
         }
 
-        let best_move_in_position = tt_entry.best_move.as_ref().unwrap().to_move();
+        let best_move_in_position = tt_entry.best_move.unwrap();
         pv.push(best_move_in_position);
         current_position.make_move(best_move_in_position);
     }

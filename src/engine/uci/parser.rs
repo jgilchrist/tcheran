@@ -1,8 +1,8 @@
 use crate::chess::{
-    moves::Move,
     piece::PromotionPieceKind,
     square::{File, Rank, Square},
 };
+use crate::engine::uci::UciMove;
 use crate::uci::commands::{DebugCommand, Position};
 use color_eyre::{eyre::bail, Result};
 use nom::bytes::complete::take_until;
@@ -87,17 +87,18 @@ fn uci_promotion(input: &str) -> IResult<&str, PromotionPieceKind> {
     ))
 }
 
-fn uci_move(input: &str) -> IResult<&str, Move> {
+fn uci_move(input: &str) -> IResult<&str, UciMove> {
     map(
         tuple((uci_square, uci_square, opt(uci_promotion))),
-        |(from, to, promotion)| match promotion {
-            None => Move::new(from, to),
-            Some(p) => Move::promotion(from, to, p),
+        |(src, dst, promotion)| UciMove {
+            src,
+            dst,
+            promotion,
         },
     )(input)
 }
 
-pub fn uci_moves(input: &str) -> IResult<&str, Vec<Move>> {
+pub fn uci_moves(input: &str) -> IResult<&str, Vec<UciMove>> {
     separated_list1(space1, uci_move)(input)
 }
 
@@ -174,7 +175,7 @@ fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
         ))(input)
     }
 
-    fn moves_arg(input: &str) -> IResult<&str, Vec<Move>> {
+    fn moves_arg(input: &str) -> IResult<&str, Vec<UciMove>> {
         command_with_argument("moves", uci_moves, |moves| moves)(input)
     }
 

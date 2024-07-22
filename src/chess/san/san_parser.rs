@@ -201,14 +201,14 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
 #[allow(unused)]
 pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
     if mv == san::KINGSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(Move::castles(
             squares::king_start(game.player),
             squares::kingside_castle_dest(game.player),
         ));
     }
 
     if mv == san::QUEENSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(Move::castles(
             squares::king_start(game.player),
             squares::queenside_castle_dest(game.player),
         ));
@@ -244,7 +244,7 @@ mod tests {
     use crate::chess::piece::PromotionPieceKind;
     use crate::chess::square::squares::all::*;
 
-    fn test_parse_san(fen: &'static str, expected_mv: impl Into<Move>, san: &'static str) {
+    fn test_parse_san(fen: &'static str, expected_mv: (Square, Square), san: &'static str) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();

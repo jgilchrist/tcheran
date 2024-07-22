@@ -1,6 +1,6 @@
 use crate::chess::bitboard::bitboards;
 use crate::chess::movelist::MoveList;
-use crate::chess::piece::Piece;
+use crate::chess::piece::{Piece, PromotionPieceKind};
 use crate::chess::square::squares;
 use crate::chess::zobrist::ZobristHash;
 use crate::chess::{
@@ -250,6 +250,18 @@ impl Game {
         let mut movelist = MoveList::new();
         generate_legal_moves(self, &mut movelist);
         movelist
+    }
+
+    pub fn get_move_with_flags(
+        &mut self,
+        src: Square,
+        dst: Square,
+        promotion_piece_kind: PromotionPieceKind,
+    ) {
+        let is_castle = //
+        let is_en_passant = //
+
+        let is_capture = self.board.piece_at(dst).is_some();
     }
 
     pub fn make_move(&mut self, mv: Move) {

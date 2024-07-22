@@ -5,7 +5,7 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
+use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
 
 use super::{move_ordering, params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
@@ -76,7 +76,7 @@ pub fn negamax(
             }
         }
 
-        previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
+        previous_best_move = tt_entry.best_move;
     }
 
     if !is_root && !in_check {
@@ -229,7 +229,7 @@ pub fn negamax(
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
         eval: best_eval.with_mate_distance_from_position(plies),
-        best_move: best_move.map(TTMove::from_move),
+        best_move,
         age: persistent_state.tt.generation,
         depth,
     };
