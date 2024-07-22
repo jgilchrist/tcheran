@@ -2,7 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::moves::{Move, MoveList};
-use crate::engine::search::move_ordering::score_move;
+use crate::engine::search::move_ordering::{score_quiet, score_tactical};
 use crate::engine::search::{move_ordering, PersistentState, SearchState};
 
 const MAX_MOVES: usize = u8::MAX as usize;
@@ -93,7 +93,10 @@ impl MovePicker {
 
             self.captures_end = self.moves.len();
             self.first_quiet = self.moves.len();
-            self.score_moves(0, self.captures_end, game, persistent_state);
+
+            for i in 0..self.moves.len() {
+                self.scores[i] = score_tactical(game, *self.moves.get(i).unwrap());
+            }
         }
 
         if self.stage == GoodCaptures {
@@ -208,7 +211,14 @@ impl MovePicker {
         if self.stage == ScoreQuiets {
             self.stage = Quiets;
             self.idx = self.first_quiet;
-            self.score_moves(self.idx, self.moves.len(), game, persistent_state);
+
+            for i in self.idx..self.moves.len() {
+                self.scores[i] = score_quiet(
+                    game,
+                    *self.moves.get(i).unwrap(),
+                    &persistent_state.history_table,
+                );
+            }
         }
 
         if self.stage == Quiets {
@@ -261,22 +271,6 @@ impl MovePicker {
             }
 
             return Some((best_move, best_move_score));
-        }
-    }
-
-    fn score_moves(
-        &mut self,
-        start: usize,
-        end: usize,
-        game: &Game,
-        persistent_state: &PersistentState,
-    ) {
-        for i in start..end {
-            self.scores[i] = score_move(
-                game,
-                *self.moves.get(i).unwrap(),
-                &persistent_state.history_table,
-            );
         }
     }
 }

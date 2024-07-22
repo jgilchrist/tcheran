@@ -20,11 +20,17 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
-    let captured_piece = game.board.piece_at(mv.dst());
+pub fn score_tactical(game: &Game, mv: Move) -> i32 {
+    let moved_piece = game.board.piece_at(mv.src()).unwrap();
 
-    if let Some(captured_piece) = captured_piece {
-        let moved_piece = game.board.piece_at(mv.src()).unwrap();
+    if mv.is_capture() {
+        if mv.is_en_passant() {
+            return GOOD_CAPTURE_SCORE
+                + MVV_ORDER[PieceKind::Pawn.array_idx()]
+                + LVA_ORDER[PieceKind::Pawn.array_idx()];
+        }
+
+        let captured_piece = game.board.piece_at(mv.dst()).unwrap();
 
         let victim_score = MVV_ORDER[captured_piece.kind.array_idx()];
         let attacker_score = LVA_ORDER[moved_piece.kind.array_idx()];
@@ -38,6 +44,11 @@ pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
         } + mvv_lva;
     }
 
+    // Score promotions just below good captures, and prioritise them by piece value
+    HISTORY_MAX_SCORE - LVA_ORDER[moved_piece.kind.array_idx()]
+}
+
+pub fn score_quiet(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
     QUIET_SCORE + history.get(game.player, mv)
 }
 
@@ -71,10 +82,8 @@ mod tests {
             .map(ScoredMove::new)
             .collect();
 
-        let history_table = HistoryTable::new();
-
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, &history_table);
+            mv.score = score_tactical(&game, mv.mv);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);
