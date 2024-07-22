@@ -14,7 +14,14 @@ pub struct MoveList {
 }
 
 impl MoveList {
-    const EMPTY_MOVE: Move = Move::new(A1, A1);
+    const EMPTY_MOVE: Move = Move {
+        src: A1,
+        dst: A1,
+        promotion: None,
+        is_capture: false,
+        is_en_passant: false,
+        is_castling: false,
+    };
 
     // perf: Inlining this into new() causes a fairly significant
     // performance regression
