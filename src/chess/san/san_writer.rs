@@ -35,16 +35,11 @@ pub fn format_move(game: &Game, mv: Move) -> String {
     game_after_move.make_move(mv);
     let places_opponent_in_check = game_after_move.is_king_in_check();
 
-    let captured_piece = game.board.piece_at(to);
-    let is_en_passant = piece.kind == PieceKind::Pawn && Some(to) == game.en_passant_target;
-
-    let capture_happened = captured_piece.is_some() || is_en_passant;
-
     let ambiguity_resolution_required = required_ambiguity_resolution(game, mv);
 
     let piece_identifier: &'static str = match piece.kind {
         PieceKind::Pawn => {
-            if capture_happened {
+            if mv.is_capture() {
                 from.file().notation()
             } else {
                 ""
@@ -64,7 +59,7 @@ pub fn format_move(game: &Game, mv: Move) -> String {
         AmbiguityResolution::Exact => from.notation(),
     };
 
-    let capture_x = if capture_happened {
+    let capture_x = if mv.is_capture() {
         san::CAPTURE.to_string()
     } else {
         String::new()

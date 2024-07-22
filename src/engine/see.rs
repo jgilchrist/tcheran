@@ -22,8 +22,6 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     let to = mv.dst();
     let board = &game.board;
     let moved_piece = board.piece_at(from).unwrap();
-    let is_en_passant =
-        Some(mv.dst()) == game.en_passant_target && moved_piece.kind == PieceKind::Pawn;
 
     // We have to beat the threshold in order to pass, which is the same as saying that
     //      score - threshold = 0
@@ -36,7 +34,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     score += match board.piece_at(to) {
         Some(piece) => piece_value(piece.kind),
         None => {
-            if is_en_passant {
+            if mv.is_en_passant() {
                 piece_value(PieceKind::Pawn)
             } else {
                 Eval(0)
@@ -60,7 +58,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     occupied ^= from.bb();
     occupied |= to.bb();
 
-    if is_en_passant {
+    if mv.is_en_passant() {
         occupied ^= game.en_passant_target.unwrap().bb();
     }
 

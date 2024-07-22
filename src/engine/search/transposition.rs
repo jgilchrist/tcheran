@@ -1,6 +1,4 @@
 use crate::chess::moves::Move;
-use crate::chess::piece::PromotionPieceKind;
-use crate::chess::square::Square;
 use crate::engine::eval::Eval;
 use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 
@@ -17,32 +15,7 @@ pub struct SearchTranspositionTableData {
     pub eval: Eval,
     pub depth: u8,
     pub age: u8,
-    pub best_move: Option<TTMove>,
-}
-
-#[derive(Debug, Clone)]
-pub struct TTMove {
-    start_square_idx: u8,
-    end_square_idx: u8,
-    promotion: Option<PromotionPieceKind>,
-}
-
-impl TTMove {
-    pub fn from_move(mv: Move) -> Self {
-        Self {
-            start_square_idx: mv.src().idx(),
-            end_square_idx: mv.dst().idx(),
-            promotion: mv.promotion(),
-        }
-    }
-
-    pub fn to_move(&self) -> Move {
-        Move::new_with_optional_promotion(
-            Square::from_index(self.start_square_idx),
-            Square::from_index(self.end_square_idx),
-            self.promotion,
-        )
-    }
+    pub best_move: Move,
 }
 
 impl TTOverwriteable for SearchTranspositionTableData {

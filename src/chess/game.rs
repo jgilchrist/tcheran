@@ -203,7 +203,6 @@ impl Game {
         removed_piece
     }
 
-    // PERF: Make fetching the castle rights for a player more efficient
     fn try_remove_castle_rights(&mut self, player: Player, castle_rights_side: CastleRightsSide) {
         let castle_rights = self.castle_rights.get_mut(player.array_idx()).unwrap();
 
@@ -263,12 +262,10 @@ impl Game {
 
         // If we moved a pawn to the en passant target, this was an en passant capture, so we
         // remove the captured pawn from the board.
-        if let Some(en_passant_target) = self.en_passant_target {
-            if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                // Remove the piece behind the square the pawn just moved to
-                let capture_square = to.backward(player);
-                self.remove_at(capture_square);
-            }
+        if mv.is_en_passant() {
+            // Remove the piece behind the square the pawn just moved to
+            let capture_square = to.backward(player);
+            self.remove_at(capture_square);
         }
 
         let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
@@ -293,13 +290,7 @@ impl Game {
             .set_en_passant(self.en_passant_target, new_en_passant_target);
         self.en_passant_target = new_en_passant_target;
 
-        // If we just moved a king from its start square, we may have castled.
-        //
-        // PERF: Here, we figure out if the move was castling. It may be more performant to
-        // tell this function that the move was castling, but it loses the cleanliness of
-        // just telling the board the start and end destination for the piece.
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            // We're castling!
+        if mv.is_castling() {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
                 let rook = self.remove_at(rook_from);
                 self.set_at(rook_to, rook);
@@ -387,10 +378,8 @@ impl Game {
         self.en_passant_target = history.en_passant_target;
         self.incremental_eval = history.incremental_eval;
 
-        let moved_piece = self.board.piece_at(to).unwrap();
-
         // Undo castling, if we castled
-        if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
+        if mv.is_castling() {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
                 self.board.remove_at(rook_to);
                 self.board
@@ -399,12 +388,11 @@ impl Game {
         }
 
         // Replace the pawn taken by en-passant capture
-        if let Some(en_passant_target) = history.en_passant_target {
-            if moved_piece.kind == PieceKind::Pawn && to == en_passant_target {
-                let capture_square = to.backward(player);
-                self.board
-                    .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
-            }
+        if mv.is_en_passant() {
+            let capture_square = to.backward(player);
+
+            self.board
+                .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
         }
 
         let moved_piece = self.board.piece_at(to).unwrap();

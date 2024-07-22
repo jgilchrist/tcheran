@@ -8,7 +8,7 @@ use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::tables::lmr_table::lmr_reduction;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
+use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
 
 pub fn negamax(
     game: &mut Game,
@@ -77,7 +77,11 @@ pub fn negamax(
             }
         }
 
-        previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
+        previous_best_move = if !tt_entry.best_move.is_null() {
+            Some(tt_entry.best_move)
+        } else {
+            None
+        };
     }
 
     if !is_root && !is_pv && !in_check {
@@ -222,7 +226,7 @@ pub fn negamax(
         // 'Killers': if a move was so good that it caused a beta cutoff,
         // but it wasn't a capture, we remember it so that we can try it
         // before other quiet moves.
-        if game.board.piece_at(mv.dst()).is_none() {
+        if !mv.is_capture() {
             state.killer_moves.try_push(plies, mv);
 
             persistent_state
@@ -234,7 +238,7 @@ pub fn negamax(
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
         eval: best_eval.with_mate_distance_from_position(plies),
-        best_move: best_move.map(TTMove::from_move),
+        best_move: best_move.unwrap_or(Move::NULL),
         age: persistent_state.tt.generation,
         depth,
     };

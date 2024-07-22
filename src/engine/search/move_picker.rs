@@ -273,7 +273,7 @@ mod tests {
         let game = Game::new();
 
         let mut moves: Vec<Move> = Vec::new();
-        let mut move_picker = MovePicker::new(Some(Move::new(G1, F3)));
+        let mut move_picker = MovePicker::new(Some(Move::quiet(G1, F3)));
 
         let search_state = SearchState::new();
         let persistent_state = PersistentState::new(16);
@@ -374,13 +374,13 @@ mod tests {
         let game = Game::from_fen("r2k3r/1b4bq/8/3R4/8/8/7B/4K2R b K - 3 2").unwrap();
 
         let mut moves: Vec<Move> = Vec::new();
-        let mut move_provider = MovePicker::new(Some(Move::new(D8, E7)));
+        let mut move_provider = MovePicker::new(Some(Move::quiet(D8, E7)));
 
         let mut search_state = SearchState::new();
         let persistent_state = PersistentState::new(16);
 
-        search_state.killer_moves.try_push(0, Move::new(B7, D5));
-        search_state.killer_moves.try_push(0, Move::new(D8, E8));
+        search_state.killer_moves.try_push(0, Move::quiet(B7, D5));
+        search_state.killer_moves.try_push(0, Move::quiet(D8, E8));
 
         while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);

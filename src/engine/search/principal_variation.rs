@@ -61,13 +61,13 @@ mod tests {
         let pv = PrincipalVariation::new();
 
         let mut pv_2 = PrincipalVariation::new();
-        pv_2.push(Move::new(A1, B1), &pv);
+        pv_2.push(Move::quiet(A1, B1), &pv);
 
         let mut pv_3 = PrincipalVariation::new();
-        pv_3.push(Move::new(C1, D1), &pv_2);
+        pv_3.push(Move::quiet(C1, D1), &pv_2);
 
         let mut pv_4 = PrincipalVariation::new();
-        pv_4.push(Move::new(E1, F1), &pv_3);
+        pv_4.push(Move::quiet(E1, F1), &pv_3);
 
         assert_eq!(pv_4.len(), 3);
         assert_eq!(pv_4.0.get(0).unwrap().src(), E1);

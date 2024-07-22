@@ -33,59 +33,179 @@ impl MoveListExt for MoveList {
     }
 }
 
+//    Layout                                    Flags
+//
+//    ┌──────┐                                    Quiet move (Capture bit = 0, Promotion bit = 0)
+//  0 │      │ ─┐
+//    ├──────┤  │                                   ┌──────┐
+//    ~~~~~~~~  ├── Source square                   │      │ ─── Castle bit
+//    ├──────┤  │                                   ├──────┤
+//  5 │      │ ─┘                                   xxxxxxxx ─── Unused
+//    ├──────┤                                      └──────┘
+//  6 │      │ ─┐
+//    ├──────┤  │                                 Capture move (Capture bit = 1, Promotion bit = 0)
+//    ~~~~~~~~  ├── Destination square
+//    ├──────┤  │                                   ┌──────┐
+// 11 │      │ ─┘                                   │      │ ─── En passant bit
+//    ├──────┤                                      ├──────┤
+// 12 │      │ ──── Capture bit                     xxxxxxxx ─── Unused
+//    ├──────┤                                      └──────┘
+// 13 │      │ ──── Promotion bit
+//    ├──────┤                                    Promotion move (Capture bit = any, Promotion bit = 1)
+// 14 │      │ ─┐
+//    ├──────┤  ├── Additional flags                00 - Queen      10 - Knight
+// 15 │      │ ─┘                                   01 - Rook       11 - Bishop
+//    └──────┘
+
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Move {
-    src: Square,
-    dst: Square,
-    promotion: Option<PromotionPieceKind>,
+pub struct Move(u16);
+
+const SRC_MASK: u16 = 0b0000_0000_0011_1111;
+const DST_MASK: u16 = 0b0000_1111_1100_0000;
+const CAPTURE_BIT_MASK: u16 = 0b0001_0000_0000_0000;
+const PROMOTION_BIT_MASK: u16 = 0b0010_0000_0000_0000;
+const FLAGS_MASK: u16 = 0b1100_0000_0000_0000;
+
+const DST_SHIFT: usize = 6;
+const CAPTURE_BIT_SHIFT: usize = 12;
+const PROMOTION_BIT_SHIFT: usize = 13;
+const FIRST_FLAG_SHIFT: usize = 14;
+const FLAGS_SHIFT: usize = 14;
+const SECOND_FLAG_SHIFT: usize = 15;
+
+#[inline]
+const fn src_bits(src: Square) -> u16 {
+    src.idx() as u16
+}
+
+#[inline]
+const fn dst_bits(dst: Square) -> u16 {
+    (dst.idx() as u16) << DST_SHIFT
+}
+
+#[inline]
+const fn capture_bit() -> u16 {
+    1u16 << CAPTURE_BIT_SHIFT
+}
+
+#[inline]
+const fn promotion_bit() -> u16 {
+    1u16 << PROMOTION_BIT_SHIFT
+}
+
+#[inline]
+const fn flag_bits(f1: bool, f2: bool) -> u16 {
+    (f1 as u16) << FIRST_FLAG_SHIFT | (f2 as u16) << SECOND_FLAG_SHIFT
+}
+
+#[inline]
+const fn promotion_flag_bits(promotion_piece_kind: PromotionPieceKind) -> u16 {
+    (match promotion_piece_kind {
+        PromotionPieceKind::Queen => 0b00u16,
+        PromotionPieceKind::Rook => 0b01u16,
+        PromotionPieceKind::Knight => 0b10u16,
+        PromotionPieceKind::Bishop => 0b11u16,
+    }) << FLAGS_SHIFT
 }
 
 impl Move {
-    pub const fn new(src: Square, dst: Square) -> Self {
-        Self {
-            src,
-            dst,
-            promotion: None,
-        }
+    pub const NULL: Self = Self(0);
+
+    #[inline]
+    pub const fn quiet(src: Square, dst: Square) -> Self {
+        Self(src_bits(src) | dst_bits(dst))
     }
 
-    pub const fn new_with_optional_promotion(
-        src: Square,
-        dst: Square,
-        promotion: Option<PromotionPieceKind>,
-    ) -> Self {
-        Self {
-            src,
-            dst,
-            promotion,
-        }
+    #[inline]
+    pub const fn capture(src: Square, dst: Square) -> Self {
+        Self(src_bits(src) | dst_bits(dst) | capture_bit())
     }
 
-    pub const fn new_with_promotion(
+    #[inline]
+    pub const fn castles(src: Square, dst: Square) -> Self {
+        Self(src_bits(src) | dst_bits(dst) | flag_bits(true, false))
+    }
+
+    #[inline]
+    pub const fn en_passant(src: Square, dst: Square) -> Self {
+        Self(src_bits(src) | dst_bits(dst) | capture_bit() | flag_bits(true, false))
+    }
+
+    #[inline]
+    pub const fn quiet_promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
+        Self(src_bits(src) | dst_bits(dst) | promotion_bit() | promotion_flag_bits(promotion))
+    }
+
+    #[inline]
+    pub const fn capture_promotion(
         src: Square,
         dst: Square,
         promotion: PromotionPieceKind,
     ) -> Self {
-        Self {
-            src,
-            dst,
-            promotion: Some(promotion),
-        }
+        Self(
+            src_bits(src)
+                | dst_bits(dst)
+                | capture_bit()
+                | promotion_bit()
+                | promotion_flag_bits(promotion),
+        )
     }
 
     #[inline]
     pub fn src(&self) -> Square {
-        self.src
+        Square::from_index((self.0 & SRC_MASK) as u8)
     }
 
     #[inline]
     pub fn dst(&self) -> Square {
-        self.dst
+        Square::from_index(((self.0 & DST_MASK) >> DST_SHIFT) as u8)
+    }
+
+    #[inline]
+    pub fn is_capture(&self) -> bool {
+        ((self.0 & CAPTURE_BIT_MASK) >> CAPTURE_BIT_SHIFT) == 0b1
+    }
+
+    #[inline]
+    pub fn is_promotion(&self) -> bool {
+        ((self.0 & PROMOTION_BIT_MASK) >> PROMOTION_BIT_SHIFT) == 0b1
     }
 
     #[inline]
     pub fn promotion(&self) -> Option<PromotionPieceKind> {
-        self.promotion
+        if !self.is_promotion() {
+            return None;
+        }
+
+        let flag_bits = (self.0 & FLAGS_MASK) >> FLAGS_SHIFT;
+
+        Some(match flag_bits {
+            0b00 => PromotionPieceKind::Queen,
+            0b01 => PromotionPieceKind::Rook,
+            0b10 => PromotionPieceKind::Knight,
+            0b11 => PromotionPieceKind::Bishop,
+            _ => unreachable!(),
+        })
+    }
+
+    #[inline]
+    pub fn is_quiet(&self) -> bool {
+        !self.is_promotion() && !self.is_capture()
+    }
+
+    #[inline]
+    pub fn is_en_passant(&self) -> bool {
+        self.is_capture() && !self.is_promotion() && ((self.0 & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
+    }
+
+    #[inline]
+    pub fn is_castling(&self) -> bool {
+        self.is_quiet() && ((self.0 & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
+    }
+
+    #[inline]
+    pub fn is_null(&self) -> bool {
+        self.0 == 0
     }
 }
 
@@ -106,5 +226,78 @@ impl std::fmt::Debug for Move {
                 None => "",
             }
         )
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::chess::square::squares::all::*;
+
+    #[test]
+    fn check_move_size() {
+        assert_eq!(std::mem::size_of::<Move>(), 2);
+    }
+
+    #[test]
+    fn test_quiet() {
+        let mv = Move::quiet(A1, B1);
+        assert_eq!(mv.src(), A1);
+        assert_eq!(mv.dst(), B1);
+        assert!(mv.is_quiet());
+        assert!(mv.promotion().is_none());
+        assert!(!mv.is_capture());
+        assert!(!mv.is_castling());
+        assert!(!mv.is_en_passant());
+    }
+
+    #[test]
+    fn test_quiet_promotion() {
+        let mv = Move::quiet_promotion(A1, B1, PromotionPieceKind::Queen);
+        assert!(!mv.is_quiet());
+        assert_eq!(mv.promotion(), Some(PromotionPieceKind::Queen));
+        assert!(!mv.is_capture());
+        assert!(!mv.is_castling());
+        assert!(!mv.is_en_passant());
+    }
+
+    #[test]
+    fn test_capture() {
+        let mv = Move::capture(A1, B1);
+        assert!(!mv.is_quiet());
+        assert!(mv.promotion().is_none());
+        assert!(mv.is_capture());
+        assert!(!mv.is_castling());
+        assert!(!mv.is_en_passant());
+    }
+
+    #[test]
+    fn test_capture_promotion() {
+        let mv = Move::capture_promotion(A1, B1, PromotionPieceKind::Queen);
+        assert!(!mv.is_quiet());
+        assert_eq!(mv.promotion(), Some(PromotionPieceKind::Queen));
+        assert!(mv.is_capture());
+        assert!(!mv.is_castling());
+        assert!(!mv.is_en_passant());
+    }
+
+    #[test]
+    fn test_castles() {
+        let mv = Move::castles(A1, B1);
+        assert!(mv.is_quiet());
+        assert!(mv.promotion().is_none());
+        assert!(!mv.is_capture());
+        assert!(mv.is_castling());
+        assert!(!mv.is_en_passant());
+    }
+
+    #[test]
+    fn test_en_passant() {
+        let mv = Move::en_passant(A1, B1);
+        assert!(!mv.is_quiet());
+        assert!(mv.promotion().is_none());
+        assert!(mv.is_capture());
+        assert!(!mv.is_castling());
+        assert!(mv.is_en_passant());
     }
 }
