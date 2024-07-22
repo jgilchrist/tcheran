@@ -9,7 +9,7 @@ pub struct PrincipalVariation {
 }
 
 impl PrincipalVariation {
-    const EMPTY_MOVE: Move = Move::new(A1, A1);
+    const EMPTY_MOVE: Move = Move::quiet(A1, A1);
 
     pub const fn new() -> Self {
         Self {

@@ -16,9 +16,9 @@ impl AmbiguityResolution {
     fn satisfied_by(&self, mv: Move) -> bool {
         match self {
             Self::None => true,
-            Self::File(file) => mv.src.file() == *file,
-            Self::Rank(rank) => mv.src.rank() == *rank,
-            Self::Exact(file, rank) => mv.src.file() == *file && mv.src.rank() == *rank,
+            Self::File(file) => mv.src().file() == *file,
+            Self::Rank(rank) => mv.src().rank() == *rank,
+            Self::Exact(file, rank) => mv.src().file() == *file && mv.src().rank() == *rank,
         }
     }
 }
@@ -121,15 +121,15 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
         .moves()
         .to_vec()
         .into_iter()
-        .map(|mv| (game.board.piece_at(mv.src).unwrap().kind, mv))
+        .map(|mv| (game.board.piece_at(mv.src()).unwrap().kind, mv))
         .collect();
 
     // Pawn move
     if src.is_empty() {
         let matching_source_squares: HashSet<Square> = piece_moves
             .into_iter()
-            .filter(|&(piece, mv)| piece == PieceKind::Pawn && mv.dst == dst)
-            .map(|(_, mv)| mv.src)
+            .filter(|&(piece, mv)| piece == PieceKind::Pawn && mv.dst() == dst)
+            .map(|(_, mv)| mv.src())
             .collect();
 
         assert_eq!(matching_source_squares.len(), 1);
@@ -145,9 +145,9 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
         let matching_source_squares: Vec<Square> = piece_moves
             .into_iter()
             .filter(|&(piece, mv)| {
-                piece == moved_piece && mv.dst == dst && ambiguity_resolution.satisfied_by(mv)
+                piece == moved_piece && mv.dst() == dst && ambiguity_resolution.satisfied_by(mv)
             })
-            .map(|(_, mv)| mv.src)
+            .map(|(_, mv)| mv.src())
             .collect();
 
         assert_eq!(matching_source_squares.len(), 1);
@@ -158,8 +158,8 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
 
     let matching_source_squares: Vec<Square> = piece_moves
         .into_iter()
-        .filter(|&(_, mv)| mv.dst == dst && ambiguity_resolution.satisfied_by(mv))
-        .map(|(_, mv)| mv.src)
+        .filter(|&(_, mv)| mv.dst() == dst && ambiguity_resolution.satisfied_by(mv))
+        .map(|(_, mv)| mv.src())
         .collect();
 
     assert_eq!(matching_source_squares.len(), 1);
@@ -207,14 +207,14 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> 
 
 pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
     if mv == san::KINGSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(Move::castles(
             squares::king_start(game.player),
             squares::kingside_castle_dest(game.player),
         ));
     }
 
     if mv == san::QUEENSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(Move::castles(
             squares::king_start(game.player),
             squares::queenside_castle_dest(game.player),
         ));
@@ -236,10 +236,14 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
 
     let (src, dst) = parse_squares(game, mv)?;
 
-    Ok(match promotion {
-        None => Move::new(src, dst),
-        Some(promoted_to) => Move::promotion(src, dst, promoted_to),
-    })
+    let legal_moves = game.moves().to_vec();
+
+    let matching_move = legal_moves
+        .into_iter()
+        .find(|m| m.src() == src && m.dst() == dst && m.promotion() == promotion)
+        .expect("Illegal move");
+
+    Ok(matching_move)
 }
 
 #[cfg(test)]
@@ -250,18 +254,31 @@ mod tests {
     use crate::chess::piece::PromotionPieceKind;
     use crate::chess::square::squares::all::*;
 
-    fn test_parse_san(fen: &'static str, expected_mv: impl Into<Move>, san: &'static str) {
+    fn test_parse_san(fen: &'static str, expected_mv: (Square, Square), san: &'static str) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
         let mv = parse_move(&game, san).unwrap();
 
-        assert_eq!(mv, expected_mv.into());
+        assert_eq!((mv.src(), mv.dst()), expected_mv);
+    }
+
+    fn test_parse_san_with_promotion(
+        fen: &'static str,
+        expected_mv: (Square, Square, PromotionPieceKind),
+        san: &'static str,
+    ) {
+        crate::init();
+
+        let game = Game::from_fen(fen).unwrap();
+        let mv = parse_move(&game, san).unwrap();
+
+        assert_eq!((mv.src(), mv.dst(), mv.promotion().unwrap()), expected_mv);
     }
 
     #[test]
     fn san_simple_pawn_move() {
-        test_parse_san(fen::START_POS, Move::new(E2, E4), "e4");
+        test_parse_san(fen::START_POS, (E2, E4), "e4");
     }
 
     #[test]
@@ -291,10 +308,10 @@ mod tests {
     fn san_promotion() {
         let promotion_fen = "k7/7P/8/8/8/8/8/7K w - - 0 1";
 
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
     }
 
     #[test]
@@ -322,7 +339,7 @@ mod tests {
 
     #[test]
     fn san_plus_for_check() {
-        test_parse_san(
+        test_parse_san_with_promotion(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
             (G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",

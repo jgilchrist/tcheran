@@ -13,8 +13,8 @@ enum AmbiguityResolution {
 }
 
 pub fn format_move(game: &Game, mv: Move) -> String {
-    let from = mv.src;
-    let to = mv.dst;
+    let from = mv.src();
+    let to = mv.dst();
 
     let piece = game.board.piece_at(from).unwrap();
 
@@ -36,9 +36,8 @@ pub fn format_move(game: &Game, mv: Move) -> String {
     let places_opponent_in_check = game_after_move.is_king_in_check();
 
     let captured_piece = game.board.piece_at(to);
-    let is_en_passant = piece.kind == PieceKind::Pawn && Some(to) == game.en_passant_target;
 
-    let capture_happened = captured_piece.is_some() || is_en_passant;
+    let capture_happened = captured_piece.is_some() || mv.is_en_passant();
 
     let ambiguity_resolution_required = required_ambiguity_resolution(game, mv);
 
@@ -72,7 +71,7 @@ pub fn format_move(game: &Game, mv: Move) -> String {
 
     let destination_notation = to.notation();
 
-    let promotion_specifier = match mv.promotion {
+    let promotion_specifier = match mv.promotion() {
         None => "",
         Some(p) => &format!(
             "{}{}",
@@ -96,8 +95,8 @@ pub fn format_move(game: &Game, mv: Move) -> String {
 }
 
 fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
-    let from = mv.src;
-    let to = mv.dst;
+    let from = mv.src();
+    let to = mv.dst();
 
     let piece = game.board.piece_at(from).unwrap();
     if piece.kind == PieceKind::Pawn || piece.kind == PieceKind::King {
@@ -112,10 +111,10 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
             // A move is potentially ambiguous if:
 
             // It moves to the same square our move
-            m.dst == to &&
+            m.dst() == to &&
 
                 // The kind of piece being moved is the same
-                game.board.piece_at(m.src).unwrap().kind == piece.kind &&
+                game.board.piece_at(m.src()).unwrap().kind == piece.kind &&
 
                 // It's not the exact same move
                 *m != mv
@@ -124,11 +123,11 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
 
     let ambiguity_by_file = potentially_ambiguous_moves
         .iter()
-        .any(|m| m.src.file() == mv.src.file());
+        .any(|m| m.src().file() == mv.src().file());
 
     let ambiguity_by_rank = potentially_ambiguous_moves
         .iter()
-        .any(|m| m.src.rank() == mv.src.rank());
+        .any(|m| m.src().rank() == mv.src().rank());
 
     match (ambiguity_by_file, ambiguity_by_rank) {
         (false, false) => AmbiguityResolution::None,
@@ -156,28 +155,28 @@ mod tests {
 
     #[test]
     fn san_simple_pawn_move() {
-        test_san_string(fen::START_POS, Move::new(E2, E4), "e4");
+        test_san_string(fen::START_POS, Move::quiet(E2, E4), "e4");
     }
 
     #[test]
     fn san_simple_pawn_capture() {
         test_san_string(
             "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2",
-            Move::new(E4, D5),
+            Move::capture(E4, D5),
             "exd5",
         );
     }
 
     #[test]
     fn san_simple_knight_move() {
-        test_san_string(fen::START_POS, Move::new(B1, C3), "Nc3");
+        test_san_string(fen::START_POS, Move::quiet(B1, C3), "Nc3");
     }
 
     #[test]
     fn san_test_en_passant() {
         test_san_string(
             "rnbqkbnr/ppp2ppp/4p3/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3",
-            Move::new(E5, D6),
+            Move::en_passant(E5, D6),
             "exd6",
         );
     }
@@ -188,25 +187,25 @@ mod tests {
 
         test_san_string(
             promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Knight),
+            Move::quiet_promotion(H7, H8, PromotionPieceKind::Knight),
             "h8=N",
         );
 
         test_san_string(
             promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Bishop),
+            Move::quiet_promotion(H7, H8, PromotionPieceKind::Bishop),
             "h8=B",
         );
 
         test_san_string(
             promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Rook),
+            Move::quiet_promotion(H7, H8, PromotionPieceKind::Rook),
             "h8=R+",
         );
 
         test_san_string(
             promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Queen),
+            Move::quiet_promotion(H7, H8, PromotionPieceKind::Queen),
             "h8=Q+",
         );
     }
@@ -217,7 +216,7 @@ mod tests {
 
         let fen = "R6R/8/8/8/8/8/8/1k4K1 w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(A8, B8);
+        let ambiguous_move = Move::quiet(A8, B8);
 
         assert_eq!(
             required_ambiguity_resolution(&game, ambiguous_move),
@@ -233,7 +232,7 @@ mod tests {
 
         let fen = "R7/8/8/8/8/1k4K1/8/R7 w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(A1, A3);
+        let ambiguous_move = Move::quiet(A1, A3);
 
         assert_eq!(
             required_ambiguity_resolution(&game, ambiguous_move),
@@ -249,7 +248,7 @@ mod tests {
 
         let fen = "1k1K4/8/8/8/4Q2Q/8/8/7Q w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(H4, E1);
+        let ambiguous_move = Move::quiet(H4, E1);
 
         assert_eq!(
             required_ambiguity_resolution(&game, ambiguous_move),
@@ -263,15 +262,15 @@ mod tests {
     fn san_castling() {
         let fen = "1k6/8/8/8/8/8/8/R3K2R w KQ - 0 1";
 
-        test_san_string(fen, Move::new(E1, G1), "O-O");
-        test_san_string(fen, Move::new(E1, C1), "O-O-O");
+        test_san_string(fen, Move::castles(E1, G1), "O-O");
+        test_san_string(fen, Move::castles(E1, C1), "O-O-O");
     }
 
     #[test]
     fn san_plus_for_check() {
         test_san_string(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
-            Move::promotion(G7, G8, PromotionPieceKind::Queen),
+            Move::quiet_promotion(G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",
         );
     }

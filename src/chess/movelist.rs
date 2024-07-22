@@ -10,7 +10,7 @@ pub struct MoveList {
 }
 
 impl MoveList {
-    const EMPTY_MOVE: Move = Move::new(A1, A1);
+    const EMPTY_MOVE: Move = Move::quiet(A1, A1);
 
     // perf: Inlining this into new() causes a fairly significant
     // performance regression
@@ -47,7 +47,7 @@ impl MoveList {
         debug_assert!(idx < self.length);
 
         let mv = self.moves[idx];
-        debug_assert!(mv.src != A1 || mv.dst != A1);
+        debug_assert!(mv.src() != A1 || mv.dst() != A1);
 
         mv
     }

@@ -191,10 +191,26 @@ fn generate_pawn_captures(
         }
 
         for target in attacks & capture_targets {
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
+            moves.push(Move::capture_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Queen,
+            ));
+            moves.push(Move::capture_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Rook,
+            ));
+            moves.push(Move::capture_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Knight,
+            ));
+            moves.push(Move::capture_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Bishop,
+            ));
         }
     }
 
@@ -205,7 +221,11 @@ fn generate_pawn_captures(
         // Pawns cannot push forward if they are pinned orthogonally
         // There's no 'moving along the pin ray' for these pieces, since the target square is empty
         if !orthogonal_pins.contains(pawn) {
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
+            moves.push(Move::quiet_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Queen,
+            ));
         }
     }
 
@@ -218,7 +238,7 @@ fn generate_pawn_captures(
         }
 
         for target in attacks & capture_targets {
-            moves.push(Move::new(pawn, target));
+            moves.push(Move::capture(pawn, target));
         }
     }
 
@@ -249,7 +269,7 @@ fn generate_pawn_captures(
                     .any();
 
                     if !king_in_check {
-                        moves.push(Move::new(
+                        moves.push(Move::en_passant(
                             potential_en_passant_capture_start,
                             en_passant_target,
                         ));
@@ -289,9 +309,21 @@ fn generate_pawn_quiets(
         // There's no 'moving along the pin ray' for these pieces, since the target square is empty
         if !orthogonal_pins.contains(pawn) {
             // Consider underpromoting pushes to be 'quiet' moves
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
+            moves.push(Move::quiet_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Rook,
+            ));
+            moves.push(Move::quiet_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Knight,
+            ));
+            moves.push(Move::quiet_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Bishop,
+            ));
         }
     }
 
@@ -303,7 +335,7 @@ fn generate_pawn_quiets(
 
         // Pawns cannot push forward if they are pinned orthogonally, unless they're moving along the pin ray
         if !orthogonal_pins.contains(pawn) || orthogonal_pins.contains(forward_one) {
-            moves.push(Move::new(pawn, forward_one));
+            moves.push(Move::quiet(pawn, forward_one));
         }
     }
 
@@ -320,7 +352,7 @@ fn generate_pawn_quiets(
 
         // Pawns cannot push forward if they are pinned orthogonally, unless they are moving along the pin ray
         if !orthogonal_pins.contains(pawn) || orthogonal_pins.contains(forward_two) {
-            moves.push(Move::new(pawn, forward_two));
+            moves.push(Move::quiet(pawn, forward_two));
         }
     }
 }
@@ -339,7 +371,7 @@ fn generate_knight_captures(
 
         let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
-            moves.push(Move::new(knight, dst));
+            moves.push(Move::capture(knight, dst));
         }
     }
 }
@@ -358,7 +390,7 @@ fn generate_knight_quiets(
 
         let move_destinations = destinations & !all_pieces;
         for dst in move_destinations {
-            moves.push(Move::new(knight, dst));
+            moves.push(Move::quiet(knight, dst));
         }
     }
 }
@@ -383,7 +415,7 @@ fn generate_diagonal_slider_captures(
 
         let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
-            moves.push(Move::new(diagonal_slider, dst));
+            moves.push(Move::capture(diagonal_slider, dst));
         }
     }
 }
@@ -407,7 +439,7 @@ fn generate_diagonal_slider_quiets(
 
         let move_destinations = destinations & !all_pieces;
         for dst in move_destinations {
-            moves.push(Move::new(diagonal_slider, dst));
+            moves.push(Move::quiet(diagonal_slider, dst));
         }
     }
 }
@@ -431,7 +463,7 @@ fn generate_orthogonal_slider_captures(
 
         let capture_destinations = destinations & their_pieces;
         for dst in capture_destinations {
-            moves.push(Move::new(orthogonal_slider, dst));
+            moves.push(Move::capture(orthogonal_slider, dst));
         }
     }
 }
@@ -454,7 +486,7 @@ fn generate_orthogonal_slider_quiets(
 
         let move_destinations = destinations & !all_pieces;
         for dst in move_destinations {
-            moves.push(Move::new(orthogonal_slider, dst));
+            moves.push(Move::quiet(orthogonal_slider, dst));
         }
     }
 }
@@ -470,7 +502,7 @@ fn generate_king_captures(moves: &mut MoveList, game: &Game, king: Square, their
 
     for dst in destinations & their_pieces {
         if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
-            moves.push(Move::new(king, dst));
+            moves.push(Move::capture(king, dst));
         }
     }
 }
@@ -486,7 +518,7 @@ fn generate_king_quiets(moves: &mut MoveList, game: &Game, king: Square, all_pie
 
     for dst in destinations & !all_pieces {
         if attackers::generate_attackers_of(&board_without_king, game.player, dst).is_empty() {
-            moves.push(Move::new(king, dst));
+            moves.push(Move::quiet(king, dst));
         }
     }
 }
@@ -517,7 +549,7 @@ fn generate_castle_move_for_side<const KINGSIDE: bool>(
         && attackers::generate_attackers_of(&game.board, game.player, middle_square).is_empty()
         && attackers::generate_attackers_of(&game.board, game.player, target_square).is_empty()
     {
-        moves.push(Move::new(king_start_square, target_square));
+        moves.push(Move::castles(king_start_square, target_square));
     }
 }
 
@@ -527,25 +559,23 @@ mod tests {
     use crate::chess::square::squares::all::*;
 
     #[inline(always)]
-    fn should_allow_move(fen: &str, mv: impl Into<Move>) {
+    fn should_allow_move(fen: &str, mv: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let mv = mv.into();
 
-        assert!(movelist.to_vec().iter().any(|m| *m == mv));
+        assert!(movelist.to_vec().iter().any(|m| (m.src, m.dst) == mv));
     }
 
     #[inline(always)]
-    fn should_not_allow_move(fen: &str, mv: impl Into<Move>) {
+    fn should_not_allow_move(fen: &str, mv: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let mv = mv.into();
 
-        assert!(movelist.to_vec().iter().all(|m| *m != mv));
+        assert!(movelist.to_vec().iter().all(|m| (m.src, m.dst) != mv));
     }
 
     #[test]
