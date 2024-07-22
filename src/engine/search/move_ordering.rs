@@ -1,4 +1,4 @@
-use crate::chess::piece::PieceKind;
+use crate::chess::piece::{PieceKind, PromotionPieceKind};
 use crate::chess::{game::Game, moves::Move};
 use crate::engine::search::tables::HistoryTable;
 
@@ -6,6 +6,7 @@ use crate::engine::search::tables::HistoryTable;
 pub const CAPTURE_SCORE: i32 = 1_000_000_000;
 pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
 pub const QUIET_SCORE: i32 = 0;
+pub const PROMOTION_BONUS: i32 = 1_000_000;
 
 #[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 const PIECES: i32 = PieceKind::N as i32;
@@ -13,7 +14,7 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
+pub fn score_tactical(game: &Game, mv: Move) -> i32 {
     let captured_piece = game.board.piece_at(mv.dst);
 
     if let Some(captured_piece) = captured_piece {
@@ -24,9 +25,20 @@ pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
 
         let mvv_lva = victim_score + attacker_score;
 
-        return CAPTURE_SCORE + mvv_lva;
+        let promotion_bonus =
+            if mv.promotion.is_some() && mv.promotion.unwrap() == PromotionPieceKind::Queen {
+                PROMOTION_BONUS
+            } else {
+                0
+            };
+
+        return CAPTURE_SCORE + mvv_lva + promotion_bonus;
     }
 
+    PROMOTION_BONUS
+}
+
+pub fn score_quiet(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
     QUIET_SCORE + history.get(game.player, mv)
 }
 
