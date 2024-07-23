@@ -1,5 +1,4 @@
 use crate::chess::piece::PieceKind;
-use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
 use crate::engine::search::tables::HistoryTable;
 
@@ -28,7 +27,7 @@ pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
         return CAPTURE_SCORE + mvv_lva;
     }
 
-    QUIET_SCORE + history[mv.src.array_idx()][mv.dst.array_idx()]
+    QUIET_SCORE + history.get(game.player, mv)
 }
 
 #[cfg(test)]

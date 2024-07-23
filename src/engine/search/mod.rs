@@ -5,8 +5,6 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
-use crate::chess::player::Player;
-use crate::chess::square::Square;
 use crate::engine::search::move_provider::MoveProvider;
 use crate::engine::search::tables::HistoryTable;
 use crate::engine::search::transposition::SearchTranspositionTable;
@@ -39,14 +37,14 @@ mod params {
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
-    pub history: HistoryTable,
+    pub history_table: HistoryTable,
 }
 
 impl PersistentState {
     pub fn new() -> Self {
         Self {
             tt: SearchTranspositionTable::default(),
-            history: HistoryTable::new(),
+            history_table: HistoryTable::new(),
         }
     }
 }
@@ -201,15 +199,9 @@ pub fn search(
     time_strategy.init();
 
     persistent_state.tt.new_generation();
-
-    for from_square in 0..Square::N {
-        for to_square in 0..Square::N {
-            for player in 0..Player::N {
-                persistent_state.history[player][from_square][to_square] /=
-                    params::HISTORY_DECAY_FACTOR;
-            }
-        }
-    }
+    persistent_state
+        .history_table
+        .decay(params::HISTORY_DECAY_FACTOR);
 
     // The game is modified as moves are played during search. When the search terminates,
     // the game will be left in a dirty state since we will not undo the moves played to

@@ -7,7 +7,7 @@ use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
-use super::{move_ordering, params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -217,12 +217,9 @@ pub fn negamax(
                 state.killer_moves[plies as usize][0] = Some(mv);
             }
 
-            let new_history = persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
-                [mv.dst.array_idx()]
-                + i32::from(depth) * i32::from(depth);
-
-            persistent_state.history[game.player.array_idx()][mv.src.array_idx()]
-                [mv.dst.array_idx()] = std::cmp::min(new_history, move_ordering::HISTORY_MAX_SCORE);
+            persistent_state
+                .history_table
+                .add_bonus_for(game.player, mv, depth);
         }
     }
 
