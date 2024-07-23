@@ -8,6 +8,7 @@ use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
 use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::tables::HistoryTable;
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
@@ -15,6 +16,7 @@ mod move_ordering;
 pub mod move_provider;
 mod negamax;
 mod quiescence;
+mod tables;
 mod time_control;
 pub mod transposition;
 
@@ -37,14 +39,14 @@ mod params {
 
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
-    pub history: [[[i32; Square::N]; Square::N]; Player::N],
+    pub history: HistoryTable,
 }
 
 impl PersistentState {
     pub fn new() -> Self {
         Self {
             tt: SearchTranspositionTable::default(),
-            history: [[[0; Square::N]; Square::N]; Player::N],
+            history: HistoryTable::new(),
         }
     }
 }
