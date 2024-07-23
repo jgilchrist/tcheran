@@ -7,6 +7,10 @@
 * Do PVS by searching first move with the full window and the remainder with a zero-window (~4 Elo)
 * Perform all TT updates in the same place in `negamax` (~1 Elo)
 
+### Misc
+
+* Use `UciMove` instead of `Move` in `uci`
+
 ## [2.4]
 
 * Expand move scoring range from 200000 to 1000000000 (~10 Elo)
