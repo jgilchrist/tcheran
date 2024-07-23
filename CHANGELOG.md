@@ -10,6 +10,7 @@
 ### Misc
 
 * Use `UciMove` instead of `Move` in `uci`
+* Encapsulate the history table in `HistoryTable`
 
 ## [2.4]
 

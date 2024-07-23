@@ -1,6 +1,6 @@
 use crate::chess::piece::PieceKind;
-use crate::chess::square::Square;
 use crate::chess::{game::Game, moves::Move};
+use crate::engine::search::tables::HistoryTable;
 
 // Sentinel values
 pub const CAPTURE_SCORE: i32 = 1_000_000_000;
@@ -13,7 +13,7 @@ const PIECES: i32 = PieceKind::N as i32;
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
-pub fn score_move(game: &Game, mv: Move, history: &[[i32; Square::N]; Square::N]) -> i32 {
+pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
     let captured_piece = game.board.piece_at(mv.dst);
 
     if let Some(captured_piece) = captured_piece {
@@ -27,7 +27,7 @@ pub fn score_move(game: &Game, mv: Move, history: &[[i32; Square::N]; Square::N]
         return CAPTURE_SCORE + mvv_lva;
     }
 
-    QUIET_SCORE + history[mv.src.array_idx()][mv.dst.array_idx()]
+    QUIET_SCORE + history.get(game.player, mv)
 }
 
 #[cfg(test)]

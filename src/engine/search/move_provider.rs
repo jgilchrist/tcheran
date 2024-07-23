@@ -204,11 +204,7 @@ impl MoveProvider {
         persistent_state: &PersistentState,
     ) {
         for i in start..end {
-            self.scores[i] = score_move(
-                game,
-                self.moves.get(i),
-                &persistent_state.history[game.player.array_idx()],
-            );
+            self.scores[i] = score_move(game, self.moves.get(i), &persistent_state.history_table);
         }
     }
 }
