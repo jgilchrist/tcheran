@@ -11,6 +11,7 @@
 
 * Use `UciMove` instead of `Move` in `uci`
 * Encapsulate the history table in `HistoryTable`
+* Encapsulate the killers table in `KillersTable`
 
 ## [2.4]
 

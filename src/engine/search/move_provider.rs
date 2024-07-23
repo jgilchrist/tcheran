@@ -67,7 +67,7 @@ impl MoveProvider {
         game: &Game,
         persistent_state: &PersistentState,
         state: &SearchState,
-        plies: usize,
+        plies: u8,
     ) -> Option<Move> {
         if self.stage == GenStage::BestMove {
             self.stage = GenStage::GenCaptures;
@@ -107,7 +107,7 @@ impl MoveProvider {
         if self.stage == GenStage::Killer1 {
             self.stage = GenStage::Killer2;
 
-            if let Some(killer1) = state.killer_moves[plies][0] {
+            if let Some(killer1) = state.killer_moves.get_0(plies) {
                 for i in self.idx..self.moves.len() {
                     if self.moves.get(i) == killer1 {
                         self.moves.swap(self.idx, i);
@@ -124,7 +124,7 @@ impl MoveProvider {
         if self.stage == GenStage::Killer2 {
             self.stage = GenStage::ScoreQuiets;
 
-            if let Some(killer2) = state.killer_moves[plies][1] {
+            if let Some(killer2) = state.killer_moves.get_1(plies) {
                 for i in self.idx..self.moves.len() {
                     if self.moves.get(i) == killer2 {
                         self.moves.swap(self.idx, i);

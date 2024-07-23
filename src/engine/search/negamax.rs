@@ -124,7 +124,7 @@ pub fn negamax(
     let mut moves = MoveProvider::new(previous_best_move);
     let mut number_of_legal_moves = 0;
 
-    while let Some(mv) = moves.next(game, persistent_state, state, plies as usize) {
+    while let Some(mv) = moves.next(game, persistent_state, state, plies) {
         number_of_legal_moves += 1;
 
         game.make_move(mv);
@@ -210,12 +210,7 @@ pub fn negamax(
         // but it wasn't a capture, we remember it so that we can try it
         // before other quiet moves.
         if game.board.piece_at(mv.dst).is_none() {
-            let killer_1 = state.killer_moves[plies as usize][0];
-
-            if Some(mv) != killer_1 {
-                state.killer_moves[plies as usize][1] = killer_1;
-                state.killer_moves[plies as usize][0] = Some(mv);
-            }
+            state.killer_moves.try_push(plies, mv);
 
             persistent_state
                 .history_table

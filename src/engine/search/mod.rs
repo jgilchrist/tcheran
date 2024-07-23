@@ -6,7 +6,7 @@ use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
 use crate::engine::search::move_provider::MoveProvider;
-use crate::engine::search::tables::HistoryTable;
+use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod iterative_deepening;
@@ -50,7 +50,7 @@ impl PersistentState {
 }
 
 pub struct SearchState {
-    pub killer_moves: [[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE],
+    pub killer_moves: KillersTable,
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -59,7 +59,7 @@ pub struct SearchState {
 impl SearchState {
     pub const fn new() -> Self {
         Self {
-            killer_moves: [[None; 2]; MAX_SEARCH_DEPTH_SIZE],
+            killer_moves: KillersTable::new(),
 
             max_depth_reached: 0,
             nodes_visited: 0,
