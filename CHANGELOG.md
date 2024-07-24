@@ -150,7 +150,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.4...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.5...HEAD
+[2.5]: https://github.com/jgilchrist/chess-engine/compare/v2.4..v2.5
 [2.4]: https://github.com/jgilchrist/chess-engine/compare/v2.3..v2.4
 [2.3]: https://github.com/jgilchrist/chess-engine/compare/v2.2..v2.3
 [2.2]: https://github.com/jgilchrist/chess-engine/compare/v2.1..v2.2
