@@ -1,5 +1,3 @@
-use color_eyre::Result;
-
 mod chess;
 mod engine;
 
@@ -9,6 +7,7 @@ mod tests;
 use crate::engine::uci::UciInputMode;
 use engine::uci;
 use engine::util::log;
+use std::process::ExitCode;
 
 pub const ENGINE_NAME: &str = "Tcheran";
 
@@ -35,9 +34,7 @@ pub fn init() {
     engine::init();
 }
 
-fn main() -> Result<()> {
-    color_eyre::install()?;
-
+fn main() -> ExitCode {
     std::panic::set_hook(Box::new(|info| {
         println!("{info}");
         log::crashlog(format!("{info:?}"));
@@ -62,11 +59,20 @@ fn main() -> Result<()> {
             eprintln!(
                 "  {binary_name} \"<uci commands>\" - run specific UCI commands and then exit"
             );
-            std::process::exit(1);
+
+            return ExitCode::FAILURE;
         }
     };
 
     init();
 
-    uci::uci(uci_input_mode)
+    let result = uci::uci(uci_input_mode);
+
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("{e}");
+            ExitCode::FAILURE
+        }
+    }
 }

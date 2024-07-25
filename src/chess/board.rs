@@ -6,7 +6,6 @@ use crate::chess::{
 };
 
 use crate::chess::bitboard::Bitboard;
-use color_eyre::Result;
 
 #[derive(Clone)]
 pub struct Board {
@@ -154,9 +153,9 @@ impl std::fmt::Debug for Board {
 }
 
 impl TryFrom<[Option<Piece>; Square::N]> for Board {
-    type Error = color_eyre::eyre::Error;
+    type Error = ();
 
-    fn try_from(squares: [Option<Piece>; Square::N]) -> Result<Self> {
+    fn try_from(squares: [Option<Piece>; Square::N]) -> Result<Self, ()> {
         let mut white_pawns = Bitboard::EMPTY;
         let mut white_knights = Bitboard::EMPTY;
         let mut white_bishops = Bitboard::EMPTY;
@@ -173,7 +172,7 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
 
         for (i, maybe_piece) in squares.iter().enumerate() {
             if let Some(p) = maybe_piece {
-                let square = Square::from_index(i.try_into()?).bb();
+                let square = Square::from_index(i.try_into().unwrap()).bb();
 
                 match *p {
                     Piece::WHITE_PAWN => white_pawns |= square,

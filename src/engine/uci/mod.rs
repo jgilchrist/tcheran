@@ -1,6 +1,5 @@
 //! Implementation of the Universal Chess Interface (UCI) protocol
 
-use color_eyre::eyre::{bail, Context};
 use std::io::BufRead;
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
@@ -8,7 +7,6 @@ use std::time::Instant;
 
 use crate::chess::moves::Move;
 use crate::chess::perft;
-use color_eyre::Result;
 
 use crate::engine::options::EngineOptions;
 use crate::engine::util::sync::LockLatch;
@@ -133,7 +131,7 @@ impl Uci {
     // Both of these clippy lints can be ignored as there is more to implement here.
     #[allow(clippy::unnecessary_wraps)]
     #[allow(clippy::match_same_arms)]
-    fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult> {
+    fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult, String> {
         match cmd {
             UciCommand::Uci => {
                 self.game = Game::new();
@@ -164,10 +162,9 @@ impl Uci {
                     options::MoveOverheadOption::NAME => {
                         options::MoveOverheadOption::set(&mut self.options, value)
                     }
-                    _ => {
-                        bail!("Unknown option: {name}")
-                    }
-                }?;
+                    _ => return Err(format!("Unknown option: {name}")),
+                }
+                .map_err(|e| format!("Unable to set {name}: {e:?}"))?;
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
@@ -272,9 +269,7 @@ impl Uci {
 
                         println!("{:?}", self.game.board);
                     }
-                    _ => {
-                        bail!("Unknown debug position")
-                    }
+                    _ => return Err("Unknown debug position".to_owned()),
                 },
                 DebugCommand::Move { moves } => {
                     for mv in moves {
@@ -371,14 +366,12 @@ impl Uci {
         Ok(ExecuteResult::KeepGoing)
     }
 
-    fn run_line(&mut self, line: &str) -> Result<bool> {
+    fn run_line(&mut self, line: &str) -> Result<bool, String> {
         let command = parser::parse(line);
 
         match command {
             Ok(ref c) => {
-                let execute_result = self
-                    .execute(c)
-                    .wrap_err_with(|| format!("Failed to run UCI command: {line}"))?;
+                let execute_result = self.execute(c)?;
 
                 if execute_result == ExecuteResult::Exit {
                     return Ok(false);
@@ -392,12 +385,12 @@ impl Uci {
         Ok(true)
     }
 
-    fn main_loop_stdin(&mut self) -> Result<()> {
+    fn main_loop_stdin(&mut self) -> Result<(), String> {
         let stdin_lines = std::io::stdin().lock().lines();
 
         for line in stdin_lines {
-            let line = line?;
-            let should_continue = self.run_line(&line)?;
+            let line = line.unwrap();
+            let should_continue = self.run_line(&line).map_err(|e| format!("Error: {e}"))?;
 
             if !should_continue {
                 break;
@@ -407,7 +400,7 @@ impl Uci {
         Ok(())
     }
 
-    fn main_loop_args(&mut self, lines: Vec<String>) -> Result<()> {
+    fn main_loop_args(&mut self, lines: Vec<String>) -> Result<(), String> {
         for line in lines {
             let should_continue = self.run_line(&line)?;
 
@@ -419,7 +412,7 @@ impl Uci {
         Ok(())
     }
 
-    fn main_loop(&mut self, uci_input_mode: UciInputMode) -> Result<()> {
+    fn main_loop(&mut self, uci_input_mode: UciInputMode) -> Result<(), String> {
         match uci_input_mode {
             UciInputMode::Stdin => self.main_loop_stdin(),
             UciInputMode::Commands(cmds) => self.main_loop_args(cmds),
@@ -442,7 +435,7 @@ pub enum UciInputMode {
     Stdin,
 }
 
-pub fn uci(uci_input_mode: UciInputMode) -> Result<()> {
+pub fn uci(uci_input_mode: UciInputMode) -> Result<(), String> {
     let mut uci = Uci {
         control: UciControl::new(),
         reporter: UciReporter {},

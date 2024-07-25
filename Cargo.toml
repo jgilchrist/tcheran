@@ -5,7 +5,6 @@ edition = "2021"
 rust-version = "1.75"
 
 [dependencies]
-color-eyre = { version = "0.6.2", default-features = false }
 git-version = "0.3.8"
 nom = "7.1.1"
 rand = "0.8.5"

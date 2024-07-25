@@ -1,7 +1,4 @@
-use color_eyre::eyre::bail;
 use std::collections::HashSet;
-
-use color_eyre::Result;
 
 use crate::chess::{
     board::Board,
@@ -243,12 +240,12 @@ fn plies_from_fullmove_number(fullmove_number: u32, player: Player) -> u32 {
     (fullmove_number - 1) * 2 + u32::from(player == Player::Black)
 }
 
-pub fn parse(input: &str) -> Result<Game> {
+pub fn parse(input: &str) -> Result<Game, String> {
     let result = fen_parser(input);
 
     match result {
         Ok((_, game)) => Ok(game),
-        Err(e) => bail!("Invalid FEN: {} ({})", input, e),
+        Err(e) => Err(format!("Invalid FEN: {input} ({e})")),
     }
 }
 

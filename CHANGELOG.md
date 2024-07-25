@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [2.5]
+
 * Fix not storing moves that caused beta cutoffs in the TT (~50 Elo)
 * Pack midgame and endgame `PhasedEval` `i16`s into a single `i32` (~19 Elo)
 * Do PVS by searching first move with the full window and the remainder with a zero-window (~4 Elo)
@@ -12,6 +14,7 @@
 * Use `UciMove` instead of `Move` in `uci`
 * Encapsulate the history table in `HistoryTable`
 * Encapsulate the killers table in `KillersTable`
+* Remove `color-eyre` dependency
 
 ## [2.4]
 

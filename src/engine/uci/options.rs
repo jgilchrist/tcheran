@@ -1,5 +1,4 @@
 use crate::engine::options::EngineOptions;
-use color_eyre::Result;
 
 #[derive(Debug)]
 #[allow(unused)]
@@ -26,7 +25,7 @@ pub trait UciOption {
     const NAME: &'static str;
     const DEF: UciOptionType;
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()>;
+    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String>;
 }
 
 pub struct HashOption;
@@ -39,8 +38,9 @@ impl UciOption for HashOption {
         max: 1024,
     };
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
-        let hash_size = value.parse::<usize>()?;
+    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+        let hash_size = value.parse::<usize>().map_err(|_| "Invalid value")?;
+
         options.hash_size = hash_size;
         Ok(())
     }
@@ -56,8 +56,9 @@ impl UciOption for ThreadsOption {
         max: 1,
     };
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
-        let threads = value.parse::<usize>()?;
+    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+        let threads = value.parse::<usize>().map_err(|_| "Invalid value")?;
+
         options.threads = threads;
         Ok(())
     }
@@ -73,8 +74,9 @@ impl UciOption for MoveOverheadOption {
         max: 1000,
     };
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<()> {
-        let move_overhead = value.parse::<usize>()?;
+    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+        let move_overhead = value.parse::<usize>().map_err(|_| "Invalid value")?;
+
         options.move_overhead = move_overhead;
         Ok(())
     }

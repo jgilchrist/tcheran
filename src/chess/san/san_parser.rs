@@ -3,8 +3,6 @@ use crate::chess::moves::Move;
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
 use crate::chess::san;
 use crate::chess::square::{squares, File, Rank, Square};
-use color_eyre::eyre::{bail, eyre};
-use color_eyre::Result;
 use std::collections::HashSet;
 
 enum AmbiguityResolution {
@@ -25,7 +23,16 @@ impl AmbiguityResolution {
     }
 }
 
-fn parse_ambiguity_resolution(chars: &[char]) -> Result<AmbiguityResolution> {
+#[derive(Debug)]
+pub enum ParseError {
+    InvalidFile,
+    InvalidRank,
+    InvalidPromotionPiece,
+    InvalidAmbiguityResolution,
+    NoXInCaptureMove,
+}
+
+fn parse_ambiguity_resolution(chars: &[char]) -> Result<AmbiguityResolution, ParseError> {
     match chars.len() {
         0 => Ok(AmbiguityResolution::None),
         1 => {
@@ -39,7 +46,7 @@ fn parse_ambiguity_resolution(chars: &[char]) -> Result<AmbiguityResolution> {
                 return Ok(AmbiguityResolution::Rank(rank));
             }
 
-            bail!("Invalid ambiguity resolution");
+            Err(ParseError::InvalidAmbiguityResolution)
         }
         2 => {
             let file = chars[0];
@@ -50,11 +57,11 @@ fn parse_ambiguity_resolution(chars: &[char]) -> Result<AmbiguityResolution> {
 
             Ok(AmbiguityResolution::Exact(file, rank))
         }
-        _ => bail!("Invalid ambiguity resolution"),
+        _ => Err(ParseError::InvalidAmbiguityResolution),
     }
 }
 
-fn parse_file(c: char) -> Result<File> {
+fn parse_file(c: char) -> Result<File, ParseError> {
     Ok(match c {
         'a' => File::A,
         'b' => File::B,
@@ -64,11 +71,11 @@ fn parse_file(c: char) -> Result<File> {
         'f' => File::F,
         'g' => File::G,
         'h' => File::H,
-        _ => bail!("Invalid file"),
+        _ => return Err(ParseError::InvalidFile),
     })
 }
 
-fn parse_rank(c: char) -> Result<Rank> {
+fn parse_rank(c: char) -> Result<Rank, ParseError> {
     Ok(match c {
         '1' => Rank::R1,
         '2' => Rank::R2,
@@ -78,13 +85,13 @@ fn parse_rank(c: char) -> Result<Rank> {
         '6' => Rank::R6,
         '7' => Rank::R7,
         '8' => Rank::R8,
-        _ => bail!("Invalid rank"),
+        _ => return Err(ParseError::InvalidRank),
     })
 }
 
-fn parse_promotion_piece(piece: &str) -> Result<PromotionPieceKind> {
+fn parse_promotion_piece(piece: &str) -> Result<PromotionPieceKind, ParseError> {
     if piece.len() != 1 {
-        bail!("Invalid promotion piece");
+        return Err(ParseError::InvalidPromotionPiece);
     }
 
     let char = piece.chars().next().unwrap();
@@ -93,7 +100,7 @@ fn parse_promotion_piece(piece: &str) -> Result<PromotionPieceKind> {
         'R' => PromotionPieceKind::Rook,
         'N' => PromotionPieceKind::Knight,
         'B' => PromotionPieceKind::Bishop,
-        _ => bail!("Invalid promotion piece"),
+        _ => return Err(ParseError::InvalidPromotionPiece),
     })
 }
 
@@ -109,7 +116,7 @@ fn parse_piece(c: char) -> Option<PieceKind> {
     }
 }
 
-fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square> {
+fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, ParseError> {
     let piece_moves: Vec<(PieceKind, Move)> = game
         .moves()
         .to_vec()
@@ -159,7 +166,7 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square> {
     Ok(*matching_source_squares.first().unwrap())
 }
 
-fn parse_destination_square(sq: &str) -> Result<Square> {
+fn parse_destination_square(sq: &str) -> Result<Square, ParseError> {
     assert_eq!(sq.len(), 2);
 
     let mut chars = sq.chars();
@@ -169,7 +176,7 @@ fn parse_destination_square(sq: &str) -> Result<Square> {
     Ok(Square::from_file_and_rank(file, rank))
 }
 
-fn parse_move_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
+fn parse_move_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> {
     let (src, dst) = mv.split_at(mv.len() - 2);
 
     let dst = parse_destination_square(dst)?;
@@ -178,10 +185,10 @@ fn parse_move_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
     Ok((src, dst))
 }
 
-fn parse_capture_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
+fn parse_capture_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> {
     let (src, dst) = mv
         .split_once(san::CAPTURE)
-        .ok_or(eyre!("No x in capture move"))?;
+        .ok_or(ParseError::NoXInCaptureMove)?;
 
     let dst = parse_destination_square(dst)?;
     let src = parse_source_square(game, src, dst)?;
@@ -189,7 +196,7 @@ fn parse_capture_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
     Ok((src, dst))
 }
 
-fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
+fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> {
     let is_capture_move = mv.contains(san::CAPTURE);
     if is_capture_move {
         return parse_capture_squares(game, mv);
@@ -199,7 +206,7 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square)> {
 }
 
 #[allow(unused)]
-pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
+pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
     if mv == san::KINGSIDE_CASTLE {
         return Ok(Move::new(
             squares::king_start(game.player),
@@ -221,7 +228,7 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move> {
     let (mv, promotion) = if mv.contains(san::PROMOTION) {
         let (rest, promotion_piece) = mv
             .split_once(san::PROMOTION)
-            .ok_or(eyre!("Invalid promotion piece"))?;
+            .ok_or(ParseError::InvalidPromotionPiece)?;
         let promoted_to = parse_promotion_piece(promotion_piece)?;
         (rest, Some(promoted_to))
     } else {

@@ -8,7 +8,6 @@ use crate::chess::{
     player::Player, square::Square, zobrist,
 };
 use crate::engine::eval::IncrementalEvalFields;
-use color_eyre::Result;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
@@ -120,7 +119,7 @@ impl Game {
         game
     }
 
-    pub fn from_fen(fen: &str) -> Result<Self> {
+    pub fn from_fen(fen: &str) -> Result<Self, String> {
         fen::parse(fen)
     }
 

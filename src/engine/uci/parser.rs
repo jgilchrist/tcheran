@@ -4,7 +4,6 @@ use crate::chess::{
 };
 use crate::engine::uci::UciMove;
 use crate::uci::commands::{DebugCommand, Position};
-use color_eyre::{eyre::bail, Result};
 use nom::bytes::complete::take_until;
 use nom::character::complete::alpha1;
 use nom::combinator::rest;
@@ -392,12 +391,12 @@ pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
     Ok((input, cmd))
 }
 
-pub fn parse(input: &str) -> Result<UciCommand> {
+pub fn parse(input: &str) -> Result<UciCommand, String> {
     let result = any_uci_command(input);
 
     match result {
         Ok((_, cmd)) => Ok(cmd),
-        Err(e) => bail!("Unknown command: {} ({})", input, e),
+        Err(e) => Err(format!("Unknown command: {input} ({e})")),
     }
 }
 
