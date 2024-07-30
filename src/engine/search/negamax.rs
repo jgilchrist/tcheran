@@ -69,10 +69,12 @@ pub fn negamax(
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
         if !is_root && tt_entry.depth >= depth {
+            let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
+
             match tt_entry.bound {
-                NodeBound::Exact => return Ok(tt_entry.eval.with_mate_distance_from_root(plies)),
-                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(alpha),
-                NodeBound::Lower if tt_entry.eval >= beta => return Ok(beta),
+                NodeBound::Exact => return Ok(tt_score),
+                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(tt_score),
+                NodeBound::Lower if tt_entry.eval >= beta => return Ok(tt_score),
                 _ => {}
             }
         }
