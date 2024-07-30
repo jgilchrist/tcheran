@@ -21,14 +21,17 @@ impl KillersTable {
     }
 
     pub fn try_push(&mut self, plies: u8, mv: Move) {
-        let plies = plies as usize;
+        let killer_0 = self.get_0(plies);
 
-        let killer_1 = self.0[plies][0];
-
-        if Some(mv) != killer_1 {
-            self.0[plies][1] = killer_1;
-            self.0[plies][0] = Some(mv);
+        // If the first killer (which would become the second) is the same as the move we're trying
+        // to add, we'd end up with duplicate moves.
+        if Some(mv) == killer_0 {
+            return;
         }
+
+        let plies = plies as usize;
+        self.0[plies][1] = killer_0;
+        self.0[plies][0] = Some(mv);
     }
 }
 
