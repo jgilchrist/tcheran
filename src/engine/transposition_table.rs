@@ -13,7 +13,7 @@ pub struct TranspositionTable<T: Clone + TTOverwriteable> {
 
 #[derive(Clone)]
 pub struct TranspositionTableEntry<T: Clone + TTOverwriteable> {
-    pub key: ZobristHash,
+    pub key: u16,
     pub data: T,
 }
 
@@ -80,13 +80,13 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
             if let Some(existing_data) = maybe_existing_data {
                 if existing_data.data.should_overwrite_with(&data) {
                     self.data[idx] = Some(TranspositionTableEntry {
-                        key: key.clone(),
+                        key: key.0 as u16,
                         data,
                     });
                 }
             } else {
                 self.data[idx] = Some(TranspositionTableEntry {
-                    key: key.clone(),
+                    key: key.0 as u16,
                     data,
                 });
             }
@@ -99,7 +99,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
             if let Some(entry) = self.data.get_unchecked(idx) {
-                if entry.key == *key {
+                if entry.key == key.0 as u16 {
                     return Some(&entry.data);
                 }
             }
