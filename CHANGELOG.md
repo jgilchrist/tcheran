@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Return `best_eval` in quiescence (~5 Elo)
+* Don't do RFP or NMP in TT nodes (~0 Elo)
 
 ## [2.5]
 

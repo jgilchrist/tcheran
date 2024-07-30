@@ -21,6 +21,7 @@ pub fn negamax(
     control: &impl Control,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
+    let is_pv = alpha != beta - Eval(1);
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
@@ -79,7 +80,7 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
-    if !is_root && !in_check {
+    if !is_root && !is_pv && !in_check {
         let eval = eval::eval(game);
 
         // Reverse futility pruning
