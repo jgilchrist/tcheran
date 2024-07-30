@@ -68,7 +68,7 @@ pub fn negamax(
     let mut previous_best_move: Option<Move> = None;
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
-        if !is_root && tt_entry.depth >= depth {
+        if !is_root && !is_pv && tt_entry.depth >= depth {
             let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
 
             match tt_entry.bound {
