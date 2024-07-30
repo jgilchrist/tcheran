@@ -72,12 +72,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
 
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
-            let maybe_existing_data = self.data.get_unchecked(idx);
-            if maybe_existing_data.is_none() {
-                self.occupied += 1;
-            }
-
-            if let Some(existing_data) = maybe_existing_data {
+            if let Some(existing_data) = self.data.get_unchecked(idx) {
                 if existing_data.data.should_overwrite_with(&data) {
                     self.data[idx] = Some(TranspositionTableEntry {
                         key: key.clone(),
@@ -85,6 +80,8 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
                     });
                 }
             } else {
+                self.occupied += 1;
+
                 self.data[idx] = Some(TranspositionTableEntry {
                     key: key.clone(),
                     data,

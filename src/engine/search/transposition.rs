@@ -52,6 +52,12 @@ impl TTOverwriteable for SearchTranspositionTableData {
             return true;
         }
 
+        // Always prefer results that have been searched to a higher depth,
+        // since they're more accurate
+        if new.depth > self.depth {
+            return true;
+        }
+
         // If the new node is exact, always store it
         if new.bound == NodeBound::Exact {
             return true;
