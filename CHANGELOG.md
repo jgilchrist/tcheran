@@ -4,6 +4,7 @@
 
 * Return `best_eval` in quiescence (~5 Elo)
 * Fail soft on TT cuts (~2 Elo)
+* Prefer TT nodes with a higher depth (~2 Elo)
 * Don't do RFP or NMP in TT nodes (~0 Elo)
 
 ## [2.5]
