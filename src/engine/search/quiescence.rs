@@ -73,7 +73,7 @@ pub fn quiescence(
 
         // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
-            return Ok(beta);
+            break;
         }
 
         if move_score > alpha {
