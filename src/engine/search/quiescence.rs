@@ -38,7 +38,13 @@ pub fn quiescence(
         return Err(());
     }
 
-    let eval = eval::eval(game);
+    let in_check = game.is_king_in_check();
+
+    let eval = if in_check {
+        Eval::mated_in(plies)
+    } else {
+        eval::eval(game)
+    };
 
     if eval >= beta {
         return Ok(beta);
