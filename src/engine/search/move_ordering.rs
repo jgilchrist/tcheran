@@ -59,8 +59,10 @@ mod tests {
             .map(ScoredMove::new)
             .collect();
 
+        let history_table = HistoryTable::new();
+
         for mv in &mut moves {
-            mv.score = score_move(&game, mv.mv, &[[0; Square::N]; Square::N]);
+            mv.score = score_move(&game, mv.mv, &history_table);
         }
 
         moves.sort_unstable_by_key(|m| -m.score);

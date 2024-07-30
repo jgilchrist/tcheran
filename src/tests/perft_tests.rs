@@ -114,17 +114,17 @@ fn moveprovider_perft(
         }
 
         if quiets_movelist.len() >= 3 {
-            state.killer_moves[depth as usize][0] = Some(quiets_movelist.get(2));
+            state.killer_moves.try_push(depth, quiets_movelist.get(2));
         }
 
         if quiets_movelist.len() >= 4 {
-            state.killer_moves[depth as usize][1] = Some(quiets_movelist.get(3));
+            state.killer_moves.try_push(depth, quiets_movelist.get(3));
         }
     }
 
     let mut moves_at_this_node = 0;
     let mut moveprovider = MoveProvider::new(best_move);
-    while let Some(mv) = moveprovider.next(game, persistent_state, state, depth as usize) {
+    while let Some(mv) = moveprovider.next(game, persistent_state, state, depth) {
         game.make_move(mv);
         moves += moveprovider_perft(depth - 1, game, persistent_state, state);
         game.undo_move();
