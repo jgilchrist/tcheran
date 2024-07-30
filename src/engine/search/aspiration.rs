@@ -10,6 +10,14 @@ struct Window {
     width: Eval,
 }
 
+fn clamp_alpha(eval: Eval) -> Eval {
+    std::cmp::max(Eval::MIN, eval)
+}
+
+fn clamp_beta(eval: Eval) -> Eval {
+    std::cmp::min(Eval::MAX, eval)
+}
+
 impl Window {
     pub fn no_window() -> Self {
         Self {
@@ -22,8 +30,8 @@ impl Window {
 
     pub fn around(eval: Eval, width: Eval) -> Self {
         Self {
-            alpha: Self::clamp_alpha(eval - width),
-            beta: Self::clamp_beta(eval + width),
+            alpha: clamp_alpha(eval - width),
+            beta: clamp_beta(eval + width),
 
             width,
         }
@@ -31,29 +39,21 @@ impl Window {
 
     pub fn widen_down(&mut self) {
         self.increase_window_widening_rate();
-        self.alpha = Self::clamp_alpha(self.alpha - self.width);
+        self.alpha = clamp_alpha(self.alpha - self.width);
     }
 
     pub fn widen_up(&mut self) {
         self.increase_window_widening_rate();
-        self.beta = Self::clamp_beta(self.beta + self.width);
+        self.beta = clamp_beta(self.beta + self.width);
     }
 
     fn increase_window_widening_rate(&mut self) {
-        self.width = self.width * 2;
+        self.width = self.width + self.width / 2;
 
-        if self.width > params::ASPIRATION_WINDOW_MAX_SIZE {
-            self.alpha = Eval::MIN;
-            self.beta = Eval::MAX;
-        }
-    }
-
-    fn clamp_alpha(eval: Eval) -> Eval {
-        std::cmp::max(Eval::MIN, eval)
-    }
-
-    fn clamp_beta(eval: Eval) -> Eval {
-        std::cmp::min(Eval::MAX, eval)
+        //if self.width > params::ASPIRATION_WINDOW_MAX_SIZE {
+        //    self.alpha = Eval::MIN;
+        //    self.beta = Eval::MAX;
+        //}
     }
 }
 

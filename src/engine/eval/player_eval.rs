@@ -1,4 +1,5 @@
 use crate::chess::player::Player;
+use std::ops::Div;
 
 use crate::engine::eval::WhiteEval;
 
@@ -129,5 +130,13 @@ impl std::ops::Neg for Eval {
 
     fn neg(self) -> Self::Output {
         Self(self.0.saturating_neg())
+    }
+}
+
+impl Div<i16> for Eval {
+    type Output = Self;
+
+    fn div(self, rhs: i16) -> Self::Output {
+        Self(self.0 / rhs)
     }
 }
