@@ -4,7 +4,10 @@ pub trait TTOverwriteable {
     fn should_overwrite_with(&self, new: &Self) -> bool;
 }
 
-pub struct TranspositionTable<T: Clone + TTOverwriteable> {
+pub struct TranspositionTable<T: Clone>
+where
+    TranspositionTableEntry<T>: TTOverwriteable,
+{
     data: Vec<Option<TranspositionTableEntry<T>>>,
     pub generation: u8,
     pub occupied: usize,
@@ -12,18 +15,21 @@ pub struct TranspositionTable<T: Clone + TTOverwriteable> {
 }
 
 #[derive(Clone)]
-pub struct TranspositionTableEntry<T: Clone + TTOverwriteable> {
+pub struct TranspositionTableEntry<T: Clone> {
     pub key: ZobristHash,
     pub data: T,
 }
 
-pub fn calculate_number_of_entries<T: Clone + TTOverwriteable>(size_mb: usize) -> usize {
+pub fn calculate_number_of_entries<T: Clone>(size_mb: usize) -> usize {
     let size_of_entry = std::mem::size_of::<TranspositionTableEntry<T>>();
     let total_size_in_bytes = size_mb * 1024 * 1024;
     total_size_in_bytes / size_of_entry
 }
 
-impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
+impl<T: Clone> TranspositionTable<T>
+where
+    TranspositionTableEntry<T>: TTOverwriteable,
+{
     pub fn new() -> Self {
         Self {
             data: vec![None; 0],
@@ -70,22 +76,20 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     pub fn insert(&mut self, key: &ZobristHash, data: T) {
         let idx = self.get_entry_idx(key);
 
+        let new_entry = TranspositionTableEntry {
+            key: key.clone(),
+            data,
+        };
+
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
             if let Some(existing_data) = self.data.get_unchecked(idx) {
-                if existing_data.data.should_overwrite_with(&data) {
-                    self.data[idx] = Some(TranspositionTableEntry {
-                        key: key.clone(),
-                        data,
-                    });
+                if existing_data.should_overwrite_with(&new_entry) {
+                    self.data[idx] = Some(new_entry);
                 }
             } else {
                 self.occupied += 1;
-
-                self.data[idx] = Some(TranspositionTableEntry {
-                    key: key.clone(),
-                    data,
-                });
+                self.data[idx] = Some(new_entry);
             }
         }
     }
@@ -106,7 +110,10 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     }
 }
 
-impl<T: Clone + TTOverwriteable> Default for TranspositionTable<T> {
+impl<T: Clone> Default for TranspositionTable<T>
+where
+    TranspositionTableEntry<T>: TTOverwriteable,
+{
     fn default() -> Self {
         Self::new()
     }

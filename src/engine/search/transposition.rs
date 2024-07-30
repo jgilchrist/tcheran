@@ -2,7 +2,9 @@ use crate::chess::moves::Move;
 use crate::chess::piece::PromotionPieceKind;
 use crate::chess::square::Square;
 use crate::engine::eval::Eval;
-use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
+use crate::engine::transposition_table::{
+    TTOverwriteable, TranspositionTable, TranspositionTableEntry,
+};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub enum NodeBound {
@@ -45,26 +47,31 @@ impl TTMove {
     }
 }
 
-impl TTOverwriteable for SearchTranspositionTableData {
+impl TTOverwriteable for TranspositionTableEntry<SearchTranspositionTableData> {
     fn should_overwrite_with(&self, new: &Self) -> bool {
         // Always prioritise results from new searches
-        if new.age != self.age {
+        if new.data.age != self.data.age {
             return true;
         }
 
         // Always prefer results that have been searched to a higher depth,
         // since they're more accurate
-        if new.depth > self.depth {
+        if new.data.depth > self.data.depth {
+            return true;
+        }
+
+        // Prefer newer positions
+        if new.key != self.key {
             return true;
         }
 
         // If the new node is exact, always store it
-        if new.bound == NodeBound::Exact {
+        if new.data.bound == NodeBound::Exact {
             return true;
         }
 
         // Don't overwrite exact nodes
-        self.bound != NodeBound::Exact
+        self.data.bound != NodeBound::Exact
     }
 }
 
