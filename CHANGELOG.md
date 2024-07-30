@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Return `best_eval` in quiescence (~5 Elo)
+
 ## [2.5]
 
 * Fix not storing moves that caused beta cutoffs in the TT (~50 Elo)

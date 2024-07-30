@@ -48,7 +48,7 @@ pub fn quiescence(
         alpha = eval;
     }
 
-    let mut best_eval = Eval::MIN;
+    let mut best_eval = eval;
 
     let mut moves = MoveProvider::new_loud();
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
@@ -73,7 +73,7 @@ pub fn quiescence(
 
         // Cutoff: This move is so good that our opponent won't let it be played.
         if move_score >= beta {
-            return Ok(beta);
+            break;
         }
 
         if move_score > alpha {
@@ -81,5 +81,5 @@ pub fn quiescence(
         }
     }
 
-    Ok(alpha)
+    Ok(best_eval)
 }
