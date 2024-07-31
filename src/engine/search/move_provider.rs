@@ -48,12 +48,12 @@ impl MoveProvider {
         }
     }
 
-    pub fn new_loud() -> Self {
+    pub fn new_loud(previous_best_move: Option<Move>) -> Self {
         Self {
             moves: MoveList::new(),
             movegencache: MovegenCache::new(),
             scores: [0; MAX_MOVES],
-            previous_best_move: None,
+            previous_best_move,
             only_captures: true,
 
             stage: GenStage::BestMove,
