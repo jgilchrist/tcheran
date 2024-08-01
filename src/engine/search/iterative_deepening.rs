@@ -50,21 +50,24 @@ pub fn search(
         best_move = Some(*pv.first().unwrap());
         overall_eval = Some(eval);
 
-        reporter.report_search_progress(SearchInfo {
-            depth,
-            seldepth: state.max_depth_reached,
-            score,
-            pv: pv.clone(),
-            hashfull: persistent_state.tt.occupancy(),
-            stats: SearchStats {
-                time: time_control.elapsed(),
-                nodes: state.nodes_visited,
-                nodes_per_second: util::metrics::nodes_per_second(
-                    state.nodes_visited,
-                    time_control.elapsed(),
-                ),
+        reporter.report_search_progress(
+            &game,
+            SearchInfo {
+                depth,
+                seldepth: state.max_depth_reached,
+                score,
+                pv: pv.clone(),
+                hashfull: persistent_state.tt.occupancy(),
+                stats: SearchStats {
+                    time: time_control.elapsed(),
+                    nodes: state.nodes_visited,
+                    nodes_per_second: util::metrics::nodes_per_second(
+                        state.nodes_visited,
+                        time_control.elapsed(),
+                    ),
+                },
             },
-        });
+        );
     }
 
     best_move

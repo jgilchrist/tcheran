@@ -138,12 +138,9 @@ pub trait Reporter {
     #[allow(unused)]
     fn generic_report(&self, s: &str);
 
-    fn report_search_progress(&mut self, progress: SearchInfo);
+    fn report_search_progress(&mut self, game: &Game, progress: SearchInfo);
 
-    #[allow(unused)]
-    fn report_search_stats(&mut self, stats: SearchStats);
-
-    fn best_move(&self, mv: Move);
+    fn best_move(&self, game: &Game, mv: Move);
 }
 
 pub struct NullReporter;
@@ -151,11 +148,9 @@ pub struct NullReporter;
 impl Reporter for NullReporter {
     fn generic_report(&self, _: &str) {}
 
-    fn report_search_progress(&mut self, _: SearchInfo) {}
+    fn report_search_progress(&mut self, _: &Game, _: SearchInfo) {}
 
-    fn report_search_stats(&mut self, _: SearchStats) {}
-
-    fn best_move(&self, _: Move) {}
+    fn best_move(&self, _: &Game, _: Move) {}
 }
 
 pub struct CapturingReporter {
@@ -177,15 +172,13 @@ impl CapturingReporter {
 impl Reporter for CapturingReporter {
     fn generic_report(&self, _: &str) {}
 
-    fn report_search_progress(&mut self, stats: SearchInfo) {
+    fn report_search_progress(&mut self, _: &Game, stats: SearchInfo) {
         self.score = Some(stats.score);
         self.nodes = stats.stats.nodes;
         self.nps = stats.stats.nodes_per_second;
     }
 
-    fn report_search_stats(&mut self, _: SearchStats) {}
-
-    fn best_move(&self, _: Move) {}
+    fn best_move(&self, _: &Game, _: Move) {}
 }
 
 pub fn search(

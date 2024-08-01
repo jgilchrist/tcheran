@@ -10,6 +10,7 @@
 
 ## Misc
 
+* Add prettier search output if being used interactively
 * Rename `MoveProvider` -> `MovePicker` for consistency with other engines
 
 ## [2.5]
