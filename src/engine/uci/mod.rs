@@ -1,12 +1,14 @@
 //! Implementation of the Universal Chess Interface (UCI) protocol
 
-use std::io::BufRead;
+use std::io::{BufRead, IsTerminal};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
-use std::time::Instant;
+use std::time::{Duration, Instant};
+
+use colored::Colorize;
 
 use crate::chess::moves::Move;
-use crate::chess::perft;
+use crate::chess::{perft, san};
 
 use crate::engine::options::EngineOptions;
 use crate::engine::util::sync::LockLatch;
@@ -28,9 +30,10 @@ pub mod parser;
 pub mod responses;
 
 use crate::chess::game::Game;
+use crate::chess::player::Player;
 use crate::engine::search::{
     CapturingReporter, Clocks, Control, NullControl, PersistentState, Reporter, SearchRestrictions,
-    TimeControl,
+    SearchScore, TimeControl,
 };
 pub use r#move::UciMove;
 
@@ -69,14 +72,12 @@ impl search::Control for UciControl {
 }
 
 #[derive(Clone)]
-pub struct UciReporter;
+pub struct UciReporter {
+    pub pretty_output: bool,
+}
 
-impl search::Reporter for UciReporter {
-    fn generic_report(&self, s: &str) {
-        println!("{s}");
-    }
-
-    fn report_search_progress(&mut self, progress: search::SearchInfo) {
+impl UciReporter {
+    fn uci_report_search_progress(&mut self, progress: search::SearchInfo) {
         let score = match progress.score {
             search::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
             search::SearchScore::Mate(moves) => InfoScore::Mate(moves),
@@ -95,20 +96,114 @@ impl search::Reporter for UciReporter {
         }));
     }
 
-    fn report_search_stats(&mut self, stats: search::SearchStats) {
-        send_response(&UciResponse::Info(InfoFields {
-            time: Some(stats.time),
-            nodes: Some(stats.nodes),
-            nps: Some(stats.nodes_per_second),
-            ..Default::default()
-        }));
+    // Inspired by Simbelmyne's lovely search output
+    fn pretty_report_search_progress(&mut self, game: &Game, progress: search::SearchInfo) {
+        let mut game = game.clone();
+
+        print!(" {:>3}", progress.depth);
+        print!("{}", format!("/{:<3}", progress.seldepth).bright_black());
+
+        print!(
+            " {:>7}",
+            match progress.score {
+                SearchScore::Centipawns(cp) => {
+                    let friendly_score = format!("{:+.2}", f64::from(cp) / 100.0);
+
+                    match cp {
+                        i16::MIN..=-11 => friendly_score.red(),
+                        -10..=10 => friendly_score.white(),
+                        11..=i16::MAX => friendly_score.green(),
+                    }
+                }
+                SearchScore::Mate(plies) => {
+                    let friendly_mate = format!("M{}", plies.abs());
+
+                    match plies {
+                        i16::MIN..=-1 => friendly_mate.red(),
+                        1..=i16::MAX => friendly_mate.green(),
+                        0 => unreachable!(),
+                    }
+                }
+            }
+        );
+
+        print!(
+            "  {:>6}",
+            if progress.stats.time >= Duration::from_secs(1) {
+                format!("{:.2}s", progress.stats.time.as_secs_f32()).bright_black()
+            } else {
+                format!("{}ms", progress.stats.time.as_millis()).bright_black()
+            }
+        );
+
+        print!(
+            " {:>10}",
+            if progress.stats.nodes < 1000 {
+                format!("{}n", progress.stats.nodes).bright_black()
+            } else {
+                format!("{:.0}kn", progress.stats.nodes as f64 / 1000.0).bright_black()
+            }
+        );
+
+        print!(
+            "  {:>10}",
+            format!("{:.0}knps", progress.stats.nodes_per_second as f64 / 1000.0).bright_black()
+        );
+
+        print!(
+            "  {:>4}",
+            format!("{:.0}%", progress.hashfull as f64 / 10.0).bright_black()
+        );
+
+        print!("  ");
+        for mv in progress.pv {
+            let san_mv = san::format_move(&game, mv);
+
+            print!(
+                " {}",
+                match game.player {
+                    Player::White => san_mv.bright_white(),
+                    Player::Black => san_mv.bright_black(),
+                }
+            );
+
+            game.make_move(mv);
+        }
+
+        println!();
     }
 
-    fn best_move(&self, mv: Move) {
+    fn uci_best_move(&self, mv: Move) {
         send_response(&UciResponse::BestMove {
             mv: mv.into(),
             ponder: None,
         });
+    }
+
+    fn pretty_best_move(&self, game: &Game, mv: Move) {
+        println!("bestmove {}", san::format_move(&game, mv))
+    }
+}
+
+impl search::Reporter for UciReporter {
+    fn generic_report(&self, s: &str) {
+        println!("{s}");
+    }
+
+    fn report_search_progress(&mut self, game: &Game, progress: search::SearchInfo) {
+        if self.pretty_output {
+            self.pretty_report_search_progress(game, progress)
+        } else {
+            self.uci_report_search_progress(progress)
+        }
+    }
+
+    fn best_move(&self, game: &Game, mv: Move) {
+        if self.pretty_output {
+            self.pretty_best_move(game, mv)
+        } else {
+            self.uci_best_move(mv)
+        }
     }
 }
 
@@ -241,7 +336,7 @@ impl Uci {
                         &mut reporter,
                     );
 
-                    reporter.best_move(best_move);
+                    reporter.best_move(&game, best_move);
                     control.set_stopped();
                 });
 
@@ -438,7 +533,9 @@ pub enum UciInputMode {
 pub fn uci(uci_input_mode: UciInputMode) -> Result<(), String> {
     let mut uci = Uci {
         control: UciControl::new(),
-        reporter: UciReporter {},
+        reporter: UciReporter {
+            pretty_output: std::io::stdin().is_terminal(),
+        },
         debug: false,
         options: EngineOptions::default(),
 
