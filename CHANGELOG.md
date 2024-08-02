@@ -8,6 +8,10 @@
 * Prefer TT nodes with a higher depth (~2 Elo)
 * Don't do RFP or NMP in TT nodes (~0 Elo)
 
+## Misc
+
+* Rename `MoveProvider` -> `MovePicker` for consistency with other engines
+
 ## [2.5]
 
 * Fix not storing moves that caused beta cutoffs in the TT (~50 Elo)

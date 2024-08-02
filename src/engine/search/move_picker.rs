@@ -21,7 +21,7 @@ enum GenStage {
     Done,
 }
 
-pub struct MoveProvider {
+pub struct MovePicker {
     moves: MoveList,
     movegencache: MovegenCache,
     scores: [i32; MAX_MOVES],
@@ -33,7 +33,7 @@ pub struct MoveProvider {
     captures_end: usize,
 }
 
-impl MoveProvider {
+impl MovePicker {
     pub fn new(previous_best_move: Option<Move>) -> Self {
         Self {
             moves: MoveList::new(),
@@ -216,18 +216,18 @@ mod tests {
     use crate::chess::square::squares::all::*;
 
     #[test]
-    fn test_moveprovider_does_not_double_yield_best_move() {
+    fn test_movepicker_does_not_double_yield_best_move() {
         crate::init();
 
         let game = Game::new();
 
         let mut moves: Vec<Move> = Vec::new();
-        let mut move_provider = MoveProvider::new(Some((G1, F3).into()));
+        let mut move_picker = MovePicker::new(Some((G1, F3).into()));
 
         let search_state = SearchState::new();
         let persistent_state = PersistentState::new();
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_picker.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
         }
 

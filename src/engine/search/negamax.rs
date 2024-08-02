@@ -2,7 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
-use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
@@ -124,7 +124,7 @@ pub fn negamax(
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
 
-    let mut moves = MoveProvider::new(previous_best_move);
+    let mut moves = MovePicker::new(previous_best_move);
     let mut number_of_legal_moves = 0;
 
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {

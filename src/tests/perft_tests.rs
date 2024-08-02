@@ -4,7 +4,7 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::perft::perft;
-use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::{PersistentState, SearchState};
 use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 use paste::paste;
@@ -77,7 +77,7 @@ fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
     assert_eq!(expected_positions, actual_positions);
 }
 
-fn moveprovider_perft(
+fn movepicker_perft(
     depth: u8,
     game: &mut Game,
     persistent_state: &PersistentState,
@@ -123,10 +123,10 @@ fn moveprovider_perft(
     }
 
     let mut moves_at_this_node = 0;
-    let mut moveprovider = MoveProvider::new(best_move);
-    while let Some(mv) = moveprovider.next(game, persistent_state, state, depth) {
+    let mut movepicker = MovePicker::new(best_move);
+    while let Some(mv) = movepicker.next(game, persistent_state, state, depth) {
         game.make_move(mv);
-        moves += moveprovider_perft(depth - 1, game, persistent_state, state);
+        moves += movepicker_perft(depth - 1, game, persistent_state, state);
         game.undo_move();
 
         moves_at_this_node += 1;
@@ -142,14 +142,14 @@ fn moveprovider_perft(
     moves
 }
 
-fn test_perft_with_moveprovider(fen: &str, depth: u8, expected_positions: usize) {
+fn test_perft_with_movepicker(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
 
     let persistent_state = PersistentState::new();
     let mut state = SearchState::new();
 
     let mut game = Game::from_fen(fen).unwrap();
-    let actual_positions = moveprovider_perft(depth, &mut game, &persistent_state, &mut state);
+    let actual_positions = movepicker_perft(depth, &mut game, &persistent_state, &mut state);
 
     assert_eq!(expected_positions, actual_positions);
 }
@@ -169,8 +169,8 @@ macro_rules! perft_position {
 
             #[test]
             #[ignore]
-            fn [<perft_moveprovider_ $name>]() {
-                test_perft_with_moveprovider($pos, $depth, $nodes);
+            fn [<perft_movepicker_ $name>]() {
+                test_perft_with_movepicker($pos, $depth, $nodes);
             }
         }
     };

@@ -1,7 +1,7 @@
 use crate::chess::game::Game;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
-use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::time_control::TimeStrategy;
 
 use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
@@ -50,7 +50,7 @@ pub fn quiescence(
 
     let mut best_eval = eval;
 
-    let mut moves = MoveProvider::new_loud();
+    let mut moves = MovePicker::new_loud();
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
         game.make_move(mv);
 

@@ -5,14 +5,14 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
-use crate::engine::search::move_provider::MoveProvider;
+use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::transposition::SearchTranspositionTable;
 
 mod aspiration;
 mod iterative_deepening;
 mod move_ordering;
-pub mod move_provider;
+pub mod move_picker;
 mod negamax;
 mod quiescence;
 mod tables;
@@ -231,8 +231,8 @@ pub fn search(
 // a bit of extra time so that we still make a move.
 // Rather than returning a random move, we return the first move that is returned after move ordering
 fn panic_move(game: &Game, persistent_state: &PersistentState, search_state: &SearchState) -> Move {
-    let mut move_provider = MoveProvider::new(None);
-    move_provider
+    let mut move_picker = MovePicker::new(None);
+    move_picker
         .next(game, persistent_state, search_state, 0)
         .unwrap()
 }
