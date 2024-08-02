@@ -86,7 +86,7 @@ impl search::Reporter for UciReporter {
             depth: Some(progress.depth),
             seldepth: Some(progress.seldepth),
             score: Some(score),
-            pv: Some(progress.pv.into_iter().map(Into::into).collect()),
+            pv: Some(progress.pv.as_slice().iter().map(|m| (*m).into()).collect()),
             time: Some(progress.stats.time),
             nodes: Some(progress.stats.nodes),
             nps: Some(progress.stats.nodes_per_second),

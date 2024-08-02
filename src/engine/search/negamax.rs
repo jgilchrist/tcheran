@@ -3,6 +3,7 @@ use crate::chess::moves::Move;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
+use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
@@ -16,6 +17,7 @@ pub fn negamax(
     mut depth: u8,
     plies: u8,
     persistent_state: &mut PersistentState,
+    pv: &mut PrincipalVariation,
     time_control: &TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
@@ -107,6 +109,7 @@ pub fn negamax(
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
                 plies + 1,
                 persistent_state,
+                &mut PrincipalVariation::new(),
                 time_control,
                 state,
                 control,
@@ -126,9 +129,11 @@ pub fn negamax(
 
     let mut moves = MovePicker::new(previous_best_move);
     let mut number_of_legal_moves = 0;
+    let mut node_pv = PrincipalVariation::new();
 
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
         number_of_legal_moves += 1;
+        node_pv.clear();
 
         game.make_move(mv);
 
@@ -140,6 +145,7 @@ pub fn negamax(
                 depth - 1,
                 plies + 1,
                 persistent_state,
+                &mut node_pv,
                 time_control,
                 state,
                 control,
@@ -155,6 +161,7 @@ pub fn negamax(
                 depth - 1,
                 plies + 1,
                 persistent_state,
+                &mut node_pv,
                 time_control,
                 state,
                 control,
@@ -170,6 +177,7 @@ pub fn negamax(
                     depth - 1,
                     plies + 1,
                     persistent_state,
+                    &mut node_pv,
                     time_control,
                     state,
                     control,
@@ -195,6 +203,7 @@ pub fn negamax(
         if move_score > alpha {
             alpha = move_score;
             tt_node_bound = NodeBound::Exact;
+            pv.push(mv, &node_pv);
         }
     }
 

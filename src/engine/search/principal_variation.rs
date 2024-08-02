@@ -25,20 +25,19 @@ impl PrincipalVariation {
     pub fn push(&mut self, mv: Move, child_pv: &Self) {
         self.length = child_pv.length + 1;
         self.moves[0] = mv;
-        self.moves[1..=self.length].copy_from_slice(child_pv.as_slice());
+        self.moves[1..self.length].copy_from_slice(child_pv.as_slice());
     }
 
     pub fn as_slice(&self) -> &[Move] {
-        &self.moves[0..=self.length]
+        &self.moves[0..self.length]
     }
 
-    pub fn get(&self, idx: usize) -> Move {
-        debug_assert!(idx < self.length);
-
-        let mv = self.moves[idx];
-        debug_assert!(mv.src != A1 || mv.dst != A1);
-
-        mv
+    pub fn first(&self) -> Option<Move> {
+        if self.length == 0 {
+            None
+        } else {
+            Some(self.moves[0])
+        }
     }
 
     pub fn len(&self) -> usize {

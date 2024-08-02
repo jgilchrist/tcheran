@@ -1,5 +1,6 @@
 use crate::chess::game::Game;
 use crate::engine::eval::Eval;
+use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::{negamax, params, Control, PersistentState, SearchState};
 
@@ -57,6 +58,7 @@ pub fn aspiration_search(
     depth: u8,
     eval: Option<Eval>,
     persistent_state: &mut PersistentState,
+    pv: &mut PrincipalVariation,
     state: &mut SearchState,
     time_control: &TimeStrategy,
     control: &impl Control,
@@ -75,6 +77,7 @@ pub fn aspiration_search(
             depth,
             0,
             persistent_state,
+            pv,
             time_control,
             state,
             control,
