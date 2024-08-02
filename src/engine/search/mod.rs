@@ -14,6 +14,7 @@ mod iterative_deepening;
 mod move_ordering;
 pub mod move_picker;
 mod negamax;
+mod principal_variation;
 mod quiescence;
 mod tables;
 mod time_control;
