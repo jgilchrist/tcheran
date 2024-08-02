@@ -1,7 +1,3 @@
-// `MoveList` is currently unused, but is likely to be adopted over Vec in the future.
-// To prevent each experiment having to add this file, it's added here.
-#![allow(unused)]
-
 use crate::chess::moves::Move;
 use crate::chess::square::squares::all::*;
 
