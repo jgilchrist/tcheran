@@ -3,6 +3,8 @@ pub mod options;
 pub mod uci;
 pub mod util;
 
+pub mod see;
+
 pub mod search;
 pub mod transposition_table;
 

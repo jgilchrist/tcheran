@@ -26,3 +26,30 @@ pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> B
 
     attackers
 }
+
+pub fn all_attackers_of(board: &Board, square: Square, occupied: Bitboard) -> Bitboard {
+    use Player::*;
+
+    let white_pieces = board.white_pieces();
+    let black_pieces = board.black_pieces();
+
+    let mut attackers = Bitboard::EMPTY;
+
+    attackers |= tables::pawn_attacks(square, White) & black_pieces.pawns();
+    attackers |= tables::pawn_attacks(square, Black) & white_pieces.pawns();
+
+    let knights = white_pieces.knights() | black_pieces.knights();
+    attackers |= tables::knight_attacks(square) & knights;
+
+    let diagonal_attackers = white_pieces.diagonal_sliders() | black_pieces.diagonal_sliders();
+    attackers |= tables::bishop_attacks(square, occupied) & diagonal_attackers;
+
+    let orthogonal_attackers =
+        white_pieces.orthogonal_sliders() | black_pieces.orthogonal_sliders();
+    attackers |= tables::rook_attacks(square, occupied) & orthogonal_attackers;
+
+    let kings = white_pieces.king() | black_pieces.king();
+    attackers |= tables::king_attacks(square) & kings;
+
+    attackers
+}
