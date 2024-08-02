@@ -3,8 +3,8 @@ use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::aspiration::aspiration_search;
+use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::transposition::{NodeBound, SearchTranspositionTable};
 use crate::engine::search::{
     Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
     SearchStats, MAX_SEARCH_DEPTH,
@@ -17,6 +17,7 @@ pub fn search(
     search_restrictions: &SearchRestrictions,
     _options: &EngineOptions,
     state: &mut SearchState,
+    pv: &mut PrincipalVariation,
     time_control: &TimeStrategy,
     control: &impl Control,
     reporter: &mut impl Reporter,
@@ -33,6 +34,7 @@ pub fn search(
             depth,
             overall_eval,
             persistent_state,
+            pv,
             state,
             time_control,
             control,
@@ -46,8 +48,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        let pv = get_pv(depth, game.clone(), &persistent_state.tt, state);
-        best_move = Some(*pv.first().unwrap());
+        best_move = Some(pv.first().unwrap());
         overall_eval = Some(eval);
 
         reporter.report_search_progress(
@@ -71,28 +72,4 @@ pub fn search(
     }
 
     best_move
-}
-
-fn get_pv(depth: u8, game: Game, tt: &SearchTranspositionTable, state: &SearchState) -> Vec<Move> {
-    let mut current_position = game;
-    let mut pv = Vec::new();
-
-    let depth_reached = std::cmp::min(depth, state.max_depth_reached);
-
-    for _ in 0..depth_reached {
-        let Some(tt_entry) = tt.get(&current_position.zobrist) else {
-            break;
-        };
-
-        if tt_entry.bound != NodeBound::Exact {
-            assert!(!pv.is_empty());
-            return pv;
-        }
-
-        let best_move_in_position = tt_entry.best_move.as_ref().unwrap().to_move();
-        pv.push(best_move_in_position);
-        current_position.make_move(best_move_in_position);
-    }
-
-    pv
 }

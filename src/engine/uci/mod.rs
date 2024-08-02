@@ -87,7 +87,7 @@ impl UciReporter {
             depth: Some(progress.depth),
             seldepth: Some(progress.seldepth),
             score: Some(score),
-            pv: Some(progress.pv.into_iter().map(Into::into).collect()),
+            pv: Some(progress.pv.as_slice().iter().map(|m| (*m).into()).collect()),
             time: Some(progress.stats.time),
             nodes: Some(progress.stats.nodes),
             nps: Some(progress.stats.nodes_per_second),
@@ -156,8 +156,8 @@ impl UciReporter {
         );
 
         print!("  ");
-        for mv in progress.pv {
-            let san_mv = san::format_move(&game, mv);
+        for mv in progress.pv.as_slice().iter() {
+            let san_mv = san::format_move(&game, *mv);
 
             print!(
                 " {}",
@@ -167,7 +167,7 @@ impl UciReporter {
                 }
             );
 
-            game.make_move(mv);
+            game.make_move(*mv);
         }
 
         println!();

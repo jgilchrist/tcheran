@@ -6,6 +6,7 @@ use crate::engine::search::time_control::TimeStrategy;
 
 use crate::chess::game::Game;
 use crate::engine::search::move_picker::MovePicker;
+use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::transposition::SearchTranspositionTable;
 
@@ -14,6 +15,7 @@ mod iterative_deepening;
 mod move_ordering;
 pub mod move_picker;
 mod negamax;
+mod principal_variation;
 mod quiescence;
 mod tables;
 mod time_control;
@@ -103,7 +105,7 @@ pub struct SearchInfo {
     pub seldepth: u8,
     pub score: SearchScore,
     pub stats: SearchStats,
-    pub pv: Vec<Move>,
+    pub pv: PrincipalVariation,
     pub hashfull: usize,
 }
 
@@ -200,22 +202,27 @@ pub fn search(
         .history_table
         .decay(params::HISTORY_DECAY_FACTOR);
 
+    let mut pv = PrincipalVariation::new();
+
     // The game is modified as moves are played during search. When the search terminates,
     // the game will be left in a dirty state since we will not undo the moves played to
     // reach the terminating node in the search tree. To keep our original 'game' copy clean
     // we perform the search on a copy of the game.
     let mut search_game = game.clone();
 
-    let best_move = iterative_deepening::search(
+    iterative_deepening::search(
         &mut search_game,
         persistent_state,
         search_restrictions,
         options,
         &mut state,
+        &mut pv,
         &time_strategy,
         control,
         reporter,
     );
+
+    let best_move = pv.first();
 
     best_move.unwrap_or_else(|| panic_move(game, persistent_state, &state))
 }
