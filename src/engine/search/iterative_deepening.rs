@@ -52,7 +52,7 @@ pub fn search(
         overall_eval = Some(eval);
 
         reporter.report_search_progress(
-            &game,
+            game,
             SearchInfo {
                 depth,
                 seldepth: state.max_depth_reached,

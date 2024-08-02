@@ -77,10 +77,10 @@ pub struct UciReporter {
 }
 
 impl UciReporter {
-    fn uci_report_search_progress(&mut self, progress: search::SearchInfo) {
+    fn uci_report_search_progress(progress: &search::SearchInfo) {
         let score = match progress.score {
-            search::SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
-            search::SearchScore::Mate(moves) => InfoScore::Mate(moves),
+            SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
+            SearchScore::Mate(moves) => InfoScore::Mate(moves),
         };
 
         send_response(&UciResponse::Info(InfoFields {
@@ -97,7 +97,8 @@ impl UciReporter {
     }
 
     // Inspired by Simbelmyne's lovely search output
-    fn pretty_report_search_progress(&mut self, game: &Game, progress: search::SearchInfo) {
+    #[allow(clippy::cast_precision_loss)]
+    fn pretty_report_search_progress(game: &Game, progress: &search::SearchInfo) {
         let mut game = game.clone();
 
         print!(" {:>3}", progress.depth);
@@ -156,7 +157,7 @@ impl UciReporter {
         );
 
         print!("  ");
-        for mv in progress.pv.as_slice().iter() {
+        for mv in progress.pv.as_slice() {
             let san_mv = san::format_move(&game, *mv);
 
             print!(
@@ -173,36 +174,36 @@ impl UciReporter {
         println!();
     }
 
-    fn uci_best_move(&self, mv: Move) {
+    fn uci_best_move(mv: Move) {
         send_response(&UciResponse::BestMove {
             mv: mv.into(),
             ponder: None,
         });
     }
 
-    fn pretty_best_move(&self, game: &Game, mv: Move) {
-        println!("bestmove {}", san::format_move(&game, mv))
+    fn pretty_best_move(game: &Game, mv: Move) {
+        println!("bestmove {}", san::format_move(game, mv));
     }
 }
 
-impl search::Reporter for UciReporter {
+impl Reporter for UciReporter {
     fn generic_report(&self, s: &str) {
         println!("{s}");
     }
 
     fn report_search_progress(&mut self, game: &Game, progress: search::SearchInfo) {
         if self.pretty_output {
-            self.pretty_report_search_progress(game, progress)
+            Self::pretty_report_search_progress(game, &progress);
         } else {
-            self.uci_report_search_progress(progress)
+            Self::uci_report_search_progress(&progress);
         }
     }
 
     fn best_move(&self, game: &Game, mv: Move) {
         if self.pretty_output {
-            self.pretty_best_move(game, mv)
+            Self::pretty_best_move(game, mv);
         } else {
-            self.uci_best_move(mv)
+            Self::uci_best_move(mv);
         }
     }
 }
