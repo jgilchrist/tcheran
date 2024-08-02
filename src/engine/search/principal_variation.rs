@@ -28,6 +28,7 @@ impl PrincipalVariation {
         self.moves[1..self.length].copy_from_slice(child_pv.as_slice());
     }
 
+    #[inline]
     pub fn as_slice(&self) -> &[Move] {
         &self.moves[0..self.length]
     }
