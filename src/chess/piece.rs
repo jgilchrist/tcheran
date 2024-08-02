@@ -13,6 +13,15 @@ pub enum PieceKind {
 impl PieceKind {
     pub const N: usize = 6;
 
+    pub const ALL: [Self; Self::N] = [
+        Self::Pawn,
+        Self::Knight,
+        Self::Bishop,
+        Self::Rook,
+        Self::Queen,
+        Self::King,
+    ];
+
     #[inline(always)]
     pub const fn array_idx(self) -> usize {
         self as usize
