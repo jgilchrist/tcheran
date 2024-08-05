@@ -79,11 +79,6 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
 
     let mut color = game.player;
 
-    println!("After starting:");
-    println!("  Score: {:?}", score);
-    println!("  Occupied squares: {:?}", occupied);
-    println!("  Attackers: {:?}", attackers);
-
     loop {
         color = color.other();
 
