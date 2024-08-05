@@ -62,6 +62,16 @@ impl PlayerPieces {
     pub fn king(&self) -> Bitboard {
         self.0[PieceKind::King.array_idx()]
     }
+
+    #[inline(always)]
+    pub fn diagonal_sliders(&self) -> Bitboard {
+        self.of_kind(PieceKind::Bishop) | self.of_kind(PieceKind::Queen)
+    }
+
+    #[inline(always)]
+    pub fn orthogonal_sliders(&self) -> Bitboard {
+        self.of_kind(PieceKind::Rook) | self.of_kind(PieceKind::Queen)
+    }
 }
 
 impl Board {
