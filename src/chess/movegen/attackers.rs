@@ -35,8 +35,8 @@ pub fn all_attackers_of(board: &Board, square: Square, occupied: Bitboard) -> Bi
 
     let mut attackers = Bitboard::EMPTY;
 
-    attackers |= tables::pawn_attacks(square, White) & white_pieces.pawns();
-    attackers |= tables::pawn_attacks(square, Black) & black_pieces.pawns();
+    attackers |= tables::pawn_attacks(square, White) & black_pieces.pawns();
+    attackers |= tables::pawn_attacks(square, Black) & white_pieces.pawns();
 
     let knights = white_pieces.knights() | black_pieces.knights();
     attackers |= tables::knight_attacks(square) & knights;

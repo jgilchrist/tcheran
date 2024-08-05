@@ -5,6 +5,7 @@ use crate::chess::moves::Move;
 use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::player::Player;
 use crate::engine::eval::Eval;
+use std::ops::BitXor;
 
 fn piece_value(kind: PieceKind) -> Eval {
     Eval(match kind {
@@ -17,35 +18,28 @@ fn piece_value(kind: PieceKind) -> Eval {
     })
 }
 
+#[allow(unused)] // TODO
+                 // TODO: Short-circuit for castling
 pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     let from = mv.src;
     let to = mv.dst;
+    let board = &game.board;
+    let moved_piece = board.piece_at(from).unwrap();
+    let is_en_passant =
+        Some(mv.dst) == game.en_passant_target && moved_piece.kind == PieceKind::Pawn;
 
-    // TODO: Simpler way to check if the move was castling
-    // if from == squares::king_start(game.player)
-    //     && (to == squares::kingside_castle_dest(game.player)
-    //         || to == squares::queenside_castle_dest(game.player))
-    // {
-    //     return true;
-    // }
+    // We have to beat the threshold in order to pass, which is the same as saying that
+    //      score - threshold = 0
+    // We can initialise the score to -threshold to avoid having to repeatedly subtract threshold
+    let mut score = -threshold;
 
-    let mut balance = -threshold;
-
-    if let Some(promotion_piece) = mv.promotion {
-        balance -= piece_value(PieceKind::Pawn);
-        balance += piece_value(promotion_piece.piece());
-    }
-
-    // The piece we just moved will be the first victim of the exchange on the target square
-    let mut victim = match mv.promotion {
-        Some(promotion_piece) => promotion_piece.piece(),
-        None => game.board.piece_at(from).unwrap().kind,
-    };
-
-    let move_value = match game.board.piece_at(to) {
+    // First, make the move and adjust the score accordingly
+    //
+    // If we captured a piece during the move, we score according to that piece's value
+    score += match board.piece_at(to) {
         Some(piece) => piece_value(piece.kind),
         None => {
-            if Some(mv.dst) == game.en_passant_target && victim == PieceKind::Pawn {
+            if is_en_passant {
                 piece_value(PieceKind::Pawn)
             } else {
                 Eval(0)
@@ -53,48 +47,49 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
         }
     };
 
-    balance += move_value;
-
-    // dbg!(balance);
-
-    // If the opponent is already winning and it's their time to move
-    // if balance < Eval(0) {
-    //     return false;
-    // }
-
-    let mut board = game.board.clone();
-    board.remove_at(from);
-    board.set_at(to, Piece::new(game.player, victim));
-
-    if victim == PieceKind::Pawn && Some(to) == game.en_passant_target {
-        board.remove_at(game.en_passant_target.unwrap());
+    // If we promoted a pawn, we lose the pawn and gain the value of the piece we promoted to
+    if let Some(promotion_piece) = mv.promotion {
+        score -= piece_value(PieceKind::Pawn);
+        score += piece_value(promotion_piece.piece());
     }
 
-    let mut diagonal_sliders = board.white_pieces().bishops()
-        | board.black_pieces().bishops()
-        | board.white_pieces().queens()
-        | board.black_pieces().queens();
-
-    let mut orthorgonal_sliders = board.white_pieces().rooks()
-        | board.black_pieces().rooks()
-        | board.white_pieces().queens()
-        | board.black_pieces().queens();
+    // The piece we just moved will be the first victim of the exchange on the target square
+    let mut victim = match mv.promotion {
+        Some(promotion_piece) => promotion_piece.piece(),
+        None => moved_piece.kind,
+    };
 
     let mut occupied = board.occupancy();
+    occupied ^= from.bb();
+    occupied |= to.bb();
 
-    let mut attackers = (movegen::generate_attackers_of(&board, Player::White, to)
-        | movegen::generate_attackers_of(&board, Player::Black, to))
+    if is_en_passant {
+        occupied ^= game.en_passant_target.unwrap().bb();
+    }
+
+    let mut diagonal_sliders = (board.white_pieces().diagonal_sliders()
+        | board.black_pieces().diagonal_sliders())
         & occupied;
 
+    let mut orthorgonal_sliders = (board.white_pieces().orthogonal_sliders()
+        | board.black_pieces().orthogonal_sliders())
+        & occupied;
+
+    let mut attackers = movegen::all_attackers_of(board, to, occupied) & occupied;
+
     let mut color = game.player;
+
+    println!("After starting:");
+    println!("  Score: {:?}", score);
+    println!("  Occupied squares: {:?}", occupied);
+    println!("  Attackers: {:?}", attackers);
 
     loop {
         color = color.other();
 
-        if (color == game.player && balance >= Eval(0))
-            || (color != game.player && balance <= Eval(0))
+        // If we're winning and it's our turn, we've won the exchange
+        if (color == game.player && score >= Eval(0)) || (color != game.player && score <= Eval(0))
         {
-            // dbg!("breaking");
             break;
         }
 
@@ -103,9 +98,8 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
             break;
         }
 
-        // dbg!(color);
-        // dbg!(&my_attackers);
-
+        // Loop through potential attackers in order of value, and stop whenever we've found one
+        // we can use
         let mut attacker_sq = None;
         for potential_attacker_kind in PieceKind::ALL {
             let mut potential_attacker_squares =
@@ -118,39 +112,42 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
         }
 
         let attacker_sq = attacker_sq.unwrap();
-        let attacker_type = board.piece_at(attacker_sq).unwrap().kind;
+        let attacker = board.piece_at(attacker_sq).unwrap().kind;
 
-        // Take the attacker that just attacked
-        occupied.unset_inplace(attacker_sq);
+        // If we capture with a king and the opponent is attacking the square, we just captured into
+        // check
+        if attacker == PieceKind::King && (attackers & board.pieces(color.other()).all()).any() {
+            break;
+        }
+
+        // The attacker that just captured is no longer on its old square
+        occupied ^= attacker_sq.bb();
         attackers &= occupied;
         diagonal_sliders &= occupied;
         orthorgonal_sliders &= occupied;
 
-        if attacker_type == PieceKind::Pawn
-            || attacker_type == PieceKind::Bishop
-            || attacker_type == PieceKind::Queen
+        if attacker == PieceKind::Pawn
+            || attacker == PieceKind::Bishop
+            || attacker == PieceKind::Queen
         {
             attackers |= tables::bishop_attacks(to, occupied) & diagonal_sliders;
         }
 
-        if attacker_type == PieceKind::Rook || attacker_type == PieceKind::Queen {
+        if attacker == PieceKind::Rook || attacker == PieceKind::Queen {
             attackers |= tables::rook_attacks(to, occupied) & orthorgonal_sliders;
         }
 
-        // dbg!(attackers);
-
         if color == game.player {
-            balance += piece_value(victim);
+            score += piece_value(victim);
         } else {
-            balance -= piece_value(victim);
+            score -= piece_value(victim);
         }
 
-        // dbg!(balance);
-
-        victim = attacker_type;
+        // The attacker that just captured is the next piece to be captured
+        victim = attacker;
     }
 
-    balance >= Eval(0)
+    score >= Eval(0)
 }
 
 #[cfg(test)]
@@ -195,19 +192,19 @@ mod tests {
         crate::init();
 
         #[rustfmt::skip]
-        const SEE_SUITE: [(&str, &str, i16, bool); 1] = [
-            // ("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 1", "e1e5", 0, true),
-            // ("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 1", "d3e5", 0, false),
-            // ("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", "g2h3", 0, true),
-            // ("k3r3/8/8/4p3/8/2B5/1B6/K7 w - - 0 1", "c3e5", 0, true),
-            // ("4kbnr/p1P4p/b1q5/5pP1/4n3/5Q2/PP1PPP1P/RNB1KBNR w KQk f6 0 1", "g5f6", 0, true),
-            // ("6k1/1pp4p/p1pb4/6q1/3P1pRr/2P4P/PP1Br1P1/5RKN w - - 0 1", "f1f4", 0, false),
-            // ("6RR/4bP2/8/8/5r2/3K4/5p2/4k3 w - - 0 1", "f7f8q", 0, true),
-            // ("r1bqk1nr/pppp1ppp/2n5/1B2p3/1b2P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1", "e1g1", 0, true),
-            // ("4kbnr/p1P1pppp/b7/4q3/7n/8/PPQPPPPP/RNB1KBNR w KQk - 0 1", "c7c8q", 0, true),
-            // ("4kbnr/p1P1pppp/b7/4q3/7n/8/PP1PPPPP/RNBQKBNR w KQk - 0 1", "c7c8q", 0, false),
-            // ("3r3k/3r4/2n1n3/8/3p4/2PR4/1B1Q4/3R3K w - - 0 1", "d3d4", 0, false),
-            ("5rk1/1pp2q1p/p1pb4/8/3P1NP1/2P5/1P1BQ1P1/5RK1 b - - 0 1", "d6f4", 0, false),
+        const SEE_SUITE: [(&str, &str, i16, bool); 11] = [
+            ("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 1", "e1e5", 0, true),
+            ("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 1", "d3e5", 0, false),
+            ("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", "g2h3", 0, true),
+            ("k3r3/8/8/4p3/8/2B5/1B6/K7 w - - 0 1", "c3e5", 0, true),
+            ("4kbnr/p1P4p/b1q5/5pP1/4n3/5Q2/PP1PPP1P/RNB1KBNR w KQk f6 0 1", "g5f6", 0, true),
+            ("6k1/1pp4p/p1pb4/6q1/3P1pRr/2P4P/PP1Br1P1/5RKN w - - 0 1", "f1f4", 0, false),
+            ("6RR/4bP2/8/8/5r2/3K4/5p2/4k3 w - - 0 1", "f7f8q", 0, true),
+            ("r1bqk1nr/pppp1ppp/2n5/1B2p3/1b2P3/5N2/PPPP1PPP/RNBQK2R w KQkq - 0 1", "e1g1", 0, true),
+            ("4kbnr/p1P1pppp/b7/4q3/7n/8/PPQPPPPP/RNB1KBNR w KQk - 0 1", "c7c8q", 0, true),
+            ("4kbnr/p1P1pppp/b7/4q3/7n/8/PP1PPPPP/RNBQKBNR w KQk - 0 1", "c7c8q", 0, false),
+            ("3r3k/3r4/2n1n3/8/3p4/2PR4/1B1Q4/3R3K w - - 0 1", "d3d4", 0, false),
+            // ("5rk1/1pp2q1p/p1pb4/8/3P1NP1/2P5/1P1BQ1P1/5RK1 b - - 0 1", "d6f4", 0, false),
             // ("5rk1/1pp2q1p/p1pb4/8/3P1NP1/2P5/1P1BQ1P1/5RK1 b - - 0 1", "d6f4", -100, true),
         ];
 
@@ -228,7 +225,7 @@ mod tests {
         crate::init();
 
         #[rustfmt::skip]
-            let suite: Vec<(&str, &str, i16, bool)> = vec![
+        let suite: Vec<(&str, &str, i16, bool)> = vec![
             ("6k1/1pp4p/p1pb4/6q1/3P1pRr/2P4P/PP1Br1P1/5RKN w - - 0 1", "f1f4", -100, true),
             ("5rk1/1pp2q1p/p1pb4/8/3P1NP1/2P5/1P1BQ1P1/5RK1 b - - 0 1", "d6f4", 0, true),
             ("4R3/2r3p1/5bk1/1p1r3p/p2PR1P1/P1BK1P2/1P6/8 b - - 0 1", "h5g4", 0, true),

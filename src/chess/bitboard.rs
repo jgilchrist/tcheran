@@ -269,6 +269,20 @@ impl std::ops::BitOrAssign<Square> for Bitboard {
     }
 }
 
+impl std::ops::BitXor for Bitboard {
+    type Output = Self;
+
+    fn bitxor(self, rhs: Self) -> Self::Output {
+        Self(self.0 ^ rhs.0)
+    }
+}
+
+impl std::ops::BitXorAssign for Bitboard {
+    fn bitxor_assign(&mut self, rhs: Self) {
+        self.0 = self.0 ^ rhs.0;
+    }
+}
+
 impl std::ops::Not for Bitboard {
     type Output = Self;
 
