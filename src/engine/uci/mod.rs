@@ -35,6 +35,7 @@ use crate::engine::search::{
     CapturingReporter, Clocks, Control, NullControl, PersistentState, Reporter, SearchRestrictions,
     SearchScore, TimeControl,
 };
+use crate::engine::util::log;
 pub use r#move::UciMove;
 
 #[derive(Clone)]
@@ -486,6 +487,9 @@ impl Uci {
 
         for line in stdin_lines {
             let line = line.unwrap();
+
+            log::crashlog(&line);
+
             let should_continue = self.run_line(&line).map_err(|e| format!("Error: {e}"))?;
 
             if !should_continue {
