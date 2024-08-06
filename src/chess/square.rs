@@ -12,7 +12,7 @@ pub const FILES: [File; File::N] = [
     File::H,
 ];
 
-#[derive(PartialEq, Eq, Clone, Copy, Ord, PartialOrd)]
+#[derive(PartialEq, Eq, Clone, Copy, Ord, PartialOrd, Hash)]
 pub enum File {
     A,
     B,

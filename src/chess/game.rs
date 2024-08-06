@@ -217,14 +217,15 @@ impl Game {
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
-        self.incremental_eval.set_at(sq, piece);
+        self.incremental_eval.set_at(&self.board, sq, piece);
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_at(sq).unwrap();
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
-        self.incremental_eval.remove_at(sq, removed_piece);
+        self.incremental_eval
+            .remove_at(&self.board, sq, removed_piece);
         removed_piece
     }
 

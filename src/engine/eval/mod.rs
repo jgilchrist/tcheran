@@ -6,11 +6,13 @@ mod white_eval;
 
 use crate::chess::board::Board;
 pub use player_eval::Eval;
+use std::collections::HashSet;
 pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
-use crate::chess::piece::Piece;
-use crate::chess::square::Square;
+use crate::chess::piece::{Piece, PieceKind};
+use crate::chess::player::Player;
+use crate::chess::square::{File, Square, FILES};
 pub use crate::engine::eval::tapered_eval::PhasedEval;
 
 pub fn init() {
@@ -22,17 +24,72 @@ pub struct IncrementalEvalFields {
     pub phase_value: i16,
 
     pub piece_square_tables: PhasedEval,
+
+    pub doubled_pawn_files_white: HashSet<File>,
+    pub doubled_pawn_files_black: HashSet<File>,
 }
 
 impl IncrementalEvalFields {
-    pub fn set_at(&mut self, sq: Square, piece: Piece) {
+    pub fn set_at(&mut self, board: &Board, sq: Square, piece: Piece) {
         self.phase_value += tapered_eval::piece_phase_value_contribution(piece.kind);
         self.piece_square_tables += piece_square_tables::piece_contributions(sq, piece);
+
+        if piece.kind == PieceKind::Pawn {
+            let file = sq.file();
+
+            let is_doubled_pawn_on_file =
+                (board.pieces(piece.player).pawns() & file.bitboard()).count() > 1;
+
+            match piece.player {
+                Player::White => match is_doubled_pawn_on_file {
+                    true => {
+                        self.doubled_pawn_files_white.insert(file);
+                    }
+                    false => {
+                        self.doubled_pawn_files_white.remove(&file);
+                    }
+                },
+                Player::Black => match is_doubled_pawn_on_file {
+                    true => {
+                        self.doubled_pawn_files_black.insert(file);
+                    }
+                    false => {
+                        self.doubled_pawn_files_black.remove(&file);
+                    }
+                },
+            }
+        }
     }
 
-    pub fn remove_at(&mut self, sq: Square, piece: Piece) {
+    pub fn remove_at(&mut self, board: &Board, sq: Square, piece: Piece) {
         self.phase_value -= tapered_eval::piece_phase_value_contribution(piece.kind);
         self.piece_square_tables -= piece_square_tables::piece_contributions(sq, piece);
+
+        if piece.kind == PieceKind::Pawn {
+            let file = sq.file();
+
+            let is_doubled_pawn_on_file =
+                (board.pieces(piece.player).pawns() & file.bitboard()).count() > 1;
+
+            match piece.player {
+                Player::White => match is_doubled_pawn_on_file {
+                    true => {
+                        self.doubled_pawn_files_white.insert(file);
+                    }
+                    false => {
+                        self.doubled_pawn_files_white.remove(&file);
+                    }
+                },
+                Player::Black => match is_doubled_pawn_on_file {
+                    true => {
+                        self.doubled_pawn_files_black.insert(file);
+                    }
+                    false => {
+                        self.doubled_pawn_files_black.remove(&file);
+                    }
+                },
+            }
+        }
     }
 }
 
@@ -41,10 +98,31 @@ impl IncrementalEvalFields {
         let phase_value = tapered_eval::phase_value(board);
         let piece_square_tables = piece_square_tables::eval(board);
 
+        let mut doubled_pawn_files_white = HashSet::new();
+        let mut doubled_pawn_files_black = HashSet::new();
+
+        for f in FILES {
+            let has_doubled_white_pawn =
+                (board.pieces(Player::White).pawns() & f.bitboard()).count() > 1;
+            let has_doubled_black_pawn =
+                (board.pieces(Player::Black).pawns() & f.bitboard()).count() > 1;
+
+            if has_doubled_white_pawn {
+                doubled_pawn_files_white.insert(f);
+            }
+
+            if has_doubled_black_pawn {
+                doubled_pawn_files_black.insert(f);
+            }
+        }
+
         Self {
             phase_value,
 
             piece_square_tables,
+
+            doubled_pawn_files_white,
+            doubled_pawn_files_black,
         }
     }
 }
@@ -54,11 +132,9 @@ pub fn eval(game: &Game) -> Eval {
     Eval::from_white_eval(absolute_eval, game.player)
 }
 
-pub fn absolute_eval(
-    game: &Game,
-) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables + 
-pawn_structure::eval(&game.board);
+pub fn absolute_eval(game: &Game) -> WhiteEval {
+    let eval =
+        game.incremental_eval.piece_square_tables + pawn_structure::eval(&game.incremental_eval);
 
     tapered_eval::taper(game.incremental_eval.phase_value, eval)
 }

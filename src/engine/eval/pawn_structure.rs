@@ -1,28 +1,21 @@
-use crate::chess::board::Board;
-use crate::chess::square;
-use crate::engine::eval::PhasedEval;
+use crate::engine::eval::{IncrementalEvalFields, PhasedEval};
 
 const DOUBLED_PAWN_MALUS: PhasedEval = PhasedEval::new(-20, -20);
 
-fn doubled_pawn_malus(board: &Board) -> PhasedEval {
+fn doubled_pawn_malus(incremental_eval_fields: &IncrementalEvalFields) -> PhasedEval {
     let mut eval = PhasedEval::ZERO;
 
-    let white_pawns = board.white_pieces().pawns();
-    let black_pawns = board.black_pieces().pawns();
+    for _ in &incremental_eval_fields.doubled_pawn_files_white {
+        eval += DOUBLED_PAWN_MALUS;
+    }
 
-    for file in square::FILES {
-        if (white_pawns & file.bitboard()).count() > 1 {
-            eval += DOUBLED_PAWN_MALUS;
-        }
-
-        if (black_pawns & file.bitboard()).count() > 1 {
-            eval -= DOUBLED_PAWN_MALUS;
-        }
+    for _ in &incremental_eval_fields.doubled_pawn_files_black {
+        eval -= DOUBLED_PAWN_MALUS;
     }
 
     eval
 }
 
-pub fn eval(board: &Board) -> PhasedEval {
-    doubled_pawn_malus(board)
+pub fn eval(incremental_eval_fields: &IncrementalEvalFields) -> PhasedEval {
+    doubled_pawn_malus(incremental_eval_fields)
 }
