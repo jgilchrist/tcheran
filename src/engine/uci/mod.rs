@@ -439,7 +439,7 @@ impl Uci {
 
                 let game = Game::new();
                 let time_control = TimeControl::Infinite;
-                let search_restrictions = SearchRestrictions { depth: Some(11) };
+                let search_restrictions = SearchRestrictions { depth: Some(8) };
 
                 let _ = search::search(
                     &game,

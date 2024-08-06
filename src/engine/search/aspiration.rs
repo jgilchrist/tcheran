@@ -63,34 +63,34 @@ pub fn aspiration_search(
     time_control: &TimeStrategy,
     control: &impl Control,
 ) -> Result<Eval, ()> {
-    let mut window = if depth < params::ASPIRATION_MIN_DEPTH {
-        Window::no_window()
-    } else {
-        Window::around(eval.unwrap(), params::ASPIRATION_WINDOW_SIZE)
+    let mut window = // if depth < params::ASPIRATION_MIN_DEPTH {
+        Window::no_window();
+    // } else {
+    //     Window::around(eval.unwrap(), params::ASPIRATION_WINDOW_SIZE)
+    // };
+
+    // loop {
+    let Ok(eval) = negamax::negamax(
+        game,
+        window.alpha,
+        window.beta,
+        depth,
+        0,
+        persistent_state,
+        pv,
+        time_control,
+        state,
+        control,
+    ) else {
+        return Err(());
     };
 
-    loop {
-        let Ok(eval) = negamax::negamax(
-            game,
-            window.alpha,
-            window.beta,
-            depth,
-            0,
-            persistent_state,
-            pv,
-            time_control,
-            state,
-            control,
-        ) else {
-            return Err(());
-        };
-
-        if eval <= window.alpha {
-            window.widen_down();
-        } else if eval >= window.beta {
-            window.widen_up();
-        } else {
-            return Ok(eval);
-        }
-    }
+    // if eval <= window.alpha {
+    //     window.widen_down();
+    // } else if eval >= window.beta {
+    //     window.widen_up();
+    // } else {
+    return Ok(eval);
+    // }
+    // }
 }

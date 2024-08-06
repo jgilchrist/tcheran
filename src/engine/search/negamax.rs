@@ -70,58 +70,58 @@ pub fn negamax(
     let mut previous_best_move: Option<Move> = None;
 
     if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
-        if !is_root && tt_entry.depth >= depth {
-            let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
-
-            match tt_entry.bound {
-                NodeBound::Exact => return Ok(tt_score),
-                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(tt_score),
-                NodeBound::Lower if tt_entry.eval >= beta => return Ok(tt_score),
-                _ => {}
-            }
-        }
+        // if !is_root && tt_entry.depth >= depth {
+        //     let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
+        //
+        //     match tt_entry.bound {
+        //         NodeBound::Exact => return Ok(tt_score),
+        //         NodeBound::Upper if tt_entry.eval <= alpha => return Ok(tt_score),
+        //         NodeBound::Lower if tt_entry.eval >= beta => return Ok(tt_score),
+        //         _ => {}
+        //     }
+        // }
 
         previous_best_move = tt_entry.best_move.as_ref().map(TTMove::to_move);
     }
 
-    if !is_root && !is_pv && !in_check {
-        let eval = eval::eval(game);
-
-        // Reverse futility pruning
-        if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
-            && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i16::from(depth) > beta
-        {
-            return Ok(beta);
-        }
-
-        // Null move pruning
-        if depth >= params::NULL_MOVE_PRUNING_DEPTH_LIMIT
-            && eval >= beta
-            // Don't let a player play a null move in response to a null move
-            && game.history.last().map_or(true, |m| m.mv.is_some())
-        {
-            game.make_null_move();
-
-            let null_score = -negamax(
-                game,
-                -beta,
-                -beta + Eval(1),
-                depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
-                plies + 1,
-                persistent_state,
-                &mut PrincipalVariation::new(),
-                time_control,
-                state,
-                control,
-            )?;
-
-            game.undo_null_move();
-
-            if null_score >= beta {
-                return Ok(null_score);
-            }
-        }
-    }
+    // if !is_root && !is_pv && !in_check {
+    //     let eval = eval::eval(game);
+    //
+    //     // Reverse futility pruning
+    //     if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
+    //         && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i16::from(depth) > beta
+    //     {
+    //         return Ok(beta);
+    //     }
+    //
+    //     // Null move pruning
+    //     if depth >= params::NULL_MOVE_PRUNING_DEPTH_LIMIT
+    //         && eval >= beta
+    //         // Don't let a player play a null move in response to a null move
+    //         && game.history.last().map_or(true, |m| m.mv.is_some())
+    //     {
+    //         game.make_null_move();
+    //
+    //         let null_score = -negamax(
+    //             game,
+    //             -beta,
+    //             -beta + Eval(1),
+    //             depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
+    //             plies + 1,
+    //             persistent_state,
+    //             &mut PrincipalVariation::new(),
+    //             time_control,
+    //             state,
+    //             control,
+    //         )?;
+    //
+    //         game.undo_null_move();
+    //
+    //         if null_score >= beta {
+    //             return Ok(null_score);
+    //         }
+    //     }
+    // }
 
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
