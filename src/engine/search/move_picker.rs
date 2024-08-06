@@ -199,7 +199,7 @@ impl MovePicker {
                 continue;
             }
 
-            if skip_bad_captures && !see(game, best_move, Eval(1)) {
+            if skip_bad_captures && !see(game, best_move, Eval(0)) {
                 continue;
             }
 
