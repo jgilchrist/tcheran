@@ -264,6 +264,7 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
+                self.persistent_state = Arc::new(Mutex::new(PersistentState::new()));
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
