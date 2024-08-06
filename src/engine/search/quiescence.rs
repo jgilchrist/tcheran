@@ -38,7 +38,13 @@ pub fn quiescence(
         return Err(());
     }
 
-    let eval = eval::eval(game);
+    let in_check = game.is_king_in_check();
+
+    let eval = if in_check {
+        Eval::mated_in(plies)
+    } else {
+        eval::eval(game)
+    };
 
     if eval >= beta {
         return Ok(beta);
@@ -49,10 +55,12 @@ pub fn quiescence(
     }
 
     let mut best_eval = eval;
+    let mut number_of_captures = 0;
 
     let mut moves = MovePicker::new_loud();
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
         game.make_move(mv);
+        number_of_captures += 1;
 
         let move_score = -quiescence(
             game,
@@ -78,6 +86,13 @@ pub fn quiescence(
 
         if move_score > alpha {
             alpha = move_score;
+        }
+    }
+
+    if in_check && number_of_captures == 0 {
+        let all_moves = game.moves();
+        if !all_moves.has_moves() {
+            return Ok(Eval::mated_in(plies));
         }
     }
 
