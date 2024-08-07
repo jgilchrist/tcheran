@@ -1,8 +1,8 @@
 use crate::chess::game::Game;
+use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
-use crate::chess::{movegen, san};
 use crate::engine::search::move_ordering::score_move;
 use crate::engine::search::{move_ordering, PersistentState, SearchState};
 
@@ -78,18 +78,10 @@ impl MovePicker {
     ) -> Option<Move> {
         use GenStage::*;
 
-        print!("[");
-        for i in 0..self.moves.len() {
-            let mv = self.moves.get(i);
-            print!("{:?}, ", san::format_move(game, mv));
-        }
-        println!("]");
-
         if self.stage == BestMove {
             self.stage = GenCaptures;
 
             if let Some(previous_best_move) = self.previous_best_move {
-                println!("yielded previous best move {previous_best_move:?}");
                 return Some(previous_best_move);
             }
         }
@@ -109,11 +101,9 @@ impl MovePicker {
                 // If the move we just picked was a losing capture, we're going to skip the rest of the captures.
                 // Record that, and skip the remainder of the captures since we'll be trying quiet moves next.
                 if score < move_ordering::GOOD_CAPTURE_SCORE {
-                    println!("saw first bad capture {mv:?} and skipped");
                     self.first_bad_capture = Some(self.idx - 1);
                     self.idx = self.captures_end;
                 } else {
-                    println!("yielded good capture {mv:?}");
                     return Some(mv);
                 }
             }
@@ -146,12 +136,10 @@ impl MovePicker {
             if let Some(killer1) = state.killer_moves.get_0(plies) {
                 for i in self.first_quiet..self.moves.len() {
                     if self.moves.get(i) == killer1 {
-                        let curr_move = self.moves.get(self.first_quiet);
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
                         if Some(killer1) != self.previous_best_move {
-                            println!("yielded first killer {killer1:?} at idx {i} and swapped with {curr_move:?}");
                             return Some(killer1);
                         }
                     }
@@ -174,12 +162,10 @@ impl MovePicker {
             if let Some(killer2) = state.killer_moves.get_1(plies) {
                 for i in self.first_quiet..self.moves.len() {
                     if self.moves.get(i) == killer2 {
-                        let curr_move = self.moves.get(self.first_quiet);
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
                         if Some(killer2) != self.previous_best_move {
-                            println!("yielded second killer {killer2:?} at idx {i} and swapped with {curr_move:?}");
                             return Some(killer2);
                         }
                     }
@@ -189,7 +175,6 @@ impl MovePicker {
 
         if self.stage == BadCaptures {
             if let Some((mv, _)) = self.next_best_move(self.captures_end) {
-                println!("yielded bad capture {mv:?}");
                 return Some(mv);
             }
 
@@ -214,7 +199,6 @@ impl MovePicker {
 
         if self.stage == Quiets {
             if let Some((mv, _)) = self.next_best_move(self.moves.len()) {
-                println!("yielded quiet {mv:?}");
                 return Some(mv);
             }
 
