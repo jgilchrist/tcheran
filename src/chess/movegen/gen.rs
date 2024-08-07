@@ -29,11 +29,9 @@ pub fn generate_legal_moves(game: &Game, moves: &mut MoveList) {
 }
 
 pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut MovegenCache) {
-    let our_pieces = game.board.pieces(game.player);
-    let their_pieces = game.board.pieces(game.player.other()).all();
-    let all_pieces = our_pieces.all() | their_pieces;
-
-    let king = our_pieces.king().single();
+    let all_pieces = game.board.occupancy();
+    let their_pieces = game.board.occupancy_for(game.player.other());
+    let king = game.board.king(game.player).single();
 
     let checkers = attackers::generate_attackers_of(&game.board, game.player, king);
     movegencache.checkers = checkers;
@@ -60,7 +58,7 @@ pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut M
     generate_pawn_captures(
         moves,
         game,
-        our_pieces.pawns(),
+        game.board.pawns(game.player),
         king,
         their_pieces,
         all_pieces,
@@ -71,7 +69,7 @@ pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut M
 
     generate_knight_captures(
         moves,
-        our_pieces.knights(),
+        game.board.knights(game.player),
         their_pieces,
         check_mask,
         orthogonal_pins,
@@ -79,7 +77,7 @@ pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut M
     );
     generate_diagonal_slider_captures(
         moves,
-        our_pieces.bishops() | our_pieces.queens(),
+        game.board.diagonal_sliders(game.player),
         their_pieces,
         all_pieces,
         check_mask,
@@ -88,7 +86,7 @@ pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut M
     );
     generate_orthogonal_slider_captures(
         moves,
-        our_pieces.rooks() | our_pieces.queens(),
+        game.board.orthogonal_sliders(game.player),
         their_pieces,
         all_pieces,
         check_mask,
@@ -99,11 +97,8 @@ pub fn generate_captures(game: &Game, moves: &mut MoveList, movegencache: &mut M
 }
 
 pub fn generate_quiets(game: &Game, moves: &mut MoveList, movegencache: &MovegenCache) {
-    let our_pieces = game.board.pieces(game.player);
-    let their_pieces = game.board.pieces(game.player.other()).all();
-    let all_pieces = our_pieces.all() | their_pieces;
-
-    let king = our_pieces.king().single();
+    let all_pieces = game.board.occupancy();
+    let king = game.board.king(game.player).single();
 
     let checkers = movegencache.checkers;
     let number_of_checkers = checkers.count();
@@ -122,7 +117,7 @@ pub fn generate_quiets(game: &Game, moves: &mut MoveList, movegencache: &Movegen
     generate_pawn_quiets(
         moves,
         game,
-        our_pieces.pawns(),
+        game.board.pawns(game.player),
         all_pieces,
         check_mask,
         orthogonal_pins,
@@ -130,7 +125,7 @@ pub fn generate_quiets(game: &Game, moves: &mut MoveList, movegencache: &Movegen
     );
     generate_knight_quiets(
         moves,
-        our_pieces.knights(),
+        game.board.knights(game.player),
         all_pieces,
         check_mask,
         orthogonal_pins,
@@ -138,7 +133,7 @@ pub fn generate_quiets(game: &Game, moves: &mut MoveList, movegencache: &Movegen
     );
     generate_diagonal_slider_quiets(
         moves,
-        our_pieces.bishops() | our_pieces.queens(),
+        game.board.diagonal_sliders(game.player),
         all_pieces,
         check_mask,
         orthogonal_pins,
@@ -146,7 +141,7 @@ pub fn generate_quiets(game: &Game, moves: &mut MoveList, movegencache: &Movegen
     );
     generate_orthogonal_slider_quiets(
         moves,
-        our_pieces.rooks() | our_pieces.queens(),
+        game.board.orthogonal_sliders(game.player),
         all_pieces,
         check_mask,
         orthogonal_pins,
