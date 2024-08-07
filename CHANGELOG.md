@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Do not allow TT cutoffs in PV nodes (~0 Elo)
+
 ### Misc
 
 * Avoid locking up the UCI thread if the 'Hash' option is set during a search
