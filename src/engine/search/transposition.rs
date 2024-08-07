@@ -15,7 +15,7 @@ pub enum NodeBound {
 pub struct SearchTranspositionTableData {
     pub bound: NodeBound,
     pub eval: Eval,
-    pub depth: i8,
+    pub depth: u8,
     pub age: u8,
     pub best_move: Option<TTMove>,
 }

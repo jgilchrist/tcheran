@@ -16,10 +16,10 @@ pub fn quiescence(
     state: &mut SearchState,
     control: &impl Control,
 ) -> Result<Eval, ()> {
-    state.max_depth_reached = state.max_depth_reached.max(plies as i8);
+    state.max_depth_reached = state.max_depth_reached.max(plies);
     state.nodes_visited += 1;
 
-    if plies == MAX_SEARCH_DEPTH as u8 {
+    if plies == MAX_SEARCH_DEPTH {
         return Ok(eval::eval(game));
     }
 

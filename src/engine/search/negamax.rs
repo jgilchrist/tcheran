@@ -14,7 +14,7 @@ pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
-    mut depth: i8,
+    mut depth: u8,
     plies: u8,
     persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
@@ -33,7 +33,7 @@ pub fn negamax(
         return Err(());
     }
 
-    state.max_depth_reached = state.max_depth_reached.max(plies as i8);
+    state.max_depth_reached = state.max_depth_reached.max(plies);
 
     if !is_root
         && (game.is_repeated_position()
@@ -50,7 +50,7 @@ pub fn negamax(
         depth += 1;
     }
 
-    if depth <= 0 {
+    if depth == 0 {
         return quiescence(
             game,
             alpha,
@@ -151,6 +151,7 @@ pub fn negamax(
                 control,
             )?
         } else {
+            let is_capture = game.board.piece_at(mv.dst).is_some();
             let lmr_reduction = if depth > 2 && number_of_legal_moves > 4 && !is_capture {
                 1 + depth / 8 + number_of_legal_moves / 16
             } else {
@@ -164,7 +165,7 @@ pub fn negamax(
                 game,
                 -alpha - Eval(1),
                 -alpha,
-                depth - 1,
+                (depth - 1).saturating_sub(lmr_reduction),
                 plies + 1,
                 persistent_state,
                 &mut node_pv,

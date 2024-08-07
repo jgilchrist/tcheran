@@ -21,7 +21,7 @@ mod tables;
 mod time_control;
 pub mod transposition;
 
-const MAX_SEARCH_DEPTH: i8 = i8::MAX;
+const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
 mod params {
@@ -35,7 +35,7 @@ mod params {
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
 
-    pub const REVERSE_FUTILITY_PRUNE_DEPTH: i8 = 4;
+    pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 
     pub const HISTORY_DECAY_FACTOR: i32 = 8;
@@ -59,7 +59,7 @@ pub struct SearchState {
     pub killer_moves: KillersTable,
 
     nodes_visited: u64,
-    max_depth_reached: i8,
+    max_depth_reached: u8,
 }
 
 impl SearchState {
