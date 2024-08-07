@@ -1,12 +1,10 @@
 use crate::chess::game::Game;
-use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::movelist::MoveList;
 use crate::chess::moves::Move;
+use crate::chess::{movegen, san};
 use crate::engine::search::move_ordering::score_move;
-use crate::engine::search::move_picker::GenStage::BadCaptures;
 use crate::engine::search::{move_ordering, PersistentState, SearchState};
-use GenStage::Done;
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -16,6 +14,8 @@ enum GenStage {
     GenCaptures,
     GoodCaptures,
     GenQuiets,
+    Killer1,
+    Killer2,
     BadCaptures,
     ScoreQuiets,
     Quiets,
@@ -33,6 +33,7 @@ pub struct MovePicker {
     idx: usize,
     captures_end: usize,
     first_bad_capture: Option<usize>,
+    first_quiet: usize,
 }
 
 impl MovePicker {
@@ -48,6 +49,7 @@ impl MovePicker {
             idx: 0,
             captures_end: 0,
             first_bad_capture: None,
+            first_quiet: 0,
         }
     }
 
@@ -63,6 +65,7 @@ impl MovePicker {
             idx: 0,
             captures_end: 0,
             first_bad_capture: None,
+            first_quiet: 0,
         }
     }
 
@@ -73,60 +76,132 @@ impl MovePicker {
         state: &SearchState,
         plies: u8,
     ) -> Option<Move> {
-        if self.stage == GenStage::BestMove {
-            self.stage = GenStage::GenCaptures;
+        use GenStage::*;
+
+        print!("[");
+        for i in 0..self.moves.len() {
+            let mv = self.moves.get(i);
+            print!("{:?}, ", san::format_move(game, mv));
+        }
+        println!("]");
+
+        if self.stage == BestMove {
+            self.stage = GenCaptures;
 
             if let Some(previous_best_move) = self.previous_best_move {
+                println!("yielded previous best move {previous_best_move:?}");
                 return Some(previous_best_move);
             }
         }
 
-        if self.stage == GenStage::GenCaptures {
-            self.stage = GenStage::GoodCaptures;
+        if self.stage == GenCaptures {
+            self.stage = GoodCaptures;
 
             movegen::generate_captures(game, &mut self.moves, &mut self.movegencache);
 
             self.captures_end = self.moves.len();
+            self.first_quiet = self.moves.len();
             self.score_moves(0, self.captures_end, plies, game, state, persistent_state);
         }
 
-        if self.stage == GenStage::GoodCaptures {
+        if self.stage == GoodCaptures {
             if let Some((mv, score)) = self.next_best_move(self.captures_end) {
                 // If the move we just picked was a losing capture, we're going to skip the rest of the captures.
                 // Record that, and skip the remainder of the captures since we'll be trying quiet moves next.
                 if score < move_ordering::GOOD_CAPTURE_SCORE {
+                    println!("saw first bad capture {mv:?} and skipped");
                     self.first_bad_capture = Some(self.idx - 1);
                     self.idx = self.captures_end;
                 } else {
+                    println!("yielded good capture {mv:?}");
                     return Some(mv);
                 }
             }
 
             if self.only_captures {
-                self.stage = Done;
-                // match self.first_bad_capture {
-                //     // If we didn't see any bad captures before, we can skip straight to the end
-                //     None => self.stage = Done,
-                //
-                //     // If we saw any bad captures, go back and try those too
-                //     Some(first_bad_capture_idx) => {
-                //         self.idx = first_bad_capture_idx;
-                //         self.stage = GenStage::BadCaptures;
-                //     }
-                // }
+                match self.first_bad_capture {
+                    // If we didn't see any bad captures before, we can skip straight to the end
+                    None => self.stage = Done,
+
+                    // If we saw any bad captures, go back and try those too
+                    Some(first_bad_capture_idx) => {
+                        self.idx = first_bad_capture_idx;
+                        self.stage = BadCaptures;
+                    }
+                }
             } else {
-                self.stage = GenStage::GenQuiets;
+                self.stage = GenQuiets;
             };
         }
 
-        if self.stage == GenStage::GenQuiets {
-            self.stage = GenStage::ScoreQuiets;
+        if self.stage == GenQuiets {
+            self.stage = Killer1;
 
             movegen::generate_quiets(game, &mut self.moves, &self.movegencache);
         }
 
-        if self.stage == GenStage::ScoreQuiets {
-            self.stage = GenStage::Quiets;
+        if self.stage == Killer1 {
+            self.stage = Killer2;
+
+            if let Some(killer1) = state.killer_moves.get_0(plies) {
+                for i in self.first_quiet..self.moves.len() {
+                    if self.moves.get(i) == killer1 {
+                        let curr_move = self.moves.get(self.first_quiet);
+                        self.moves.swap(self.first_quiet, i);
+                        self.first_quiet += 1;
+
+                        if Some(killer1) != self.previous_best_move {
+                            println!("yielded first killer {killer1:?} at idx {i} and swapped with {curr_move:?}");
+                            return Some(killer1);
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.stage == Killer2 {
+            match self.first_bad_capture {
+                // If we didn't see any bad captures before, we can skip straight to the end
+                None => self.stage = ScoreQuiets,
+
+                // If we saw any bad captures, go back and try those too
+                Some(first_bad_capture_idx) => {
+                    self.idx = first_bad_capture_idx;
+                    self.stage = BadCaptures;
+                }
+            }
+
+            if let Some(killer2) = state.killer_moves.get_1(plies) {
+                for i in self.first_quiet..self.moves.len() {
+                    if self.moves.get(i) == killer2 {
+                        let curr_move = self.moves.get(self.first_quiet);
+                        self.moves.swap(self.first_quiet, i);
+                        self.first_quiet += 1;
+
+                        if Some(killer2) != self.previous_best_move {
+                            println!("yielded second killer {killer2:?} at idx {i} and swapped with {curr_move:?}");
+                            return Some(killer2);
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.stage == BadCaptures {
+            if let Some((mv, _)) = self.next_best_move(self.captures_end) {
+                println!("yielded bad capture {mv:?}");
+                return Some(mv);
+            }
+
+            self.stage = match self.only_captures {
+                false => ScoreQuiets,
+                true => Done,
+            };
+        }
+
+        if self.stage == ScoreQuiets {
+            self.stage = Quiets;
+            self.idx = self.first_quiet;
             self.score_moves(
                 self.idx,
                 self.moves.len(),
@@ -137,26 +212,13 @@ impl MovePicker {
             );
         }
 
-        if self.stage == GenStage::Quiets {
+        if self.stage == Quiets {
             if let Some((mv, _)) = self.next_best_move(self.moves.len()) {
+                println!("yielded quiet {mv:?}");
                 return Some(mv);
             }
 
-            match self.first_bad_capture {
-                None => self.stage = Done,
-                Some(first_bad_capture_idx) => {
-                    self.idx = first_bad_capture_idx;
-                    self.stage = BadCaptures;
-                }
-            }
-        }
-
-        if self.stage == GenStage::BadCaptures {
-            if let Some((mv, _)) = self.next_best_move(self.captures_end) {
-                return Some(mv);
-            }
-
-            self.stage = GenStage::Done;
+            self.stage = Done;
         }
 
         if self.stage == Done {

@@ -137,7 +137,16 @@ fn movepicker_perft(
     if test_individual_node_move_counts {
         let legal_moves = game.moves().to_vec();
 
-        assert_eq!(moves_at_this_node.len(), legal_moves.len(), "At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, state.killer_moves.get_0(depth), state.killer_moves.get_1(depth));
+        if moves_at_this_node.len() < legal_moves.len() {
+            let missing_moves = legal_moves
+                .iter()
+                .filter(|m| !moves_at_this_node.contains(m))
+                .collect::<Vec<_>>();
+
+            panic!("At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}\nMissing moves: {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, state.killer_moves.get_0(depth), state.killer_moves.get_1(depth), missing_moves);
+        }
+
+        assert_eq!(moves_at_this_node.len(), legal_moves.len(),);
     }
 
     moves
