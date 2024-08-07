@@ -336,7 +336,6 @@ impl std::fmt::Display for Bitboard {
 }
 
 #[rustfmt::skip]
-#[allow(unused)]
 pub mod bitboards {
     use super::*;
     use crate::chess::player::Player;
@@ -353,13 +352,6 @@ pub mod bitboards {
                 Player::White => (WHITE_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, WHITE_QUEENSIDE_CASTLE_TARGET_SQUARE, WHITE_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
                 Player::Black => (BLACK_QUEENSIDE_CASTLE_REQUIRED_EMPTY_SQUARES, BLACK_QUEENSIDE_CASTLE_TARGET_SQUARE, BLACK_QUEENSIDE_CASTLE_MIDDLE_SQUARE),
             }
-        }
-    }
-
-    pub const fn back_rank(player: Player) -> Bitboard {
-        match player {
-            Player::White => RANK_1,
-            Player::Black => RANK_8,
         }
     }
 
@@ -480,7 +472,7 @@ pub mod bitboards {
         A2_BB.0 | C2_BB.0 | E2_BB.0 | G2_BB.0 |
         B1_BB.0 | D1_BB.0 | F1_BB.0 | H1_BB.0 );
 
-    #[rustfmt::skip]
+    #[allow(unused)]
     pub const DARK_SQUARES: Bitboard = Bitboard::new(
         B8_BB.0 | D8_BB.0 | F8_BB.0 | H8_BB.0 |
         A7_BB.0 | C7_BB.0 | E7_BB.0 | G7_BB.0 |

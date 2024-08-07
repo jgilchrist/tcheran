@@ -149,25 +149,6 @@ impl Game {
             .any(|h| h.zobrist == self.zobrist)
     }
 
-    #[allow(unused)]
-    pub fn is_stalemate_by_repetition(&self) -> bool {
-        let mut count = 0;
-
-        for seen_state in self.history.iter().rev().take(self.halfmove_clock as usize) {
-            if self.zobrist == seen_state.zobrist {
-                count += 1;
-            }
-
-            // We've seen the current state twice before, so it has occurred three times overall
-            // This is a draw by threefold repetition.
-            if count == 2 {
-                return true;
-            }
-        }
-
-        false
-    }
-
     pub fn is_stalemate_by_insufficient_material(&self) -> bool {
         let all_pieces = self.board.occupancy();
 

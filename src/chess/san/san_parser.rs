@@ -205,7 +205,6 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> 
     parse_move_squares(game, mv)
 }
 
-#[allow(unused)]
 pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
     if mv == san::KINGSIDE_CASTLE {
         return Ok(Move::new(

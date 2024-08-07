@@ -6,10 +6,12 @@ const QUEENSIDE_CASTLE: &str = "O-O-O";
 const CAPTURE: char = 'x';
 const PROMOTION: char = '=';
 const CHECK: char = '+';
+
+#[allow(unused)]
 const CHECKMATE: char = '#';
 
 #[allow(unused_imports)]
+#[allow(unused)]
 pub use san_parser::parse_move;
 
-#[allow(unused_imports)]
 pub use san_writer::format_move;

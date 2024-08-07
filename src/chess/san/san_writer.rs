@@ -12,7 +12,6 @@ enum AmbiguityResolution {
     Exact, // Two pieces on the same file or rank can move to the same square - specify the exact source square
 }
 
-#[allow(unused)]
 pub fn format_move(game: &Game, mv: Move) -> String {
     let from = mv.src;
     let to = mv.dst;
@@ -75,12 +74,16 @@ pub fn format_move(game: &Game, mv: Move) -> String {
 
     let promotion_specifier = match mv.promotion {
         None => "",
-        Some(p) => match p {
-            PromotionPieceKind::Knight => "=N",
-            PromotionPieceKind::Bishop => "=B",
-            PromotionPieceKind::Rook => "=R",
-            PromotionPieceKind::Queen => "=Q",
-        },
+        Some(p) => &format!(
+            "{}{}",
+            san::PROMOTION,
+            match p {
+                PromotionPieceKind::Knight => "N",
+                PromotionPieceKind::Bishop => "B",
+                PromotionPieceKind::Rook => "R",
+                PromotionPieceKind::Queen => "Q",
+            }
+        ),
     };
 
     let opponent_in_check_specifier = if places_opponent_in_check {

@@ -23,7 +23,6 @@ impl MoveList {
         Self::EMPTY_MOVELIST
     }
 
-    #[allow(unused)]
     pub fn clear(&mut self) {
         self.length = 0;
     }
@@ -52,12 +51,10 @@ impl MoveList {
         mv
     }
 
-    #[allow(unused)]
     pub fn len(&self) -> usize {
         self.length
     }
 
-    #[allow(unused)]
     pub fn has_moves(&self) -> bool {
         self.length > 0
     }
