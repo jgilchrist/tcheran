@@ -9,69 +9,9 @@ use crate::chess::bitboard::Bitboard;
 
 #[derive(Clone)]
 pub struct Board {
-    pieces: [PlayerPieces; Player::N],
+    pieces: [Bitboard; PieceKind::N],
+    colors: Bitboard,
     squares: [Option<Piece>; Square::N],
-}
-
-// Many engines store these in an array (or 2D array) by piece & player.
-// This avoids this approach for the initial implementation for simplicity.
-#[derive(Clone)]
-pub struct PlayerPieces([Bitboard; PieceKind::N]);
-
-impl PlayerPieces {
-    pub fn new(pieces: [Bitboard; PieceKind::N]) -> Self {
-        Self(pieces)
-    }
-
-    #[inline(always)]
-    pub(crate) fn all(&self) -> Bitboard {
-        self.pawns() | self.knights() | self.bishops() | self.rooks() | self.queens() | self.king()
-    }
-
-    #[inline(always)]
-    pub fn of_kind(&self, kind: PieceKind) -> Bitboard {
-        self.0[kind.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn pawns(&self) -> Bitboard {
-        self.0[PieceKind::Pawn.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn knights(&self) -> Bitboard {
-        self.0[PieceKind::Knight.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn bishops(&self) -> Bitboard {
-        self.0[PieceKind::Bishop.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn rooks(&self) -> Bitboard {
-        self.0[PieceKind::Rook.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn queens(&self) -> Bitboard {
-        self.0[PieceKind::Queen.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn king(&self) -> Bitboard {
-        self.0[PieceKind::King.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn diagonal_sliders(&self) -> Bitboard {
-        self.of_kind(PieceKind::Bishop) | self.of_kind(PieceKind::Queen)
-    }
-
-    #[inline(always)]
-    pub fn orthogonal_sliders(&self) -> Bitboard {
-        self.of_kind(PieceKind::Rook) | self.of_kind(PieceKind::Queen)
-    }
 }
 
 impl Board {
