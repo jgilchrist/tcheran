@@ -16,6 +16,7 @@
 * Clear `PersistentState` and `Control` on `ucinewgame` (fails SPRT at -9 Elo but is strictly more correct)
 * Add prettier search output if being used interactively
 * Rename `MoveProvider` -> `MovePicker` for consistency with other engines
+* Improved debug output when MovePicker perft tests fail
 
 ## [2.5]
 
