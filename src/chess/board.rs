@@ -25,6 +25,11 @@ impl Board {
         self.colors[player.array_idx()]
     }
 
+    #[inline(always)]
+    pub fn pieces_of_kind(&self, kind: PieceKind, player: Player) -> Bitboard {
+        self.pieces[kind.array_idx()] & self.colors[player.array_idx()]
+    }
+
     pub fn pawns(&self, player: Player) -> Bitboard {
         self.all_pawns() & self.colors[player.array_idx()]
     }
