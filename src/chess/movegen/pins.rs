@@ -49,7 +49,7 @@ mod tests {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
-        let king_square = game.board.pieces(game.player).king().single();
+        let king_square = game.board.king(game.player).single();
         let (orthogonal_pins, diagonal_pins) = get_pins(&game.board, game.player, king_square);
 
         assert_eq!(orthogonal_pins, expected_orthogonal_pins);
