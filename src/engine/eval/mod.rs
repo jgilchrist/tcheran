@@ -4,15 +4,15 @@ mod player_eval;
 mod tapered_eval;
 mod white_eval;
 
+use crate::chess::bitboard::Bitboard;
 use crate::chess::board::Board;
 pub use player_eval::Eval;
-use std::collections::HashSet;
 pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
 use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::player::Player;
-use crate::chess::square::{File, Square, FILES};
+use crate::chess::square::{Square, FILES};
 pub use crate::engine::eval::tapered_eval::PhasedEval;
 
 pub fn init() {
@@ -25,8 +25,7 @@ pub struct IncrementalEvalFields {
 
     pub piece_square_tables: PhasedEval,
 
-    pub doubled_pawn_files_white: HashSet<File>,
-    pub doubled_pawn_files_black: HashSet<File>,
+    pub doubled_pawn_files: [Bitboard; Player::N],
 }
 
 impl IncrementalEvalFields {
@@ -40,23 +39,10 @@ impl IncrementalEvalFields {
             let is_doubled_pawn_on_file =
                 (board.pieces(piece.player).pawns() & file.bitboard()).count() > 1;
 
-            match piece.player {
-                Player::White => match is_doubled_pawn_on_file {
-                    true => {
-                        self.doubled_pawn_files_white.insert(file);
-                    }
-                    false => {
-                        self.doubled_pawn_files_white.remove(&file);
-                    }
-                },
-                Player::Black => match is_doubled_pawn_on_file {
-                    true => {
-                        self.doubled_pawn_files_black.insert(file);
-                    }
-                    false => {
-                        self.doubled_pawn_files_black.remove(&file);
-                    }
-                },
+            if is_doubled_pawn_on_file {
+                self.doubled_pawn_files[piece.player.array_idx()] |= file.bitboard()
+            } else {
+                self.doubled_pawn_files[piece.player.array_idx()] ^= file.bitboard()
             }
         }
     }
@@ -71,23 +57,10 @@ impl IncrementalEvalFields {
             let is_doubled_pawn_on_file =
                 (board.pieces(piece.player).pawns() & file.bitboard()).count() > 1;
 
-            match piece.player {
-                Player::White => match is_doubled_pawn_on_file {
-                    true => {
-                        self.doubled_pawn_files_white.insert(file);
-                    }
-                    false => {
-                        self.doubled_pawn_files_white.remove(&file);
-                    }
-                },
-                Player::Black => match is_doubled_pawn_on_file {
-                    true => {
-                        self.doubled_pawn_files_black.insert(file);
-                    }
-                    false => {
-                        self.doubled_pawn_files_black.remove(&file);
-                    }
-                },
+            if is_doubled_pawn_on_file {
+                self.doubled_pawn_files[piece.player.array_idx()] ^= file.bitboard()
+            } else {
+                self.doubled_pawn_files[piece.player.array_idx()] |= file.bitboard()
             }
         }
     }
@@ -98,8 +71,8 @@ impl IncrementalEvalFields {
         let phase_value = tapered_eval::phase_value(board);
         let piece_square_tables = piece_square_tables::eval(board);
 
-        let mut doubled_pawn_files_white = HashSet::new();
-        let mut doubled_pawn_files_black = HashSet::new();
+        let mut doubled_pawn_files_white = Bitboard::EMPTY;
+        let mut doubled_pawn_files_black = Bitboard::EMPTY;
 
         for f in FILES {
             let has_doubled_white_pawn =
@@ -108,11 +81,11 @@ impl IncrementalEvalFields {
                 (board.pieces(Player::Black).pawns() & f.bitboard()).count() > 1;
 
             if has_doubled_white_pawn {
-                doubled_pawn_files_white.insert(f);
+                doubled_pawn_files_white |= f.bitboard();
             }
 
             if has_doubled_black_pawn {
-                doubled_pawn_files_black.insert(f);
+                doubled_pawn_files_black |= f.bitboard();
             }
         }
 
@@ -121,8 +94,7 @@ impl IncrementalEvalFields {
 
             piece_square_tables,
 
-            doubled_pawn_files_white,
-            doubled_pawn_files_black,
+            doubled_pawn_files: [doubled_pawn_files_white, doubled_pawn_files_black],
         }
     }
 }
