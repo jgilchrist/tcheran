@@ -142,25 +142,12 @@ impl Game {
     }
 
     pub fn is_repeated_position(&self) -> bool {
-        self.history
-            .iter()
-            .rev()
-            .take(self.halfmove_clock as usize)
-            .any(|h| h.zobrist == self.zobrist)
-    }
-
-    #[allow(unused)]
-    pub fn is_stalemate_by_repetition(&self) -> bool {
-        let mut count = 0;
-
         for seen_state in self.history.iter().rev().take(self.halfmove_clock as usize) {
-            if self.zobrist == seen_state.zobrist {
-                count += 1;
+            if seen_state.mv.is_none() {
+                return false;
             }
 
-            // We've seen the current state twice before, so it has occurred three times overall
-            // This is a draw by threefold repetition.
-            if count == 2 {
+            if self.zobrist == seen_state.zobrist {
                 return true;
             }
         }
