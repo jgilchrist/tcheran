@@ -73,6 +73,22 @@ impl Board {
         self.pieces[PieceKind::King.array_idx()]
     }
 
+    pub fn diagonal_sliders(&self, player: Player) -> Bitboard {
+        self.bishops(player) | self.queens(player)
+    }
+
+    pub fn all_diagonal_sliders(&self) -> Bitboard {
+        self.all_bishops() | self.all_queens()
+    }
+
+    pub fn orthogonal_sliders(&self, player: Player) -> Bitboard {
+        self.rooks(player) | self.queens(player)
+    }
+
+    pub fn all_orthogonal_sliders(&self) -> Bitboard {
+        self.all_rooks() | self.all_queens()
+    }
+
     #[inline(always)]
     pub fn piece_at(&self, square: Square) -> Option<Piece> {
         // We know array_idx can only return up to Square::N - 1
