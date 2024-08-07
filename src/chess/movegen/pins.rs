@@ -6,22 +6,21 @@ use crate::chess::player::Player;
 use crate::chess::square::Square;
 
 pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
-    let our_pieces = board.pieces(player).all();
-    let their_pieces = board.pieces(player.other());
-    let all_their_pieces = their_pieces.all();
-    let all_pieces = our_pieces | all_their_pieces;
+    let all_pieces = board.occupancy();
+    let our_pieces = board.occupancy_for(player);
+    let them = player.other();
 
     let mut orthogonal_pins = Bitboard::EMPTY;
     let potential_orthogonal_pinned = rook_attacks(king_square, all_pieces) & our_pieces;
     let without_potential_orthogonal_pinned_pieces = all_pieces & !potential_orthogonal_pinned;
     let orthogonal_pinners = rook_attacks(king_square, without_potential_orthogonal_pinned_pieces)
-        & (their_pieces.rooks() | their_pieces.queens());
+        & board.orthogonal_sliders(them);
 
     let mut diagonal_pins = Bitboard::EMPTY;
     let potential_diagonal_pinned = bishop_attacks(king_square, all_pieces) & our_pieces;
     let without_potential_diagonal_pinned_pieces = all_pieces & !potential_diagonal_pinned;
     let diagonal_pinners = bishop_attacks(king_square, without_potential_diagonal_pinned_pieces)
-        & (their_pieces.bishops() | their_pieces.queens());
+        & board.diagonal_sliders(them);
 
     for pinner in orthogonal_pinners {
         orthogonal_pins |= pinner.bb();
@@ -50,7 +49,7 @@ mod tests {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
 
-        let king_square = game.board.pieces(game.player).king().single();
+        let king_square = game.board.king(game.player).single();
         let (orthogonal_pins, diagonal_pins) = get_pins(&game.board, game.player, king_square);
 
         assert_eq!(orthogonal_pins, expected_orthogonal_pins);

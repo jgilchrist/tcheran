@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Store the board state as `[PieceOccupancy; Pieces]` and `[ColorOccupancy; Colors]` (~24 Elo)
 * Collect the principal variation during search (~18 Elo)
 * Skip losing captures in quiescence (~8 Elo)
 * Add aspiration windows (~5 Elo)

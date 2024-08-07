@@ -169,7 +169,7 @@ impl Game {
     }
 
     pub fn is_stalemate_by_insufficient_material(&self) -> bool {
-        let all_pieces = self.board.white_pieces().all() | self.board.black_pieces().all();
+        let all_pieces = self.board.occupancy();
 
         match all_pieces.count() {
             // King vs king is always a draw
@@ -177,21 +177,15 @@ impl Game {
 
             // If the sole remaining non-king piece on the board is a knight or bishop,
             // it's a draw
-            3 => (self.board.white_pieces().knights()
-                | self.board.black_pieces().knights()
-                | self.board.white_pieces().bishops()
-                | self.board.black_pieces().bishops())
-            .any(),
+            3 => (self.board.all_knights() | self.board.all_bishops()).any(),
 
             4 => {
-                let player_pieces = self.board.pieces(self.player);
-                let knights =
-                    self.board.white_pieces().knights() | self.board.black_pieces().knights();
-                let bishops =
-                    self.board.white_pieces().bishops() | self.board.black_pieces().bishops();
-                let kings = self.board.white_pieces().king() | self.board.black_pieces().king();
+                let player_pieces = self.board.occupancy_for(self.player);
+                let knights = self.board.all_knights();
+                let bishops = self.board.all_bishops();
+                let kings = self.board.all_kings();
 
-                let one_piece_each = player_pieces.all().count() == 2;
+                let one_piece_each = player_pieces.count() == 2;
 
                 let knight_count = knights.count();
                 let bishop_count = bishops.count();
@@ -302,7 +296,7 @@ impl Game {
         {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = self.board.pieces(other_player).pawns();
+            let enemy_pawns = self.board.pawns(other_player);
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {

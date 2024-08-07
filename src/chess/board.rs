@@ -9,90 +9,89 @@ use crate::chess::bitboard::Bitboard;
 
 #[derive(Clone)]
 pub struct Board {
-    pieces: [PlayerPieces; Player::N],
+    pieces: [Bitboard; PieceKind::N],
+    colors: [Bitboard; Player::N],
     squares: [Option<Piece>; Square::N],
-}
-
-// Many engines store these in an array (or 2D array) by piece & player.
-// This avoids this approach for the initial implementation for simplicity.
-#[derive(Clone)]
-pub struct PlayerPieces([Bitboard; PieceKind::N]);
-
-impl PlayerPieces {
-    pub fn new(pieces: [Bitboard; PieceKind::N]) -> Self {
-        Self(pieces)
-    }
-
-    #[inline(always)]
-    pub(crate) fn all(&self) -> Bitboard {
-        self.pawns() | self.knights() | self.bishops() | self.rooks() | self.queens() | self.king()
-    }
-
-    #[inline(always)]
-    pub fn of_kind(&self, kind: PieceKind) -> Bitboard {
-        self.0[kind.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn pawns(&self) -> Bitboard {
-        self.0[PieceKind::Pawn.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn knights(&self) -> Bitboard {
-        self.0[PieceKind::Knight.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn bishops(&self) -> Bitboard {
-        self.0[PieceKind::Bishop.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn rooks(&self) -> Bitboard {
-        self.0[PieceKind::Rook.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn queens(&self) -> Bitboard {
-        self.0[PieceKind::Queen.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn king(&self) -> Bitboard {
-        self.0[PieceKind::King.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn diagonal_sliders(&self) -> Bitboard {
-        self.of_kind(PieceKind::Bishop) | self.of_kind(PieceKind::Queen)
-    }
-
-    #[inline(always)]
-    pub fn orthogonal_sliders(&self) -> Bitboard {
-        self.of_kind(PieceKind::Rook) | self.of_kind(PieceKind::Queen)
-    }
 }
 
 impl Board {
     #[inline(always)]
-    pub fn pieces(&self, player: Player) -> &PlayerPieces {
-        &self.pieces[player.array_idx()]
-    }
-
-    #[inline(always)]
-    pub fn white_pieces(&self) -> &PlayerPieces {
-        self.pieces(Player::White)
-    }
-
-    #[inline(always)]
-    pub fn black_pieces(&self) -> &PlayerPieces {
-        self.pieces(Player::Black)
-    }
-
-    #[inline(always)]
     pub fn occupancy(&self) -> Bitboard {
-        self.white_pieces().all() | self.black_pieces().all()
+        self.occupancy_for(Player::White) | self.occupancy_for(Player::Black)
+    }
+
+    #[inline(always)]
+    pub fn occupancy_for(&self, player: Player) -> Bitboard {
+        self.colors[player.array_idx()]
+    }
+
+    #[inline(always)]
+    pub fn pieces_of_kind(&self, kind: PieceKind, player: Player) -> Bitboard {
+        self.pieces[kind.array_idx()] & self.colors[player.array_idx()]
+    }
+
+    pub fn pawns(&self, player: Player) -> Bitboard {
+        self.all_pawns() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_pawns(&self) -> Bitboard {
+        self.pieces[PieceKind::Pawn.array_idx()]
+    }
+
+    pub fn knights(&self, player: Player) -> Bitboard {
+        self.all_knights() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_knights(&self) -> Bitboard {
+        self.pieces[PieceKind::Knight.array_idx()]
+    }
+
+    pub fn bishops(&self, player: Player) -> Bitboard {
+        self.all_bishops() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_bishops(&self) -> Bitboard {
+        self.pieces[PieceKind::Bishop.array_idx()]
+    }
+
+    pub fn rooks(&self, player: Player) -> Bitboard {
+        self.all_rooks() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_rooks(&self) -> Bitboard {
+        self.pieces[PieceKind::Rook.array_idx()]
+    }
+
+    pub fn queens(&self, player: Player) -> Bitboard {
+        self.all_queens() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_queens(&self) -> Bitboard {
+        self.pieces[PieceKind::Queen.array_idx()]
+    }
+
+    pub fn king(&self, player: Player) -> Bitboard {
+        self.all_kings() & self.colors[player.array_idx()]
+    }
+
+    pub fn all_kings(&self) -> Bitboard {
+        self.pieces[PieceKind::King.array_idx()]
+    }
+
+    pub fn diagonal_sliders(&self, player: Player) -> Bitboard {
+        self.bishops(player) | self.queens(player)
+    }
+
+    pub fn all_diagonal_sliders(&self) -> Bitboard {
+        self.all_bishops() | self.all_queens()
+    }
+
+    pub fn orthogonal_sliders(&self, player: Player) -> Bitboard {
+        self.rooks(player) | self.queens(player)
+    }
+
+    pub fn all_orthogonal_sliders(&self) -> Bitboard {
+        self.all_rooks() | self.all_queens()
     }
 
     #[inline(always)]
@@ -107,19 +106,21 @@ impl Board {
             return false;
         };
 
-        self.pieces[piece.player.array_idx()].0[piece.kind.array_idx()].unset_inplace(square);
+        self.pieces[piece.kind.array_idx()] ^= square.bb();
+        self.colors[piece.player.array_idx()] ^= square.bb();
         self.squares[square.array_idx()] = None;
         true
     }
 
     #[inline(always)]
     pub fn set_at(&mut self, square: Square, piece: Piece) {
-        self.pieces[piece.player.array_idx()].0[piece.kind.array_idx()].set_inplace(square);
+        self.pieces[piece.kind.array_idx()] |= square.bb();
+        self.colors[piece.player.array_idx()] |= square.bb();
         self.squares[square.array_idx()] = Some(piece);
     }
 
     pub fn king_in_check(&self, player: Player) -> bool {
-        let king = self.pieces(player).king().single();
+        let king = self.king(player).single();
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);
         enemy_attackers.any()
     }
@@ -212,25 +213,22 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
             }
         }
 
+        let pawns = white_pawns | black_pawns;
+        let knights = white_knights | black_knights;
+        let bishops = white_bishops | black_bishops;
+        let rooks = white_rooks | black_rooks;
+        let queens = white_queens | black_queens;
+        let kings = white_king | black_king;
+
+        let white_occupancy =
+            white_pawns | white_knights | white_bishops | white_rooks | white_queens | white_king;
+
+        let black_occupancy =
+            black_pawns | black_knights | black_bishops | black_rooks | black_queens | black_king;
+
         Ok(Self {
-            pieces: [
-                PlayerPieces::new([
-                    white_pawns,
-                    white_knights,
-                    white_bishops,
-                    white_rooks,
-                    white_queens,
-                    white_king,
-                ]),
-                PlayerPieces([
-                    black_pawns,
-                    black_knights,
-                    black_bishops,
-                    black_rooks,
-                    black_queens,
-                    black_king,
-                ]),
-            ],
+            pieces: [pawns, knights, bishops, rooks, queens, kings],
+            colors: [white_occupancy, black_occupancy],
             squares,
         })
     }

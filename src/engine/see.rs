@@ -65,13 +65,8 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
         occupied ^= game.en_passant_target.unwrap().bb();
     }
 
-    let mut diagonal_sliders = (board.white_pieces().diagonal_sliders()
-        | board.black_pieces().diagonal_sliders())
-        & occupied;
-
-    let mut orthorgonal_sliders = (board.white_pieces().orthogonal_sliders()
-        | board.black_pieces().orthogonal_sliders())
-        & occupied;
+    let mut diagonal_sliders = board.all_diagonal_sliders() & occupied;
+    let mut orthorgonal_sliders = board.all_orthogonal_sliders() & occupied;
 
     let mut attackers = movegen::all_attackers_of(board, to, occupied) & occupied;
 
@@ -86,7 +81,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
             break;
         }
 
-        let my_attackers = attackers & board.pieces(color).all();
+        let my_attackers = attackers & board.occupancy_for(color);
         if my_attackers.is_empty() {
             break;
         }
@@ -96,7 +91,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
         let mut attacker_sq = None;
         for potential_attacker_kind in PieceKind::ALL {
             let mut potential_attacker_squares =
-                my_attackers & board.pieces(color).of_kind(potential_attacker_kind);
+                my_attackers & board.pieces_of_kind(potential_attacker_kind, color);
 
             if potential_attacker_squares.any() {
                 attacker_sq = Some(potential_attacker_squares.pop_lsb_inplace().single());
@@ -109,7 +104,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
 
         // If we capture with a king and the opponent is attacking the square, we just captured into
         // check
-        if attacker == PieceKind::King && (attackers & board.pieces(color.other()).all()).any() {
+        if attacker == PieceKind::King && (attackers & board.occupancy_for(color.other())).any() {
             break;
         }
 
