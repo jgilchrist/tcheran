@@ -2,7 +2,7 @@ use crate::chess::game::Game;
 use crate::engine::eval::Eval;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::{negamax, params, Control, PersistentState, SearchState};
+use crate::engine::search::{negamax, params, PersistentState, SearchState};
 
 struct Window {
     alpha: Eval,
@@ -61,7 +61,6 @@ pub fn aspiration_search(
     pv: &mut PrincipalVariation,
     state: &mut SearchState,
     time_control: &mut TimeStrategy,
-    control: &impl Control,
 ) -> Result<Eval, ()> {
     let mut window = if depth < params::ASPIRATION_MIN_DEPTH {
         Window::no_window()
@@ -80,7 +79,6 @@ pub fn aspiration_search(
             pv,
             time_control,
             state,
-            control,
         ) else {
             return Err(());
         };

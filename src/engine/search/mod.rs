@@ -18,7 +18,7 @@ mod negamax;
 mod principal_variation;
 mod quiescence;
 mod tables;
-mod time_control;
+pub mod time_control;
 pub mod transposition;
 
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
@@ -115,27 +115,6 @@ pub struct SearchStats {
     pub nodes_per_second: u64,
 }
 
-pub trait Control {
-    fn stop(&self);
-    fn reset(&self);
-
-    fn should_stop(&self) -> bool;
-    fn set_stopped(&self);
-}
-
-pub struct NullControl;
-
-impl Control for NullControl {
-    fn stop(&self) {}
-    fn reset(&self) {}
-
-    fn set_stopped(&self) {}
-
-    fn should_stop(&self) -> bool {
-        false
-    }
-}
-
 pub trait Reporter {
     #[allow(unused)]
     fn generic_report(&self, s: &str);
@@ -186,15 +165,12 @@ impl Reporter for CapturingReporter {
 pub fn search(
     game: &Game,
     persistent_state: &mut PersistentState,
-    time_control: &TimeControl,
+    time_strategy: &mut TimeStrategy,
     search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
-    control: &impl Control,
     reporter: &mut impl Reporter,
 ) -> Move {
     let mut state = SearchState::new();
-
-    let mut time_strategy = TimeStrategy::new(game, time_control, options);
 
     persistent_state.tt.new_generation();
     persistent_state
@@ -216,8 +192,7 @@ pub fn search(
         options,
         &mut state,
         &mut pv,
-        &mut time_strategy,
-        control,
+        time_strategy,
         reporter,
     );
 

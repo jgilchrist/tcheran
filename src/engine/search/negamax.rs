@@ -8,7 +8,7 @@ use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
 
-use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,
@@ -20,14 +20,13 @@ pub fn negamax(
     pv: &mut PrincipalVariation,
     time_control: &mut TimeStrategy,
     state: &mut SearchState,
-    control: &impl Control,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
     let is_pv = alpha != beta - Eval(1);
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if !is_root && (time_control.should_stop(state.nodes_visited) || control.should_stop()) {
+    if time_control.should_stop(state.nodes_visited) {
         return Err(());
     }
 
@@ -57,7 +56,6 @@ pub fn negamax(
             time_control,
             persistent_state,
             state,
-            control,
         );
     }
 
@@ -110,7 +108,6 @@ pub fn negamax(
                 &mut PrincipalVariation::new(),
                 time_control,
                 state,
-                control,
             )?;
 
             game.undo_null_move();
@@ -146,7 +143,6 @@ pub fn negamax(
                 &mut node_pv,
                 time_control,
                 state,
-                control,
             )?
         } else {
             // We already found a good move (i.e. we raised alpha).
@@ -162,7 +158,6 @@ pub fn negamax(
                 &mut node_pv,
                 time_control,
                 state,
-                control,
             )?;
 
             // Turns out the move we just searched could be better than our current PV, so we re-search
@@ -178,7 +173,6 @@ pub fn negamax(
                     &mut node_pv,
                     time_control,
                     state,
-                    control,
                 )?
             } else {
                 pvs_score

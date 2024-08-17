@@ -6,7 +6,7 @@ use crate::engine::search::aspiration::aspiration_search;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::{
-    Control, PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
+    PersistentState, Reporter, SearchInfo, SearchRestrictions, SearchScore, SearchState,
     SearchStats, MAX_SEARCH_DEPTH,
 };
 use crate::engine::util;
@@ -19,7 +19,6 @@ pub fn search(
     state: &mut SearchState,
     pv: &mut PrincipalVariation,
     time_control: &mut TimeStrategy,
-    control: &impl Control,
     reporter: &mut impl Reporter,
 ) -> Option<Move> {
     let mut best_move: Option<Move> = None;
@@ -37,7 +36,6 @@ pub fn search(
             pv,
             state,
             time_control,
-            control,
         ) else {
             break;
         };

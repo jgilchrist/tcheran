@@ -1,7 +1,6 @@
 //! Implementation of the Universal Chess Interface (UCI) protocol
 
 use std::io::{BufRead, IsTerminal};
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
@@ -11,7 +10,6 @@ use crate::chess::moves::Move;
 use crate::chess::{perft, san};
 
 use crate::engine::options::EngineOptions;
-use crate::engine::util::sync::LockLatch;
 use crate::engine::{eval, search, uci, util};
 use crate::uci::commands::DebugCommand;
 use crate::uci::options::UciOption;
@@ -31,45 +29,13 @@ pub mod responses;
 
 use crate::chess::game::Game;
 use crate::chess::player::Player;
+use crate::engine::search::time_control::{Control, TimeStrategy};
 use crate::engine::search::{
-    CapturingReporter, Clocks, Control, NullControl, PersistentState, Reporter, SearchRestrictions,
-    SearchScore, TimeControl,
+    CapturingReporter, Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore,
+    TimeControl,
 };
+use crate::engine::util::sync::LockLatch;
 pub use r#move::UciMove;
-
-#[derive(Clone)]
-pub struct UciControl {
-    stop: Arc<AtomicBool>,
-    is_stopped: Arc<LockLatch>,
-}
-
-impl UciControl {
-    pub fn new() -> Self {
-        Self {
-            stop: Arc::new(AtomicBool::new(false)),
-            is_stopped: Arc::new(LockLatch::new()),
-        }
-    }
-}
-
-impl search::Control for UciControl {
-    fn stop(&self) {
-        self.stop.store(true, Ordering::Relaxed);
-    }
-
-    fn reset(&self) {
-        self.stop.store(false, Ordering::Relaxed);
-        self.is_stopped.reset();
-    }
-
-    fn should_stop(&self) -> bool {
-        self.stop.load(Ordering::Relaxed)
-    }
-
-    fn set_stopped(&self) {
-        self.is_stopped.set();
-    }
-}
 
 #[derive(Clone)]
 pub struct UciReporter {
@@ -209,7 +175,8 @@ impl Reporter for UciReporter {
 }
 
 pub struct Uci {
-    control: UciControl,
+    control: Option<Control>,
+    is_stopped: Arc<LockLatch>,
     reporter: UciReporter,
     debug: bool,
     game: Game,
@@ -265,7 +232,8 @@ impl Uci {
             UciCommand::UciNewGame => {
                 self.game = Game::new();
                 self.persistent_state = Arc::new(Mutex::new(PersistentState::new()));
-                self.control.reset();
+
+                self.is_stopped.reset();
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
@@ -300,7 +268,6 @@ impl Uci {
             }) => {
                 let game = self.game.clone();
                 let options = self.options.clone();
-                let control = self.control.clone();
                 let mut reporter = self.reporter.clone();
 
                 let clocks = Clocks {
@@ -321,9 +288,15 @@ impl Uci {
                     time_control = TimeControl::Clocks(clocks);
                 }
 
+                let (mut time_strategy, control) =
+                    TimeStrategy::new(&self.game, &time_control, &options);
+
+                self.control = Some(control);
+
                 let search_restrictions = SearchRestrictions { depth: *depth };
 
                 let persistent_state = self.persistent_state.clone();
+                let is_stopped = self.is_stopped.clone();
 
                 let join_handle = std::thread::spawn(move || {
                     let mut persistent_state_handle = persistent_state.lock().unwrap();
@@ -332,15 +305,14 @@ impl Uci {
                     let best_move = search::search(
                         &game,
                         &mut persistent_state_handle,
-                        &time_control,
+                        &mut time_strategy,
                         &search_restrictions,
                         &options,
-                        &control,
                         &mut reporter,
                     );
 
                     reporter.best_move(&game, best_move);
-                    control.set_stopped();
+                    is_stopped.set();
                 });
 
                 if self.block_on_threads {
@@ -348,9 +320,12 @@ impl Uci {
                 }
             }
             UciCommand::Stop => {
-                self.control.stop();
-                self.control.is_stopped.wait();
-                self.control.reset();
+                if let Some(c) = self.control.as_mut() {
+                    c.stop();
+                    self.is_stopped.wait();
+                }
+
+                self.control = None;
             }
             UciCommand::D(debug_cmd) => match debug_cmd {
                 DebugCommand::PrintPosition => {
@@ -433,23 +408,22 @@ impl Uci {
             // For OpenBench to understand NPS values for different workers
             UciCommand::Bench => {
                 let mut bench_reporter = CapturingReporter::new();
-                let null_control = NullControl;
 
                 let persistent_state = self.persistent_state.clone();
                 let mut persistent_state_handle = persistent_state.lock().unwrap();
                 persistent_state_handle.tt.resize(16);
 
                 let game = Game::new();
-                let time_control = TimeControl::Infinite;
+                let (mut time_strategy, _) =
+                    TimeStrategy::new(&game, &TimeControl::Infinite, &self.options);
                 let search_restrictions = SearchRestrictions { depth: Some(11) };
 
                 let _ = search::search(
                     &game,
                     &mut persistent_state_handle,
-                    &time_control,
+                    &mut time_strategy,
                     &search_restrictions,
                     &self.options,
-                    &null_control,
                     &mut bench_reporter,
                 );
 
@@ -535,7 +509,8 @@ pub enum UciInputMode {
 
 pub fn uci(uci_input_mode: UciInputMode) -> Result<(), String> {
     let mut uci = Uci {
-        control: UciControl::new(),
+        control: None,
+        is_stopped: Arc::new(LockLatch::new()),
         reporter: UciReporter {
             pretty_output: std::io::stdin().is_terminal(),
         },

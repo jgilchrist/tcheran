@@ -4,7 +4,7 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::time_control::TimeStrategy;
 
-use super::{Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
@@ -14,7 +14,6 @@ pub fn quiescence(
     time_control: &mut TimeStrategy,
     persistent_state: &mut PersistentState,
     state: &mut SearchState,
-    control: &impl Control,
 ) -> Result<Eval, ()> {
     state.max_depth_reached = state.max_depth_reached.max(plies);
     state.nodes_visited += 1;
@@ -32,7 +31,7 @@ pub fn quiescence(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if time_control.should_stop(state.nodes_visited) || control.should_stop() {
+    if time_control.should_stop(state.nodes_visited) {
         return Err(());
     }
 
@@ -60,7 +59,6 @@ pub fn quiescence(
             time_control,
             persistent_state,
             state,
-            control,
         )?;
 
         game.undo_move();
