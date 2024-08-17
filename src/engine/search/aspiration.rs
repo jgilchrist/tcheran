@@ -60,7 +60,7 @@ pub fn aspiration_search(
     persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
     state: &mut SearchState,
-    time_control: &TimeStrategy,
+    time_control: &mut TimeStrategy,
     control: &impl Control,
 ) -> Result<Eval, ()> {
     let mut window = if depth < params::ASPIRATION_MIN_DEPTH {

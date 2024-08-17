@@ -17,6 +17,7 @@
 * Add prettier search output if being used interactively
 * Rename `MoveProvider` -> `MovePicker` for consistency with other engines
 * Improved debug output when MovePicker perft tests fail
+* Move search termination check into `TimeStrategy`
 
 ## [2.5]
 

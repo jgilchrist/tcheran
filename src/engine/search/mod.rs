@@ -195,7 +195,6 @@ pub fn search(
     let mut state = SearchState::new();
 
     let mut time_strategy = TimeStrategy::new(game, time_control, options);
-    time_strategy.init();
 
     persistent_state.tt.new_generation();
     persistent_state
@@ -217,7 +216,7 @@ pub fn search(
         options,
         &mut state,
         &mut pv,
-        &time_strategy,
+        &mut time_strategy,
         control,
         reporter,
     );

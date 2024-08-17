@@ -18,7 +18,7 @@ pub fn search(
     _options: &EngineOptions,
     state: &mut SearchState,
     pv: &mut PrincipalVariation,
-    time_control: &TimeStrategy,
+    time_control: &mut TimeStrategy,
     control: &impl Control,
     reporter: &mut impl Reporter,
 ) -> Option<Move> {

@@ -1,46 +1,43 @@
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::engine::options::EngineOptions;
-use crate::engine::search::{Clocks, TimeControl};
+use crate::engine::search::{params, Clocks, TimeControl};
 use std::time::{Duration, Instant};
 
 pub struct TimeStrategy {
-    player: Player,
-    time_control: TimeControl,
-    move_overhead: Duration,
-
-    started_at: Option<Instant>,
+    started_at: Instant,
     stop_searching_at: Option<Instant>,
+
+    next_check_at: u64,
 }
 
 impl TimeStrategy {
     pub fn new(game: &Game, time_control: &TimeControl, options: &EngineOptions) -> Self {
-        Self {
-            time_control: time_control.clone(),
-            player: game.player,
-            move_overhead: Duration::from_millis(options.move_overhead as u64),
+        let now = Instant::now();
+        let move_overhead = Duration::from_millis(options.move_overhead as u64);
 
-            started_at: None,
-            stop_searching_at: None,
-        }
-    }
-
-    pub fn init(&mut self) {
-        self.started_at = Some(Instant::now());
-
-        self.stop_searching_at = match self.time_control {
+        let stop_searching_at = match time_control {
             TimeControl::Infinite => None,
-            TimeControl::ExactTime(move_time) => Some(Instant::now() + move_time),
-            TimeControl::Clocks(ref clocks) => Some(Instant::now() + self.time_allotted(clocks)),
+            TimeControl::ExactTime(move_time) => Some(now + *move_time),
+            TimeControl::Clocks(ref clocks) => {
+                Some(now + Self::time_allotted(game, clocks, move_overhead))
+            }
+        };
+
+        Self {
+            started_at: now,
+            stop_searching_at,
+
+            next_check_at: params::CHECK_TERMINATION_NODE_FREQUENCY,
         }
     }
 
     pub fn elapsed(&self) -> Duration {
-        self.started_at.unwrap().elapsed()
+        self.started_at.elapsed()
     }
 
-    fn time_allotted(&self, clocks: &Clocks) -> Duration {
-        let (time_remaining, increment) = match self.player {
+    fn time_allotted(game: &Game, clocks: &Clocks, move_overhead: Duration) -> Duration {
+        let (time_remaining, increment) = match game.player {
             Player::White => (clocks.white_clock, clocks.white_increment),
             Player::Black => (clocks.black_clock, clocks.black_increment),
         };
@@ -53,8 +50,8 @@ impl TimeStrategy {
         };
 
         time_remaining = time_remaining
-            .saturating_sub(self.move_overhead)
-            .max(self.move_overhead);
+            .saturating_sub(move_overhead)
+            .max(move_overhead);
 
         if let Some(moves_to_go) = clocks.moves_to_go {
             // Try to use a roughly even amount of time per move
@@ -69,7 +66,13 @@ impl TimeStrategy {
         time_to_use
     }
 
-    pub fn should_stop(&self) -> bool {
+    pub fn should_stop(&mut self, nodes_visited: u64) -> bool {
+        if nodes_visited < self.next_check_at {
+            return false;
+        }
+
+        self.next_check_at = nodes_visited + params::CHECK_TERMINATION_NODE_FREQUENCY;
+
         match self.stop_searching_at {
             None => false,
             Some(time_to_stop) => Instant::now() > time_to_stop,

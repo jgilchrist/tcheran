@@ -4,14 +4,14 @@ use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::time_control::TimeStrategy;
 
-use super::{params, Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{Control, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
     plies: u8,
-    time_control: &TimeStrategy,
+    time_control: &mut TimeStrategy,
     persistent_state: &mut PersistentState,
     state: &mut SearchState,
     control: &impl Control,
@@ -32,9 +32,7 @@ pub fn quiescence(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if state.nodes_visited % params::CHECK_TERMINATION_NODE_FREQUENCY == 0
-        && (time_control.should_stop() || control.should_stop())
-    {
+    if time_control.should_stop(state.nodes_visited) || control.should_stop() {
         return Err(());
     }
 

@@ -18,7 +18,7 @@ pub fn negamax(
     plies: u8,
     persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
-    time_control: &TimeStrategy,
+    time_control: &mut TimeStrategy,
     state: &mut SearchState,
     control: &impl Control,
 ) -> Result<Eval, ()> {
@@ -27,9 +27,7 @@ pub fn negamax(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if (is_root || (state.nodes_visited % params::CHECK_TERMINATION_NODE_FREQUENCY == 0))
-        && (time_control.should_stop() || control.should_stop())
-    {
+    if !is_root && (time_control.should_stop(state.nodes_visited) || control.should_stop()) {
         return Err(());
     }
 
