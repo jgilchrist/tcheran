@@ -94,6 +94,21 @@ impl TimeStrategy {
         time_to_use
     }
 
+    pub fn should_start_new_search(&self, depth: u8) -> bool {
+        if depth == 1 {
+            return true;
+        }
+
+        if self.is_force_stopped() {
+            return false;
+        }
+
+        match self.stop_searching_at {
+            None => true,
+            Some(time_to_stop) => Instant::now() <= time_to_stop,
+        }
+    }
+
     pub fn should_stop(&mut self, nodes_visited: u64) -> bool {
         if nodes_visited < self.next_check_at {
             return false;

@@ -28,6 +28,10 @@ pub fn search(
     state.max_depth_reached = 0;
 
     for depth in 1..=max_search_depth {
+        if !time_control.should_start_new_search(depth) {
+            break;
+        }
+
         let Ok(eval) = aspiration_search(
             game,
             depth,
