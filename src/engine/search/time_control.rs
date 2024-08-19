@@ -7,8 +7,11 @@ use std::sync::Arc;
 use std::time::{Duration, Instant};
 
 pub struct TimeStrategy {
+    time_control: TimeControl,
     started_at: Instant,
-    stop_searching_at: Option<Instant>,
+
+    soft_stop: Duration,
+    hard_stop: Duration,
 
     next_check_at: u64,
 
@@ -34,11 +37,50 @@ impl TimeStrategy {
         let now = Instant::now();
         let move_overhead = Duration::from_millis(options.move_overhead as u64);
 
-        let stop_searching_at = match time_control {
-            TimeControl::Infinite => None,
-            TimeControl::ExactTime(move_time) => Some(now + *move_time),
+        let mut soft_stop = Duration::default();
+        let mut hard_stop = Duration::default();
+
+        match time_control {
+            TimeControl::Infinite => {}
+            TimeControl::ExactTime(move_time) => {
+                soft_stop = *move_time;
+                hard_stop = *move_time;
+            }
             TimeControl::Clocks(ref clocks) => {
-                Some(now + Self::time_allotted(game, clocks, move_overhead))
+                let (time_remaining, increment) = match game.player {
+                    Player::White => (clocks.white_clock, clocks.white_increment),
+                    Player::Black => (clocks.black_clock, clocks.black_increment),
+                };
+                let increment = increment.unwrap_or_default();
+
+                // TODO: If we don't have a time limit, spend a minute per move
+                let mut time_remaining = time_remaining.unwrap();
+                // let Some(mut time_remaining) = time_remaining else {
+                //     return Duration::from_secs(60);
+                // };
+
+                time_remaining = time_remaining
+                    .saturating_sub(move_overhead)
+                    .max(move_overhead);
+
+                let max_time_per_move = time_remaining.mul_f32(params::MAX_TIME_PER_MOVE);
+
+                let base_time = if let Some(moves_to_go) = clocks.moves_to_go {
+                    // Try to use a roughly even amount of time per move
+                    time_remaining / moves_to_go
+                } else {
+                    time_remaining.mul_f32(params::BASE_TIME_PER_MOVE)
+                } + increment.mul_f32(params::INCREMENT_TO_USE);
+
+                soft_stop = std::cmp::min(
+                    base_time.mul_f32(params::SOFT_TIME_MULTIPLIER),
+                    max_time_per_move,
+                );
+
+                hard_stop = std::cmp::min(
+                    base_time.mul_f32(params::HARD_TIME_MULTIPLIER),
+                    max_time_per_move,
+                );
             }
         };
 
@@ -49,8 +91,11 @@ impl TimeStrategy {
         };
 
         let time_strategy = Self {
+            time_control: time_control.clone(),
             started_at: now,
-            stop_searching_at,
+
+            soft_stop,
+            hard_stop,
 
             next_check_at: params::CHECK_TERMINATION_NODE_FREQUENCY,
 
@@ -64,36 +109,6 @@ impl TimeStrategy {
         self.started_at.elapsed()
     }
 
-    fn time_allotted(game: &Game, clocks: &Clocks, move_overhead: Duration) -> Duration {
-        let (time_remaining, increment) = match game.player {
-            Player::White => (clocks.white_clock, clocks.white_increment),
-            Player::Black => (clocks.black_clock, clocks.black_increment),
-        };
-
-        let increment = increment.unwrap_or_default();
-
-        // If we don't have a time limit, spend a minute per move
-        let Some(mut time_remaining) = time_remaining else {
-            return Duration::from_secs(60);
-        };
-
-        time_remaining = time_remaining
-            .saturating_sub(move_overhead)
-            .max(move_overhead);
-
-        if let Some(moves_to_go) = clocks.moves_to_go {
-            // Try to use a roughly even amount of time per move
-            return time_remaining / moves_to_go + increment;
-        }
-
-        let time_to_use = std::cmp::min(
-            time_remaining.mul_f64(0.5),
-            time_remaining.mul_f64(0.03333) + increment,
-        );
-
-        time_to_use
-    }
-
     pub fn should_start_new_search(&self, depth: u8) -> bool {
         if depth == 1 {
             return true;
@@ -103,9 +118,10 @@ impl TimeStrategy {
             return false;
         }
 
-        match self.stop_searching_at {
-            None => true,
-            Some(time_to_stop) => Instant::now() <= time_to_stop,
+        match self.time_control {
+            TimeControl::Clocks(_) => self.elapsed() < self.soft_stop,
+            TimeControl::ExactTime(time) => self.elapsed() < time,
+            TimeControl::Infinite => true,
         }
     }
 
@@ -120,9 +136,10 @@ impl TimeStrategy {
 
         self.next_check_at = nodes_visited + params::CHECK_TERMINATION_NODE_FREQUENCY;
 
-        match self.stop_searching_at {
-            None => false,
-            Some(time_to_stop) => Instant::now() > time_to_stop,
+        match self.time_control {
+            TimeControl::Clocks(_) => self.elapsed() > self.hard_stop,
+            TimeControl::ExactTime(time) => self.elapsed() > time,
+            TimeControl::Infinite => false,
         }
     }
 

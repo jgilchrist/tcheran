@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Use hard and soft time limits in our time management strategy (~28 Elo STC, ~43 Elo LTC)
 * Store the board state as `[PieceOccupancy; Pieces]` and `[ColorOccupancy; Colors]` (~24 Elo)
 * Collect the principal variation during search (~18 Elo)
 * Skip losing captures in quiescence (~8 Elo)
