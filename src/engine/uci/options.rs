@@ -24,8 +24,6 @@ pub enum UciOptionType {
 pub trait UciOption {
     const NAME: &'static str;
     const DEF: UciOptionType;
-
-    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String>;
 }
 
 pub struct HashOption;
@@ -37,12 +35,14 @@ impl UciOption for HashOption {
         min: 0,
         max: 1024,
     };
+}
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+impl HashOption {
+    pub fn set(options: &mut EngineOptions, value: &str) -> Result<usize, String> {
         let hash_size = value.parse::<usize>().map_err(|_| "Invalid value")?;
 
         options.hash_size = hash_size;
-        Ok(())
+        Ok(hash_size)
     }
 }
 
@@ -55,8 +55,10 @@ impl UciOption for ThreadsOption {
         min: 1,
         max: 1,
     };
+}
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+impl ThreadsOption {
+    pub fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
         let threads = value.parse::<usize>().map_err(|_| "Invalid value")?;
 
         options.threads = threads;
@@ -73,8 +75,10 @@ impl UciOption for MoveOverheadOption {
         min: 0,
         max: 1000,
     };
+}
 
-    fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
+impl MoveOverheadOption {
+    pub fn set(options: &mut EngineOptions, value: &str) -> Result<(), String> {
         let move_overhead = value.parse::<usize>().map_err(|_| "Invalid value")?;
 
         options.move_overhead = move_overhead;

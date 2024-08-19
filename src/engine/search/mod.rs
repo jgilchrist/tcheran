@@ -54,9 +54,9 @@ pub struct PersistentState {
 }
 
 impl PersistentState {
-    pub fn new() -> Self {
+    pub fn new(tt_size_mb: usize) -> Self {
         Self {
-            tt: SearchTranspositionTable::default(),
+            tt: SearchTranspositionTable::new(tt_size_mb),
             history_table: HistoryTable::new(),
         }
     }

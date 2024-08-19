@@ -218,7 +218,12 @@ impl Uci {
             UciCommand::IsReady => send_response(&UciResponse::ReadyOk),
             UciCommand::SetOption { name, value } => {
                 match name.as_str() {
-                    options::HashOption::NAME => options::HashOption::set(&mut self.options, value),
+                    options::HashOption::NAME => {
+                        let new_size = options::HashOption::set(&mut self.options, value)?;
+                        let mut tt_handle = self.persistent_state.lock().unwrap();
+                        tt_handle.tt.resize(new_size);
+                        Ok(())
+                    }
                     options::ThreadsOption::NAME => {
                         options::ThreadsOption::set(&mut self.options, value)
                     }
@@ -231,7 +236,8 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
-                self.persistent_state = Arc::new(Mutex::new(PersistentState::new()));
+                self.persistent_state =
+                    Arc::new(Mutex::new(PersistentState::new(self.options.hash_size)));
 
                 self.is_stopped.reset();
             }
@@ -508,6 +514,8 @@ pub enum UciInputMode {
 }
 
 pub fn uci(uci_input_mode: UciInputMode) -> Result<(), String> {
+    let options = EngineOptions::default();
+
     let mut uci = Uci {
         control: None,
         is_stopped: Arc::new(LockLatch::new()),
@@ -515,10 +523,10 @@ pub fn uci(uci_input_mode: UciInputMode) -> Result<(), String> {
             pretty_output: std::io::stdin().is_terminal(),
         },
         debug: false,
-        options: EngineOptions::default(),
+        persistent_state: Arc::new(Mutex::new(PersistentState::new(options.hash_size))),
 
         game: Game::new(),
-        persistent_state: Arc::new(Mutex::new(PersistentState::new())),
+        options,
 
         block_on_threads: match uci_input_mode {
             UciInputMode::Stdin => false,

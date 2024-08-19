@@ -15,6 +15,7 @@
 ## Misc
 
 * Clear `PersistentState` and `Control` on `ucinewgame` (fails SPRT at -9 Elo but is strictly more correct)
+    * Allocate TT before the first search (gains +10 undoing the -9 from the time spent allocating after `ucinewgame` and before the first search)
 * Add prettier search output if being used interactively
 * Rename `MoveProvider` -> `MovePicker` for consistency with other engines
 * Improved debug output when MovePicker perft tests fail
