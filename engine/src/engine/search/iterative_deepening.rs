@@ -1,3 +1,4 @@
+
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
@@ -26,8 +27,11 @@ pub fn search(
             break;
         };
 
-        best_move = Some(*pv.first().unwrap());
+        let new_best_move = *pv.first().unwrap();
+        best_move = Some(new_best_move);
         overall_eval = Some(eval);
+
+        time_control.update(new_best_move, depth);
 
         reporter.report_search_progress(
             game,
