@@ -342,11 +342,7 @@ fn acceptable_starting_position(rand: &mut impl Rng, states: &mut PlayerStates) 
 
         let state = states.for_player(game.player);
 
-        let (_, eval) = search_position(
-            &game,
-            &TimeControl::Depth(DEFAULT_DEPTH),
-            state,
-        );
+        let (_, eval) = search_position(&game, &TimeControl::Depth(DEFAULT_DEPTH), state);
         if eval.0.abs() >= UNBALANCED_STARTING_EVAL {
             continue;
         }
