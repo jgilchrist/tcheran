@@ -1,10 +1,11 @@
-use crate::chess::game::Game;
-use crate::chess::player::Player;
-use crate::engine::options::EngineOptions;
-use crate::engine::search::{params, Clocks, TimeControl};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
 use std::time::{Duration, Instant};
+
+use crate::chess::game::Game;
+use crate::chess::player::Player;
+use crate::engine::options::EngineOptions;
+use crate::engine::search::{params, TimeControl};
 
 pub struct TimeStrategy {
     time_control: TimeControl,

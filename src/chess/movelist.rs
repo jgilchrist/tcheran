@@ -23,6 +23,7 @@ impl MoveList {
         Self::EMPTY_MOVELIST
     }
 
+    #[allow(unused)]
     pub fn clear(&mut self) {
         self.length = 0;
     }

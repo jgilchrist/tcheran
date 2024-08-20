@@ -41,6 +41,7 @@ impl PrincipalVariation {
         }
     }
 
+    #[allow(unused)]
     pub fn len(&self) -> usize {
         self.length
     }

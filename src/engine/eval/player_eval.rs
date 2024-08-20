@@ -29,6 +29,7 @@ impl Eval {
         Self(eval)
     }
 
+    #[allow(unused)]
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i16::from(ply))
     }
