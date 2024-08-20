@@ -46,6 +46,8 @@ mod params {
 
     pub const SOFT_TIME_MULTIPLIER: f32 = 0.75;
     pub const HARD_TIME_MULTIPLIER: f32 = 3.00;
+
+    pub const BEST_MOVE_STABILITY_TIME_MULTIPLIERS: [f32; 5] = [2.50, 1.20, 0.90, 0.80, 0.75];
 }
 
 pub struct PersistentState {
