@@ -158,6 +158,7 @@ challenge:                         # Incoming challenges.
     - Trollfish-Bot
     - CPU2002
     - CPU2006
+    - Nikitosik-ai
 # allow_list:                      # List of users from which challenges are exclusively accepted, all others being declined. If empty, challenges from all users may be accepted.
 #   - user3
 #   - user4
