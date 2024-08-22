@@ -42,7 +42,7 @@ mod params {
 
     pub const MAX_TIME_PER_MOVE: f32 = 0.5;
     pub const INCREMENT_TO_USE: f32 = 0.5;
-    pub const BASE_TIME_PER_MOVE: f32 = 0.05;
+    pub const BASE_TIME_PER_MOVE: f32 = 0.033;
 
     pub const SOFT_TIME_MULTIPLIER: f32 = 0.75;
     pub const HARD_TIME_MULTIPLIER: f32 = 3.00;
