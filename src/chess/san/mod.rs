@@ -6,11 +6,8 @@ const QUEENSIDE_CASTLE: &str = "O-O-O";
 const CAPTURE: char = 'x';
 const PROMOTION: char = '=';
 const CHECK: char = '+';
-
-#[expect(unused)]
 const CHECKMATE: char = '#';
 
-#[expect(unused_imports)]
 #[expect(unused)]
 pub use san_parser::parse_move;
 
