@@ -2,7 +2,7 @@
 name = "engine"
 version = "2.5.0"
 edition = "2021"
-rust-version = "1.75"
+rust-version = "1.81"
 
 [dependencies]
 colored = "2.1.0"
@@ -39,6 +39,9 @@ type_complexity = "allow"
 let_and_return = "allow"
 significant_drop_tightening = "allow"
 enum_glob_use = "allow"
+
+allow_attributes = "warn"
+allow_attributes_without_reason = "warn"
 
 [profile.release]
 # debug = 1

@@ -7,7 +7,7 @@ pub const CAPTURE_SCORE: i32 = 1_000_000_000;
 pub const HISTORY_MAX_SCORE: i32 = CAPTURE_SCORE - 1;
 pub const QUIET_SCORE: i32 = 0;
 
-#[allow(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+#[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
 const PIECES: i32 = PieceKind::N as i32;
 
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];

@@ -7,11 +7,11 @@ const CAPTURE: char = 'x';
 const PROMOTION: char = '=';
 const CHECK: char = '+';
 
-#[allow(unused)]
+#[expect(unused)]
 const CHECKMATE: char = '#';
 
-#[allow(unused_imports)]
-#[allow(unused)]
+#[expect(unused_imports)]
+#[expect(unused)]
 pub use san_parser::parse_move;
 
 pub use san_writer::format_move;

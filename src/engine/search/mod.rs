@@ -123,7 +123,7 @@ pub struct SearchStats {
 }
 
 pub trait Reporter {
-    #[allow(unused)]
+    #[expect(unused)]
     fn generic_report(&self, s: &str);
 
     fn report_search_progress(&mut self, game: &Game, progress: SearchInfo);

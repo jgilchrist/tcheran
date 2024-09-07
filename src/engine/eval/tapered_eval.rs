@@ -14,7 +14,7 @@ impl PhasedEval {
         Self(((endgame as i32) << 16) + midgame as i32)
     }
 
-    #[allow(clippy::cast_possible_truncation)]
+    #[expect(clippy::cast_possible_truncation)]
     pub fn midgame(self) -> WhiteEval {
         WhiteEval(self.0 as i16)
     }

@@ -17,7 +17,7 @@ fn piece_value(kind: PieceKind) -> Eval {
     })
 }
 
-#[allow(unused)] // TODO
+#[expect(unused)] // TODO
 pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     let from = mv.src;
     let to = mv.dst;

@@ -1,7 +1,7 @@
 use crate::engine::options::EngineOptions;
 
 #[derive(Debug)]
-#[allow(unused)]
+#[expect(unused)]
 pub enum UciOptionType {
     Check {
         default: bool,
