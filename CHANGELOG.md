@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Avoid locking up the UCI thread if the 'Hash' option is set during a search
+
 ## [3.0]
 
 * Use hard and soft time limits in our time management strategy (~28 Elo STC, ~43 Elo LTC)
@@ -15,7 +19,7 @@
 * Prefer TT nodes with a higher depth (~2 Elo)
 * Don't do RFP or NMP in TT nodes (~0 Elo)
 
-## Misc
+### Misc
 
 * Clear `PersistentState` and `Control` on `ucinewgame` (fails SPRT at -9 Elo but is strictly more correct)
     * Allocate TT before the first search (gains +10 undoing the -9 from the time spent allocating after `ucinewgame` and before the first search)

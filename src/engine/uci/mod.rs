@@ -220,8 +220,14 @@ impl Uci {
                 match name.as_str() {
                     options::HashOption::NAME => {
                         let new_size = options::HashOption::set(&mut self.options, value)?;
-                        let mut tt_handle = self.persistent_state.lock().unwrap();
-                        tt_handle.tt.resize(new_size);
+
+                        if let Ok(mut tt_handle) = self.persistent_state.try_lock() {
+                            tt_handle.tt.resize(new_size);
+                        } else {
+                            self.reporter
+                                .generic_report("error: Unable to change TT size during search");
+                        }
+
                         Ok(())
                     }
                     options::ThreadsOption::NAME => {
