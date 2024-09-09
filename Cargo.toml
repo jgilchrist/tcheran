@@ -4,9 +4,11 @@ version = "2.5.0"
 edition = "2021"
 rust-version = "1.81"
 
+[features]
+release = []
+
 [dependencies]
 colored = "2.1.0"
-git-version = "0.3.8"
 nom = "7.1.1"
 rand = "0.8.5"
 

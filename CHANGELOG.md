@@ -22,6 +22,7 @@
 * Improved debug output when MovePicker perft tests fail
 * Move search termination check and 'force stop' of search into `TimeStrategy`
 * Fix OOM-kills due to briefly allocating two transposition tables during `ucinewgame`
+* Remove `git-version` for setting UCI version dynamically during development
 
 ## [2.5]
 
