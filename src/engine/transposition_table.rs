@@ -25,14 +25,15 @@ pub fn calculate_number_of_entries<T: Clone + TTOverwriteable>(size_mb: usize) -
 
 impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
     pub fn new(size_mb: usize) -> Self {
-        let number_of_entries = calculate_number_of_entries::<T>(size_mb);
-
-        Self {
-            data: vec![None; number_of_entries],
-            size: size_mb,
+        let mut tt = Self {
+            data: Vec::new(),
+            size: 0,
             occupied: 0,
             generation: 0,
-        }
+        };
+
+        tt.resize(size_mb);
+        tt
     }
 
     pub fn resize(&mut self, size_mb: usize) {
