@@ -60,6 +60,11 @@ impl PersistentState {
             history_table: HistoryTable::new(),
         }
     }
+
+    pub fn reset(&mut self) {
+        self.tt.reset();
+        self.history_table.reset();
+    }
 }
 
 pub struct SearchState {

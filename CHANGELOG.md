@@ -21,6 +21,7 @@
 * Rename `MoveProvider` -> `MovePicker` for consistency with other engines
 * Improved debug output when MovePicker perft tests fail
 * Move search termination check and 'force stop' of search into `TimeStrategy`
+* Fix OOM-kills due to briefly allocating two transposition tables during `ucinewgame`
 
 ## [2.5]
 

@@ -36,6 +36,15 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         tt
     }
 
+    pub fn reset(&mut self) {
+        for i in 0..self.data.len() {
+            self.data[i] = None;
+        }
+
+        self.generation = 0;
+        self.occupied = 0;
+    }
+
     pub fn resize(&mut self, size_mb: usize) {
         if self.size == size_mb {
             return;

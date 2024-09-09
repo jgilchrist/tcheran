@@ -236,10 +236,10 @@ impl Uci {
             }
             UciCommand::UciNewGame => {
                 self.game = Game::new();
-                self.persistent_state =
-                    Arc::new(Mutex::new(PersistentState::new(self.options.hash_size)));
-
                 self.is_stopped.reset();
+
+                let mut persistent_state_handle = self.persistent_state.lock().unwrap();
+                persistent_state_handle.reset();
             }
             UciCommand::Position { position, moves } => {
                 let mut game = match position {

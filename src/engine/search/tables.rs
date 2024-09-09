@@ -42,6 +42,16 @@ impl HistoryTable {
         Self([[[0; Square::N]; Square::N]; Player::N])
     }
 
+    pub fn reset(&mut self) {
+        for from_square in 0..Square::N {
+            for to_square in 0..Square::N {
+                for player in 0..Player::N {
+                    self.0[player][from_square][to_square] = 0;
+                }
+            }
+        }
+    }
+
     fn bonus(depth: u8) -> i32 {
         let depthi32 = i32::from(depth);
 
