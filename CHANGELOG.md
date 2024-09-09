@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [3.0]
+
 * Use hard and soft time limits in our time management strategy (~28 Elo STC, ~43 Elo LTC)
 * Store the board state as `[PieceOccupancy; Pieces]` and `[ColorOccupancy; Colors]` (~24 Elo)
 * Collect the principal variation during search (~18 Elo)
@@ -172,7 +174,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v2.5...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v3.0...HEAD
+[3.0]: https://github.com/jgilchrist/chess-engine/compare/v2.5..v3.0
 [2.5]: https://github.com/jgilchrist/chess-engine/compare/v2.4..v2.5
 [2.4]: https://github.com/jgilchrist/chess-engine/compare/v2.3..v2.4
 [2.3]: https://github.com/jgilchrist/chess-engine/compare/v2.2..v2.3
