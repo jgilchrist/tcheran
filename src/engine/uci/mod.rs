@@ -306,7 +306,6 @@ impl Uci {
 
                 let join_handle = std::thread::spawn(move || {
                     let mut persistent_state_handle = persistent_state.lock().unwrap();
-                    persistent_state_handle.tt.resize(options.hash_size);
 
                     let best_move = search::search(
                         &game,
