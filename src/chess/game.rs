@@ -142,11 +142,17 @@ impl Game {
     }
 
     pub fn is_repeated_position(&self) -> bool {
-        self.history
-            .iter()
-            .rev()
-            .take(self.halfmove_clock as usize)
-            .any(|h| h.zobrist == self.zobrist)
+        for position in self.history.iter().rev().step_by(2) {
+            if self.zobrist == position.zobrist {
+                return true;
+            }
+
+            if position.halfmove_clock == 0 {
+                return false;
+            }
+        }
+
+        return false;
     }
 
     pub fn is_stalemate_by_insufficient_material(&self) -> bool {
