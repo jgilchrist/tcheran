@@ -1,3 +1,4 @@
+mod material;
 mod phased_eval;
 pub mod piece_square_tables;
 mod player_eval;
@@ -55,7 +56,7 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables;
+    let eval = game.incremental_eval.piece_square_tables + material::eval(&game.board);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }

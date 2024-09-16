@@ -8,6 +8,7 @@
 * Add futility pruning (10.82 +- 6.41)
 * Pack Move into u16 and store extra information, e.g. if the move is a capture (7.03 +- 4.89)
 * Add tablebase support and follow tablebase lines (6.79 +- 4.59 (5-man vs none))
+* Add an evaluation bonus for having a pair of bishops (4.35 +- 3.46)
 * Add countermove history (2.66 +- 2.03)
 * Use separate functions for scoring tacticals vs. quiets (2.64 +- 4.43)
 * Enable LTO (2.09 +- 3.32)
