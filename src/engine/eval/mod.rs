@@ -53,8 +53,22 @@ pub fn eval(game: &Game) -> Eval {
     Eval::from_white_eval(absolute_eval, game.player)
 }
 
+const BISHOP_PAIR_BONUS: PhasedEval = PhasedEval::new(27, 65);
+
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables;
+    let white_bishop_pair: PhasedEval = if game.board.bishops(game.player).count() > 1 {
+        BISHOP_PAIR_BONUS
+    } else {
+        PhasedEval::ZERO
+    };
+
+    let black_bishop_pair: PhasedEval = if game.board.bishops(game.player.other()).count() > 1 {
+        BISHOP_PAIR_BONUS
+    } else {
+        PhasedEval::ZERO
+    };
+
+    let eval = game.incremental_eval.piece_square_tables + white_bishop_pair - black_bishop_pair;
 
     tapered_eval::taper(game.incremental_eval.phase_value, eval)
 }
