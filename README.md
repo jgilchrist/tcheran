@@ -8,14 +8,15 @@ Thank you to everybody who has tested the engine.
 
 | Version | [CCRL 40/15][ccrl-ltc] | [CCRL Blitz][ccrl-blitz] | [MCERL][mcerl] |
 | ------- | ---------------------- | -------------------------|----------------|
+| v3.0    | 2467                   | 2485                     | -              |
 | v2.5    | 2370                   | -                        | -              |
-| v2.4    | -                      | 2305                     | -              |
-| v2.3    | -                      | 2331                     | -              |
-| v2.2    | -                      | 2269                     | -              |
-| v2.1    | 2276                   | 2232                     | 2542           |
+| v2.4    | -                      | 2306                     | -              |
+| v2.3    | -                      | 2330                     | -              |
+| v2.2    | -                      | 2268                     | -              |
+| v2.1    | 2276                   | 2231                     | 2542           |
 | v2.0    | -                      | -                        | 2434           |
 | v1.1    | -                      | -                        | 2237           |
-| v1.0    | -                      | 1873                     | -              |
+| v1.0    | -                      | 1871                     | -              |
 
 [ccrl-ltc]: https://computerchess.org.uk/ccrl/4040/
 [ccrl-blitz]: https://computerchess.org.uk/ccrl/404/
