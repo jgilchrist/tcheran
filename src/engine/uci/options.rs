@@ -85,3 +85,18 @@ impl MoveOverheadOption {
         Ok(())
     }
 }
+
+pub struct SyzygyPath;
+
+impl UciOption for SyzygyPath {
+    const NAME: &'static str = "SyzygyPath";
+    const DEF: UciOptionType = UciOptionType::String { default: "" };
+}
+
+impl SyzygyPath {
+    pub fn set(options: &mut EngineOptions, value: &str) -> Result<String, String> {
+        let path = value.to_string();
+        options.syzygy_path = Some(path.clone());
+        Ok(path)
+    }
+}
