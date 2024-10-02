@@ -209,6 +209,7 @@ impl Uci {
                 send_response(&UciResponse::option::<uci::options::HashOption>());
                 send_response(&UciResponse::option::<uci::options::ThreadsOption>());
                 send_response(&UciResponse::option::<uci::options::MoveOverheadOption>());
+                send_response(&UciResponse::option::<uci::options::SyzygyPath>());
 
                 send_response(&UciResponse::UciOk);
             }
@@ -235,6 +236,21 @@ impl Uci {
                     }
                     options::MoveOverheadOption::NAME => {
                         options::MoveOverheadOption::set(&mut self.options, value)
+                    }
+                    options::SyzygyPath::NAME => {
+                        let syzygy_path = options::SyzygyPath::set(&mut self.options, value)?;
+
+                        if let Ok(mut state_handle) = self.persistent_state.try_lock() {
+                            state_handle
+                                .tablebase
+                                .set_paths(&syzygy_path)
+                                .map_err(|()| "Invalid SyzygyPath")?;
+                        } else {
+                            self.reporter
+                                .generic_report("error: Unable to change SyzygyPath during search");
+                        }
+
+                        Ok(())
                     }
                     _ => return Err(format!("Unknown option: {name}")),
                 }

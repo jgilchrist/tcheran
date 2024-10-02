@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Add tablebase support and follow tablebase lines (6.79 +- 4.59 Elo (5-man vs none))
+
 ## [4.0]
 
 * Add late move reductions (100.80 +- 22.10 Elo)

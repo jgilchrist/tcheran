@@ -1,3 +1,4 @@
+use super::{params, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
@@ -8,8 +9,6 @@ use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::tables::lmr_table::lmr_reduction;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData, TTMove};
-
-use super::{params, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn negamax(
     game: &mut Game,

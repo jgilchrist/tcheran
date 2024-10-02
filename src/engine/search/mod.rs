@@ -1,14 +1,13 @@
-use crate::chess::moves::Move;
-use std::time::Duration;
-
-use crate::engine::options::EngineOptions;
-use crate::engine::search::time_control::TimeStrategy;
-
 use crate::chess::game::Game;
+use crate::chess::moves::Move;
+use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::tables::{HistoryTable, KillersTable};
+use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::SearchTranspositionTable;
+use crate::engine::tablebases::Tablebase;
+use std::time::Duration;
 
 mod aspiration;
 mod iterative_deepening;
@@ -54,6 +53,7 @@ mod params {
 pub struct PersistentState {
     pub tt: SearchTranspositionTable,
     pub history_table: HistoryTable,
+    pub tablebase: Tablebase,
 }
 
 impl PersistentState {
@@ -61,6 +61,7 @@ impl PersistentState {
         Self {
             tt: SearchTranspositionTable::new(tt_size_mb),
             history_table: HistoryTable::new(),
+            tablebase: Tablebase::new(),
         }
     }
 
@@ -192,6 +193,11 @@ pub fn search(
         .decay(params::HISTORY_DECAY_FACTOR);
 
     let mut pv = PrincipalVariation::new();
+
+    let tablebase_result = persistent_state.tablebase.best_move(game);
+    if let Some(mv) = tablebase_result {
+        return mv;
+    }
 
     // The game is modified as moves are played during search. When the search terminates,
     // the game will be left in a dirty state since we will not undo the moves played to
