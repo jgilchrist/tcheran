@@ -1,0 +1,150 @@
+name: Release
+
+on:
+  workflow_dispatch:
+  push:
+    tags: "v*"
+
+jobs:
+
+  metadata:
+    runs-on: ubuntu-latest
+
+    outputs:
+      rust-version: ${{ steps.determine-rust-version.outputs.version }}
+      engine-version: ${{ steps.determine-engine-version.outputs.version }}
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - id: determine-rust-version
+        name: Determine Rust version
+        run: |
+          version=$(grep -m 1 'rust-version' Cargo.toml | tr -s ' ' | tr -d '"' | tr -d "'" | cut -d' ' -f3)
+          echo "Rust version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+      - id: determine-engine-version
+        name: Determine Engine version
+        run: |
+          version="${GITHUB_REF##*/}"
+          echo "Engine version: $version"
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+
+  build-linux:
+    runs-on: ubuntu-latest
+    needs: [metadata]
+
+    strategy:
+      matrix:
+        include:
+          - exec_postfix: "x86_64-v4"
+            rustflags: "-Ctarget-feature=+crt-static,-bmi2 -Ctarget-cpu=x86-64-v4"
+          - exec_postfix: "x86_64-v3"
+            rustflags: "-Ctarget-feature=+crt-static,-bmi2 -Ctarget-cpu=x86-64-v3"
+          - exec_postfix: "x86_64-v2"
+            rustflags: "-Ctarget-feature=+crt-static -Ctarget-cpu=x86-64-v2"
+          - exec_postfix: "x86_64-v1"
+            rustflags: "-Ctarget-feature=+crt-static"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          RUSTFLAGS: '${{ matrix.rustflags }}'
+        run: |
+          rustup override set ${{ needs.metadata.outputs.rust-version }}
+          rustup target add x86_64-unknown-linux-musl
+          cargo build --release --target x86_64-unknown-linux-musl
+          mv target/x86_64-unknown-linux-musl/release/engine tcheran-${{ needs.metadata.outputs.engine-version }}-linux-${{ matrix.exec_postfix }}
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcheran-linux-${{ matrix.exec_postfix }}
+          path: tcheran-${{ needs.metadata.outputs.engine-version }}-linux-${{ matrix.exec_postfix }}
+
+  build-windows:
+    runs-on: windows-latest
+    needs: [metadata]
+
+    strategy:
+      matrix:
+        include:
+          - exec_postfix: "x86_64-v4"
+            rustflags: "-Ctarget-feature=+crt-static,-bmi2 -Ctarget-cpu=x86-64-v4"
+          - exec_postfix: "x86_64-v3"
+            rustflags: "-Ctarget-feature=+crt-static,-bmi2 -Ctarget-cpu=x86-64-v3"
+          - exec_postfix: "x86_64-v2"
+            rustflags: "-Ctarget-feature=+crt-static -Ctarget-cpu=x86-64-v2"
+          - exec_postfix: "x86_64-v1"
+            rustflags: "-Ctarget-feature=+crt-static"
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          RUSTFLAGS: '${{ matrix.rustflags }}'
+        run: |
+          rustup override set ${{ needs.metadata.outputs.rust-version }}
+          rustup target add x86_64-pc-windows-msvc
+          cargo build --release --target x86_64-pc-windows-msvc
+          mv .\target\x86_64-pc-windows-msvc\release\engine.exe tcheran-${{ needs.metadata.outputs.engine-version }}-windows-${{ matrix.exec_postfix }}.exe
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcheran-windows-${{ matrix.exec_postfix }}
+          path: tcheran-${{ needs.metadata.outputs.engine-version }}-windows-${{ matrix.exec_postfix }}.exe
+
+  build-macos:
+    runs-on: macos-14
+    needs: [metadata]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build
+        env:
+          RUSTFLAGS: '${{ matrix.rustflags }}'
+        run: |
+          rustup override set ${{ needs.metadata.outputs.rust-version }}
+          rustup target add aarch64-apple-darwin
+          cargo build --release --target aarch64-apple-darwin
+          mv target/aarch64-apple-darwin/release/engine tcheran-${{ needs.metadata.outputs.engine-version }}-macos
+
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: tcheran-macos
+          path: tcheran-${{ needs.metadata.outputs.engine-version }}-macos
+
+  release:
+    needs: [metadata, build-linux, build-windows, build-macos]
+    runs-on: ubuntu-latest
+
+    permissions:
+      contents: write
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: tcheran-*
+          path: bins
+          merge-multiple: true
+
+      - name: Create release
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          changelog_anchor=$(echo ${{ needs.metadata.outputs.engine-version }} | tr -d 'v.')
+          echo  > release_description.txt
+          gh release create --draft \
+            --notes "https://github.com/jgilchrist/tcheran/blob/master/CHANGELOG.md#${changelog_anchor}"  \
+            --title ${{ needs.metadata.outputs.engine-version }} \
+            ${{ needs.metadata.outputs.engine-version }} \
+            bins/*

@@ -7,6 +7,7 @@
 ### Misc
 
 * Avoid locking up the UCI thread if the 'Hash' option is set during a search
+* Add a new Github Action for building and publishing new releases
 
 ## [3.0]
 
