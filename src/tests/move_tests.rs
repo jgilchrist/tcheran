@@ -2,26 +2,26 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::square::squares::all::*;
 use crate::engine::options::EngineOptions;
+use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::{
-    search, CapturingReporter, NullControl, PersistentState, SearchRestrictions, SearchScore,
-    TimeControl,
+    search, CapturingReporter, PersistentState, SearchRestrictions, SearchScore, TimeControl,
 };
 
 fn test_expected_move(fen: &str, depth: u8, mv: Move) -> (Move, SearchScore) {
     crate::init();
     let game = Game::from_fen(fen).unwrap();
-    let mut persistent_state = PersistentState::new();
-    persistent_state.tt.resize(16);
+    let mut persistent_state = PersistentState::new(16);
 
     let mut capturing_reporter = CapturingReporter::new();
+    let (mut time_strategy, _) =
+        TimeStrategy::new(&game, &TimeControl::Infinite, &EngineOptions::default());
 
     let best_move = search(
         &game,
         &mut persistent_state,
-        &TimeControl::Infinite,
+        &mut time_strategy,
         &SearchRestrictions { depth: Some(depth) },
         &EngineOptions::default(),
-        &NullControl,
         &mut capturing_reporter,
     );
 

@@ -68,8 +68,7 @@ fn tt_perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usi
 fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
 
-    let mut tt = PerftTranspositionTable::new();
-    tt.resize(256);
+    let mut tt = PerftTranspositionTable::new(256);
 
     let mut game = Game::from_fen(fen).unwrap();
     let actual_positions = tt_perft(depth, &mut game, &mut tt);
@@ -153,7 +152,7 @@ fn movepicker_perft(
 fn test_perft_with_movepicker(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
 
-    let persistent_state = PersistentState::new();
+    let persistent_state = PersistentState::new(16);
     let mut state = SearchState::new();
 
     let mut game = Game::from_fen(fen).unwrap();

@@ -236,7 +236,7 @@ mod tests {
         let mut move_picker = MovePicker::new(Some((G1, F3).into()));
 
         let search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         while let Some(m) = move_picker.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
@@ -256,7 +256,7 @@ mod tests {
         let mut move_provider = MovePicker::new(None);
 
         let search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
@@ -277,7 +277,7 @@ mod tests {
         let mut move_provider = MovePicker::new(None);
 
         let search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
@@ -298,7 +298,7 @@ mod tests {
         let mut move_provider = MovePicker::new(None);
 
         let search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
@@ -312,13 +312,13 @@ mod tests {
         crate::init();
 
         let game =
-            Game::from_fen("rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2").unwrap();
+            Game::from_fen("rnb1kbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq - 0 2").unwrap();
 
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new_loud();
 
         let search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
             moves.push(m);
