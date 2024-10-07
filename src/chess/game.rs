@@ -71,6 +71,7 @@ pub struct History {
     pub halfmove_clock: u32,
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
+    pub distance_from_null_move: u32,
 }
 
 #[derive(Debug, Clone)]
@@ -85,6 +86,8 @@ pub struct Game {
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
     pub history: Vec<History>,
+
+    pub distance_from_null_move: u32,
 }
 
 impl Game {
@@ -113,6 +116,8 @@ impl Game {
             zobrist: ZobristHash::uninit(),
             incremental_eval: incremental_eval_fields,
             history: Vec::new(),
+
+            distance_from_null_move: 0,
         };
 
         game.zobrist = zobrist::hash(&game);
@@ -142,10 +147,26 @@ impl Game {
     }
 
     pub fn is_repeated_position(&self) -> bool {
+        // Under normal conditions, we need to look back as far as the last irreversible move (e.g. captures
+        // or pawn moves) to check for repetitions. Before this move, it's impossible for the game state to
+        // repeat.
+        //
+        // If, however, we have a null move in the history, we'll see the two adjacent states as repeated since
+        // the opponent's null move did not change the board state. We can't count this as a repetition, so
+        // in that case we'll look back only as far as the last null move.
+        let possible_repetition_horizon =
+            std::cmp::min(self.halfmove_clock, self.distance_from_null_move) as usize;
+
         self.history
             .iter()
+            // Start looking from the most recent positions
             .rev()
-            .take(self.halfmove_clock as usize)
+            // Only look up to the horizon for possible valid repetitions
+            .take(possible_repetition_horizon)
+            // Skip the opponent's move that was just played so that we're only looking at our own positions
+            .skip(1)
+            // Skip the rest of the opponent's positions too
+            .step_by(2)
             .any(|h| h.zobrist == self.zobrist)
     }
 
@@ -242,6 +263,7 @@ impl Game {
             castle_rights: self.castle_rights,
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
+            distance_from_null_move: self.distance_from_null_move + 1,
             zobrist: self.zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
         };
@@ -355,6 +377,7 @@ impl Game {
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
+            distance_from_null_move: 0,
         };
 
         self.history.push(history);
@@ -386,6 +409,7 @@ impl Game {
         self.castle_rights = history.castle_rights;
         self.en_passant_target = history.en_passant_target;
         self.incremental_eval = history.incremental_eval;
+        self.distance_from_null_move = history.distance_from_null_move;
 
         let moved_piece = self.board.piece_at(to).unwrap();
 
@@ -431,6 +455,7 @@ impl Game {
         self.en_passant_target = history.en_passant_target;
         self.halfmove_clock = history.halfmove_clock;
         self.incremental_eval = history.incremental_eval;
+        self.distance_from_null_move = history.distance_from_null_move;
     }
 }
 
