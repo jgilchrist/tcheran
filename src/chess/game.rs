@@ -161,10 +161,10 @@ impl Game {
             .iter()
             // Start looking from the most recent positions
             .rev()
-            // Only look up to the horizon for possible valid repetitions
-            .take(possible_repetition_horizon)
             // Skip the opponent's move that was just played so that we're only looking at our own positions
             .skip(1)
+            // Only look up to the horizon for possible valid repetitions
+            .take(possible_repetition_horizon)
             // Skip the rest of the opponent's positions too
             .step_by(2)
             .any(|h| h.zobrist == self.zobrist)
