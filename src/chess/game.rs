@@ -68,10 +68,10 @@ pub struct History {
     pub captured: Option<Piece>,
     pub castle_rights: [CastleRights; Player::N],
     pub en_passant_target: Option<Square>,
-    pub halfmove_clock: u32,
+    pub halfmove_clock: u8,
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
-    pub distance_from_null_move: u32,
+    pub distance_from_null_move: Option<u8>,
 }
 
 #[derive(Debug, Clone)]
@@ -80,14 +80,14 @@ pub struct Game {
     pub board: Board,
     pub castle_rights: [CastleRights; Player::N],
     pub en_passant_target: Option<Square>,
-    pub halfmove_clock: u32,
+    pub halfmove_clock: u8,
     pub plies: u32,
 
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
     pub history: Vec<History>,
 
-    pub distance_from_null_move: u32,
+    pub distance_from_null_move: Option<u8>,
 }
 
 impl Game {
@@ -100,7 +100,7 @@ impl Game {
         player: Player,
         castle_rights: [CastleRights; Player::N],
         en_passant_target: Option<Square>,
-        halfmove_clock: u32,
+        halfmove_clock: u8,
         plies: u32,
     ) -> Self {
         let incremental_eval_fields = IncrementalEvalFields::init(&board);
@@ -117,7 +117,7 @@ impl Game {
             incremental_eval: incremental_eval_fields,
             history: Vec::new(),
 
-            distance_from_null_move: 0,
+            distance_from_null_move: None,
         };
 
         game.zobrist = zobrist::hash(&game);
@@ -154,8 +154,10 @@ impl Game {
         // If, however, we have a null move in the history, we'll see the two adjacent states as repeated since
         // the opponent's null move did not change the board state. We can't count this as a repetition, so
         // in that case we'll look back only as far as the last null move.
-        let possible_repetition_horizon =
-            std::cmp::min(self.halfmove_clock, self.distance_from_null_move) as usize;
+        let possible_repetition_horizon = std::cmp::min(
+            self.halfmove_clock,
+            self.distance_from_null_move.unwrap_or(u8::MAX),
+        ) as usize;
 
         self.history
             .iter()
@@ -263,7 +265,7 @@ impl Game {
             castle_rights: self.castle_rights,
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
-            distance_from_null_move: self.distance_from_null_move + 1,
+            distance_from_null_move: self.distance_from_null_move.map(|d| d + 1),
             zobrist: self.zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
         };
@@ -377,7 +379,7 @@ impl Game {
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
             incremental_eval: self.incremental_eval.clone(),
-            distance_from_null_move: 0,
+            distance_from_null_move: Some(0),
         };
 
         self.history.push(history);

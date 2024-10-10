@@ -195,8 +195,8 @@ fn fen_en_passant_target(input: &str) -> IResult<&str, Option<Square>> {
     alt((value(None, tag("-")), map(fen_square, Some)))(input)
 }
 
-fn fen_halfmove_clock(input: &str) -> IResult<&str, u32> {
-    nom::character::complete::u32(input)
+fn fen_halfmove_clock(input: &str) -> IResult<&str, u8> {
+    nom::character::complete::u8(input)
 }
 
 fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
