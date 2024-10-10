@@ -2,6 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::piece::PromotionPieceKind;
 use crate::chess::square::Square;
+use crate::engine::util::log;
 use std::path::Path;
 
 pub enum Wdl {
@@ -34,6 +35,7 @@ impl Tablebase {
     }
 
     pub fn set_paths(&mut self, path: &str) -> Result<(), ()> {
+        log::crashlog(format!("{:?}", self.shakmaty_tb));
         let path = path.to_string();
         let separator = if cfg!(windows) { ';' } else { ':' };
 
@@ -46,7 +48,14 @@ impl Tablebase {
             ));
         }
 
+        log::crashlog(format!("{:?}", self.shakmaty_tb));
+
         self.is_enabled = true;
+
+        if self.shakmaty_tb.max_pieces() == 0 {
+            panic!();
+        }
+
         Ok(())
     }
 
@@ -78,7 +87,10 @@ impl Tablebase {
 
         match self.shakmaty_tb.best_move(&shakmaty_pos) {
             Ok(m) => m.map(|(shakmaty_mv, _)| Self::shakmaty_mv_to_move(&shakmaty_mv)),
-            Err(_) => None,
+            Err(e) => {
+                log::crashlog(format!("{:?}", e));
+                None
+            }
         }
     }
 

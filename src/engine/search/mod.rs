@@ -7,6 +7,7 @@ use crate::engine::search::tables::{HistoryTable, KillersTable};
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::tablebases::Tablebase;
+use crate::engine::util::log;
 use std::time::Duration;
 
 mod aspiration;
@@ -196,6 +197,11 @@ pub fn search(
 
     let tablebase_result = persistent_state.tablebase.best_move(game);
     if let Some(mv) = tablebase_result {
+        log::crashlog(format!(
+            "played tablebase move {:?} in position {}",
+            mv,
+            game.to_fen()
+        ));
         return mv;
     }
 

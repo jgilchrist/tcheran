@@ -34,6 +34,7 @@ use crate::engine::search::{
     CapturingReporter, Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore,
     TimeControl,
 };
+use crate::engine::util::log;
 use crate::engine::util::sync::LockLatch;
 pub use r#move::UciMove;
 
