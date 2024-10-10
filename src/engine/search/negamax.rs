@@ -147,7 +147,7 @@ pub fn negamax(
             )?
         } else {
             let reduction = if depth >= params::LMR_DEPTH
-                && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
+                && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD + usize::from(is_pv)
                 && !in_check
             {
                 lmr_reduction(depth, number_of_legal_moves)
