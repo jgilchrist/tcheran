@@ -11,6 +11,20 @@ use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableDa
 
 use super::{params, PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
+pub struct DepthReduction(u8);
+
+impl DepthReduction {
+    #[inline]
+    pub fn reduce_more_if(&mut self, predicate: bool) {
+        self.0 = self.0.saturating_add(u8::from(predicate));
+    }
+
+    #[inline]
+    pub fn reduce_less_if(&mut self, predicate: bool) {
+        self.0 = self.0.saturating_sub(u8::from(predicate));
+    }
+}
+
 pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,
@@ -150,9 +164,13 @@ pub fn negamax(
                 && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
                 && !in_check
             {
-                lmr_reduction(depth, number_of_legal_moves)
+                let mut r = DepthReduction(lmr_reduction(depth, number_of_legal_moves));
+
+                r.reduce_less_if(is_pv);
+
+                r.0
             } else {
-                1
+                0
             };
 
             // We already found a good move (i.e. we raised alpha).
@@ -162,7 +180,7 @@ pub fn negamax(
                 game,
                 -alpha - Eval(1),
                 -alpha,
-                depth.saturating_sub(reduction),
+                depth.saturating_sub(1).saturating_sub(reduction),
                 plies + 1,
                 persistent_state,
                 &mut node_pv,
