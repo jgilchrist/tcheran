@@ -161,12 +161,15 @@ pub fn negamax(
             )?
         } else {
             let reduction = if depth >= params::LMR_DEPTH
-                && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
+                && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD + usize::from(is_pv)
                 && !in_check
             {
                 let mut r = DepthReduction(lmr_reduction(depth, number_of_legal_moves));
 
                 r.reduce_less_if(is_pv);
+
+                let opponent_in_check = game.is_king_in_check();
+                r.reduce_less_if(opponent_in_check);
 
                 r.0
             } else {
