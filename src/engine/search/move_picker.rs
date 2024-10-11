@@ -10,7 +10,7 @@ use crate::engine::see::see;
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
-#[derive(Eq, PartialEq)]
+#[derive(Eq, PartialEq, Ord, PartialOrd)]
 enum GenStage {
     BestMove,
     GenCaptures,
@@ -62,6 +62,10 @@ impl MovePicker {
             idx: 0,
             captures_end: 0,
         }
+    }
+
+    pub fn finished_captures(&self) -> bool {
+        self.stage > GenStage::Captures
     }
 
     pub fn next(
