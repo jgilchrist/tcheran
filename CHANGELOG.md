@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.0]
+
 * Add late move reductions (100.80 +- 22.10 Elo)
 * Use SEE to order bad captures later in moves to try (6.69 +- 4.80 Elo)
 * Do not allow TT cutoffs in PV nodes (~0 Elo)
@@ -183,7 +185,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v3.0...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v4.0...HEAD
+[4.0]: https://github.com/jgilchrist/chess-engine/compare/v3.0..v4.0
 [3.0]: https://github.com/jgilchrist/chess-engine/compare/v2.5..v3.0
 [2.5]: https://github.com/jgilchrist/chess-engine/compare/v2.4..v2.5
 [2.4]: https://github.com/jgilchrist/chess-engine/compare/v2.3..v2.4
