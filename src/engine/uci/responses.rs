@@ -26,7 +26,7 @@ pub struct InfoFields {
     pub(super) score: Option<InfoScore>,
     pub(super) hashfull: Option<usize>,
     pub(super) nps: Option<u64>,
-    pub(super) tbhits: Option<u32>,
+    pub(super) tbhits: Option<u64>,
     pub(super) string: Option<String>,
 }
 
