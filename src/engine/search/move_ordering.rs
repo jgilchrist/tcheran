@@ -10,7 +10,11 @@ pub const HISTORY_MAX_SCORE: i32 = GOOD_CAPTURE_SCORE - 1;
 pub const QUIET_SCORE: i32 = 100_000_000;
 pub const BAD_CAPTURE_SCORE: i32 = 0;
 
-#[expect(clippy::cast_possible_truncation, clippy::cast_possible_wrap)]
+#[expect(
+    clippy::cast_possible_truncation,
+    clippy::cast_possible_wrap,
+    reason = "Guaranteed to fit inside an i32"
+)]
 const PIECES: i32 = PieceKind::N as i32;
 
 const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECES * 4, PIECES * 5];

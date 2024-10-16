@@ -63,7 +63,10 @@ impl UciReporter {
     }
 
     // Inspired by Simbelmyne's lovely search output
-    #[expect(clippy::cast_precision_loss)]
+    #[expect(
+        clippy::cast_precision_loss,
+        reason = "Various approximate calculations"
+    )]
     fn pretty_report_search_progress(game: &Game, progress: &search::SearchInfo) {
         let mut game = game.clone();
 
@@ -191,9 +194,6 @@ pub struct Uci {
 }
 
 impl Uci {
-    // Both of these clippy lints can be ignored as there is more to implement here.
-    #[expect(clippy::unnecessary_wraps)]
-    #[expect(clippy::match_same_arms)]
     fn execute(&mut self, cmd: &UciCommand) -> Result<ExecuteResult, String> {
         match cmd {
             UciCommand::Uci => {

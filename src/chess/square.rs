@@ -194,7 +194,10 @@ impl Square {
         Self::from_idxs(file.idx(), rank.idx())
     }
 
-    #[expect(clippy::cast_possible_truncation)] // At most 63 from .trailing_zeros() of a u64
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "At most 63 from .trailing_zeros() of a u64"
+    )]
     pub fn from_bitboard(bitboard: Bitboard) -> Self {
         debug_assert!(bitboard.count() == 1);
         Self(bitboard.trailing_zeros() as u8)
@@ -205,7 +208,10 @@ impl Square {
         Self(idx)
     }
 
-    #[expect(clippy::cast_possible_truncation)] // idx is guaranteed to be 0-63
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "idx is guaranteed to be 0-63"
+    )]
     pub const fn from_array_index(idx: usize) -> Self {
         debug_assert!(idx < 64);
         Self(idx as u8)

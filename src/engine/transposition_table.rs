@@ -64,15 +64,21 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         self.generation += 1;
     }
 
-    #[expect(clippy::cast_possible_truncation)]
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "The truncation is intended to get an index"
+    )]
     fn get_entry_idx(&self, key: &ZobristHash) -> usize {
         // PERF: There's likely a more performant way to do this
         key.0 as usize % self.data.len()
     }
 
-    #[expect(clippy::cast_precision_loss)] // This is just an approximation, so a loss of precision is fine
-    #[expect(clippy::cast_possible_truncation)]
-    #[expect(clippy::cast_sign_loss)]
+    #[expect(
+        clippy::cast_precision_loss,
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "This is just an approximation, so a loss of precision is fine"
+    )]
     pub fn occupancy(&self) -> usize {
         let decimal = self.occupied as f32 / self.data.len() as f32;
         let permille = decimal * 1000.0;

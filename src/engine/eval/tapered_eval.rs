@@ -14,7 +14,10 @@ impl PhasedEval {
         Self(((endgame as i32) << 16) + midgame as i32)
     }
 
-    #[expect(clippy::cast_possible_truncation)]
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Intentional truncation to get the bottom 16 bits"
+    )]
     pub fn midgame(self) -> WhiteEval {
         WhiteEval(self.0 as i16)
     }
