@@ -79,13 +79,15 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    #[expect(clippy::cast_possible_truncation)]
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "u64 can have at most 64 ones"
+    )]
     pub const fn count(self) -> u8 {
         self.0.count_ones() as u8
     }
 
     #[inline(always)]
-    #[expect(clippy::cast_possible_truncation)]
     pub const fn trailing_zeros(self) -> usize {
         self.0.trailing_zeros() as usize
     }
@@ -472,7 +474,7 @@ pub mod bitboards {
         A2_BB.0 | C2_BB.0 | E2_BB.0 | G2_BB.0 |
         B1_BB.0 | D1_BB.0 | F1_BB.0 | H1_BB.0 );
 
-    #[expect(unused)]
+    #[expect(unused, reason = "Unused")]
     pub const DARK_SQUARES: Bitboard = Bitboard::new(
         B8_BB.0 | D8_BB.0 | F8_BB.0 | H8_BB.0 |
         A7_BB.0 | C7_BB.0 | E7_BB.0 | G7_BB.0 |

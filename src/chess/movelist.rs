@@ -23,7 +23,7 @@ impl MoveList {
         Self::EMPTY_MOVELIST
     }
 
-    #[expect(unused)]
+    #[expect(unused, reason = "Unused")]
     pub fn clear(&mut self) {
         self.length = 0;
     }
