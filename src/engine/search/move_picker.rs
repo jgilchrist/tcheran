@@ -374,7 +374,7 @@ mod tests {
         let mut move_provider = MovePicker::new(Some(Move::new(D8, E7)));
 
         let mut search_state = SearchState::new();
-        let persistent_state = PersistentState::new();
+        let persistent_state = PersistentState::new(16);
 
         search_state.killer_moves.try_push(0, Move::new(B7, D5));
         search_state.killer_moves.try_push(0, Move::new(D8, E8));
