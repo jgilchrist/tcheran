@@ -142,7 +142,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           changelog_anchor=$(echo ${{ needs.metadata.outputs.engine-version }} | tr -d 'v.')
-          echo  > release_description.txt
+          chmod +x bins/*linux*
+          chmod +x bins/*macos*
           gh release create --draft \
             --notes "https://github.com/jgilchrist/tcheran/blob/master/CHANGELOG.md#${changelog_anchor}"  \
             --title ${{ needs.metadata.outputs.engine-version }} \
