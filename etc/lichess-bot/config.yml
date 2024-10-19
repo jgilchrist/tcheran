@@ -58,8 +58,8 @@ engine:                            # Engine settings.
       sort: "games_played"         # One of "winrate", "games_played"
       min_games: 1000              # Minimum number of times a move must have been played to be chosen.
     online_egtb:
-      enabled: false               # Whether or not to enable online endgame tablebases.
-      min_time: 20                 # Minimum time (in seconds) the bot must have to use online EGTBs.
+      enabled: true                # Whether or not to enable online endgame tablebases.
+      min_time: 10                 # Minimum time (in seconds) the bot must have to use online EGTBs.
       max_pieces: 7                # Maximum number of pieces on the board to use endgame tablebases.
       source: "lichess"            # One of "lichess", "chessdb".
       move_quality: "best"         # One of "best" or "suggest" (it takes all the moves with the same WDL and tells the engine to only consider these; will move instantly if there is only 1 "good" move).
