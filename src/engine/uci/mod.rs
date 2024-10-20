@@ -312,7 +312,7 @@ impl Uci {
                     time_control = TimeControl::ExactTime(*move_time);
                 }
 
-                if wtime.is_some() && btime.is_some() {
+                if wtime.is_some() || btime.is_some() {
                     time_control = TimeControl::Clocks(clocks);
                 }
 

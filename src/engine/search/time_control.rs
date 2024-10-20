@@ -54,11 +54,7 @@ impl TimeStrategy {
                 };
                 let increment = increment.unwrap_or_default();
 
-                // TODO: If we don't have a time limit, spend a minute per move
-                let mut time_remaining = time_remaining.unwrap();
-                // let Some(mut time_remaining) = time_remaining else {
-                //     return Duration::from_secs(60);
-                // };
+                let mut time_remaining = time_remaining.unwrap_or_default();
 
                 time_remaining = time_remaining
                     .saturating_sub(move_overhead)
