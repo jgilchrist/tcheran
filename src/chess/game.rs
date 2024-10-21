@@ -135,7 +135,7 @@ impl Game {
         if self.halfmove_clock >= 100 {
             let mut movelist = MoveList::new();
             generate_legal_moves(self, &mut movelist);
-            return movelist.has_moves();
+            return !movelist.is_empty();
         }
 
         false

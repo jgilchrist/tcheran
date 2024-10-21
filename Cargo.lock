@@ -55,6 +55,7 @@ dependencies = [
 name = "engine"
 version = "4.0.0"
 dependencies = [
+ "arrayvec",
  "colored",
  "nom",
  "paste",

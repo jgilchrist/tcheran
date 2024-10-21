@@ -135,7 +135,7 @@ impl MovePicker {
 
             if let Some(killer1) = state.killer_moves.get_0(plies) {
                 for i in self.first_quiet..self.moves.len() {
-                    if self.moves.get(i) == killer1 {
+                    if self.moves.get(i).map_or(false, |m| *m == killer1) {
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
@@ -161,7 +161,7 @@ impl MovePicker {
 
             if let Some(killer2) = state.killer_moves.get_1(plies) {
                 for i in self.first_quiet..self.moves.len() {
-                    if self.moves.get(i) == killer2 {
+                    if self.moves.get(i).map_or(false, |m| *m == killer2) {
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
@@ -226,7 +226,7 @@ impl MovePicker {
                 }
             }
 
-            let best_move = self.moves.get(best_move_idx);
+            let best_move = *self.moves.get(best_move_idx).unwrap();
 
             // Move our best move to the start of the moves we haven't tried
             self.moves.swap(self.idx, best_move_idx);
@@ -252,7 +252,11 @@ impl MovePicker {
         persistent_state: &PersistentState,
     ) {
         for i in start..end {
-            self.scores[i] = score_move(game, self.moves.get(i), &persistent_state.history_table);
+            self.scores[i] = score_move(
+                game,
+                *self.moves.get(i).unwrap(),
+                &persistent_state.history_table,
+            );
         }
     }
 }

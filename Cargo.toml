@@ -8,6 +8,7 @@ rust-version = "1.81"
 release = []
 
 [dependencies]
+arrayvec = "0.7.6"
 colored = "2.1.0"
 nom = "7.1.1"
 rand = "0.8.5"
