@@ -1,6 +1,6 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::movegen::{attackers, pins, tables};
-use crate::chess::movelist::MoveList;
+use crate::chess::moves::MoveList;
 use crate::chess::square::{squares, Square};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 

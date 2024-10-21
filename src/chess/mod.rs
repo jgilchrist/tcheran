@@ -4,7 +4,6 @@ pub mod direction;
 pub mod fen;
 pub mod game;
 pub mod movegen;
-pub mod movelist;
 pub mod moves;
 pub mod perft;
 pub mod piece;

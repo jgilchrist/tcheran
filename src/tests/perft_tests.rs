@@ -2,7 +2,7 @@ use crate::chess::fen::START_POS;
 use crate::chess::game::Game;
 use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
-use crate::chess::movelist::MoveList;
+use crate::chess::moves::MoveList;
 use crate::chess::perft::perft;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::{PersistentState, SearchState};
@@ -107,17 +107,21 @@ fn movepicker_perft(
         // To get good coverage, we use the length of the move list to determine whether to try captures/quiets
         // in best move/killers.
         if captures_movelist.len() >= 3 {
-            best_move = Some(captures_movelist.get(0));
+            best_move = Some(*captures_movelist.first().unwrap());
         } else if quiets_movelist.len() >= 3 {
-            best_move = Some(quiets_movelist.get(0));
+            best_move = Some(*quiets_movelist.first().unwrap());
         }
 
         if quiets_movelist.len() >= 3 {
-            state.killer_moves.try_push(depth, quiets_movelist.get(2));
+            state
+                .killer_moves
+                .try_push(depth, *quiets_movelist.get(2).unwrap());
         }
 
         if quiets_movelist.len() >= 4 {
-            state.killer_moves.try_push(depth, quiets_movelist.get(3));
+            state
+                .killer_moves
+                .try_push(depth, *quiets_movelist.get(3).unwrap());
         }
     }
 

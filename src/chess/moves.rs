@@ -1,4 +1,9 @@
 use crate::chess::{piece::PromotionPieceKind, square::Square};
+use arrayvec::ArrayVec;
+
+const MAX_LEGAL_MOVES: usize = 218;
+
+pub type MoveList = ArrayVec<Move, MAX_LEGAL_MOVES>;
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Move {
