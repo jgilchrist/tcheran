@@ -8,6 +8,9 @@ use crate::chess::{
     player::Player, square::Square, zobrist,
 };
 use crate::engine::eval::IncrementalEvalFields;
+use arrayvec::ArrayVec;
+
+const MAX_HISTORY_SIZE: usize = u8::MAX as usize;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
@@ -84,7 +87,7 @@ pub struct Game {
 
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
-    pub history: Vec<History>,
+    pub history: ArrayVec<History, MAX_HISTORY_SIZE>,
 }
 
 impl Game {
@@ -112,7 +115,7 @@ impl Game {
 
             zobrist: ZobristHash::uninit(),
             incremental_eval: incremental_eval_fields,
-            history: Vec::new(),
+            history: ArrayVec::new_const(),
         };
 
         game.zobrist = zobrist::hash(&game);

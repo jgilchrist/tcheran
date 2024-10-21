@@ -21,7 +21,7 @@ pub mod time_control;
 pub mod transposition;
 
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
-const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
+pub const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
 
 mod params {
     use crate::engine::eval::Eval;
