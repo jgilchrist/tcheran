@@ -216,7 +216,7 @@ pub fn search(
         reporter,
     );
 
-    let best_move = pv.first();
+    let best_move = pv.first().copied();
 
     best_move.unwrap_or_else(|| panic_move(game, persistent_state, &state))
 }
@@ -230,6 +230,7 @@ pub fn init() {
 // Rather than returning a random move, we return the first move that is returned after move ordering
 fn panic_move(game: &Game, persistent_state: &PersistentState, search_state: &SearchState) -> Move {
     let mut move_picker = MovePicker::new(None);
+
     move_picker
         .next(game, persistent_state, search_state, 0)
         .unwrap()

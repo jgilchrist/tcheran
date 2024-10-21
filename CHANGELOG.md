@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Use arrayvec for PrincipalVariation (15.52 +- 8.72)
 * Fix an accidental fail hard in quiescence - fail soft when eval >= beta (12.54 +- 7.15)
 * Add tablebase support and follow tablebase lines (6.79 +- 4.59 Elo (5-man vs none))
 * Use arrayvec for MoveList (1.05 +- 3.35)

@@ -50,7 +50,7 @@ pub fn search(
             SearchScore::Centipawns(eval.0)
         };
 
-        best_move = Some(pv.first().unwrap());
+        best_move = Some(*pv.first().unwrap());
         overall_eval = Some(eval);
 
         reporter.report_search_progress(
