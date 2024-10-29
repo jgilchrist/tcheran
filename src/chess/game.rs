@@ -249,7 +249,15 @@ impl Game {
             incremental_eval: self.incremental_eval.clone(),
         };
 
-        self.history.push(history);
+        let h = self.history.try_push(history);
+        if h.is_err() {
+            panic!(
+                "could not push onto history with len {}, capacity {} for fen {}",
+                self.history.len(),
+                self.history.capacity(),
+                self.to_fen()
+            )
+        }
 
         let moved_piece = self.remove_at(from);
 
