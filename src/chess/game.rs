@@ -10,7 +10,7 @@ use crate::chess::{
 use crate::engine::eval::IncrementalEvalFields;
 use arrayvec::ArrayVec;
 
-const MAX_HISTORY_SIZE: usize = u8::MAX as usize;
+const MAX_HISTORY_SIZE: usize = u8::MAX as usize + 10;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
