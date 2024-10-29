@@ -14,7 +14,11 @@ pub const ENGINE_NAME: &str = "Tcheran";
 pub fn engine_version() -> String {
     let cargo_version = env!("CARGO_PKG_VERSION");
     let version = cargo_version.strip_suffix(".0").unwrap();
-    let dev_suffix = if cfg!(feature = "release") { "" } else { "-dev" };
+    let dev_suffix = if cfg!(feature = "release") {
+        ""
+    } else {
+        "-dev"
+    };
 
     format!("v{version}{dev_suffix}")
 }
@@ -28,6 +32,14 @@ fn main() -> ExitCode {
     std::panic::set_hook(Box::new(|info| {
         println!("{info}");
         log::crashlog(format!("{info:?}"));
+
+        if let Some(s) = info.payload().downcast_ref::<&str>() {
+            log::crashlog(format!("panic occurred: {s:?}"));
+        } else if let Some(s) = info.payload().downcast_ref::<String>() {
+            log::crashlog(format!("panic occurred: {s:?}"));
+        } else {
+            log::crashlog("panic occurred");
+        }
     }));
 
     let args = std::env::args().collect::<Vec<_>>();
