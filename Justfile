@@ -58,37 +58,35 @@ test-ltc-with-adjudication new baseline concurrency="2":
 
 [private]
 playoff-sprt new baseline concurrency tc:
-	cutechess-cli \
+	fastchess \
 		-engine name="$(basename {{new}})" cmd="{{new}}" \
 		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
 		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
-		-rounds 100000 -games 2 -repeat \
+		-rounds 100000 -repeat \
 		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
 		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
-			tc={{tc}} \
-			restart=on
+			tc={{tc}}
 
 [private]
 playoff-sprt-with-adjudication new baseline concurrency tc:
-	cutechess-cli \
+	fastchess \
 		-engine name="$(basename {{new}})" cmd="{{new}}" \
 		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
 		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
-		-rounds 100000 -games 2 -repeat \
+		-rounds 100000 -repeat \
 		-draw movenumber=40 movecount=8 score=10 \
 		-resign movecount=3 score=400 twosided=true \
 		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
 		-sprt elo0=0 elo1=5 alpha=0.05 beta=0.05 \
 		-each \
 			proto=uci \
-			tc={{tc}} \
-			restart=on
+			tc={{tc}}
 
 elo-stc new baseline concurrency="2":
 	just playoff-elo {{new}} {{baseline}} 2048 {{concurrency}} 8+0.08
@@ -98,15 +96,14 @@ elo-ltc new baseline concurrency="2":
 
 [private]
 playoff-elo new baseline rounds concurrency tc:
-	cutechess-cli \
+	fastchess \
 		-engine name="$(basename {{new}})" cmd="{{new}}" \
 		-engine name="$(basename {{baseline}})" cmd="{{baseline}}" \
 		-openings file=./etc/openings/UHO_Lichess_4852_v1.epd format=epd order=random \
 		-ratinginterval {{concurrency}} \
 		-concurrency {{concurrency}} \
-		-rounds {{rounds}} -games 2 -repeat \
+		-rounds {{rounds}} -repeat \
 		-pgnout "./bins/$(basename {{new}})-vs-$(basename {{baseline}})-{{tc}}.pgn" \
 		-each \
 			proto=uci \
-			tc={{tc}} \
-			restart=on
+			tc={{tc}}
