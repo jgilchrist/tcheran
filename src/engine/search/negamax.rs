@@ -222,7 +222,7 @@ pub fn negamax(
         // 'Killers': if a move was so good that it caused a beta cutoff,
         // but it wasn't a capture, we remember it so that we can try it
         // before other quiet moves.
-        if game.board.piece_at(mv.dst).is_none() {
+        if game.board.piece_at(mv.dst()).is_none() {
             state.killer_moves.try_push(plies, mv);
 
             persistent_state

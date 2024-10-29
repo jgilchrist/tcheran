@@ -43,9 +43,9 @@ impl std::fmt::Display for UciMove {
 impl From<Move> for UciMove {
     fn from(value: Move) -> Self {
         Self {
-            src: value.src,
-            dst: value.dst,
-            promotion: value.promotion,
+            src: value.src(),
+            dst: value.dst(),
+            promotion: value.promotion(),
         }
     }
 }

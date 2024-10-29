@@ -13,8 +13,8 @@ enum AmbiguityResolution {
 }
 
 pub fn format_move(game: &Game, mv: Move) -> String {
-    let from = mv.src;
-    let to = mv.dst;
+    let from = mv.src();
+    let to = mv.dst();
 
     let piece = game.board.piece_at(from).unwrap();
 
@@ -72,7 +72,7 @@ pub fn format_move(game: &Game, mv: Move) -> String {
 
     let destination_notation = to.notation();
 
-    let promotion_specifier = match mv.promotion {
+    let promotion_specifier = match mv.promotion() {
         None => "",
         Some(p) => &format!(
             "{}{}",
@@ -96,8 +96,8 @@ pub fn format_move(game: &Game, mv: Move) -> String {
 }
 
 fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
-    let from = mv.src;
-    let to = mv.dst;
+    let from = mv.src();
+    let to = mv.dst();
 
     let piece = game.board.piece_at(from).unwrap();
     if piece.kind == PieceKind::Pawn || piece.kind == PieceKind::King {
@@ -112,10 +112,10 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
             // A move is potentially ambiguous if:
 
             // It moves to the same square our move
-            m.dst == to &&
+            m.dst() == to &&
 
                 // The kind of piece being moved is the same
-                game.board.piece_at(m.src).unwrap().kind == piece.kind &&
+                game.board.piece_at(m.src()).unwrap().kind == piece.kind &&
 
                 // It's not the exact same move
                 *m != mv
@@ -124,11 +124,11 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
 
     let ambiguity_by_file = potentially_ambiguous_moves
         .iter()
-        .any(|m| m.src.file() == mv.src.file());
+        .any(|m| m.src().file() == mv.src().file());
 
     let ambiguity_by_rank = potentially_ambiguous_moves
         .iter()
-        .any(|m| m.src.rank() == mv.src.rank());
+        .any(|m| m.src().rank() == mv.src().rank());
 
     match (ambiguity_by_file, ambiguity_by_rank) {
         (false, false) => AmbiguityResolution::None,

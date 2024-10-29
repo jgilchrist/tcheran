@@ -11,6 +11,7 @@
 
 * Allow sending only 'go wtime' or 'go btime'
 * Avoid constructing `Move` objects directly where possible, preferring to extract them from `MoveList`
+* Hide the internal implementation details of `Move`
 
 ## [4.0]
 

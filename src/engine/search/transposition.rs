@@ -30,18 +30,18 @@ pub struct TTMove {
 impl TTMove {
     pub fn from_move(mv: Move) -> Self {
         Self {
-            start_square_idx: mv.src.idx(),
-            end_square_idx: mv.dst.idx(),
-            promotion: mv.promotion,
+            start_square_idx: mv.src().idx(),
+            end_square_idx: mv.dst().idx(),
+            promotion: mv.promotion(),
         }
     }
 
     pub fn to_move(&self) -> Move {
-        Move {
-            src: Square::from_index(self.start_square_idx),
-            dst: Square::from_index(self.end_square_idx),
-            promotion: self.promotion,
-        }
+        Move::new_with_optional_promotion(
+            Square::from_index(self.start_square_idx),
+            Square::from_index(self.end_square_idx),
+            self.promotion,
+        )
     }
 }
 

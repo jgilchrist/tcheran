@@ -18,12 +18,12 @@ fn piece_value(kind: PieceKind) -> Eval {
 }
 
 pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
-    let from = mv.src;
-    let to = mv.dst;
+    let from = mv.src();
+    let to = mv.dst();
     let board = &game.board;
     let moved_piece = board.piece_at(from).unwrap();
     let is_en_passant =
-        Some(mv.dst) == game.en_passant_target && moved_piece.kind == PieceKind::Pawn;
+        Some(mv.dst()) == game.en_passant_target && moved_piece.kind == PieceKind::Pawn;
 
     // We have to beat the threshold in order to pass, which is the same as saying that
     //      score - threshold = 0
@@ -45,13 +45,13 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     };
 
     // If we promoted a pawn, we lose the pawn and gain the value of the piece we promoted to
-    if let Some(promotion_piece) = mv.promotion {
+    if let Some(promotion_piece) = mv.promotion() {
         score -= piece_value(PieceKind::Pawn);
         score += piece_value(promotion_piece.piece());
     }
 
     // The piece we just moved will be the first victim of the exchange on the target square
-    let mut victim = match mv.promotion {
+    let mut victim = match mv.promotion() {
         Some(promotion_piece) => promotion_piece.piece(),
         None => moved_piece.kind,
     };

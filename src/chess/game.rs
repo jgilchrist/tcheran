@@ -227,8 +227,8 @@ impl Game {
     }
 
     pub fn make_move(&mut self, mv: Move) {
-        let from = mv.src;
-        let to = mv.dst;
+        let from = mv.src();
+        let to = mv.dst();
         let player = self.player;
         let other_player = player.other();
 
@@ -254,7 +254,7 @@ impl Game {
             self.remove_at(to);
         }
 
-        if let Some(promoted_to) = mv.promotion {
+        if let Some(promoted_to) = mv.promotion() {
             let promoted_piece = Piece::new(player, promoted_to.piece());
             self.set_at(to, promoted_piece);
         } else {
@@ -371,8 +371,8 @@ impl Game {
     pub fn undo_move(&mut self) {
         let history = self.history.pop().unwrap();
         let mv = history.mv.unwrap();
-        let from = mv.src;
-        let to = mv.dst;
+        let from = mv.src();
+        let to = mv.dst();
 
         // The player that made this move is the one whose turn it was before
         // we start undoing the move.
@@ -414,7 +414,7 @@ impl Game {
             self.board.set_at(to, captured_piece);
         }
 
-        if mv.promotion.is_some() {
+        if mv.promotion().is_some() {
             self.board.set_at(from, Piece::new(player, PieceKind::Pawn));
         } else {
             self.board.set_at(from, moved_piece);

@@ -16,9 +16,9 @@ impl AmbiguityResolution {
     fn satisfied_by(&self, mv: Move) -> bool {
         match self {
             Self::None => true,
-            Self::File(file) => mv.src.file() == *file,
-            Self::Rank(rank) => mv.src.rank() == *rank,
-            Self::Exact(file, rank) => mv.src.file() == *file && mv.src.rank() == *rank,
+            Self::File(file) => mv.src().file() == *file,
+            Self::Rank(rank) => mv.src().rank() == *rank,
+            Self::Exact(file, rank) => mv.src().file() == *file && mv.src().rank() == *rank,
         }
     }
 }
@@ -120,15 +120,15 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
     let piece_moves: Vec<(PieceKind, Move)> = game
         .moves()
         .iter()
-        .map(|mv| (game.board.piece_at(mv.src).unwrap().kind, *mv))
+        .map(|mv| (game.board.piece_at(mv.src()).unwrap().kind, *mv))
         .collect();
 
     // Pawn move
     if src.is_empty() {
         let matching_source_squares: HashSet<Square> = piece_moves
             .into_iter()
-            .filter(|&(piece, mv)| piece == PieceKind::Pawn && mv.dst == dst)
-            .map(|(_, mv)| mv.src)
+            .filter(|&(piece, mv)| piece == PieceKind::Pawn && mv.dst() == dst)
+            .map(|(_, mv)| mv.src())
             .collect();
 
         assert_eq!(matching_source_squares.len(), 1);
@@ -144,9 +144,9 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
         let matching_source_squares: Vec<Square> = piece_moves
             .into_iter()
             .filter(|&(piece, mv)| {
-                piece == moved_piece && mv.dst == dst && ambiguity_resolution.satisfied_by(mv)
+                piece == moved_piece && mv.dst() == dst && ambiguity_resolution.satisfied_by(mv)
             })
-            .map(|(_, mv)| mv.src)
+            .map(|(_, mv)| mv.src())
             .collect();
 
         assert_eq!(matching_source_squares.len(), 1);
@@ -157,8 +157,8 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
 
     let matching_source_squares: Vec<Square> = piece_moves
         .into_iter()
-        .filter(|&(_, mv)| mv.dst == dst && ambiguity_resolution.satisfied_by(mv))
-        .map(|(_, mv)| mv.src)
+        .filter(|&(_, mv)| mv.dst() == dst && ambiguity_resolution.satisfied_by(mv))
+        .map(|(_, mv)| mv.src())
         .collect();
 
     assert_eq!(matching_source_squares.len(), 1);

@@ -21,10 +21,10 @@ const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECE
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
 pub fn score_move(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
-    let captured_piece = game.board.piece_at(mv.dst);
+    let captured_piece = game.board.piece_at(mv.dst());
 
     if let Some(captured_piece) = captured_piece {
-        let moved_piece = game.board.piece_at(mv.src).unwrap();
+        let moved_piece = game.board.piece_at(mv.src()).unwrap();
 
         let victim_score = MVV_ORDER[captured_piece.kind.array_idx()];
         let attacker_score = LVA_ORDER[moved_piece.kind.array_idx()];

@@ -24,7 +24,7 @@ impl MoveListExt for MoveList {
         for i in 0..self.len() {
             let mv = *self.get(i).unwrap();
 
-            if mv.src == src && mv.dst == dst && mv.promotion == promotion {
+            if mv.src() == src && mv.dst() == dst && mv.promotion() == promotion {
                 return mv;
             }
         }
@@ -35,9 +35,9 @@ impl MoveListExt for MoveList {
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Move {
-    pub src: Square,
-    pub dst: Square,
-    pub promotion: Option<PromotionPieceKind>,
+    src: Square,
+    dst: Square,
+    promotion: Option<PromotionPieceKind>,
 }
 
 impl Move {
@@ -46,6 +46,18 @@ impl Move {
             src,
             dst,
             promotion: None,
+        }
+    }
+
+    pub const fn new_with_optional_promotion(
+        src: Square,
+        dst: Square,
+        promotion: Option<PromotionPieceKind>,
+    ) -> Self {
+        Self {
+            src,
+            dst,
+            promotion,
         }
     }
 
@@ -60,6 +72,21 @@ impl Move {
             promotion: Some(promotion),
         }
     }
+
+    #[inline]
+    pub fn src(&self) -> Square {
+        self.src
+    }
+
+    #[inline]
+    pub fn dst(&self) -> Square {
+        self.dst
+    }
+
+    #[inline]
+    pub fn promotion(&self) -> Option<PromotionPieceKind> {
+        self.promotion
+    }
 }
 
 impl std::fmt::Debug for Move {
@@ -67,9 +94,9 @@ impl std::fmt::Debug for Move {
         write!(
             f,
             "{}{}{}",
-            self.src.notation(),
-            self.dst.notation(),
-            match self.promotion {
+            self.src().notation(),
+            self.dst().notation(),
+            match self.promotion() {
                 Some(piece) => match piece {
                     PromotionPieceKind::Knight => "n",
                     PromotionPieceKind::Bishop => "b",
