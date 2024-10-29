@@ -1,5 +1,5 @@
 use crate::chess::game::Game;
-use crate::chess::moves::Move;
+use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
 use crate::chess::san;
 use crate::chess::square::{squares, File, Rank, Square};
@@ -207,16 +207,18 @@ fn parse_squares(game: &Game, mv: &str) -> Result<(Square, Square), ParseError> 
 
 pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
     if mv == san::KINGSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(game.moves().expect_matching(
             squares::king_start(game.player),
             squares::kingside_castle_dest(game.player),
+            None,
         ));
     }
 
     if mv == san::QUEENSIDE_CASTLE {
-        return Ok(Move::new(
+        return Ok(game.moves().expect_matching(
             squares::king_start(game.player),
             squares::queenside_castle_dest(game.player),
+            None,
         ));
     }
 
@@ -236,10 +238,7 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
 
     let (src, dst) = parse_squares(game, mv)?;
 
-    Ok(match promotion {
-        None => Move::new(src, dst),
-        Some(promoted_to) => Move::promotion(src, dst, promoted_to),
-    })
+    Ok(game.moves().expect_matching(src, dst, promotion))
 }
 
 #[cfg(test)]
@@ -250,18 +249,39 @@ mod tests {
     use crate::chess::piece::PromotionPieceKind;
     use crate::chess::square::squares::all::*;
 
-    fn test_parse_san(fen: &'static str, expected_mv: impl Into<Move>, san: &'static str) {
+    fn test_parse_san(fen: &'static str, expected_mv: (Square, Square), san: &'static str) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
         let mv = parse_move(&game, san).unwrap();
 
-        assert_eq!(mv, expected_mv.into());
+        let expected_mv = game
+            .moves()
+            .expect_matching(expected_mv.0, expected_mv.1, None);
+
+        assert_eq!(mv, expected_mv);
+    }
+
+    fn test_parse_san_with_promotion(
+        fen: &'static str,
+        expected_mv: (Square, Square, PromotionPieceKind),
+        san: &'static str,
+    ) {
+        crate::init();
+
+        let game = Game::from_fen(fen).unwrap();
+        let mv = parse_move(&game, san).unwrap();
+
+        let expected_mv =
+            game.moves()
+                .expect_matching(expected_mv.0, expected_mv.1, Some(expected_mv.2));
+
+        assert_eq!(mv, expected_mv);
     }
 
     #[test]
     fn san_simple_pawn_move() {
-        test_parse_san(fen::START_POS, Move::new(E2, E4), "e4");
+        test_parse_san(fen::START_POS, (E2, E4), "e4");
     }
 
     #[test]
@@ -291,10 +311,10 @@ mod tests {
     fn san_promotion() {
         let promotion_fen = "k7/7P/8/8/8/8/8/7K w - - 0 1";
 
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
-        test_parse_san(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
+        test_parse_san_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
     }
 
     #[test]
@@ -322,7 +342,7 @@ mod tests {
 
     #[test]
     fn san_plus_for_check() {
-        test_parse_san(
+        test_parse_san_with_promotion(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
             (G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",

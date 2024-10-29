@@ -10,6 +10,7 @@
 ### Misc
 
 * Allow sending only 'go wtime' or 'go btime'
+* Avoid constructing `Move` objects directly where possible, preferring to extract them from `MoveList`
 
 ## [4.0]
 

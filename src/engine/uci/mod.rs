@@ -6,7 +6,7 @@ use std::time::{Duration, Instant};
 
 use colored::Colorize;
 
-use crate::chess::moves::Move;
+use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::{perft, san};
 
 use crate::engine::options::EngineOptions;
@@ -270,13 +270,7 @@ impl Uci {
                 };
 
                 for mv in moves {
-                    let legal_moves = game.moves().to_vec();
-
-                    let matching_move = legal_moves
-                        .into_iter()
-                        .find(|m| m.src == mv.src && m.dst == mv.dst && m.promotion == mv.promotion)
-                        .expect("Illegal move");
-
+                    let matching_move = game.moves().expect_matching(mv.src, mv.dst, mv.promotion);
                     game.make_move(matching_move);
                 }
 
@@ -373,14 +367,10 @@ impl Uci {
                 },
                 DebugCommand::Move { moves } => {
                     for mv in moves {
-                        let legal_moves = self.game.moves().to_vec();
-
-                        let matching_move = legal_moves
-                            .into_iter()
-                            .find(|m| {
-                                m.src == mv.src && m.dst == mv.dst && m.promotion == mv.promotion
-                            })
-                            .expect("Illegal move");
+                        let matching_move =
+                            self.game
+                                .moves()
+                                .expect_matching(mv.src, mv.dst, mv.promotion);
 
                         self.game.make_move(matching_move);
                     }

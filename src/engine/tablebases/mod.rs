@@ -1,5 +1,5 @@
 use crate::chess::game::Game;
-use crate::chess::moves::Move;
+use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::piece::PromotionPieceKind;
 use crate::chess::square::Square;
 use std::path::Path;
@@ -77,7 +77,7 @@ impl Tablebase {
         let shakmaty_pos = Self::pos_to_shakmaty_pos(game);
 
         match self.shakmaty_tb.best_move(&shakmaty_pos) {
-            Ok(m) => m.map(|(shakmaty_mv, _)| Self::shakmaty_mv_to_move(&shakmaty_mv)),
+            Ok(m) => m.map(|(shakmaty_mv, _)| Self::shakmaty_mv_to_move(game, &shakmaty_mv)),
             Err(_) => None,
         }
     }
@@ -90,19 +90,19 @@ impl Tablebase {
             .unwrap()
     }
 
-    fn shakmaty_mv_to_move(shakmaty_mv: &shakmaty::Move) -> Move {
+    fn shakmaty_mv_to_move(game: &Game, shakmaty_mv: &shakmaty::Move) -> Move {
         use shakmaty::Role;
 
-        Move {
-            src: Square::from_index(shakmaty_mv.from().unwrap() as u8),
-            dst: Square::from_index(shakmaty_mv.to() as u8),
-            promotion: shakmaty_mv.promotion().map(|p| match p {
-                Role::Knight => PromotionPieceKind::Knight,
-                Role::Bishop => PromotionPieceKind::Bishop,
-                Role::Rook => PromotionPieceKind::Rook,
-                Role::Queen => PromotionPieceKind::Queen,
-                Role::King | Role::Pawn => unreachable!(),
-            }),
-        }
+        let src = Square::from_index(shakmaty_mv.from().unwrap() as u8);
+        let dst = Square::from_index(shakmaty_mv.to() as u8);
+        let promotion = shakmaty_mv.promotion().map(|p| match p {
+            Role::Knight => PromotionPieceKind::Knight,
+            Role::Bishop => PromotionPieceKind::Bishop,
+            Role::Rook => PromotionPieceKind::Rook,
+            Role::Queen => PromotionPieceKind::Queen,
+            Role::King | Role::Pawn => unreachable!(),
+        });
+
+        game.moves().expect_matching(src, dst, promotion)
     }
 }

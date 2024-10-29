@@ -143,12 +143,31 @@ mod tests {
     use super::*;
     use crate::chess::fen;
     use crate::chess::game::Game;
+    use crate::chess::moves::MoveListExt;
     use crate::chess::square::squares::all::*;
+    use crate::chess::square::Square;
 
-    fn test_san_string(fen: &'static str, mv: Move, expected_san: &'static str) {
+    fn test_san_string(fen: &'static str, mv: (Square, Square), expected_san: &'static str) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
+        let (src, dst) = mv;
+        let mv = game.moves().expect_matching(src, dst, None);
+        let san = format_move(&game, mv);
+
+        assert_eq!(&san, expected_san);
+    }
+
+    fn test_san_string_with_promotion(
+        fen: &'static str,
+        mv: (Square, Square, PromotionPieceKind),
+        expected_san: &'static str,
+    ) {
+        crate::init();
+
+        let game = Game::from_fen(fen).unwrap();
+        let (src, dst, promotion) = mv;
+        let mv = game.moves().expect_matching(src, dst, Some(promotion));
         let san = format_move(&game, mv);
 
         assert_eq!(&san, expected_san);
@@ -156,28 +175,28 @@ mod tests {
 
     #[test]
     fn san_simple_pawn_move() {
-        test_san_string(fen::START_POS, Move::new(E2, E4), "e4");
+        test_san_string(fen::START_POS, (E2, E4), "e4");
     }
 
     #[test]
     fn san_simple_pawn_capture() {
         test_san_string(
             "rnbqkbnr/ppp1pppp/8/3p4/4P3/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 2",
-            Move::new(E4, D5),
+            (E4, D5),
             "exd5",
         );
     }
 
     #[test]
     fn san_simple_knight_move() {
-        test_san_string(fen::START_POS, Move::new(B1, C3), "Nc3");
+        test_san_string(fen::START_POS, (B1, C3), "Nc3");
     }
 
     #[test]
     fn san_test_en_passant() {
         test_san_string(
             "rnbqkbnr/ppp2ppp/4p3/3pP3/8/8/PPPP1PPP/RNBQKBNR w KQkq d6 0 3",
-            Move::new(E5, D6),
+            (E5, D6),
             "exd6",
         );
     }
@@ -186,29 +205,10 @@ mod tests {
     fn san_promotion() {
         let promotion_fen = "k7/7P/8/8/8/8/8/7K w - - 0 1";
 
-        test_san_string(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Knight),
-            "h8=N",
-        );
-
-        test_san_string(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Bishop),
-            "h8=B",
-        );
-
-        test_san_string(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Rook),
-            "h8=R+",
-        );
-
-        test_san_string(
-            promotion_fen,
-            Move::promotion(H7, H8, PromotionPieceKind::Queen),
-            "h8=Q+",
-        );
+        test_san_string_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Knight), "h8=N");
+        test_san_string_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Bishop), "h8=B");
+        test_san_string_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Rook), "h8=R+");
+        test_san_string_with_promotion(promotion_fen, (H7, H8, PromotionPieceKind::Queen), "h8=Q+");
     }
 
     #[test]
@@ -217,10 +217,14 @@ mod tests {
 
         let fen = "R6R/8/8/8/8/8/8/1k4K1 w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(A8, B8);
+        let ambiguous_move = (A8, B8);
 
         assert_eq!(
-            required_ambiguity_resolution(&game, ambiguous_move),
+            required_ambiguity_resolution(
+                &game,
+                game.moves()
+                    .expect_matching(ambiguous_move.0, ambiguous_move.1, None)
+            ),
             AmbiguityResolution::File
         );
 
@@ -233,10 +237,14 @@ mod tests {
 
         let fen = "R7/8/8/8/8/1k4K1/8/R7 w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(A1, A3);
+        let ambiguous_move = (A1, A3);
 
         assert_eq!(
-            required_ambiguity_resolution(&game, ambiguous_move),
+            required_ambiguity_resolution(
+                &game,
+                game.moves()
+                    .expect_matching(ambiguous_move.0, ambiguous_move.1, None)
+            ),
             AmbiguityResolution::Rank
         );
 
@@ -249,10 +257,14 @@ mod tests {
 
         let fen = "1k1K4/8/8/8/4Q2Q/8/8/7Q w - - 0 1";
         let game = Game::from_fen(fen).unwrap();
-        let ambiguous_move = Move::new(H4, E1);
+        let ambiguous_move = (H4, E1);
 
         assert_eq!(
-            required_ambiguity_resolution(&game, ambiguous_move),
+            required_ambiguity_resolution(
+                &game,
+                game.moves()
+                    .expect_matching(ambiguous_move.0, ambiguous_move.1, None)
+            ),
             AmbiguityResolution::Exact
         );
 
@@ -263,15 +275,15 @@ mod tests {
     fn san_castling() {
         let fen = "1k6/8/8/8/8/8/8/R3K2R w KQ - 0 1";
 
-        test_san_string(fen, Move::new(E1, G1), "O-O");
-        test_san_string(fen, Move::new(E1, C1), "O-O-O");
+        test_san_string(fen, (E1, G1), "O-O");
+        test_san_string(fen, (E1, C1), "O-O-O");
     }
 
     #[test]
     fn san_plus_for_check() {
-        test_san_string(
+        test_san_string_with_promotion(
             "k7/6P1/8/8/8/8/8/K7 w - - 0 1",
-            Move::promotion(G7, G8, PromotionPieceKind::Queen),
+            (G7, G8, PromotionPieceKind::Queen),
             "g8=Q+",
         );
     }

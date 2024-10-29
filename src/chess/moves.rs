@@ -5,6 +5,34 @@ const MAX_LEGAL_MOVES: usize = 218;
 
 pub type MoveList = ArrayVec<Move, MAX_LEGAL_MOVES>;
 
+pub trait MoveListExt {
+    fn expect_matching(
+        &self,
+        src: Square,
+        dst: Square,
+        promotion: Option<PromotionPieceKind>,
+    ) -> Move;
+}
+
+impl MoveListExt for MoveList {
+    fn expect_matching(
+        &self,
+        src: Square,
+        dst: Square,
+        promotion: Option<PromotionPieceKind>,
+    ) -> Move {
+        for i in 0..self.len() {
+            let mv = *self.get(i).unwrap();
+
+            if mv.src == src && mv.dst == dst && mv.promotion == promotion {
+                return mv;
+            }
+        }
+
+        panic!("Illegal move")
+    }
+}
+
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct Move {
     pub src: Square,

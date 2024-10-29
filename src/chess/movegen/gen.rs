@@ -527,25 +527,23 @@ mod tests {
     use crate::chess::square::squares::all::*;
 
     #[inline(always)]
-    fn should_allow_move(fen: &str, mv: impl Into<Move>) {
+    fn should_allow_move(fen: &str, mv: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let mv = mv.into();
 
-        assert!(movelist.to_vec().iter().any(|m| *m == mv));
+        assert!(movelist.to_vec().iter().any(|m| (m.src, m.dst) == mv));
     }
 
     #[inline(always)]
-    fn should_not_allow_move(fen: &str, mv: impl Into<Move>) {
+    fn should_not_allow_move(fen: &str, mv: (Square, Square)) {
         crate::init();
         let game = Game::from_fen(fen).unwrap();
         let mut movelist = MoveList::new();
         generate_legal_moves(&game, &mut movelist);
-        let mv = mv.into();
 
-        assert!(movelist.to_vec().iter().all(|m| *m != mv));
+        assert!(movelist.to_vec().iter().all(|m| (m.src, m.dst) != mv));
     }
 
     #[test]
