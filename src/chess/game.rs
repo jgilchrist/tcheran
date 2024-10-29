@@ -68,17 +68,6 @@ impl Default for CastleRights {
 }
 
 #[derive(Debug, Clone)]
-pub struct History {
-    pub mv: Option<Move>,
-    pub captured: Option<Piece>,
-    pub castle_rights: ByPlayer<CastleRights>,
-    pub en_passant_target: Option<Square>,
-    pub halfmove_clock: u32,
-    pub zobrist: ZobristHash,
-    pub incremental_eval: IncrementalEvalFields,
-}
-
-#[derive(Debug, Clone)]
 pub struct Game {
     pub player: Player,
     pub board: Board,
@@ -89,7 +78,8 @@ pub struct Game {
 
     pub zobrist: ZobristHash,
     pub incremental_eval: IncrementalEvalFields,
-    pub history: Vec<History>,
+    pub history: Vec<ZobristHash>,
+    pub last_move_was_null: bool,
 }
 
 impl Game {
@@ -115,6 +105,7 @@ impl Game {
             halfmove_clock,
             plies,
 
+            last_move_was_null: false,
             zobrist: ZobristHash::uninit(),
             incremental_eval: incremental_eval_fields,
             history: Vec::new(),
@@ -151,7 +142,7 @@ impl Game {
             .iter()
             .rev()
             .take(self.halfmove_clock as usize)
-            .any(|h| h.zobrist == self.zobrist)
+            .any(|zobrist| *zobrist == self.zobrist)
     }
 
     pub fn is_stalemate_by_insufficient_material(&self) -> bool {
@@ -230,7 +221,11 @@ impl Game {
         movelist
     }
 
-    pub fn make_move(&mut self, mv: Move) {
+    #[must_use]
+    pub fn make_move(&self, mv: Move) -> Game {
+        let mut game = self.clone();
+        game.history.push(game.zobrist.clone());
+
         let from = mv.src();
         let to = mv.dst();
         let player = self.player;
@@ -238,31 +233,17 @@ impl Game {
 
         let maybe_captured_piece = self.board.piece_at(to);
 
-        // Capture the irreversible aspects of the position so that they can be restored
-        // if we undo this move.
-        let history = History {
-            mv: Some(mv),
-            captured: maybe_captured_piece,
-            castle_rights: self.castle_rights.clone(),
-            en_passant_target: self.en_passant_target,
-            halfmove_clock: self.halfmove_clock,
-            zobrist: self.zobrist.clone(),
-            incremental_eval: self.incremental_eval.clone(),
-        };
-
-        self.history.push(history);
-
-        let moved_piece = self.remove_at(from);
+        let moved_piece = game.remove_at(from);
 
         if maybe_captured_piece.is_some() {
-            self.remove_at(to);
+            game.remove_at(to);
         }
 
         if let Some(promoted_to) = mv.promotion() {
             let promoted_piece = Piece::new(player, promoted_to.piece());
-            self.set_at(to, promoted_piece);
+            game.set_at(to, promoted_piece);
         } else {
-            self.set_at(to, moved_piece);
+            game.set_at(to, moved_piece);
         }
 
         // If we moved a pawn to the en passant target, this was an en passant capture, so we
@@ -270,7 +251,7 @@ impl Game {
         if mv.is_en_passant() {
             // Remove the piece behind the square the pawn just moved to
             let capture_square = to.backward(player);
-            self.remove_at(capture_square);
+            game.remove_at(capture_square);
         }
 
         let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
@@ -279,7 +260,7 @@ impl Game {
         {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
-            let enemy_pawns = self.board.pawns(other_player);
+            let enemy_pawns = game.board.pawns(other_player);
             let en_passant_can_happen = (en_passant_attacker_squares & enemy_pawns).any();
 
             if en_passant_can_happen {
@@ -291,14 +272,14 @@ impl Game {
             None
         };
 
-        self.zobrist
-            .set_en_passant(self.en_passant_target, new_en_passant_target);
-        self.en_passant_target = new_en_passant_target;
+        game.zobrist
+            .set_en_passant(game.en_passant_target, new_en_passant_target);
+        game.en_passant_target = new_en_passant_target;
 
         if mv.is_castling() {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
-                let rook = self.remove_at(rook_from);
-                self.set_at(rook_to, rook);
+                let rook = game.remove_at(rook_from);
+                game.set_at(rook_to, rook);
             }
         }
 
@@ -306,22 +287,22 @@ impl Game {
         // If we moved the king, we lose all rights to castle.
         // If we moved one of our rooks, we lose rights to castle on that side.
         if moved_piece.kind == PieceKind::King && from == squares::king_start(player) {
-            self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
-            self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
+            game.try_remove_castle_rights(player, CastleRightsSide::Kingside);
+            game.try_remove_castle_rights(player, CastleRightsSide::Queenside);
         } else if moved_piece.kind == PieceKind::Rook {
             if from == squares::kingside_rook_start(player) {
-                self.try_remove_castle_rights(player, CastleRightsSide::Kingside);
+                game.try_remove_castle_rights(player, CastleRightsSide::Kingside);
             } else if from == squares::queenside_rook_start(player) {
-                self.try_remove_castle_rights(player, CastleRightsSide::Queenside);
+                game.try_remove_castle_rights(player, CastleRightsSide::Queenside);
             }
         }
 
         // Check if we removed our enemy's ability to castle, i.e. if we took one of their rooks
         if maybe_captured_piece.is_some() {
             if to == squares::kingside_rook_start(other_player) {
-                self.try_remove_castle_rights(other_player, CastleRightsSide::Kingside);
+                game.try_remove_castle_rights(other_player, CastleRightsSide::Kingside);
             } else if to == squares::queenside_rook_start(other_player) {
-                self.try_remove_castle_rights(other_player, CastleRightsSide::Queenside);
+                game.try_remove_castle_rights(other_player, CastleRightsSide::Queenside);
             }
         }
 
@@ -329,101 +310,37 @@ impl Game {
             maybe_captured_piece.is_some() || moved_piece.kind == PieceKind::Pawn;
 
         if should_reset_halfmove_clock {
-            self.halfmove_clock = 0;
+            game.halfmove_clock = 0;
         } else {
-            self.halfmove_clock += 1;
+            game.halfmove_clock += 1;
         }
 
-        self.plies += 1;
+        game.plies += 1;
 
-        self.player = other_player;
-        self.zobrist.toggle_side_to_play();
+        game.player = other_player;
+        game.zobrist.toggle_side_to_play();
+
+        game.last_move_was_null = false;
+
+        game
     }
 
-    pub fn make_null_move(&mut self) {
-        // Capture the irreversible aspects of the position so that they can be restored
-        // if we undo this move.
-        let history = History {
-            mv: None,
-            captured: None,
-            castle_rights: self.castle_rights.clone(),
-            en_passant_target: self.en_passant_target,
-            halfmove_clock: self.halfmove_clock,
-            zobrist: self.zobrist.clone(),
-            incremental_eval: self.incremental_eval.clone(),
-        };
+    #[must_use]
+    pub fn make_null_move(&self) -> Game {
+        let mut game = self.clone();
+        game.history.push(game.zobrist.clone());
 
-        self.history.push(history);
+        game.zobrist.set_en_passant(self.en_passant_target, None);
+        game.en_passant_target = None;
 
-        self.zobrist.set_en_passant(self.en_passant_target, None);
-        self.en_passant_target = None;
+        game.plies += 1;
 
-        self.plies += 1;
+        game.player = self.player.other();
+        game.zobrist.toggle_side_to_play();
 
-        self.player = self.player.other();
-        self.zobrist.toggle_side_to_play();
-    }
+        game.last_move_was_null = true;
 
-    pub fn undo_move(&mut self) {
-        let history = self.history.pop().unwrap();
-        let mv = history.mv.unwrap();
-        let from = mv.src();
-        let to = mv.dst();
-
-        // The player that made this move is the one whose turn it was before
-        // we start undoing the move.
-        let player = self.player.other();
-        let other_player = self.player;
-
-        self.plies -= 1;
-        self.player = player;
-        self.zobrist = history.zobrist;
-        self.halfmove_clock = history.halfmove_clock;
-        self.castle_rights = history.castle_rights;
-        self.en_passant_target = history.en_passant_target;
-        self.incremental_eval = history.incremental_eval;
-
-        // Undo castling, if we castled
-        if mv.is_castling() {
-            if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
-                self.board.remove_at(rook_to);
-                self.board
-                    .set_at(rook_from, Piece::new(player, PieceKind::Rook));
-            }
-        }
-
-        // Replace the pawn taken by en-passant capture
-        if mv.is_en_passant() {
-            let capture_square = to.backward(player);
-
-            self.board
-                .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
-        }
-
-        let moved_piece = self.board.piece_at(to).unwrap();
-        self.board.remove_at(to);
-
-        if let Some(captured_piece) = history.captured {
-            self.board.set_at(to, captured_piece);
-        }
-
-        if mv.promotion().is_some() {
-            self.board.set_at(from, Piece::new(player, PieceKind::Pawn));
-        } else {
-            self.board.set_at(from, moved_piece);
-        }
-    }
-
-    pub fn undo_null_move(&mut self) {
-        let history = self.history.pop().unwrap();
-        assert!(history.mv.is_none());
-
-        self.plies -= 1;
-        self.player = self.player.other();
-        self.zobrist = history.zobrist;
-        self.en_passant_target = history.en_passant_target;
-        self.halfmove_clock = history.halfmove_clock;
-        self.incremental_eval = history.incremental_eval;
+        game
     }
 }
 

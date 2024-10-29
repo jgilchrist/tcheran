@@ -145,7 +145,7 @@ impl UciReporter {
                 }
             );
 
-            game.make_move(mv);
+            game = game.make_move(mv);
         }
 
         println!();
@@ -276,7 +276,7 @@ impl Uci {
 
                 for mv in moves {
                     let matching_move = game.moves().expect_matching(mv.src, mv.dst, mv.promotion);
-                    game.make_move(matching_move);
+                    game = game.make_move(matching_move);
                 }
 
                 self.game = game;
@@ -377,7 +377,7 @@ impl Uci {
                                 .moves()
                                 .expect_matching(mv.src, mv.dst, mv.promotion);
 
-                        self.game.make_move(matching_move);
+                        self.game = self.game.make_move(matching_move);
                     }
 
                     println!("{:?}", self.game.board);

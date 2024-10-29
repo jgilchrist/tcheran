@@ -7,7 +7,7 @@ use crate::engine::search::time_control::TimeStrategy;
 use super::{PersistentState, SearchState, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
-    game: &mut Game,
+    game: &Game,
     mut alpha: Eval,
     beta: Eval,
     plies: u8,
@@ -49,10 +49,10 @@ pub fn quiescence(
 
     let mut moves = MovePicker::new_loud();
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
-        game.make_move(mv);
+        let game = game.make_move(mv);
 
         let move_score = -quiescence(
-            game,
+            &game,
             -beta,
             -alpha,
             plies + 1,
@@ -60,8 +60,6 @@ pub fn quiescence(
             persistent_state,
             state,
         )?;
-
-        game.undo_move();
 
         if move_score > best_eval {
             best_eval = move_score;

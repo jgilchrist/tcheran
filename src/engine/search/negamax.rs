@@ -33,7 +33,7 @@ impl DepthReduction {
 }
 
 pub fn negamax(
-    game: &mut Game,
+    game: &Game,
     mut alpha: Eval,
     beta: Eval,
     mut depth: u8,
@@ -160,12 +160,12 @@ pub fn negamax(
         if depth >= params::NULL_MOVE_PRUNING_DEPTH_LIMIT
             && eval >= beta
             // Don't let a player play a null move in response to a null move
-            && game.history.last().map_or(true, |m| m.mv.is_some())
+            && !game.last_move_was_null
         {
-            game.make_null_move();
+            let game = game.make_null_move();
 
             let null_score = -negamax(
-                game,
+                &game,
                 -beta,
                 -beta + Eval(1),
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
@@ -175,8 +175,6 @@ pub fn negamax(
                 time_control,
                 state,
             )?;
-
-            game.undo_null_move();
 
             if null_score >= beta {
                 return Ok(null_score);
@@ -206,12 +204,12 @@ pub fn negamax(
             continue;
         }
 
-        game.make_move(mv);
+        let game = game.make_move(mv);
         number_of_legal_moves += 1;
 
         let move_score = if number_of_legal_moves == 1 {
             -negamax(
-                game,
+                &game,
                 -beta,
                 -alpha,
                 depth - 1,
@@ -236,7 +234,7 @@ pub fn negamax(
             // Now, we just need to prove that the other moves are worse.
             // We search them with a reduced window to prove that they are at least worse.
             let pvs_score = -negamax(
-                game,
+                &game,
                 -alpha - Eval(1),
                 -alpha,
                 depth.saturating_sub(reduction),
@@ -251,7 +249,7 @@ pub fn negamax(
             // with the normal alpha/beta bounds.
             if pvs_score > alpha && pvs_score < beta {
                 -negamax(
-                    game,
+                    &game,
                     -beta,
                     -alpha,
                     depth - 1,
@@ -265,8 +263,6 @@ pub fn negamax(
                 pvs_score
             }
         };
-
-        game.undo_move();
 
         if move_score > best_eval {
             best_move = Some(mv);
@@ -303,9 +299,9 @@ pub fn negamax(
         if !mv.is_capture() {
             state.killer_moves.try_push(plies, mv);
 
-            if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
-                state.countermove_table.set(game.player, previous_move, mv);
-            }
+            // if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
+            //     state.countermove_table.set(game.player, previous_move, mv);
+            // }
 
             persistent_state
                 .history_table

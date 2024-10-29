@@ -31,8 +31,7 @@ pub fn format_move(game: &Game, mv: Move) -> String {
         }
     }
 
-    let mut game_after_move = game.clone();
-    game_after_move.make_move(mv);
+    let game_after_move = game.make_move(mv);
     let places_opponent_in_check = game_after_move.is_king_in_check();
 
     let ambiguity_resolution_required = required_ambiguity_resolution(game, mv);

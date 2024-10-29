@@ -31,7 +31,7 @@ impl TTOverwriteable for PerftTranspositionTableData {
 
 type PerftTranspositionTable = TranspositionTable<PerftTranspositionTableData>;
 
-fn tt_perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize {
+fn tt_perft(depth: u8, game: &Game, tt: &mut PerftTranspositionTable) -> usize {
     if depth == 1 {
         return game.moves().len();
     }
@@ -47,9 +47,8 @@ fn tt_perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usi
         .to_vec()
         .into_iter()
         .map(|m| {
-            game.make_move(m);
-            let result = tt_perft(depth - 1, game, tt);
-            game.undo_move();
+            let game = game.make_move(m);
+            let result = tt_perft(depth - 1, &game, tt);
             result
         })
         .sum();
@@ -78,7 +77,7 @@ fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
 
 fn movepicker_perft(
     depth: u8,
-    game: &mut Game,
+    game: &Game,
     persistent_state: &PersistentState,
     state: &mut SearchState,
 ) -> usize {
@@ -128,9 +127,8 @@ fn movepicker_perft(
     let mut moves_at_this_node = Vec::new();
     let mut movepicker = MovePicker::new(best_move);
     while let Some(mv) = movepicker.next(game, persistent_state, state, depth) {
-        game.make_move(mv);
-        moves += movepicker_perft(depth - 1, game, persistent_state, state);
-        game.undo_move();
+        let game = game.make_move(mv);
+        moves += movepicker_perft(depth - 1, &game, persistent_state, state);
 
         moves_at_this_node.push(mv);
     }
