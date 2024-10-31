@@ -15,7 +15,7 @@ pub struct SearchTranspositionTableData {
     pub eval: Eval,
     pub depth: u8,
     pub age: u8,
-    pub best_move: Move,
+    pub best_move: Option<Move>,
 }
 
 impl TTOverwriteable for SearchTranspositionTableData {

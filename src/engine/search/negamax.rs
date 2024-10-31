@@ -77,11 +77,7 @@ pub fn negamax(
             }
         }
 
-        previous_best_move = if !tt_entry.best_move.is_null() {
-            Some(tt_entry.best_move)
-        } else {
-            None
-        };
+        previous_best_move = tt_entry.best_move;
     }
 
     if !is_root && !is_pv && !in_check {
@@ -238,7 +234,7 @@ pub fn negamax(
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
         eval: best_eval.with_mate_distance_from_position(plies),
-        best_move: best_move.unwrap_or(Move::NULL),
+        best_move,
         age: persistent_state.tt.generation,
         depth,
     };

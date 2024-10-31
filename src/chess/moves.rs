@@ -1,5 +1,6 @@
 use crate::chess::{piece::PromotionPieceKind, square::Square};
 use arrayvec::ArrayVec;
+use std::num::NonZeroU16;
 
 const MAX_LEGAL_MOVES: usize = 218;
 
@@ -58,7 +59,7 @@ impl MoveListExt for MoveList {
 //    └──────┘
 
 #[derive(PartialEq, Eq, Clone, Copy)]
-pub struct Move(u16);
+pub struct Move(NonZeroU16);
 
 const SRC_MASK: u16 = 0b0000_0000_0011_1111;
 const DST_MASK: u16 = 0b0000_1111_1100_0000;
@@ -109,31 +110,36 @@ const fn promotion_flag_bits(promotion_piece_kind: PromotionPieceKind) -> u16 {
 }
 
 impl Move {
-    pub const NULL: Self = Self(0);
+    #[inline]
+    const fn new(data: u16) -> Self {
+        // It's impossible for us to create a move with '0' data. In order to do that
+        // we'd need both the source and destination squares to be A1 (0).
+        Self(unsafe { NonZeroU16::new_unchecked(data) })
+    }
 
     #[inline]
     pub const fn quiet(src: Square, dst: Square) -> Self {
-        Self(src_bits(src) | dst_bits(dst))
+        Self::new(src_bits(src) | dst_bits(dst))
     }
 
     #[inline]
     pub const fn capture(src: Square, dst: Square) -> Self {
-        Self(src_bits(src) | dst_bits(dst) | capture_bit())
+        Self::new(src_bits(src) | dst_bits(dst) | capture_bit())
     }
 
     #[inline]
     pub const fn castles(src: Square, dst: Square) -> Self {
-        Self(src_bits(src) | dst_bits(dst) | flag_bits(true, false))
+        Self::new(src_bits(src) | dst_bits(dst) | flag_bits(true, false))
     }
 
     #[inline]
     pub const fn en_passant(src: Square, dst: Square) -> Self {
-        Self(src_bits(src) | dst_bits(dst) | capture_bit() | flag_bits(true, false))
+        Self::new(src_bits(src) | dst_bits(dst) | capture_bit() | flag_bits(true, false))
     }
 
     #[inline]
     pub const fn quiet_promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
-        Self(src_bits(src) | dst_bits(dst) | promotion_bit() | promotion_flag_bits(promotion))
+        Self::new(src_bits(src) | dst_bits(dst) | promotion_bit() | promotion_flag_bits(promotion))
     }
 
     #[inline]
@@ -142,7 +148,7 @@ impl Move {
         dst: Square,
         promotion: PromotionPieceKind,
     ) -> Self {
-        Self(
+        Self::new(
             src_bits(src)
                 | dst_bits(dst)
                 | capture_bit()
@@ -152,23 +158,28 @@ impl Move {
     }
 
     #[inline]
+    fn data(&self) -> u16 {
+        self.0.get()
+    }
+
+    #[inline]
     pub fn src(&self) -> Square {
-        Square::from_index((self.0 & SRC_MASK) as u8)
+        Square::from_index((self.data() & SRC_MASK) as u8)
     }
 
     #[inline]
     pub fn dst(&self) -> Square {
-        Square::from_index(((self.0 & DST_MASK) >> DST_SHIFT) as u8)
+        Square::from_index(((self.data() & DST_MASK) >> DST_SHIFT) as u8)
     }
 
     #[inline]
     pub fn is_capture(&self) -> bool {
-        ((self.0 & CAPTURE_BIT_MASK) >> CAPTURE_BIT_SHIFT) == 0b1
+        ((self.data() & CAPTURE_BIT_MASK) >> CAPTURE_BIT_SHIFT) == 0b1
     }
 
     #[inline]
     pub fn is_promotion(&self) -> bool {
-        ((self.0 & PROMOTION_BIT_MASK) >> PROMOTION_BIT_SHIFT) == 0b1
+        ((self.data() & PROMOTION_BIT_MASK) >> PROMOTION_BIT_SHIFT) == 0b1
     }
 
     #[inline]
@@ -177,7 +188,7 @@ impl Move {
             return None;
         }
 
-        let flag_bits = (self.0 & FLAGS_MASK) >> FLAGS_SHIFT;
+        let flag_bits = (self.data() & FLAGS_MASK) >> FLAGS_SHIFT;
 
         Some(match flag_bits {
             0b00 => PromotionPieceKind::Queen,
@@ -195,17 +206,14 @@ impl Move {
 
     #[inline]
     pub fn is_en_passant(&self) -> bool {
-        self.is_capture() && !self.is_promotion() && ((self.0 & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
+        self.is_capture()
+            && !self.is_promotion()
+            && ((self.data() & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
     }
 
     #[inline]
     pub fn is_castling(&self) -> bool {
-        self.is_quiet() && ((self.0 & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
-    }
-
-    #[inline]
-    pub fn is_null(&self) -> bool {
-        self.0 == 0
+        self.is_quiet() && ((self.data() & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
     }
 }
 
@@ -236,7 +244,12 @@ mod tests {
 
     #[test]
     fn check_move_size() {
-        assert_eq!(std::mem::size_of::<Move>(), 2);
+        assert_eq!(size_of::<Move>(), 2);
+    }
+
+    #[test]
+    fn check_move_size_is_same_as_option_move_size() {
+        assert_eq!(size_of::<Move>(), size_of::<Option<Move>>());
     }
 
     #[test]
