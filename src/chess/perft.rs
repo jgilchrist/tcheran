@@ -7,10 +7,9 @@ pub fn perft(depth: u8, game: &mut Game) -> usize {
     }
 
     game.moves()
-        .to_vec()
-        .into_iter()
+        .iter()
         .map(|m| {
-            game.make_move(m);
+            game.make_move(*m);
             let result = perft(depth - 1, game);
             game.undo_move();
             result

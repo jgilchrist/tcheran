@@ -23,12 +23,10 @@ const fn format_piece(piece: Piece) -> char {
 }
 
 fn format_rank(rank: &[Option<Piece>]) -> String {
-    let state = rank
-        .iter()
-        .fold((String::new(), 0), |acc, piece| match piece {
-            Some(p) => {
-                let (str_so_far, prev_empty_squares) = acc;
-
+    let state = rank.iter().fold(
+        (String::new(), 0),
+        |(str_so_far, prev_empty_squares), piece| {
+            if let Some(p) = piece {
                 let new_string = format!(
                     "{}{}{}",
                     str_so_far,
@@ -41,12 +39,11 @@ fn format_rank(rank: &[Option<Piece>]) -> String {
                 );
 
                 (new_string, 0)
-            }
-            None => {
-                let (str_so_far, prev_empty_squares) = acc;
+            } else {
                 (str_so_far, prev_empty_squares + 1)
             }
-        });
+        },
+    );
 
     let (str_so_far, prev_empty_squares) = state;
     format!(

@@ -23,42 +23,50 @@ impl Tablebase {
         }
     }
 
-    #[expect(unused)]
+    #[expect(
+        unused,
+        reason = "Won't be used until proper tablebase support is implemented"
+    )]
     pub fn is_enabled(&self) -> bool {
         self.is_enabled
     }
 
-    #[expect(unused)]
+    #[expect(
+        unused,
+        reason = "Won't be used until proper tablebase support is implemented"
+    )]
     pub fn n_men(&self) -> usize {
         self.shakmaty_tb.max_pieces()
     }
 
-    pub fn set_paths(&mut self, path: &str) -> Result<(), ()> {
+    pub fn set_paths(&mut self, path: &str) {
         let path = path.to_string();
         let separator = if cfg!(windows) { ';' } else { ':' };
 
-        let paths = path.split(separator).map(|p| Path::new(p));
+        let paths = path.split(separator).map(Path::new);
 
         for p in paths {
-            self.shakmaty_tb.add_directory(p).expect(&format!(
-                "Invalid tablebase path: {}",
-                p.to_str().unwrap_or_default()
-            ));
+            self.shakmaty_tb.add_directory(p).unwrap_or_else(|_| {
+                panic!("Invalid tablebase path: {}", p.to_str().unwrap_or_default())
+            });
         }
 
         self.is_enabled = true;
-        Ok(())
     }
 
-    #[expect(unused)]
+    #[expect(
+        unused,
+        reason = "Won't be used until proper tablebase support is implemented"
+    )]
     pub fn wdl(&self, game: &Game) -> Option<Wdl> {
+        use shakmaty_syzygy::Wdl::*;
+
         if !self.is_enabled {
             return None;
         }
 
         let shakmaty_pos = Self::pos_to_shakmaty_pos(game);
 
-        use shakmaty_syzygy::Wdl::*;
         match self.shakmaty_tb.probe_wdl(&shakmaty_pos) {
             Ok(m) => m.unambiguous().map(|wdl| match wdl {
                 Loss => Wdl::Loss,

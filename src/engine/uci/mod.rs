@@ -53,7 +53,14 @@ impl UciReporter {
             depth: Some(progress.depth),
             seldepth: Some(progress.seldepth),
             score: Some(score),
-            pv: Some(progress.pv.clone().into_iter().map(|m| m.into()).collect()),
+            pv: Some(
+                progress
+                    .pv
+                    .clone()
+                    .into_iter()
+                    .map(std::convert::Into::into)
+                    .collect(),
+            ),
             time: Some(progress.stats.time),
             nodes: Some(progress.stats.nodes),
             nps: Some(progress.stats.nodes_per_second),
@@ -126,7 +133,7 @@ impl UciReporter {
         );
 
         print!("  ");
-        for mv in progress.pv.clone().into_iter() {
+        for mv in progress.pv.clone() {
             let san_mv = san::format_move(&game, mv);
 
             print!(
@@ -238,13 +245,10 @@ impl Uci {
                         options::MoveOverheadOption::set(&mut self.options, value)
                     }
                     options::SyzygyPath::NAME => {
-                        let syzygy_path = options::SyzygyPath::set(&mut self.options, value)?;
+                        let syzygy_path = options::SyzygyPath::set(&mut self.options, value);
 
                         if let Ok(mut state_handle) = self.persistent_state.try_lock() {
-                            state_handle
-                                .tablebase
-                                .set_paths(&syzygy_path)
-                                .map_err(|()| "Invalid SyzygyPath")?;
+                            state_handle.tablebase.set_paths(&syzygy_path);
                         } else {
                             self.reporter
                                 .generic_report("error: Unable to change SyzygyPath during search");

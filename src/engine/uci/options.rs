@@ -94,9 +94,9 @@ impl UciOption for SyzygyPath {
 }
 
 impl SyzygyPath {
-    pub fn set(options: &mut EngineOptions, value: &str) -> Result<String, String> {
+    pub fn set(options: &mut EngineOptions, value: &str) -> String {
         let path = value.to_string();
         options.syzygy_path = Some(path.clone());
-        Ok(path)
+        path
     }
 }
