@@ -273,7 +273,7 @@ mod tests {
         let game = Game::new();
 
         let mut moves: Vec<Move> = Vec::new();
-        let mut move_picker = MovePicker::new(Some((G1, F3).into()));
+        let mut move_picker = MovePicker::new(Some(Move::new(G1, F3)));
 
         let search_state = SearchState::new();
         let persistent_state = PersistentState::new(16);

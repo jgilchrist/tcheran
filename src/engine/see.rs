@@ -141,22 +141,26 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
 mod tests {
     use super::*;
     use crate::chess::game::Game;
+    use crate::chess::moves::MoveListExt;
     use crate::chess::square::squares::all::*;
+    use crate::chess::square::Square;
 
-    fn should_be_good_capture(fen: &str, mv: impl Into<Move>) {
+    fn should_be_good_capture(fen: &str, mv: (Square, Square)) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
+        let mv = game.moves().expect_matching(mv.0, mv.1, None);
 
-        assert!(see(&game, mv.into(), Eval(0)));
+        assert!(see(&game, mv, Eval(0)));
     }
 
-    fn should_be_bad_capture(fen: &str, mv: impl Into<Move>) {
+    fn should_be_bad_capture(fen: &str, mv: (Square, Square)) {
         crate::init();
 
         let game = Game::from_fen(fen).unwrap();
+        let mv = game.moves().expect_matching(mv.0, mv.1, None);
 
-        assert!(!see(&game, mv.into(), Eval(0)));
+        assert!(!see(&game, mv, Eval(0)));
     }
 
     #[test]
