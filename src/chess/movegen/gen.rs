@@ -191,10 +191,26 @@ fn generate_pawn_captures(
         }
 
         for target in attacks & capture_targets {
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Queen,
+            ));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Rook,
+            ));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Knight,
+            ));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Bishop,
+            ));
         }
     }
 
@@ -205,7 +221,11 @@ fn generate_pawn_captures(
         // Pawns cannot push forward if they are pinned orthogonally
         // There's no 'moving along the pin ray' for these pieces, since the target square is empty
         if !orthogonal_pins.contains(pawn) {
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Queen));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Queen,
+            ));
         }
     }
 
@@ -289,9 +309,21 @@ fn generate_pawn_quiets(
         // There's no 'moving along the pin ray' for these pieces, since the target square is empty
         if !orthogonal_pins.contains(pawn) {
             // Consider underpromoting pushes to be 'quiet' moves
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Rook));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Knight));
-            moves.push(Move::promotion(pawn, target, PromotionPieceKind::Bishop));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Rook,
+            ));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Knight,
+            ));
+            moves.push(Move::new_with_promotion(
+                pawn,
+                target,
+                PromotionPieceKind::Bishop,
+            ));
         }
     }
 

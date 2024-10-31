@@ -49,7 +49,11 @@ impl Move {
         }
     }
 
-    pub const fn promotion(src: Square, dst: Square, promotion: PromotionPieceKind) -> Self {
+    pub const fn new_with_promotion(
+        src: Square,
+        dst: Square,
+        promotion: PromotionPieceKind,
+    ) -> Self {
         Self {
             src,
             dst,
@@ -66,7 +70,7 @@ impl From<(Square, Square)> for Move {
 
 impl From<(Square, Square, PromotionPieceKind)> for Move {
     fn from((src, dst, promotion): (Square, Square, PromotionPieceKind)) -> Self {
-        Self::promotion(src, dst, promotion)
+        Self::new_with_promotion(src, dst, promotion)
     }
 }
 
