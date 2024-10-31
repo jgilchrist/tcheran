@@ -65,7 +65,9 @@ const SRC_MASK: u16 = 0b0000_0000_0011_1111;
 const DST_MASK: u16 = 0b0000_1111_1100_0000;
 const CAPTURE_BIT_MASK: u16 = 0b0001_0000_0000_0000;
 const PROMOTION_BIT_MASK: u16 = 0b0010_0000_0000_0000;
-const FLAGS_MASK: u16 = 0b1100_0000_0000_0000;
+const FIRST_FLAG_MASK: u16 = 0b0100_0000_0000_0000;
+const SECOND_FLAG_MASK: u16 = 0b1000_0000_0000_0000;
+const FLAGS_MASK: u16 = FIRST_FLAG_MASK | SECOND_FLAG_MASK;
 
 const DST_SHIFT: usize = 6;
 const CAPTURE_BIT_SHIFT: usize = 12;
@@ -174,12 +176,12 @@ impl Move {
 
     #[inline]
     pub fn is_capture(&self) -> bool {
-        ((self.data() & CAPTURE_BIT_MASK) >> CAPTURE_BIT_SHIFT) == 0b1
+        (self.data() & CAPTURE_BIT_MASK) == CAPTURE_BIT_MASK
     }
 
     #[inline]
     pub fn is_promotion(&self) -> bool {
-        ((self.data() & PROMOTION_BIT_MASK) >> PROMOTION_BIT_SHIFT) == 0b1
+        (self.data() & PROMOTION_BIT_MASK) == PROMOTION_BIT_MASK
     }
 
     #[inline]
@@ -208,12 +210,12 @@ impl Move {
     pub fn is_en_passant(&self) -> bool {
         self.is_capture()
             && !self.is_promotion()
-            && ((self.data() & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
+            && (self.data() & FIRST_FLAG_MASK) == FIRST_FLAG_MASK
     }
 
     #[inline]
     pub fn is_castling(&self) -> bool {
-        self.is_quiet() && ((self.data() & FLAGS_MASK) >> FLAGS_SHIFT) == 0b01
+        self.is_quiet() && (self.data() & FIRST_FLAG_MASK) == FIRST_FLAG_MASK
     }
 }
 
