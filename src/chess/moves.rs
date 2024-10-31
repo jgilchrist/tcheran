@@ -160,32 +160,32 @@ impl Move {
     }
 
     #[inline]
-    fn data(&self) -> u16 {
+    fn data(self) -> u16 {
         self.0.get()
     }
 
     #[inline]
-    pub fn src(&self) -> Square {
+    pub fn src(self) -> Square {
         Square::from_index((self.data() & SRC_MASK) as u8)
     }
 
     #[inline]
-    pub fn dst(&self) -> Square {
+    pub fn dst(self) -> Square {
         Square::from_index(((self.data() & DST_MASK) >> DST_SHIFT) as u8)
     }
 
     #[inline]
-    pub fn is_capture(&self) -> bool {
+    pub fn is_capture(self) -> bool {
         (self.data() & CAPTURE_BIT_MASK) == CAPTURE_BIT_MASK
     }
 
     #[inline]
-    pub fn is_promotion(&self) -> bool {
+    pub fn is_promotion(self) -> bool {
         (self.data() & PROMOTION_BIT_MASK) == PROMOTION_BIT_MASK
     }
 
     #[inline]
-    pub fn promotion(&self) -> Option<PromotionPieceKind> {
+    pub fn promotion(self) -> Option<PromotionPieceKind> {
         if !self.is_promotion() {
             return None;
         }
@@ -202,19 +202,19 @@ impl Move {
     }
 
     #[inline]
-    pub fn is_quiet(&self) -> bool {
+    pub fn is_quiet(self) -> bool {
         !self.is_promotion() && !self.is_capture()
     }
 
     #[inline]
-    pub fn is_en_passant(&self) -> bool {
+    pub fn is_en_passant(self) -> bool {
         self.is_capture()
             && !self.is_promotion()
             && (self.data() & FIRST_FLAG_MASK) == FIRST_FLAG_MASK
     }
 
     #[inline]
-    pub fn is_castling(&self) -> bool {
+    pub fn is_castling(self) -> bool {
         self.is_quiet() && (self.data() & FIRST_FLAG_MASK) == FIRST_FLAG_MASK
     }
 }
