@@ -228,7 +228,7 @@ impl Square {
     }
 
     #[inline(always)]
-    pub fn idx(self) -> u8 {
+    pub const fn idx(self) -> u8 {
         self.0
     }
 
