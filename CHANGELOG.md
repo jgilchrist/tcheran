@@ -11,6 +11,7 @@
 * Add countermove history (2.66 +- 2.03)
 * Use separate functions for scoring tacticals vs. quiets (2.64 +- 4.43)
 * Enable LTO (2.09 +- 3.32)
+* Pre-compute move flags (2.07 +- 4.01)
 * Use arrayvec for MoveList (1.05 +- 3.35)
 
 ### Misc
