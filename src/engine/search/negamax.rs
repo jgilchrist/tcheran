@@ -80,9 +80,9 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move;
     }
 
-    if !is_root && !is_pv && !in_check {
-        let eval = eval::eval(game);
+    let eval = eval::eval(game);
 
+    if !is_root && !is_pv && !in_check {
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
             && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i16::from(depth) > beta
@@ -127,10 +127,21 @@ pub fn negamax(
     let mut node_pv = PrincipalVariation::new();
 
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
-        number_of_legal_moves += 1;
         node_pv.clear();
 
+        // Futility pruning
+        if number_of_legal_moves > 0
+            && !is_pv
+            && !mv.is_capture()
+            && !in_check
+            && depth <= params::FUTILITY_PRUNE_DEPTH
+            && eval + params::FUTILITY_PRUNE_MAX_MOVE_VALUE < alpha
+        {
+            continue;
+        }
+
         game.make_move(mv);
+        number_of_legal_moves += 1;
 
         let move_score = if number_of_legal_moves == 1 {
             -negamax(

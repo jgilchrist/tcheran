@@ -34,6 +34,9 @@ mod params {
     pub const NULL_MOVE_PRUNING_DEPTH_LIMIT: u8 = 3;
     pub const NULL_MOVE_PRUNING_DEPTH_REDUCTION: u8 = 2;
 
+    pub const FUTILITY_PRUNE_DEPTH: u8 = 1;
+    pub const FUTILITY_PRUNE_MAX_MOVE_VALUE: Eval = Eval::new(135);
+
     pub const REVERSE_FUTILITY_PRUNE_DEPTH: u8 = 4;
     pub const REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY: Eval = Eval::new(150);
 
