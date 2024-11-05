@@ -15,6 +15,7 @@ enum GenStage {
     GenQuiets,
     Killer1,
     Killer2,
+    CounterMove,
     BadCaptures,
     ScoreQuiets,
     Quiets,
@@ -147,6 +148,23 @@ impl MovePicker {
         }
 
         if self.stage == Killer2 {
+            self.stage = CounterMove;
+
+            if let Some(killer2) = state.killer_moves.get_1(plies) {
+                for i in self.first_quiet..self.moves.len() {
+                    if self.moves.get(i).map_or(false, |m| *m == killer2) {
+                        self.moves.swap(self.first_quiet, i);
+                        self.first_quiet += 1;
+
+                        if Some(killer2) != self.previous_best_move {
+                            return Some(killer2);
+                        }
+                    }
+                }
+            }
+        }
+
+        if self.stage == CounterMove {
             match self.first_bad_capture {
                 // If we didn't see any bad captures before, we can skip straight to the end
                 None => self.stage = ScoreQuiets,
@@ -158,14 +176,17 @@ impl MovePicker {
                 }
             }
 
-            if let Some(killer2) = state.killer_moves.get_1(plies) {
-                for i in self.first_quiet..self.moves.len() {
-                    if self.moves.get(i).map_or(false, |m| *m == killer2) {
-                        self.moves.swap(self.first_quiet, i);
-                        self.first_quiet += 1;
+            if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
+                if let Some(counter_move) = state.countermove_table.get(game.player, previous_move)
+                {
+                    for i in self.first_quiet..self.moves.len() {
+                        if self.moves.get(i).map_or(false, |m| *m == counter_move) {
+                            self.moves.swap(self.first_quiet, i);
+                            self.first_quiet += 1;
 
-                        if Some(killer2) != self.previous_best_move {
-                            return Some(killer2);
+                            if Some(counter_move) != self.previous_best_move {
+                                return Some(counter_move);
+                            }
                         }
                     }
                 }

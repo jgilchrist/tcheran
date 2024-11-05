@@ -86,3 +86,20 @@ impl HistoryTable {
         }
     }
 }
+
+pub struct CountermoveTable([[[Option<Move>; Square::N]; Square::N]; Player::N]);
+
+impl CountermoveTable {
+    pub const fn new() -> Self {
+        Self([[[None; Square::N]; Square::N]; Player::N])
+    }
+
+    pub fn set(&mut self, player: Player, previous_move: Move, counter_move: Move) {
+        self.0[player.array_idx()][previous_move.src().array_idx()]
+            [previous_move.dst().array_idx()] = Some(counter_move);
+    }
+
+    pub fn get(&self, player: Player, previous_move: Move) -> Option<Move> {
+        self.0[player.array_idx()][previous_move.src().array_idx()][previous_move.dst().array_idx()]
+    }
+}

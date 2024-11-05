@@ -7,6 +7,7 @@
 * Add futility pruning (10.82 +- 6.41)
 * Pack Move into u16 and store extra information, e.g. if the move is a capture (7.03 +- 4.89)
 * Add tablebase support and follow tablebase lines (6.79 +- 4.59 Elo (5-man vs none))
+* Add countermove history (2.66 +- 2.03)
 * Use arrayvec for MoveList (1.05 +- 3.35)
 
 ### Misc

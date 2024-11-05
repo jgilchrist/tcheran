@@ -236,6 +236,10 @@ pub fn negamax(
         if !mv.is_capture() {
             state.killer_moves.try_push(plies, mv);
 
+            if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
+                state.countermove_table.set(game.player, previous_move, mv);
+            }
+
             persistent_state
                 .history_table
                 .add_bonus_for(game.player, mv, depth);
