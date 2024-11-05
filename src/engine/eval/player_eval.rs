@@ -1,7 +1,7 @@
 use crate::chess::player::Player;
 use std::ops::Div;
 
-use crate::engine::eval::WhiteEval;
+use crate::engine::eval::{PhasedEval, WhiteEval};
 
 /// An evaluation from the active player's perspective
 ///
@@ -18,7 +18,18 @@ pub struct Eval(pub i16);
 impl Eval {
     pub(crate) const MAX: Self = Self(i16::MAX);
     pub(crate) const MIN: Self = Self(i16::MIN);
-    pub(crate) const DRAW: Self = Self(0);
+
+    pub(crate) const CONTEMPT: PhasedEval = PhasedEval::new(-50, -10);
+
+    pub fn draw(player_to_move: Player, player_at_ply: Player, phase: i16) -> Eval {
+        let score = Eval::new(Self::CONTEMPT.for_phase(phase).0);
+
+        if player_to_move == player_at_ply {
+            score
+        } else {
+            -score
+        }
+    }
 
     const MATE: i16 = 32000;
     const MATED: i16 = -Self::MATE;

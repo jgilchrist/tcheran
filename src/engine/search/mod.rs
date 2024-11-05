@@ -1,5 +1,6 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
+use crate::chess::player::Player;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
@@ -73,15 +74,17 @@ impl PersistentState {
 
 pub struct SearchState {
     pub killer_moves: KillersTable,
+    player_to_move: Player,
 
     nodes_visited: u64,
     max_depth_reached: u8,
 }
 
 impl SearchState {
-    pub const fn new() -> Self {
+    pub const fn new(game: &Game) -> Self {
         Self {
             killer_moves: KillersTable::new(),
+            player_to_move: game.player,
 
             max_depth_reached: 0,
             nodes_visited: 0,
@@ -185,7 +188,7 @@ pub fn search(
     options: &EngineOptions,
     reporter: &mut impl Reporter,
 ) -> Move {
-    let mut state = SearchState::new();
+    let mut state = SearchState::new(game);
 
     persistent_state.tt.new_generation();
     persistent_state

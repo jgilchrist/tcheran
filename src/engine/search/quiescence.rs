@@ -26,7 +26,11 @@ pub fn quiescence(
         || game.is_stalemate_by_fifty_move_rule()
         || game.is_stalemate_by_insufficient_material()
     {
-        return Ok(Eval::DRAW);
+        return Ok(Eval::draw(
+            state.player_to_move,
+            game.player,
+            game.incremental_eval.phase_value,
+        ));
     }
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search

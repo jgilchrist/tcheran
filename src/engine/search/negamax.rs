@@ -37,7 +37,11 @@ pub fn negamax(
             || game.is_stalemate_by_fifty_move_rule()
             || game.is_stalemate_by_insufficient_material())
     {
-        return Ok(Eval::DRAW);
+        return Ok(Eval::draw(
+            state.player_to_move,
+            game.player,
+            game.incremental_eval.phase_value,
+        ));
     }
 
     // Check extension: If we're about to finish searching, but we are in check, we
@@ -212,7 +216,11 @@ pub fn negamax(
         return Ok(if game.is_king_in_check() {
             Eval::mated_in(plies)
         } else {
-            Eval::DRAW
+            Eval::draw(
+                state.player_to_move,
+                game.player,
+                game.incremental_eval.phase_value,
+            )
         });
     }
 

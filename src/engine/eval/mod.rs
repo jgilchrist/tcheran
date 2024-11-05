@@ -56,7 +56,7 @@ pub fn eval(game: &Game) -> Eval {
 pub fn absolute_eval(game: &Game) -> WhiteEval {
     let eval = game.incremental_eval.piece_square_tables;
 
-    tapered_eval::taper(game.incremental_eval.phase_value, eval)
+    eval.for_phase(game.incremental_eval.phase_value)
 }
 
 #[derive(Debug)]
@@ -73,7 +73,7 @@ pub fn eval_components(game: &Game) -> EvalComponents {
     let phase_value = tapered_eval::phase_value(&game.board);
 
     let phased_piece_square = piece_square_tables::eval(&game.board);
-    let piece_square = tapered_eval::taper(phase_value, phased_piece_square);
+    let piece_square = phased_piece_square.for_phase(phase_value);
 
     EvalComponents {
         eval,
