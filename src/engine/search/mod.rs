@@ -3,7 +3,7 @@ use crate::chess::moves::Move;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::tables::{HistoryTable, KillersTable};
+use crate::engine::search::tables::{ContinuationTable, HistoryTable, KillersTable};
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::tablebases::Tablebase;
@@ -73,6 +73,7 @@ impl PersistentState {
 
 pub struct SearchState {
     pub killer_moves: KillersTable,
+    pub countermove_table: ContinuationTable,
 
     nodes_visited: u64,
     max_depth_reached: u8,
@@ -82,6 +83,7 @@ impl SearchState {
     pub const fn new() -> Self {
         Self {
             killer_moves: KillersTable::new(),
+            countermove_table: ContinuationTable::new(),
 
             max_depth_reached: 0,
             nodes_visited: 0,

@@ -118,6 +118,8 @@ pub fn negamax(
         }
     }
 
+    let previous_move = game.history.last().and_then(|h| h.mv);
+
     let mut tt_node_bound = NodeBound::Upper;
     let mut best_move = None;
     let mut best_eval = Eval::MIN;
@@ -224,6 +226,10 @@ pub fn negamax(
         // before other quiet moves.
         if !mv.is_capture() {
             state.killer_moves.try_push(plies, mv);
+
+            if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
+                state.countermove_table.set(game.player, previous_move, mv);
+            }
 
             persistent_state
                 .history_table

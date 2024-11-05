@@ -86,3 +86,30 @@ impl HistoryTable {
         }
     }
 }
+
+pub struct ContinuationTable([[[Option<Move>; Square::N]; Square::N]; Player::N]);
+
+impl ContinuationTable {
+    pub const fn new() -> Self {
+        Self([[[None; Square::N]; Square::N]; Player::N])
+    }
+
+    pub fn reset(&mut self) {
+        for from_square in 0..Square::N {
+            for to_square in 0..Square::N {
+                for player in 0..Player::N {
+                    self.0[player][from_square][to_square] = None;
+                }
+            }
+        }
+    }
+
+    pub fn set(&mut self, player: Player, previous_move: Move, counter_move: Move) {
+        self.0[player.array_idx()][previous_move.src().array_idx()]
+            [previous_move.dst().array_idx()] = Some(counter_move);
+    }
+
+    pub fn get(&self, player: Player, previous_move: Move) -> Option<Move> {
+        self.0[player.array_idx()][previous_move.src().array_idx()][previous_move.dst().array_idx()]
+    }
+}
