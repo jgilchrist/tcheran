@@ -1,8 +1,21 @@
 use crate::chess::game::Game;
 use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::piece::PromotionPieceKind;
+use crate::chess::player::Player;
 use crate::chess::square::Square;
-use std::path::Path;
+use std::ffi::{c_uint, CString};
+use std::ptr;
+
+#[allow(
+    unused,
+    non_camel_case_types,
+    non_upper_case_globals,
+    non_snake_case,
+    clippy::allow_attributes,
+    clippy::allow_attributes_without_reason,
+    clippy::unreadable_literal
+)]
+mod bindings;
 
 pub enum Wdl {
     Win,
@@ -11,24 +24,12 @@ pub enum Wdl {
 }
 
 pub struct Tablebase {
-    shakmaty_tb: shakmaty_syzygy::Tablebase<shakmaty::Chess>,
     is_enabled: bool,
 }
 
 impl Tablebase {
     pub fn new() -> Self {
-        Self {
-            shakmaty_tb: shakmaty_syzygy::Tablebase::new(),
-            is_enabled: false,
-        }
-    }
-
-    #[expect(
-        unused,
-        reason = "Won't be used until proper tablebase support is implemented"
-    )]
-    pub fn is_enabled(&self) -> bool {
-        self.is_enabled
+        Self { is_enabled: false }
     }
 
     #[expect(
@@ -36,20 +37,23 @@ impl Tablebase {
         reason = "Won't be used until proper tablebase support is implemented"
     )]
     pub fn n_men(&self) -> usize {
-        self.shakmaty_tb.max_pieces()
+        if !self.is_enabled {
+            return 0;
+        }
+
+        unsafe { bindings::TB_LARGEST as usize }
     }
 
     pub fn set_paths(&mut self, path: &str) {
-        let path = path.to_string();
-        let separator = if cfg!(windows) { ';' } else { ':' };
+        let path = CString::new(path).unwrap();
+        let was_set = unsafe { bindings::tb_init(path.as_ptr()) };
+        let n_men = unsafe { bindings::TB_LARGEST as usize };
 
-        let paths = path.split(separator).map(Path::new);
-
-        for p in paths {
-            self.shakmaty_tb.add_directory(p).unwrap_or_else(|_| {
-                panic!("Invalid tablebase path: {}", p.to_str().unwrap_or_default())
-            });
-        }
+        assert!(
+            was_set && n_men != 0,
+            "Invalid tablebase path: {}",
+            path.to_str().unwrap_or_default()
+        );
 
         self.is_enabled = true;
     }
@@ -59,58 +63,96 @@ impl Tablebase {
         reason = "Won't be used until proper tablebase support is implemented"
     )]
     pub fn wdl(&self, game: &Game) -> Option<Wdl> {
-        use shakmaty_syzygy::Wdl::*;
-
         if !self.is_enabled {
             return None;
         }
 
-        let shakmaty_pos = Self::pos_to_shakmaty_pos(game);
+        if game.castle_rights[Player::White.array_idx()].can_castle()
+            || game.castle_rights[Player::Black.array_idx()].can_castle()
+            || game.halfmove_clock != 0
+        {
+            return None;
+        }
 
-        match self.shakmaty_tb.probe_wdl(&shakmaty_pos) {
-            Ok(m) => m.unambiguous().map(|wdl| match wdl {
-                Loss => Wdl::Loss,
-                BlessedLoss | Draw | CursedWin => Wdl::Draw,
-                Win => Wdl::Win,
-            }),
-            Err(_) => None,
+        unsafe {
+            let wdl = bindings::tb_probe_wdl(
+                game.board.occupancy_for(Player::White).as_u64(),
+                game.board.occupancy_for(Player::Black).as_u64(),
+                game.board.all_kings().as_u64(),
+                game.board.all_queens().as_u64(),
+                game.board.all_rooks().as_u64(),
+                game.board.all_bishops().as_u64(),
+                game.board.all_knights().as_u64(),
+                game.board.all_pawns().as_u64(),
+                0,
+                0,
+                0,
+                game.player == Player::White,
+            );
+
+            Self::to_wdl(wdl)
         }
     }
 
+    #[rustfmt::skip]
     pub fn best_move(&self, game: &Game) -> Option<Move> {
         if !self.is_enabled {
             return None;
         }
 
-        let shakmaty_pos = Self::pos_to_shakmaty_pos(game);
+        unsafe {
+            let result = bindings::tb_probe_root(
+                game.board.occupancy_for(Player::White).as_u64(),
+                game.board.occupancy_for(Player::Black).as_u64(),
+                game.board.all_kings().as_u64(),
+                game.board.all_queens().as_u64(),
+                game.board.all_rooks().as_u64(),
+                game.board.all_bishops().as_u64(),
+                game.board.all_knights().as_u64(),
+                game.board.all_pawns().as_u64(),
+                game.halfmove_clock,
+                0,
+                0,
+                game.player == Player::White,
+                ptr::null_mut(),
+            );
 
-        match self.shakmaty_tb.best_move(&shakmaty_pos) {
-            Ok(m) => m.map(|(shakmaty_mv, _)| Self::shakmaty_mv_to_move(game, &shakmaty_mv)),
-            Err(_) => None,
+            if result == bindings::TB_RESULT_FAILED {
+                return None;
+            }
+
+            // let wdl_bits = result & bindings::TB_RESULT_WDL_MASK >> bindings::TB_RESULT_WDL_SHIFT;
+            // let dtz_bits = (result & bindings::TB_RESULT_DTZ_MASK) >> bindings::TB_RESULT_DTZ_SHIFT;
+            let from_bits =(result & bindings::TB_RESULT_FROM_MASK) >> bindings::TB_RESULT_FROM_SHIFT;
+            let to_bits = (result & bindings::TB_RESULT_TO_MASK) >> bindings::TB_RESULT_TO_SHIFT;
+            let promotion_bits = (result & bindings::TB_RESULT_PROMOTES_MASK) >> bindings::TB_RESULT_PROMOTES_SHIFT;
+
+            let from = Square::from_index(from_bits as u8);
+            let to = Square::from_index(to_bits as u8);
+
+            let promotion = match promotion_bits {
+                bindings::TB_PROMOTES_QUEEN => Some(PromotionPieceKind::Queen),
+                bindings::TB_PROMOTES_ROOK => Some(PromotionPieceKind::Rook),
+                bindings::TB_PROMOTES_BISHOP => Some(PromotionPieceKind::Bishop),
+                bindings::TB_PROMOTES_KNIGHT => Some(PromotionPieceKind::Knight),
+                _ => None,
+            };
+
+            let matching_move = game.moves().expect_matching(from, to, promotion);
+
+            Some(matching_move)
         }
     }
 
-    fn pos_to_shakmaty_pos(game: &Game) -> shakmaty::Chess {
-        game.to_fen()
-            .parse::<shakmaty::fen::Fen>()
-            .unwrap()
-            .into_position(shakmaty::CastlingMode::Standard)
-            .unwrap()
-    }
+    fn to_wdl(outcome: c_uint) -> Option<Wdl> {
+        use Wdl::*;
 
-    fn shakmaty_mv_to_move(game: &Game, shakmaty_mv: &shakmaty::Move) -> Move {
-        use shakmaty::Role;
-
-        let src = Square::from_index(shakmaty_mv.from().unwrap() as u8);
-        let dst = Square::from_index(shakmaty_mv.to() as u8);
-        let promotion = shakmaty_mv.promotion().map(|p| match p {
-            Role::Knight => PromotionPieceKind::Knight,
-            Role::Bishop => PromotionPieceKind::Bishop,
-            Role::Rook => PromotionPieceKind::Rook,
-            Role::Queen => PromotionPieceKind::Queen,
-            Role::King | Role::Pawn => unreachable!(),
-        });
-
-        game.moves().expect_matching(src, dst, promotion)
+        match outcome {
+            bindings::TB_WIN => Some(Win),
+            bindings::TB_LOSS => Some(Loss),
+            bindings::TB_DRAW | bindings::TB_CURSED_WIN | bindings::TB_BLESSED_LOSS => Some(Draw),
+            bindings::TB_RESULT_FAILED => None,
+            _ => unreachable!(),
+        }
     }
 }
