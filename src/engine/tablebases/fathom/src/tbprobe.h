@@ -24,7 +24,7 @@
 #ifndef TBPROBE_H
 #define TBPROBE_H
 
-#include <tbconfig.h>
+#include "tbconfig.h"
 
 #ifdef __cplusplus
 extern "C"
@@ -204,7 +204,7 @@ void tb_free(void);
  * - Engines should use this function during search.
  * - This function is thread safe assuming TB_NO_THREADS is disabled.
  */
-static inline unsigned tb_probe_wdl(
+unsigned tb_probe_wdl(
     uint64_t _white,
     uint64_t _black,
     uint64_t _kings,
@@ -271,7 +271,7 @@ static inline unsigned tb_probe_wdl(
  * - This function is NOT thread safe.  For engines this function should only
  *   be called once at the root per search.
  */
-static inline unsigned tb_probe_root(
+unsigned tb_probe_root(
     uint64_t _white,
     uint64_t _black,
     uint64_t _kings,
