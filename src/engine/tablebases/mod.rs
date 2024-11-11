@@ -33,15 +33,15 @@ impl Tablebase {
     }
 
     #[expect(
-        unused,
-        reason = "Won't be used until proper tablebase support is implemented"
+        clippy::cast_possible_truncation,
+        reason = "n_men will be at most 7 as these are the largest syzygy tablebases"
     )]
-    pub fn n_men(&self) -> usize {
+    pub fn n_men(&self) -> u8 {
         if !self.is_enabled {
             return 0;
         }
 
-        unsafe { bindings::TB_LARGEST as usize }
+        unsafe { bindings::TB_LARGEST as u8 }
     }
 
     pub fn set_paths(&mut self, path: &str) {
@@ -58,10 +58,6 @@ impl Tablebase {
         self.is_enabled = true;
     }
 
-    #[expect(
-        unused,
-        reason = "Won't be used until proper tablebase support is implemented"
-    )]
     pub fn wdl(&self, game: &Game) -> Option<Wdl> {
         if !self.is_enabled {
             return None;

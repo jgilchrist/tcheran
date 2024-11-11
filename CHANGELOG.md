@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Add tablebase probing in search based on 'fathom' (18.97 +- 8.35 (5-man))
 * Use arrayvec for PrincipalVariation (15.52 +- 8.72)
 * Fix an accidental fail hard in quiescence - fail soft when eval >= beta (12.54 +- 7.15)
 * Add futility pruning (10.82 +- 6.41)

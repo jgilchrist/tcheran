@@ -9,6 +9,7 @@ use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::tables::lmr_table::lmr_reduction;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
+use crate::engine::tablebases::Wdl;
 
 pub fn negamax(
     game: &mut Game,
@@ -78,6 +79,50 @@ pub fn negamax(
         }
 
         previous_best_move = tt_entry.best_move;
+    }
+
+    let tb_cardinality = persistent_state.tablebase.n_men();
+    if !is_root && tb_cardinality > 0 {
+        let piece_count = game.board.occupancy().count();
+
+        if piece_count < tb_cardinality || (piece_count <= tb_cardinality && depth >= 1) {
+            if let Some(wdl) = persistent_state.tablebase.wdl(game) {
+                state.tbhits += 1;
+
+                let score = match wdl {
+                    Wdl::Win => Eval::mate_in(plies),
+                    Wdl::Draw => Eval::DRAW,
+                    Wdl::Loss => Eval::mated_in(plies),
+                };
+
+                let tb_bound = match wdl {
+                    Wdl::Win => NodeBound::Lower,
+                    Wdl::Loss => NodeBound::Upper,
+                    Wdl::Draw => NodeBound::Exact,
+                };
+
+                if tb_bound == NodeBound::Exact
+                    || (tb_bound == NodeBound::Lower && score >= beta)
+                    || (tb_bound == NodeBound::Upper && score <= alpha)
+                {
+                    let tt_data = SearchTranspositionTableData {
+                        bound: tb_bound,
+                        eval: score,
+                        best_move: None,
+                        age: persistent_state.tt.generation,
+                        depth,
+                    };
+
+                    persistent_state.tt.insert(&game.zobrist, tt_data);
+
+                    return Ok(score);
+                }
+
+                if is_pv && tb_bound == NodeBound::Lower {
+                    alpha = alpha.max(score);
+                }
+            }
+        }
     }
 
     let eval = eval::eval(game);

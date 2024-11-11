@@ -80,6 +80,7 @@ pub struct SearchState {
 
     nodes_visited: u64,
     max_depth_reached: u8,
+    tbhits: u64,
 }
 
 impl SearchState {
@@ -90,6 +91,7 @@ impl SearchState {
 
             max_depth_reached: 0,
             nodes_visited: 0,
+            tbhits: 0,
         }
     }
 }
@@ -134,6 +136,7 @@ pub struct SearchStats {
     pub time: Duration,
     pub nodes: u64,
     pub nodes_per_second: u64,
+    pub tbhits: u64,
 }
 
 pub trait Reporter {

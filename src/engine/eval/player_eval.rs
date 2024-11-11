@@ -29,7 +29,6 @@ impl Eval {
         Self(eval)
     }
 
-    #[expect(unused, reason = "Unused")]
     pub fn mate_in(ply: u8) -> Self {
         Self(Self::MATE - i16::from(ply))
     }

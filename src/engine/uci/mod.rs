@@ -64,6 +64,7 @@ impl UciReporter {
             time: Some(progress.stats.time),
             nodes: Some(progress.stats.nodes),
             nps: Some(progress.stats.nodes_per_second),
+            tbhits: Some(progress.stats.tbhits),
             hashfull: Some(progress.hashfull),
             ..Default::default()
         }));

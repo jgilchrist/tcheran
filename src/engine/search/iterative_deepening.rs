@@ -68,6 +68,7 @@ pub fn search(
                         state.nodes_visited,
                         time_control.elapsed(),
                     ),
+                    tbhits: state.tbhits,
                 },
             },
         );
