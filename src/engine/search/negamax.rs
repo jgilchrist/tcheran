@@ -174,8 +174,26 @@ pub fn negamax(
     while let Some(mv) = moves.next(game, persistent_state, state, plies) {
         node_pv.clear();
 
+        let lmr_reduction_amount = lmr_reduction(depth, number_of_legal_moves);
+        let lmr_depth = depth.saturating_sub(lmr_reduction_amount);
+
+        if !is_root
+            && !is_pv
+            && !in_check
+            && !eval.being_mated()
+            && lmr_depth <= params::LMP_DEPTH
+            && number_of_legal_moves >= params::LMP_MOVE_THRESHOLD
+        {
+            let lmp_threshold = (2.5 + 2.0 * depth as f64 * depth as f64 / 4.5) as usize;
+
+            if number_of_legal_moves > lmp_threshold {
+                moves.yield_only_captures();
+            }
+        }
+
         // Futility pruning
         if number_of_legal_moves > 0
+            && !is_root
             && !is_pv
             && !mv.is_capture()
             && !in_check

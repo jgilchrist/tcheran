@@ -49,6 +49,10 @@ impl Eval {
         None
     }
 
+    pub fn being_mated(self) -> bool {
+        self.0 < Self::MATED_THRESHOLD
+    }
+
     // When searching, mate scores are relative to the root position.
     // However, we may see the same position at different depths of the
     // tree due to transpositions.
