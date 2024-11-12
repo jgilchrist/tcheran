@@ -37,12 +37,22 @@ impl Eval {
         Self(-Self::MATE + i16::from(ply))
     }
 
+    #[inline]
+    pub fn mating(self) -> bool {
+        self.0 > Self::MATE_THRESHOLD
+    }
+
+    #[inline]
+    pub fn being_mated(self) -> bool {
+        self.0 < Self::MATED_THRESHOLD
+    }
+
     pub fn is_mate_in_moves(self) -> Option<i16> {
-        if self.0 > Self::MATE_THRESHOLD {
+        if self.mating() {
             return Some((Self::MATE - self.0 + 1) / 2);
         }
 
-        if self.0 < Self::MATED_THRESHOLD {
+        if self.being_mated() {
             return Some((Self::MATED - self.0) / 2);
         }
 
