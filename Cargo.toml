@@ -53,3 +53,4 @@ allow_attributes_without_reason = "warn"
 # debug = 1
 panic = "abort"
 codegen-units = 1
+lto = true

@@ -10,6 +10,7 @@
 * Add tablebase support and follow tablebase lines (6.79 +- 4.59 (5-man vs none))
 * Add countermove history (2.66 +- 2.03)
 * Use separate functions for scoring tacticals vs. quiets (2.64 +- 4.43)
+* Enable LTO (2.09 +- 3.32)
 * Use arrayvec for MoveList (1.05 +- 3.35)
 
 ### Misc
