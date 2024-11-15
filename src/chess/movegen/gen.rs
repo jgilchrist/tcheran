@@ -524,7 +524,7 @@ fn generate_king_quiets(moves: &mut MoveList, game: &Game, king: Square, all_pie
 }
 
 fn generate_castles(moves: &mut MoveList, game: &Game, all_pieces: Bitboard) {
-    let castle_rights_for_player = game.castle_rights[game.player.array_idx()];
+    let castle_rights_for_player = game.castle_rights.for_player(game.player);
 
     if castle_rights_for_player.king_side {
         generate_castle_move_for_side::<true>(moves, game, all_pieces);

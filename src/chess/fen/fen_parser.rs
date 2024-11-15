@@ -8,6 +8,7 @@ use crate::chess::{
     square::{File, Rank, Square},
 };
 
+use crate::chess::player::ByPlayer;
 use nom::character::complete::space0;
 use nom::combinator::opt;
 use nom::sequence::terminated;
@@ -127,13 +128,16 @@ fn fen_castle_right(input: &str) -> IResult<&str, FenCastleRight> {
     ))
 }
 
-fn fen_castling(input: &str) -> IResult<&str, [CastleRights; Player::N]> {
+fn fen_castling(input: &str) -> IResult<&str, ByPlayer<CastleRights>> {
     alt((
-        value([CastleRights::none(), CastleRights::none()], tag("-")),
+        value(
+            ByPlayer::new([CastleRights::none(), CastleRights::none()]),
+            tag("-"),
+        ),
         map(many1(fen_castle_right), |rs| {
             let rights: HashSet<FenCastleRight> = rs.iter().copied().collect();
 
-            [
+            ByPlayer::new([
                 CastleRights {
                     king_side: rights.contains(&FenCastleRight::WhiteKingside),
                     queen_side: rights.contains(&FenCastleRight::WhiteQueenside),
@@ -142,7 +146,7 @@ fn fen_castling(input: &str) -> IResult<&str, [CastleRights; Player::N]> {
                     king_side: rights.contains(&FenCastleRight::BlackKingside),
                     queen_side: rights.contains(&FenCastleRight::BlackQueenside),
                 },
-            ]
+            ])
         }),
     ))(input)
 }

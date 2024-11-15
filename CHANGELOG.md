@@ -18,6 +18,7 @@
 * Allow sending only 'go wtime' or 'go btime'
 * Avoid constructing `Move` objects directly where possible, preferring to extract them from `MoveList`
 * Hide the internal implementation details of `Move`
+* Add a `ByPlayer` struct for easily working with values stored for both players
 
 ## [4.0]
 

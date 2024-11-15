@@ -63,8 +63,8 @@ impl Tablebase {
             return None;
         }
 
-        if game.castle_rights[Player::White.array_idx()].can_castle()
-            || game.castle_rights[Player::Black.array_idx()].can_castle()
+        if game.castle_rights.white().can_castle()
+            || game.castle_rights.black().can_castle()
             || game.halfmove_clock != 0
         {
             return None;

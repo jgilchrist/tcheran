@@ -6,11 +6,12 @@ use crate::chess::{
 };
 
 use crate::chess::bitboard::Bitboard;
+use crate::chess::player::ByPlayer;
 
 #[derive(Clone)]
 pub struct Board {
     pieces: [Bitboard; PieceKind::N],
-    colors: [Bitboard; Player::N],
+    colors: ByPlayer<Bitboard>,
     squares: [Option<Piece>; Square::N],
 }
 
@@ -22,16 +23,16 @@ impl Board {
 
     #[inline(always)]
     pub fn occupancy_for(&self, player: Player) -> Bitboard {
-        self.colors[player.array_idx()]
+        *self.colors.for_player(player)
     }
 
     #[inline(always)]
     pub fn pieces_of_kind(&self, kind: PieceKind, player: Player) -> Bitboard {
-        self.pieces[kind.array_idx()] & self.colors[player.array_idx()]
+        self.pieces[kind.array_idx()] & self.occupancy_for(player)
     }
 
     pub fn pawns(&self, player: Player) -> Bitboard {
-        self.all_pawns() & self.colors[player.array_idx()]
+        self.all_pawns() & self.occupancy_for(player)
     }
 
     pub fn all_pawns(&self) -> Bitboard {
@@ -39,7 +40,7 @@ impl Board {
     }
 
     pub fn knights(&self, player: Player) -> Bitboard {
-        self.all_knights() & self.colors[player.array_idx()]
+        self.all_knights() & self.occupancy_for(player)
     }
 
     pub fn all_knights(&self) -> Bitboard {
@@ -47,7 +48,7 @@ impl Board {
     }
 
     pub fn bishops(&self, player: Player) -> Bitboard {
-        self.all_bishops() & self.colors[player.array_idx()]
+        self.all_bishops() & self.occupancy_for(player)
     }
 
     pub fn all_bishops(&self) -> Bitboard {
@@ -55,7 +56,7 @@ impl Board {
     }
 
     pub fn rooks(&self, player: Player) -> Bitboard {
-        self.all_rooks() & self.colors[player.array_idx()]
+        self.all_rooks() & self.occupancy_for(player)
     }
 
     pub fn all_rooks(&self) -> Bitboard {
@@ -63,7 +64,7 @@ impl Board {
     }
 
     pub fn queens(&self, player: Player) -> Bitboard {
-        self.all_queens() & self.colors[player.array_idx()]
+        self.all_queens() & self.occupancy_for(player)
     }
 
     pub fn all_queens(&self) -> Bitboard {
@@ -71,7 +72,7 @@ impl Board {
     }
 
     pub fn king(&self, player: Player) -> Bitboard {
-        self.all_kings() & self.colors[player.array_idx()]
+        self.all_kings() & self.occupancy_for(player)
     }
 
     pub fn all_kings(&self) -> Bitboard {
@@ -107,7 +108,9 @@ impl Board {
         };
 
         self.pieces[piece.kind.array_idx()] ^= square.bb();
-        self.colors[piece.player.array_idx()] ^= square.bb();
+        self.colors
+            .for_player_mut(piece.player)
+            .unset_inplace(square);
         self.squares[square.array_idx()] = None;
         true
     }
@@ -115,7 +118,7 @@ impl Board {
     #[inline(always)]
     pub fn set_at(&mut self, square: Square, piece: Piece) {
         self.pieces[piece.kind.array_idx()] |= square.bb();
-        self.colors[piece.player.array_idx()] |= square.bb();
+        self.colors.for_player_mut(piece.player).set_inplace(square);
         self.squares[square.array_idx()] = Some(piece);
     }
 
@@ -228,7 +231,7 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
 
         Ok(Self {
             pieces: [pawns, knights, bishops, rooks, queens, kings],
-            colors: [white_occupancy, black_occupancy],
+            colors: ByPlayer::new([white_occupancy, black_occupancy]),
             squares,
         })
     }
