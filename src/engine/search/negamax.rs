@@ -11,6 +11,27 @@ use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
 use crate::engine::tablebases::Wdl;
 
+pub struct DepthReduction(u8);
+
+impl DepthReduction {
+    #[inline]
+    #[expect(unused)]
+    pub fn increase_if(&mut self, predicate: bool) {
+        self.0 = self.0.saturating_add(predicate as u8);
+    }
+
+    #[inline]
+    #[expect(unused)]
+    pub fn reduce_if(&mut self, predicate: bool) {
+        self.0 = self.0.saturating_sub(predicate as u8);
+    }
+
+    #[inline]
+    pub fn value(&self) -> u8 {
+        self.0
+    }
+}
+
 pub fn negamax(
     game: &mut Game,
     mut alpha: Eval,
@@ -205,7 +226,8 @@ pub fn negamax(
                 && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
                 && !in_check
             {
-                lmr_reduction(depth, number_of_legal_moves)
+                let reduction = DepthReduction(lmr_reduction(depth, number_of_legal_moves));
+                reduction.value()
             } else {
                 1
             };
