@@ -3,6 +3,8 @@ use crate::chess::piece::PieceKind;
 use crate::chess::square::Square;
 use crate::engine::eval::WhiteEval;
 
+const PHASE_COUNT_MAX: i64 = 24;
+
 /// A midgame and endgame evaluation
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct PhasedEval(i32);
@@ -24,6 +26,20 @@ impl PhasedEval {
 
     pub fn endgame(self) -> WhiteEval {
         WhiteEval(((self.0 + 0x8000) >> 16) as i16)
+    }
+
+    pub fn for_phase(self, phase_value: i16) -> WhiteEval {
+        // Switch to 64 bit calculations to avoid overflow
+        let phase_value = i64::from(phase_value);
+
+        let midgame_phase_value = phase_value.min(PHASE_COUNT_MAX);
+        let endgame_phase_value = PHASE_COUNT_MAX - phase_value;
+
+        let midgame_eval = i64::from(self.midgame().0);
+        let endgame_eval = i64::from(self.endgame().0);
+
+        let eval = (midgame_eval * midgame_phase_value + endgame_eval * endgame_phase_value) / 24;
+        WhiteEval(i16::try_from(eval).unwrap())
     }
 }
 
@@ -88,22 +104,6 @@ pub fn phase_value(board: &Board) -> i16 {
     v
 }
 
-const PHASE_COUNT_MAX: i64 = 24;
-
-pub fn taper(phase_value: i16, eval: PhasedEval) -> WhiteEval {
-    // Switch to 64 bit calculations to avoid overflow
-    let phase_value = i64::from(phase_value);
-
-    let midgame_phase_value = phase_value.min(PHASE_COUNT_MAX);
-    let endgame_phase_value = PHASE_COUNT_MAX - phase_value;
-
-    let midgame_eval = i64::from(eval.midgame().0);
-    let endgame_eval = i64::from(eval.endgame().0);
-
-    let eval = (midgame_eval * midgame_phase_value + endgame_eval * endgame_phase_value) / 24;
-    WhiteEval(i16::try_from(eval).unwrap())
-}
-
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -113,7 +113,7 @@ mod tests {
         let phased_eval = PhasedEval::new(2456, 2393);
         let phase_value = 9;
 
-        let eval = taper(phase_value, phased_eval);
+        let eval = phased_eval.for_phase(phase_value);
         assert!(eval > WhiteEval(0));
     }
 
