@@ -16,13 +16,13 @@ pub struct DepthReduction(u8);
 impl DepthReduction {
     #[inline]
     #[expect(unused)]
-    pub fn increase_if(&mut self, predicate: bool) {
+    pub fn reduce_more_if(&mut self, predicate: bool) {
         self.0 = self.0.saturating_add(predicate as u8);
     }
 
     #[inline]
     #[expect(unused)]
-    pub fn reduce_if(&mut self, predicate: bool) {
+    pub fn reduce_less_if(&mut self, predicate: bool) {
         self.0 = self.0.saturating_sub(predicate as u8);
     }
 
