@@ -56,7 +56,7 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let eval = game.incremental_eval.piece_square_tables + material::eval(&game.board);
+    let eval = game.incremental_eval.piece_square_tables + material::eval(game);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }
