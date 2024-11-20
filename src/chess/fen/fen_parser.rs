@@ -131,13 +131,13 @@ fn fen_castle_right(input: &str) -> IResult<&str, FenCastleRight> {
 fn fen_castling(input: &str) -> IResult<&str, ByPlayer<CastleRights>> {
     alt((
         value(
-            ByPlayer::new([CastleRights::none(), CastleRights::none()]),
+            ByPlayer::new(CastleRights::none(), CastleRights::none()),
             tag("-"),
         ),
         map(many1(fen_castle_right), |rs| {
             let rights: HashSet<FenCastleRight> = rs.iter().copied().collect();
 
-            ByPlayer::new([
+            ByPlayer::new(
                 CastleRights {
                     king_side: rights.contains(&FenCastleRight::WhiteKingside),
                     queen_side: rights.contains(&FenCastleRight::WhiteQueenside),
@@ -146,7 +146,7 @@ fn fen_castling(input: &str) -> IResult<&str, ByPlayer<CastleRights>> {
                     king_side: rights.contains(&FenCastleRight::BlackKingside),
                     queen_side: rights.contains(&FenCastleRight::BlackQueenside),
                 },
-            ])
+            )
         }),
     ))(input)
 }

@@ -32,8 +32,8 @@ impl std::ops::Not for Player {
 pub struct ByPlayer<T>([T; Player::N]);
 
 impl<T> ByPlayer<T> {
-    pub fn new(init: [T; Player::N]) -> Self {
-        Self(init)
+    pub fn new(white: T, black: T) -> Self {
+        Self([white, black])
     }
 
     #[inline(always)]

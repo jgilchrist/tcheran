@@ -231,7 +231,7 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
 
         Ok(Self {
             pieces: [pawns, knights, bishops, rooks, queens, kings],
-            colors: ByPlayer::new([white_occupancy, black_occupancy]),
+            colors: ByPlayer::new(white_occupancy, black_occupancy),
             squares,
         })
     }
