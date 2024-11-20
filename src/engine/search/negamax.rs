@@ -15,15 +15,15 @@ pub struct DepthReduction(u8);
 
 impl DepthReduction {
     #[inline]
-    #[expect(unused)]
+    #[expect(unused, reason = "No LMR conditions yet")]
     pub fn reduce_more_if(&mut self, predicate: bool) {
-        self.0 = self.0.saturating_add(predicate as u8);
+        self.0 = self.0.saturating_add(u8::from(predicate));
     }
 
     #[inline]
-    #[expect(unused)]
+    #[expect(unused, reason = "No LMR conditions yet")]
     pub fn reduce_less_if(&mut self, predicate: bool) {
-        self.0 = self.0.saturating_sub(predicate as u8);
+        self.0 = self.0.saturating_sub(u8::from(predicate));
     }
 
     #[inline]
