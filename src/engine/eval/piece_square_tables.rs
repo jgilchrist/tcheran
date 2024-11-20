@@ -1,6 +1,6 @@
 use crate::chess::board::Board;
 use crate::chess::piece::Piece;
-use crate::chess::player::Player;
+use crate::chess::player::{ByPlayer, Player};
 use crate::chess::square::Square;
 use crate::chess::{
     piece::PieceKind,
@@ -322,4 +322,24 @@ pub fn eval(board: &Board) -> PhasedEval {
     }
 
     eval
+}
+
+pub fn eval_by_player(board: &Board) -> ByPlayer<PhasedEval> {
+    let mut white_eval = PhasedEval::ZERO;
+    let mut black_eval = PhasedEval::ZERO;
+
+    for idx in 0..Square::N {
+        let square = Square::from_array_index(idx);
+
+        let maybe_piece = board.piece_at(square);
+
+        if let Some(piece) = maybe_piece {
+            match piece.player {
+                Player::White => white_eval += piece_contributions(square, piece),
+                Player::Black => black_eval += piece_contributions(square, piece),
+            }
+        }
+    }
+
+    ByPlayer::new(white_eval, black_eval)
 }

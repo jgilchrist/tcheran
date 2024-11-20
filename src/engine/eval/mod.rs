@@ -9,6 +9,7 @@ pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
 use crate::chess::piece::Piece;
+use crate::chess::player::ByPlayer;
 use crate::chess::square::Square;
 pub use crate::engine::eval::phased_eval::PhasedEval;
 
@@ -60,26 +61,48 @@ pub fn absolute_eval(game: &Game) -> WhiteEval {
 }
 
 #[derive(Debug)]
+pub struct EvalComponent {
+    pub eval: WhiteEval,
+    pub player_eval: ByPlayer<WhiteEval>,
+    pub phased_player_eval: ByPlayer<PhasedEval>,
+}
+
+impl EvalComponent {
+    pub fn from_phased_eval(phased_player_eval: ByPlayer<PhasedEval>, game_phase: i16) -> Self {
+        let white_player_phased_eval = phased_player_eval.white();
+        let black_player_phased_eval = phased_player_eval.black();
+
+        let white_player_eval = white_player_phased_eval.for_phase(game_phase);
+        let black_player_eval = black_player_phased_eval.for_phase(game_phase);
+
+        let eval = white_player_eval + black_player_eval;
+
+        Self {
+            eval,
+            player_eval: ByPlayer::new(white_player_eval, black_player_eval),
+            phased_player_eval,
+        }
+    }
+}
+
+#[derive(Debug)]
 pub struct EvalComponents {
     pub eval: WhiteEval,
     pub phase_value: i16,
 
-    pub phased_piece_square: PhasedEval,
-    pub piece_square: WhiteEval,
+    pub piece_square: EvalComponent,
 }
 
 pub fn eval_components(game: &Game) -> EvalComponents {
     let eval = absolute_eval(game);
-    let phase_value = phased_eval::phase_value(&game.board);
+    let phase_value = game.incremental_eval.phase_value;
 
-    let phased_piece_square = piece_square_tables::eval(&game.board);
-    let piece_square = phased_piece_square.for_phase(phase_value);
+    let piece_square_eval = piece_square_tables::eval_by_player(&game.board);
 
     EvalComponents {
         eval,
         phase_value,
 
-        phased_piece_square,
-        piece_square,
+        piece_square: EvalComponent::from_phased_eval(piece_square_eval, phase_value),
     }
 }

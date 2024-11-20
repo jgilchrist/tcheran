@@ -409,20 +409,21 @@ impl Uci {
                     println!("total: {total}");
                     println!();
                 }
+                #[rustfmt::skip]
                 DebugCommand::Eval => {
                     let eval_components = eval::eval_components(&self.game);
 
-                    println!();
-
-                    println!(
-                        "Piece square tables:   Midgame={}  Endgame={}  Total={}",
-                        eval_components.phased_piece_square.midgame(),
-                        eval_components.phased_piece_square.endgame(),
-                        eval_components.piece_square
-                    );
-                    println!();
-
                     println!("Phase value: {}", eval_components.phase_value);
+                    println!();
+
+                    let pst = eval_components.piece_square;
+                    println!("                         Midgame     Endgame    Actual");
+                    println!("Piece square tables:");
+                    println!("  White:                 {}       {}         {}", pst.phased_player_eval.white().midgame(), pst.phased_player_eval.white().endgame(), pst.player_eval.white());
+                    println!("  Black:                 {}       {}         {}", pst.phased_player_eval.black().midgame(), pst.phased_player_eval.black().endgame(), pst.player_eval.black());
+                    println!("  Total:                                        {}", pst.eval);
+                    println!();
+
                     println!("Eval: {}", eval_components.eval);
                 }
             },
