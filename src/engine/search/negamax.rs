@@ -10,6 +10,7 @@ use crate::engine::search::tables::lmr_table::lmr_reduction;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
 use crate::engine::tablebases::Wdl;
+use std::cmp::max;
 
 pub struct DepthReduction(u8);
 
@@ -28,7 +29,7 @@ impl DepthReduction {
 
     #[inline]
     pub fn value(&self) -> u8 {
-        self.0
+        max(1, self.0)
     }
 }
 
