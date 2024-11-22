@@ -22,7 +22,6 @@ impl DepthReduction {
     }
 
     #[inline]
-    #[expect(unused, reason = "No LMR conditions yet")]
     pub fn reduce_less_if(&mut self, predicate: bool) {
         self.0 = self.0.saturating_sub(u8::from(predicate));
     }
@@ -225,9 +224,11 @@ pub fn negamax(
         } else {
             let reduction = if depth >= params::LMR_DEPTH
                 && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
-                && !in_check
             {
-                let reduction = DepthReduction(lmr_reduction(depth, number_of_legal_moves));
+                let mut reduction = DepthReduction(lmr_reduction(depth, number_of_legal_moves));
+
+                reduction.reduce_less_if(in_check);
+
                 reduction.value()
             } else {
                 1
