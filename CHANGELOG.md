@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [4.1]
+
 * Add tablebase probing in search based on 'fathom' (18.97 +- 8.35 (5-man))
 * Use arrayvec for PrincipalVariation (15.52 +- 8.72)
 * Fix an accidental fail hard in quiescence - fail soft when eval >= beta (12.54 +- 7.15)
@@ -206,7 +208,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v4.0...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v4.1...HEAD
+[4.1]: https://github.com/jgilchrist/chess-engine/compare/v4.0..v4.1
 [4.0]: https://github.com/jgilchrist/chess-engine/compare/v3.0..v4.0
 [3.0]: https://github.com/jgilchrist/chess-engine/compare/v2.5..v3.0
 [2.5]: https://github.com/jgilchrist/chess-engine/compare/v2.4..v2.5
