@@ -90,6 +90,7 @@ jobs:
       - name: Build
         env:
           RUSTFLAGS: '${{ matrix.rustflags }}'
+          CFLAGS: '/std:c11 /experimental:c11atomics'
         run: |
           rustup override set ${{ needs.metadata.outputs.rust-version }}
           rustup target add x86_64-pc-windows-msvc
