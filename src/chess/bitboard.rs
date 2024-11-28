@@ -194,15 +194,6 @@ impl IntoIterator for Bitboard {
     }
 }
 
-impl<'a> IntoIterator for &'a Bitboard {
-    type Item = Square;
-    type IntoIter = SquareIterator;
-
-    fn into_iter(self) -> Self::IntoIter {
-        SquareIterator(*self)
-    }
-}
-
 impl std::ops::Sub for Bitboard {
     type Output = Self;
 
