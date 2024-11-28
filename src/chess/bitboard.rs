@@ -26,11 +26,6 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub const fn all_except(square: Square) -> Self {
-        square.bb().invert()
-    }
-
-    #[inline(always)]
     pub const fn is_empty(self) -> bool {
         self.0 == 0
     }
@@ -329,6 +324,7 @@ impl std::fmt::Display for Bitboard {
 }
 
 #[rustfmt::skip]
+#[allow(unused)]
 pub mod bitboards {
     use super::*;
     use crate::chess::player::Player;
