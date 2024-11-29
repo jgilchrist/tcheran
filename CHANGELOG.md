@@ -5,6 +5,7 @@
 ### Misc
 
 * Define PSTs directly using phased evaluations to prep for tuning
+* Move all tunable parameters to a single file to prep for tuning
 
 ## [4.1]
 

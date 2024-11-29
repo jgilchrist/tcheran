@@ -1,4 +1,5 @@
 mod material;
+mod params;
 mod phased_eval;
 pub mod piece_square_tables;
 mod player_eval;

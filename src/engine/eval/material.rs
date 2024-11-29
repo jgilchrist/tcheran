@@ -1,9 +1,7 @@
 use crate::chess::game::Game;
 use crate::chess::player::Player;
-use crate::engine::eval::phased_eval::s;
+use crate::engine::eval::params::BISHOP_PAIR_BONUS;
 use crate::engine::eval::PhasedEval;
-
-const BISHOP_PAIR_BONUS: PhasedEval = s(27, 65);
 
 pub fn bishop_pair_eval(game: &Game) -> PhasedEval {
     let mut bishop_pair_bonuses = PhasedEval::ZERO;
