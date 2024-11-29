@@ -5,6 +5,10 @@ use crate::engine::eval::WhiteEval;
 
 const PHASE_COUNT_MAX: i64 = 24;
 
+pub const fn s(mg: i16, eg: i16) -> PhasedEval {
+    PhasedEval::new(mg, eg)
+}
+
 /// A midgame and endgame evaluation
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct PhasedEval(i32);

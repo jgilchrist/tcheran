@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Define PSTs directly using phased evaluations to prep for tuning
+
 ## [4.1]
 
 * Add tablebase probing in search based on 'fathom' (18.97 +- 8.35 (5-man))
