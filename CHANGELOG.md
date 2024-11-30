@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)
+
 ### Misc
 
 * Define PSTs directly using phased evaluations to prep for tuning
