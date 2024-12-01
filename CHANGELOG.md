@@ -5,6 +5,7 @@
 ### Misc
 
 * Add a full set of bench positions for 'bench' command
+* When in a tablebase position, report the tablebase PV line
 
 ## [5.1]
 

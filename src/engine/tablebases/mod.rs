@@ -63,13 +63,6 @@ impl Tablebase {
             return None;
         }
 
-        if game.castle_rights.white().can_castle()
-            || game.castle_rights.black().can_castle()
-            || game.halfmove_clock != 0
-        {
-            return None;
-        }
-
         unsafe {
             let wdl = bindings::tb_probe_wdl(
                 game.board.occupancy_for(Player::White).as_u64(),

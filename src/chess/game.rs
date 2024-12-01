@@ -39,10 +39,6 @@ impl CastleRights {
         }
     }
 
-    pub fn can_castle(self) -> bool {
-        self.king_side || self.queen_side
-    }
-
     pub fn can_castle_to_side(self, side: CastleRightsSide) -> bool {
         match side {
             CastleRightsSide::Kingside => self.king_side,

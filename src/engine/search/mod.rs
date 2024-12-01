@@ -1,12 +1,14 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
+use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::tables::{CountermoveTable, HistoryTable, KillersTable};
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::tablebases::Tablebase;
+use crate::engine::tablebases::{Tablebase, Wdl};
+use crate::engine::util;
 use std::time::Duration;
 
 mod aspiration;
@@ -230,6 +232,30 @@ pub fn search(
 
     let tablebase_result = ctx.tablebase.best_move(game);
     if let Some(mv) = tablebase_result {
+        let (pv, score) = get_tablebase_pv(game, &ctx);
+
+        let depth = pv.len();
+
+        reporter.report_search_progress(
+            game,
+            SearchInfo {
+                depth,
+                seldepth: depth,
+                score,
+                pv,
+                hashfull: persistent_state.tt.occupancy(),
+                stats: SearchStats {
+                    time: time_strategy.elapsed(),
+                    nodes: u64::from(depth),
+                    nodes_per_second: util::metrics::nodes_per_second(
+                        u64::from(depth),
+                        time_strategy.elapsed(),
+                    ),
+                    tbhits: 1,
+                },
+            },
+        );
+
         return mv;
     }
 
@@ -258,4 +284,62 @@ fn panic_move(game: &Game, ctx: &SearchContext<'_>) -> Move {
     let mut move_picker = MovePicker::new(None);
 
     move_picker.next(game, ctx, 0).unwrap()
+}
+
+fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation, SearchScore) {
+    let mut game = game.clone();
+    let player = game.player;
+
+    let mut pv = PrincipalVariation::new();
+
+    let tb_score = ctx
+        .tablebase
+        .wdl(&game)
+        .expect("In tablebase position, but unable to get tablebase score");
+
+    let mut search_score = None;
+
+    for _ in 0..MAX_SEARCH_DEPTH {
+        let tablebase_move = ctx
+            .tablebase
+            .best_move(&game)
+            .expect("In tablebase position, but unable to get tablebase move");
+
+        pv.append(tablebase_move);
+
+        game.make_move(tablebase_move);
+
+        // Check if this move terminated the game, and return an appropriate score
+        let legal_moves = game.moves();
+        let king_in_check = game.is_king_in_check();
+
+        if legal_moves.is_empty() {
+            search_score = Some(if king_in_check {
+                let plies = pv.len();
+
+                let mate_score = if game.player == player {
+                    Eval::mated_in(plies)
+                } else {
+                    Eval::mate_in(plies)
+                };
+
+                let mate_in_moves = mate_score.is_mate_in_moves().unwrap();
+
+                SearchScore::Mate(mate_in_moves)
+            } else {
+                SearchScore::Centipawns(0)
+            });
+
+            break;
+        }
+    }
+
+    (
+        pv,
+        search_score.unwrap_or(match tb_score {
+            Wdl::Win => SearchScore::Mate(1),
+            Wdl::Draw => SearchScore::Centipawns(0),
+            Wdl::Loss => SearchScore::Mate(-1),
+        }),
+    )
 }

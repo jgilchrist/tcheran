@@ -26,13 +26,17 @@ impl PrincipalVariation {
     }
 
     #[inline]
+    pub fn append(&mut self, mv: Move) {
+        self.0.push(mv);
+    }
+
+    #[inline]
     pub fn first(&self) -> Option<&Move> {
         self.0.first()
     }
 
-    #[cfg(test)]
-    pub fn len(&self) -> usize {
-        self.0.len()
+    pub fn len(&self) -> u8 {
+        u8::try_from(self.0.len()).unwrap()
     }
 }
 
