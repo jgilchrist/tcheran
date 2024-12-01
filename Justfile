@@ -29,10 +29,10 @@ test:
 ############################### Profiling #####################################
 
 instruments +CMD:
-	cargo instruments -t "time" --release -- "{{CMD}}"
+	cargo instruments -t "time" --release -- {{CMD}}
 
 instruments-debug +CMD:
-	cargo instruments -t "time" -- "{{CMD}}"
+	cargo instruments -t "time" -- {{CMD}}
 
 ################################# Misc #######################################
 
