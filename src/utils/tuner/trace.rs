@@ -1,3 +1,4 @@
+use crate::chess::bitboard::Bitboard;
 use crate::chess::board::Board;
 use crate::chess::game::Game;
 use crate::chess::movegen::tables;
@@ -36,6 +37,8 @@ pub struct Trace {
     rook_mobility: [TraceComponent; 15],
     queen_mobility: [TraceComponent; 28],
 
+    attacked_king_squares: [TraceComponent; 9],
+
     bishop_pair: TraceComponent,
 }
 
@@ -44,6 +47,8 @@ impl Trace {
 
     fn trace_for_player(trace: &mut Self, board: &Board, player: Player) {
         let mut number_of_bishops = 0;
+
+        let mut attacked_squares = Bitboard::EMPTY;
 
         let occupancy = board.occupancy();
 
@@ -56,7 +61,10 @@ impl Trace {
             trace.material[PieceKind::Knight.array_idx()].incr(player);
             trace.knight_pst[sq.array_idx()].incr(player);
 
-            let mobility = tables::knight_attacks(sq).count();
+            let attacks = tables::knight_attacks(sq);
+            attacked_squares |= attacks;
+
+            let mobility = attacks.count();
             trace.knight_mobility[mobility as usize].incr(player);
         }
 
@@ -64,7 +72,10 @@ impl Trace {
             trace.material[PieceKind::Bishop.array_idx()].incr(player);
             trace.bishop_pst[sq.array_idx()].incr(player);
 
-            let mobility = tables::bishop_attacks(sq, occupancy).count();
+            let attacks = tables::bishop_attacks(sq, occupancy);
+            attacked_squares |= attacks;
+
+            let mobility = attacks.count();
             trace.bishop_mobility[mobility as usize].incr(player);
 
             number_of_bishops += 1;
@@ -78,7 +89,10 @@ impl Trace {
             trace.material[PieceKind::Rook.array_idx()].incr(player);
             trace.rook_pst[sq.array_idx()].incr(player);
 
-            let mobility = tables::rook_attacks(sq, occupancy).count();
+            let attacks = tables::rook_attacks(sq, occupancy);
+            attacked_squares |= attacks;
+
+            let mobility = attacks.count();
             trace.rook_mobility[mobility as usize].incr(player);
         }
 
@@ -86,9 +100,11 @@ impl Trace {
             trace.material[PieceKind::Queen.array_idx()].incr(player);
             trace.queen_pst[sq.array_idx()].incr(player);
 
-            let mobility = (tables::rook_attacks(sq, occupancy)
-                | tables::bishop_attacks(sq, occupancy))
-            .count();
+            let attacks =
+                tables::rook_attacks(sq, occupancy) | tables::bishop_attacks(sq, occupancy);
+            attacked_squares |= attacks;
+
+            let mobility = attacks.count();
             trace.queen_mobility[mobility as usize].incr(player);
         }
 
@@ -96,6 +112,11 @@ impl Trace {
             trace.material[PieceKind::King.array_idx()].incr(player);
             trace.king_pst[sq.array_idx()].incr(player);
         }
+
+        let enemy_king = board.king(player.other()).single();
+        let enemy_king_surrounding_squares = tables::king_attacks(enemy_king);
+        let attacks_on_enemy_king = attacked_squares & enemy_king_surrounding_squares;
+        trace.attacked_king_squares[attacks_on_enemy_king.count() as usize].incr(player.other());
     }
 
     pub fn for_game(game: &Game) -> Self {
@@ -112,6 +133,8 @@ impl Trace {
             bishop_mobility: [TraceComponent::default(); 14],
             rook_mobility: [TraceComponent::default(); 15],
             queen_mobility: [TraceComponent::default(); 28],
+
+            attacked_king_squares: [TraceComponent::default(); 9],
 
             bishop_pair: TraceComponent::default(),
         };
@@ -135,6 +158,7 @@ impl Trace {
             .add(&self.bishop_mobility)
             .add(&self.rook_mobility)
             .add(&self.queen_mobility)
+            .add(&self.attacked_king_squares)
             .add(&[self.bishop_pair])
             .get()
     }

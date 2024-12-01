@@ -42,6 +42,8 @@ pub struct Parameters {
     rook_mobility: [PhasedEval; 15],
     queen_mobility: [PhasedEval; 28],
 
+    attacked_king_squares: [PhasedEval; 9],
+
     bishop_pair: [PhasedEval; 1],
 }
 
@@ -61,6 +63,8 @@ impl Parameters {
             bishop_mobility: [PhasedEval::ZERO; 14],
             rook_mobility: [PhasedEval::ZERO; 15],
             queen_mobility: [PhasedEval::ZERO; 28],
+
+            attacked_king_squares: [PhasedEval::ZERO; 9],
 
             bishop_pair: [PhasedEval::ZERO; 1],
         }
@@ -87,6 +91,7 @@ impl Parameters {
             .copy_to(&mut parameter_components.bishop_mobility)
             .copy_to(&mut parameter_components.rook_mobility)
             .copy_to(&mut parameter_components.queen_mobility)
+            .copy_to(&mut parameter_components.attacked_king_squares)
             .copy_to(&mut parameter_components.bishop_pair);
 
         parameter_components.rebalance();
@@ -226,6 +231,7 @@ impl std::fmt::Display for Parameters {
         print_array(f, &self.bishop_mobility, "BISHOP_MOBILITY")?;
         print_array(f, &self.rook_mobility, "ROOK_MOBILITY")?;
         print_array(f, &self.queen_mobility, "QUEEN_MOBILITY")?;
+        print_array(f, &self.attacked_king_squares, "ATTACKED_KING_SQUARES")?;
         print_single(f, self.bishop_pair, "BISHOP_PAIR_BONUS")?;
 
         Ok(())

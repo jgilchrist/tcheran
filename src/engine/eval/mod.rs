@@ -1,5 +1,5 @@
 mod material;
-mod mobility;
+mod mobility_and_king_safety;
 mod params;
 mod phased_eval;
 pub mod piece_square_tables;
@@ -60,7 +60,7 @@ pub fn eval(game: &Game) -> Eval {
 pub fn absolute_eval(game: &Game) -> WhiteEval {
     let eval = game.incremental_eval.piece_square_tables
         + material::eval(game)
-        + mobility::eval(game);
+        + mobility_and_king_safety::eval(game);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }
