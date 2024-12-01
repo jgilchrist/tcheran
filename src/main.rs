@@ -1,10 +1,12 @@
 mod chess;
 mod engine;
 
+#[cfg(not(feature = "release"))]
+mod utils;
+
 #[cfg(test)]
 mod tests;
 
-use crate::engine::uci::UciInputMode;
 use engine::uci;
 use engine::util::log;
 use std::panic::PanicHookInfo;
@@ -44,43 +46,15 @@ fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
 
 #[cfg(not(feature = "release"))]
 fn run() -> ExitCode {
-    let args = std::env::args().collect::<Vec<_>>();
-    let uci_input_mode = match args.len() {
-        1 => UciInputMode::Stdin,
-        2 => {
-            let commands = args[1]
-                .replace("\\n", "\n")
-                .lines()
-                .map(ToString::to_string)
-                .collect::<Vec<_>>();
+    use utils::cli;
 
-            UciInputMode::Commands(commands)
-        }
-        _ => {
-            let binary_name = args[0].clone();
-            eprintln!("usage:");
-            eprintln!("  {binary_name}                  - run in UCI mode");
-            eprintln!(
-                "  {binary_name} \"<uci commands>\" - run specific UCI commands and then exit"
-            );
-
-            return ExitCode::FAILURE;
-        }
-    };
-
-    let result = uci::uci(uci_input_mode);
-
-    match result {
-        Ok(()) => ExitCode::SUCCESS,
-        Err(e) => {
-            eprintln!("{e}");
-            ExitCode::FAILURE
-        }
-    }
+    cli::run()
 }
 
 #[cfg(feature = "release")]
 fn run() -> ExitCode {
+    use crate::engine::uci::UciInputMode;
+
     let args = std::env::args().collect::<Vec<_>>();
     let uci_input_mode = match args.len() {
         1 => UciInputMode::Stdin,
