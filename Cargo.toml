@@ -9,7 +9,7 @@ default = []
 release = []
 
 [build-dependencies]
-cc = "1.1.37"
+cc = "1.2.2"
 
 [dependencies]
 arrayvec = "0.7.6"
