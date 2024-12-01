@@ -4,6 +4,7 @@
 
 * Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)
 * Evaluate piece mobility (41.36 +- 13.82)
+* Add a texel tuner in-repo and tune, resolving an issue where mobility scores were not computed correctly (28.53 +- 11.44)
 
 ### Misc
 

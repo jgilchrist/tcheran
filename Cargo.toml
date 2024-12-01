@@ -5,7 +5,7 @@ edition = "2021"
 rust-version = "1.83"
 
 [features]
-default = ["dep:clap"]
+default = ["dep:clap", "dep:rayon", "dep:indicatif"]
 release = []
 
 [build-dependencies]
@@ -15,8 +15,10 @@ cc = "1.2.2"
 arrayvec = "0.7.6"
 clap = { version = "4.5.21", features = ["derive"], optional = true }
 colored = "2.1.0"
+indicatif = { version = "0.17.9", optional = true }
 nom = "7.1.1"
 rand = "0.8.5"
+rayon = { version = "1.8.1", optional = true }
 
 [dev-dependencies]
 paste = "1.0.15"

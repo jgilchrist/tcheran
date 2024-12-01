@@ -5,12 +5,8 @@ use crate::engine::eval::WhiteEval;
 
 const PHASE_COUNT_MAX: i64 = 24;
 
-pub const fn s(mg: i16, eg: i16) -> PhasedEval {
-    PhasedEval::new(mg, eg)
-}
-
 /// A midgame and endgame evaluation
-#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub struct PhasedEval(i32);
 
 impl PhasedEval {
@@ -44,6 +40,12 @@ impl PhasedEval {
 
         let eval = (midgame_eval * midgame_phase_value + endgame_eval * endgame_phase_value) / 24;
         WhiteEval(i16::try_from(eval).unwrap())
+    }
+}
+
+impl std::fmt::Debug for PhasedEval {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "PhasedEval({}, {})", self.midgame().0, self.endgame().0)
     }
 }
 
