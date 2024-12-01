@@ -207,14 +207,10 @@ pub fn search(
         return mv;
     }
 
-    // The game is modified as moves are played during search. When the search terminates,
-    // the game will be left in a dirty state since we will not undo the moves played to
-    // reach the terminating node in the search tree. To keep our original 'game' copy clean
-    // we perform the search on a copy of the game.
-    let mut search_game = game.clone();
-
     iterative_deepening::search(
-        &mut search_game,
+        // Give the search its own copy of the game so we don't get one returned in a dirty state
+        // when the search aborts.
+        &mut game.clone(),
         persistent_state,
         search_restrictions,
         options,
