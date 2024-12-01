@@ -42,14 +42,8 @@ fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
     }
 }
 
-fn main() -> ExitCode {
-    std::panic::set_hook(Box::new(|info| {
-        let panic_message = get_panic_message(info);
-
-        println!("{panic_message}");
-        log::crashlog(panic_message);
-    }));
-
+#[cfg(not(feature = "release"))]
+fn run() -> ExitCode {
     let args = std::env::args().collect::<Vec<_>>();
     let uci_input_mode = match args.len() {
         1 => UciInputMode::Stdin,
@@ -74,7 +68,42 @@ fn main() -> ExitCode {
         }
     };
 
-    init();
+    let result = uci::uci(uci_input_mode);
+
+    match result {
+        Ok(()) => ExitCode::SUCCESS,
+        Err(e) => {
+            eprintln!("{e}");
+            ExitCode::FAILURE
+        }
+    }
+}
+
+#[cfg(feature = "release")]
+fn run() -> ExitCode {
+    let args = std::env::args().collect::<Vec<_>>();
+    let uci_input_mode = match args.len() {
+        1 => UciInputMode::Stdin,
+        2 => {
+            let commands = args[1]
+                .replace("\\n", "\n")
+                .lines()
+                .map(ToString::to_string)
+                .collect::<Vec<_>>();
+
+            UciInputMode::Commands(commands)
+        }
+        _ => {
+            let binary_name = args[0].clone();
+            eprintln!("usage:");
+            eprintln!("  {binary_name}                  - run in UCI mode");
+            eprintln!(
+                "  {binary_name} \"<uci commands>\" - run specific UCI commands and then exit"
+            );
+
+            return ExitCode::FAILURE;
+        }
+    };
 
     let result = uci::uci(uci_input_mode);
 
@@ -85,4 +114,16 @@ fn main() -> ExitCode {
             ExitCode::FAILURE
         }
     }
+}
+
+fn main() -> ExitCode {
+    std::panic::set_hook(Box::new(|info| {
+        let panic_message = get_panic_message(info);
+
+        println!("{panic_message}");
+        log::crashlog(panic_message);
+    }));
+
+    init();
+    run()
 }
