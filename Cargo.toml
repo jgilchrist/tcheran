@@ -24,10 +24,10 @@ paste = "1.0.15"
 [lints.rust]
 static_mut_refs = "allow"
 
-future_incompatible = "warn"
-let_underscore = "warn"
-nonstandard_style = "warn"
-rust_2018_idioms = "warn"
+future_incompatible = { level = "warn", priority = -1 }
+let_underscore = { level = "warn", priority = -1 }
+nonstandard_style = { level = "warn", priority = -1 }
+rust_2018_idioms = { level = "warn", priority = -1 }
 
 [lints.clippy]
 pedantic = { level = "warn", priority = -1 }
