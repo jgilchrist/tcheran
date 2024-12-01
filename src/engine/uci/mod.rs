@@ -4,8 +4,6 @@ use std::io::{BufRead, IsTerminal};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
-use colored::Colorize;
-
 use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::{perft, san};
 
@@ -76,6 +74,8 @@ impl UciReporter {
         reason = "Various approximate calculations"
     )]
     fn pretty_report_search_progress(game: &Game, progress: &search::SearchInfo) {
+        use colored::Colorize;
+
         let mut game = game.clone();
 
         print!(" {:>3}", progress.depth);
