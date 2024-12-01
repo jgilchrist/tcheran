@@ -4,8 +4,10 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::moves::MoveList;
 use crate::chess::perft::perft;
+use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
-use crate::engine::search::{PersistentState, SearchState};
+use crate::engine::search::time_control::TimeStrategy;
+use crate::engine::search::{PersistentState, SearchContext, SearchRestrictions, TimeControl};
 use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 use paste::paste;
 
@@ -76,12 +78,7 @@ fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
     assert_eq!(expected_positions, actual_positions);
 }
 
-fn movepicker_perft(
-    depth: u8,
-    game: &mut Game,
-    persistent_state: &PersistentState,
-    state: &mut SearchState,
-) -> usize {
+fn movepicker_perft(depth: u8, game: &mut Game, ctx: &mut SearchContext<'_>) -> usize {
     if depth == 0 {
         return 1;
     }
@@ -113,23 +110,21 @@ fn movepicker_perft(
         }
 
         if quiets_movelist.len() >= 3 {
-            state
-                .killer_moves
+            ctx.killer_moves
                 .try_push(depth, *quiets_movelist.get(2).unwrap());
         }
 
         if quiets_movelist.len() >= 4 {
-            state
-                .killer_moves
+            ctx.killer_moves
                 .try_push(depth, *quiets_movelist.get(3).unwrap());
         }
     }
 
     let mut moves_at_this_node = Vec::new();
     let mut movepicker = MovePicker::new(best_move);
-    while let Some(mv) = movepicker.next(game, persistent_state, state, depth) {
+    while let Some(mv) = movepicker.next(game, ctx, depth) {
         game.make_move(mv);
-        moves += movepicker_perft(depth - 1, game, persistent_state, state);
+        moves += movepicker_perft(depth - 1, game, ctx);
         game.undo_move();
 
         moves_at_this_node.push(mv);
@@ -144,7 +139,7 @@ fn movepicker_perft(
                 .filter(|m| !moves_at_this_node.contains(m))
                 .collect::<Vec<_>>();
 
-            panic!("At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}\nMissing moves: {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, state.killer_moves.get_0(depth), state.killer_moves.get_1(depth), missing_moves);
+            panic!("At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}\nMissing moves: {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, ctx.killer_moves.get_0(depth), ctx.killer_moves.get_1(depth), missing_moves);
         }
 
         assert_eq!(moves_at_this_node.len(), legal_moves.len(),);
@@ -156,11 +151,20 @@ fn movepicker_perft(
 fn test_perft_with_movepicker(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
 
-    let persistent_state = PersistentState::new(16);
-    let mut state = SearchState::new();
-
     let mut game = Game::from_fen(fen).unwrap();
-    let actual_positions = movepicker_perft(depth, &mut game, &persistent_state, &mut state);
+
+    let mut persistent_state = PersistentState::new(16);
+    let options = EngineOptions::default();
+    let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+    let search_restrictions = SearchRestrictions::default();
+    let mut ctx = SearchContext::new(
+        &mut persistent_state,
+        &mut time_strategy,
+        &options,
+        &search_restrictions,
+    );
+
+    let actual_positions = movepicker_perft(depth, &mut game, &mut ctx);
 
     assert_eq!(expected_positions, actual_positions);
 }

@@ -3,7 +3,7 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::moves::{Move, MoveList};
 use crate::engine::search::move_ordering::{score_quiet, score_tactical};
-use crate::engine::search::{move_ordering, PersistentState, SearchState};
+use crate::engine::search::{move_ordering, SearchContext};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -69,13 +69,7 @@ impl MovePicker {
         }
     }
 
-    pub fn next(
-        &mut self,
-        game: &Game,
-        persistent_state: &PersistentState,
-        state: &SearchState,
-        plies: u8,
-    ) -> Option<Move> {
+    pub fn next(&mut self, game: &Game, ctx: &SearchContext<'_>, plies: u8) -> Option<Move> {
         use GenStage::*;
 
         if self.stage == BestMove {
@@ -136,7 +130,7 @@ impl MovePicker {
         if self.stage == Killer1 {
             self.stage = Killer2;
 
-            if let Some(killer1) = state.killer_moves.get_0(plies) {
+            if let Some(killer1) = ctx.killer_moves.get_0(plies) {
                 for i in self.first_quiet..self.moves.len() {
                     if self.moves.get(i).map_or(false, |m| *m == killer1) {
                         self.moves.swap(self.first_quiet, i);
@@ -153,7 +147,7 @@ impl MovePicker {
         if self.stage == Killer2 {
             self.stage = CounterMove;
 
-            if let Some(killer2) = state.killer_moves.get_1(plies) {
+            if let Some(killer2) = ctx.killer_moves.get_1(plies) {
                 for i in self.first_quiet..self.moves.len() {
                     if self.moves.get(i).map_or(false, |m| *m == killer2) {
                         self.moves.swap(self.first_quiet, i);
@@ -180,8 +174,7 @@ impl MovePicker {
             }
 
             if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
-                if let Some(counter_move) = state.countermove_table.get(game.player, previous_move)
-                {
+                if let Some(counter_move) = ctx.countermove_table.get(game.player, previous_move) {
                     for i in self.first_quiet..self.moves.len() {
                         if self.moves.get(i).map_or(false, |m| *m == counter_move) {
                             self.moves.swap(self.first_quiet, i);
@@ -213,11 +206,7 @@ impl MovePicker {
             self.idx = self.first_quiet;
 
             for i in self.idx..self.moves.len() {
-                self.scores[i] = score_quiet(
-                    game,
-                    *self.moves.get(i).unwrap(),
-                    &persistent_state.history_table,
-                );
+                self.scores[i] = score_quiet(game, *self.moves.get(i).unwrap(), ctx.history_table);
             }
         }
 
@@ -280,6 +269,9 @@ mod tests {
     use super::*;
     use crate::chess::game::Game;
     use crate::chess::square::squares::all::*;
+    use crate::engine::options::EngineOptions;
+    use crate::engine::search::time_control::TimeStrategy;
+    use crate::engine::search::{PersistentState, SearchRestrictions, TimeControl};
 
     #[test]
     fn test_movepicker_does_not_double_yield_best_move() {
@@ -290,10 +282,18 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_picker = MovePicker::new(Some(Move::quiet(G1, F3)));
 
-        let search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        while let Some(m) = move_picker.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_picker.next(&game, &ctx, 0) {
             moves.push(m);
         }
 
@@ -310,10 +310,18 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new(None);
 
-        let search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
         }
 
@@ -331,10 +339,18 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new(None);
 
-        let search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
         }
 
@@ -352,10 +368,18 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new(None);
 
-        let search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
         }
 
@@ -372,10 +396,18 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new_loud();
 
-        let search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
         }
 
@@ -391,13 +423,21 @@ mod tests {
         let mut moves: Vec<Move> = Vec::new();
         let mut move_provider = MovePicker::new(Some(Move::quiet(D8, E7)));
 
-        let mut search_state = SearchState::new();
-        let persistent_state = PersistentState::new(16);
+        let mut persistent_state = PersistentState::new(16);
+        let options = EngineOptions::default();
+        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let search_restrictions = SearchRestrictions::default();
+        let mut ctx = SearchContext::new(
+            &mut persistent_state,
+            &mut time_strategy,
+            &options,
+            &search_restrictions,
+        );
 
-        search_state.killer_moves.try_push(0, Move::quiet(B7, D5));
-        search_state.killer_moves.try_push(0, Move::quiet(D8, E8));
+        ctx.killer_moves.try_push(0, Move::quiet(B7, D5));
+        ctx.killer_moves.try_push(0, Move::quiet(D8, E8));
 
-        while let Some(m) = move_provider.next(&game, &persistent_state, &search_state, 0) {
+        while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
         }
 

@@ -11,6 +11,7 @@
 * Move all tunable parameters to a single file to prep for tuning
 * Add the 'default' feature to enable functionality for local from-source builds without polluting release builds
 * Add a CLI to the non-release build
+* Hide fields from PersistentState inside SearchContext
 
 ## [4.1]
 

@@ -1,8 +1,7 @@
 use crate::chess::game::Game;
 use crate::engine::eval::Eval;
 use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::{negamax, params, PersistentState, SearchState};
+use crate::engine::search::{negamax, params, SearchContext};
 
 struct Window {
     alpha: Eval,
@@ -57,10 +56,8 @@ pub fn aspiration_search(
     game: &mut Game,
     depth: u8,
     eval: Option<Eval>,
-    persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
-    state: &mut SearchState,
-    time_control: &mut TimeStrategy,
+    ctx: &mut SearchContext<'_>,
 ) -> Result<Eval, ()> {
     let mut window = if depth < params::ASPIRATION_MIN_DEPTH {
         Window::no_window()
@@ -69,17 +66,7 @@ pub fn aspiration_search(
     };
 
     loop {
-        let Ok(eval) = negamax::negamax(
-            game,
-            window.alpha,
-            window.beta,
-            depth,
-            0,
-            persistent_state,
-            pv,
-            time_control,
-            state,
-        ) else {
+        let Ok(eval) = negamax::negamax(game, window.alpha, window.beta, depth, 0, pv, ctx) else {
             return Err(());
         };
 

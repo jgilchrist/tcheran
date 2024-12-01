@@ -74,7 +74,18 @@ impl PersistentState {
     }
 }
 
-pub struct SearchState {
+pub struct SearchContext<'s> {
+    pub tt: &'s mut SearchTranspositionTable,
+    pub tablebase: &'s mut Tablebase,
+
+    pub history_table: &'s mut HistoryTable,
+
+    pub time_control: &'s mut TimeStrategy,
+
+    #[expect(unused, reason = "No options currently used in search")]
+    pub options: &'s EngineOptions,
+    pub search_restrictions: &'s SearchRestrictions,
+
     pub killer_moves: KillersTable,
     pub countermove_table: CountermoveTable,
 
@@ -83,9 +94,24 @@ pub struct SearchState {
     tbhits: u64,
 }
 
-impl SearchState {
-    pub const fn new() -> Self {
+impl<'s> SearchContext<'s> {
+    pub const fn new(
+        persistent_state: &'s mut PersistentState,
+        time_strategy: &'s mut TimeStrategy,
+        options: &'s EngineOptions,
+        search_restrictions: &'s SearchRestrictions,
+    ) -> Self {
         Self {
+            tt: &mut persistent_state.tt,
+            tablebase: &mut persistent_state.tablebase,
+
+            history_table: &mut persistent_state.history_table,
+
+            time_control: time_strategy,
+
+            options,
+            search_restrictions,
+
             killer_moves: KillersTable::new(),
             countermove_table: CountermoveTable::new(),
 
@@ -193,16 +219,19 @@ pub fn search(
     options: &EngineOptions,
     reporter: &mut impl Reporter,
 ) -> Move {
-    let mut state = SearchState::new();
+    let mut ctx = SearchContext::new(
+        persistent_state,
+        time_strategy,
+        options,
+        search_restrictions,
+    );
 
-    persistent_state.tt.new_generation();
-    persistent_state
-        .history_table
-        .decay(params::HISTORY_DECAY_FACTOR);
+    ctx.tt.new_generation();
+    ctx.history_table.decay(params::HISTORY_DECAY_FACTOR);
 
     let mut pv = PrincipalVariation::new();
 
-    let tablebase_result = persistent_state.tablebase.best_move(game);
+    let tablebase_result = ctx.tablebase.best_move(game);
     if let Some(mv) = tablebase_result {
         return mv;
     }
@@ -211,18 +240,14 @@ pub fn search(
         // Give the search its own copy of the game so we don't get one returned in a dirty state
         // when the search aborts.
         &mut game.clone(),
-        persistent_state,
-        search_restrictions,
-        options,
-        &mut state,
+        &mut ctx,
         &mut pv,
-        time_strategy,
         reporter,
     );
 
     let best_move = pv.first().copied();
 
-    best_move.unwrap_or_else(|| panic_move(game, persistent_state, &state))
+    best_move.unwrap_or_else(|| panic_move(game, &ctx))
 }
 
 pub fn init() {
@@ -232,10 +257,8 @@ pub fn init() {
 // If we have so little time to search that we couldn't determine a best move, we'll need to spend
 // a bit of extra time so that we still make a move.
 // Rather than returning a random move, we return the first move that is returned after move ordering
-fn panic_move(game: &Game, persistent_state: &PersistentState, search_state: &SearchState) -> Move {
+fn panic_move(game: &Game, ctx: &SearchContext<'_>) -> Move {
     let mut move_picker = MovePicker::new(None);
 
-    move_picker
-        .next(game, persistent_state, search_state, 0)
-        .unwrap()
+    move_picker.next(game, ctx, 0).unwrap()
 }

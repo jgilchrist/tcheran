@@ -1,4 +1,4 @@
-use super::{params, PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{params, SearchContext, MAX_SEARCH_DEPTH};
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;
@@ -7,7 +7,6 @@ use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::quiescence::quiescence;
 use crate::engine::search::tables::lmr_table::lmr_reduction;
-use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
 use crate::engine::tablebases::Wdl;
 use std::cmp::max;
@@ -38,21 +37,19 @@ pub fn negamax(
     beta: Eval,
     mut depth: u8,
     plies: u8,
-    persistent_state: &mut PersistentState,
     pv: &mut PrincipalVariation,
-    time_control: &mut TimeStrategy,
-    state: &mut SearchState,
+    ctx: &mut SearchContext<'_>,
 ) -> Result<Eval, ()> {
     let is_root = plies == 0;
     let is_pv = alpha != beta - Eval(1);
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if time_control.should_stop(state.nodes_visited) {
+    if ctx.time_control.should_stop(ctx.nodes_visited) {
         return Err(());
     }
 
-    state.max_depth_reached = state.max_depth_reached.max(plies);
+    ctx.max_depth_reached = ctx.max_depth_reached.max(plies);
 
     if !is_root
         && (game.is_repeated_position()
@@ -70,24 +67,16 @@ pub fn negamax(
     }
 
     if depth == 0 {
-        return quiescence(
-            game,
-            alpha,
-            beta,
-            plies,
-            time_control,
-            persistent_state,
-            state,
-        );
+        return quiescence(game, alpha, beta, plies, ctx);
     }
 
     if !is_root {
-        state.nodes_visited += 1;
+        ctx.nodes_visited += 1;
     }
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = persistent_state.tt.get(&game.zobrist) {
+    if let Some(tt_entry) = ctx.tt.get(&game.zobrist) {
         if !is_root && !is_pv && tt_entry.depth >= depth {
             let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
 
@@ -102,13 +91,13 @@ pub fn negamax(
         previous_best_move = tt_entry.best_move;
     }
 
-    let tb_cardinality = persistent_state.tablebase.n_men();
+    let tb_cardinality = ctx.tablebase.n_men();
     if !is_root && tb_cardinality > 0 {
         let piece_count = game.board.occupancy().count();
 
         if piece_count < tb_cardinality || (piece_count <= tb_cardinality && depth >= 1) {
-            if let Some(wdl) = persistent_state.tablebase.wdl(game) {
-                state.tbhits += 1;
+            if let Some(wdl) = ctx.tablebase.wdl(game) {
+                ctx.tbhits += 1;
 
                 let score = match wdl {
                     Wdl::Win => Eval::mate_in(plies),
@@ -130,11 +119,11 @@ pub fn negamax(
                         bound: tb_bound,
                         eval: score,
                         best_move: None,
-                        age: persistent_state.tt.generation,
+                        age: ctx.tt.generation,
                         depth,
                     };
 
-                    persistent_state.tt.insert(&game.zobrist, tt_data);
+                    ctx.tt.insert(&game.zobrist, tt_data);
 
                     return Ok(score);
                 }
@@ -170,10 +159,8 @@ pub fn negamax(
                 -beta + Eval(1),
                 depth - 1 - params::NULL_MOVE_PRUNING_DEPTH_REDUCTION,
                 plies + 1,
-                persistent_state,
                 &mut PrincipalVariation::new(),
-                time_control,
-                state,
+                ctx,
             )?;
 
             game.undo_null_move();
@@ -192,7 +179,7 @@ pub fn negamax(
     let mut number_of_legal_moves = 0;
     let mut node_pv = PrincipalVariation::new();
 
-    while let Some(mv) = moves.next(game, persistent_state, state, plies) {
+    while let Some(mv) = moves.next(game, ctx, plies) {
         node_pv.clear();
 
         // Futility pruning
@@ -210,17 +197,7 @@ pub fn negamax(
         number_of_legal_moves += 1;
 
         let move_score = if number_of_legal_moves == 1 {
-            -negamax(
-                game,
-                -beta,
-                -alpha,
-                depth - 1,
-                plies + 1,
-                persistent_state,
-                &mut node_pv,
-                time_control,
-                state,
-            )?
+            -negamax(game, -beta, -alpha, depth - 1, plies + 1, &mut node_pv, ctx)?
         } else {
             let reduction = if depth >= params::LMR_DEPTH
                 && number_of_legal_moves >= params::LMR_MOVE_THRESHOLD
@@ -243,26 +220,14 @@ pub fn negamax(
                 -alpha,
                 depth.saturating_sub(reduction),
                 plies + 1,
-                persistent_state,
                 &mut node_pv,
-                time_control,
-                state,
+                ctx,
             )?;
 
             // Turns out the move we just searched could be better than our current PV, so we re-search
             // with the normal alpha/beta bounds.
             if pvs_score > alpha && pvs_score < beta {
-                -negamax(
-                    game,
-                    -beta,
-                    -alpha,
-                    depth - 1,
-                    plies + 1,
-                    persistent_state,
-                    &mut node_pv,
-                    time_control,
-                    state,
-                )?
+                -negamax(game, -beta, -alpha, depth - 1, plies + 1, &mut node_pv, ctx)?
             } else {
                 pvs_score
             }
@@ -303,15 +268,13 @@ pub fn negamax(
         // but it wasn't a capture, we remember it so that we can try it
         // before other quiet moves.
         if !mv.is_capture() {
-            state.killer_moves.try_push(plies, mv);
+            ctx.killer_moves.try_push(plies, mv);
 
             if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
-                state.countermove_table.set(game.player, previous_move, mv);
+                ctx.countermove_table.set(game.player, previous_move, mv);
             }
 
-            persistent_state
-                .history_table
-                .add_bonus_for(game.player, mv, depth);
+            ctx.history_table.add_bonus_for(game.player, mv, depth);
         }
     }
 
@@ -319,11 +282,11 @@ pub fn negamax(
         bound: tt_node_bound,
         eval: best_eval.with_mate_distance_from_position(plies),
         best_move,
-        age: persistent_state.tt.generation,
+        age: ctx.tt.generation,
         depth,
     };
 
-    persistent_state.tt.insert(&game.zobrist, tt_data);
+    ctx.tt.insert(&game.zobrist, tt_data);
 
     Ok(best_eval)
 }

@@ -2,21 +2,18 @@ use crate::chess::game::Game;
 use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
-use crate::engine::search::time_control::TimeStrategy;
 
-use super::{PersistentState, SearchState, MAX_SEARCH_DEPTH};
+use super::{SearchContext, MAX_SEARCH_DEPTH};
 
 pub fn quiescence(
     game: &mut Game,
     mut alpha: Eval,
     beta: Eval,
     plies: u8,
-    time_control: &mut TimeStrategy,
-    persistent_state: &mut PersistentState,
-    state: &mut SearchState,
+    ctx: &mut SearchContext<'_>,
 ) -> Result<Eval, ()> {
-    state.max_depth_reached = state.max_depth_reached.max(plies);
-    state.nodes_visited += 1;
+    ctx.max_depth_reached = ctx.max_depth_reached.max(plies);
+    ctx.nodes_visited += 1;
 
     if plies == MAX_SEARCH_DEPTH {
         return Ok(eval::eval(game));
@@ -31,7 +28,7 @@ pub fn quiescence(
 
     // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
     // so we return Err to signal to the caller that the search did not complete.
-    if time_control.should_stop(state.nodes_visited) {
+    if ctx.time_control.should_stop(ctx.nodes_visited) {
         return Err(());
     }
 
@@ -48,18 +45,10 @@ pub fn quiescence(
     let mut best_eval = eval;
 
     let mut moves = MovePicker::new_loud();
-    while let Some(mv) = moves.next(game, persistent_state, state, plies) {
+    while let Some(mv) = moves.next(game, ctx, plies) {
         game.make_move(mv);
 
-        let move_score = -quiescence(
-            game,
-            -beta,
-            -alpha,
-            plies + 1,
-            time_control,
-            persistent_state,
-            state,
-        )?;
+        let move_score = -quiescence(game, -beta, -alpha, plies + 1, ctx)?;
 
         game.undo_move();
 
