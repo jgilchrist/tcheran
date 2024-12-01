@@ -12,6 +12,9 @@ use std::process::ExitCode;
 
 pub const ENGINE_NAME: &str = "Tcheran";
 
+#[cfg(all(feature = "default", feature = "release"))]
+compile_error!("features \"default\" and \"release\" cannot be enabled simultaneously");
+
 pub fn engine_version() -> String {
     let cargo_version = env!("CARGO_PKG_VERSION");
     let version = cargo_version.strip_suffix(".0").unwrap();

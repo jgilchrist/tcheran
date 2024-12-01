@@ -5,6 +5,7 @@ edition = "2021"
 rust-version = "1.83"
 
 [features]
+default = []
 release = []
 
 [build-dependencies]
