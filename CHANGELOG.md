@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Evaluate passed pawns (38.30 +- 13.27)
+* Don't consider mobility for squares that are attacked by opponent pawns (14.90 +- 7.93)
 
 ## [5.0]
 
