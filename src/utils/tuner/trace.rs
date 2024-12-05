@@ -51,6 +51,10 @@ impl Trace {
     fn trace_for_player(trace: &mut Self, board: &Board, player: Player) {
         let mut number_of_bishops = 0;
 
+        let their_pawns = board.pawns(player.other()).forward(Player::Black);
+        let their_pawn_attacks = their_pawns.west() | their_pawns.east();
+        let mobility_safe_squares = !their_pawn_attacks;
+
         let mut attacked_squares = Bitboard::EMPTY;
 
         let occupancy = board.occupancy();
@@ -74,8 +78,8 @@ impl Trace {
             let attacks = tables::knight_attacks(sq);
             attacked_squares |= attacks;
 
-            let mobility = attacks.count();
-            trace.knight_mobility[mobility as usize].incr(player);
+            let mobility_squares = (attacks & mobility_safe_squares).count() as usize;
+            trace.knight_mobility[mobility_squares].incr(player);
         }
 
         for sq in board.bishops(player) {
@@ -85,8 +89,8 @@ impl Trace {
             let attacks = tables::bishop_attacks(sq, occupancy);
             attacked_squares |= attacks;
 
-            let mobility = attacks.count();
-            trace.bishop_mobility[mobility as usize].incr(player);
+            let mobility_squares = (attacks & mobility_safe_squares).count() as usize;
+            trace.bishop_mobility[mobility_squares].incr(player);
 
             number_of_bishops += 1;
         }
@@ -102,8 +106,8 @@ impl Trace {
             let attacks = tables::rook_attacks(sq, occupancy);
             attacked_squares |= attacks;
 
-            let mobility = attacks.count();
-            trace.rook_mobility[mobility as usize].incr(player);
+            let mobility_squares = (attacks & mobility_safe_squares).count() as usize;
+            trace.rook_mobility[mobility_squares].incr(player);
         }
 
         for sq in board.queens(player) {
@@ -114,8 +118,8 @@ impl Trace {
                 tables::rook_attacks(sq, occupancy) | tables::bishop_attacks(sq, occupancy);
             attacked_squares |= attacks;
 
-            let mobility = attacks.count();
-            trace.queen_mobility[mobility as usize].incr(player);
+            let mobility_squares = (attacks & mobility_safe_squares).count() as usize;
+            trace.queen_mobility[mobility_squares].incr(player);
         }
 
         for sq in board.king(player) {
