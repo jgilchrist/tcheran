@@ -61,7 +61,7 @@ impl File {
         }
     }
 
-    pub fn bitboard(&self) -> Bitboard {
+    pub fn bitboard(self) -> Bitboard {
         match self {
             Self::A => bitboards::A_FILE,
             Self::B => bitboards::B_FILE,

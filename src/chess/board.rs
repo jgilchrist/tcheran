@@ -128,6 +128,8 @@ impl Board {
         enemy_attackers.any()
     }
 
+    #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
+    #[allow(unused, reason = "Only used in non-release mode")]
     pub fn flip_vertically(&self) -> Self {
         let [white_colors, black_colors] = self.colors.inner();
         let [pawns, knights, bishops, rooks, queens, king] = self.pieces;
