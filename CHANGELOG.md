@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.0]
+
 * Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)
 * Evaluate piece mobility (41.36 +- 13.82)
 * Add a texel tuner in-repo and tune, resolving an issue where mobility scores were not computed correctly (28.53 +- 11.44)
@@ -221,7 +223,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v4.1...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v5.0...HEAD
+[5.0]: https://github.com/jgilchrist/chess-engine/compare/v4.1..v5.0
 [4.1]: https://github.com/jgilchrist/chess-engine/compare/v4.0..v4.1
 [4.0]: https://github.com/jgilchrist/chess-engine/compare/v3.0..v4.0
 [3.0]: https://github.com/jgilchrist/chess-engine/compare/v2.5..v3.0
