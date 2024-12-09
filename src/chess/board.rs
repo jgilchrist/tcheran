@@ -127,37 +127,6 @@ impl Board {
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);
         enemy_attackers.any()
     }
-
-    #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
-    #[allow(unused, reason = "Only used in non-release mode")]
-    pub fn flip_vertically(&self) -> Self {
-        let [white_colors, black_colors] = self.colors.inner();
-        let [pawns, knights, bishops, rooks, queens, king] = self.pieces;
-
-        let squares = self.squares;
-        let mut flipped_squares: [Option<Piece>; Square::N] = [None; Square::N];
-        for rank in 0..8 {
-            for file in 0..8 {
-                flipped_squares[(8 - rank - 1) * 8 + file] = squares[rank * 8 + file];
-            }
-        }
-
-        Self {
-            colors: ByPlayer::new(
-                white_colors.flip_vertically(),
-                black_colors.flip_vertically(),
-            ),
-            pieces: [
-                pawns.flip_vertically(),
-                knights.flip_vertically(),
-                bishops.flip_vertically(),
-                rooks.flip_vertically(),
-                queens.flip_vertically(),
-                king.flip_vertically(),
-            ],
-            squares: flipped_squares,
-        }
-    }
 }
 
 impl std::fmt::Debug for Board {
