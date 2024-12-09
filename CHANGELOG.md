@@ -5,6 +5,10 @@
 * Evaluate passed pawns (38.30 +- 13.27)
 * Don't consider mobility for squares that are attacked by opponent pawns (14.90 +- 7.93)
 
+### Misc
+
+* Determine the evaluation coefficients in the main eval module, removing the need for a side-by-side impl in the tuner
+
 ## [5.0]
 
 * Tune all evaluation parameters with https://github.com/GediminasMasaitis/texel-tuner (53.17 +- 16.76)

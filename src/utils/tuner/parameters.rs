@@ -1,8 +1,8 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::piece::PieceKind;
 use crate::chess::square::Square;
+use crate::engine::eval::trace::Trace;
 use crate::engine::eval::PhasedEval;
-use crate::utils::tuner::trace::Trace;
 use crate::utils::tuner::tuner_eval::TunerEval;
 use std::fmt::Formatter;
 

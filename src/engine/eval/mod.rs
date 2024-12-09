@@ -5,6 +5,7 @@ pub mod pawn_structure;
 mod phased_eval;
 pub mod piece_square_tables;
 mod player_eval;
+pub mod trace;
 mod white_eval;
 
 use crate::chess::board::Board;
@@ -16,6 +17,7 @@ use crate::chess::piece::Piece;
 use crate::chess::player::ByPlayer;
 use crate::chess::square::Square;
 pub use crate::engine::eval::phased_eval::PhasedEval;
+use crate::engine::eval::trace::Trace;
 
 pub fn init() {
     piece_square_tables::init();
@@ -60,10 +62,21 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
+    let mut trace = Trace::new();
+    absolute_eval_with_trace::<false>(game, &mut trace)
+}
+
+pub fn absolute_eval_with_trace<const TRACE: bool>(game: &Game, trace: &mut Trace) -> WhiteEval {
+    if TRACE {
+        // Material counts and PSTs are updated incrementally so if we're tuning we need
+        // to account for those manually here in the trace.
+        material::trace_psts_and_material(game, trace);
+    }
+
     let eval = game.incremental_eval.piece_square_tables
-        + material::eval(game)
-        + mobility_and_king_safety::eval(game)
-        + pawn_structure::eval(game);
+        + material::eval::<TRACE>(game, trace)
+        + mobility_and_king_safety::eval::<TRACE>(game, trace)
+        + pawn_structure::eval::<TRACE>(game, trace);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }
