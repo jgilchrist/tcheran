@@ -51,7 +51,7 @@ impl Trace {
     fn trace_for_player(trace: &mut Self, board: &Board, player: Player) {
         let mut number_of_bishops = 0;
 
-        let their_pawns = board.pawns(player.other()).forward(Player::Black);
+        let their_pawns = board.pawns(player.other()).forward(player.other());
         let their_pawn_attacks = their_pawns.west() | their_pawns.east();
         let mobility_safe_squares = !their_pawn_attacks;
 
@@ -63,17 +63,17 @@ impl Trace {
 
         for sq in board.pawns(player) {
             trace.material[PieceKind::Pawn.array_idx()].incr(player);
-            trace.pawn_pst[sq.array_idx()].incr(player);
+            trace.pawn_pst[sq.relative_for(player).array_idx()].incr(player);
 
             // Evaluate passer masks from white's perspective
-            if eval::pawn_structure::is_passed(sq, Player::White, their_pawns) {
-                trace.passed_pawn_pst[sq.array_idx()].incr(player);
+            if eval::pawn_structure::is_passed(sq, player, their_pawns) {
+                trace.passed_pawn_pst[sq.relative_for(player).array_idx()].incr(player);
             }
         }
 
         for sq in board.knights(player) {
             trace.material[PieceKind::Knight.array_idx()].incr(player);
-            trace.knight_pst[sq.array_idx()].incr(player);
+            trace.knight_pst[sq.relative_for(player).array_idx()].incr(player);
 
             let attacks = tables::knight_attacks(sq);
             attacked_squares |= attacks;
@@ -84,7 +84,7 @@ impl Trace {
 
         for sq in board.bishops(player) {
             trace.material[PieceKind::Bishop.array_idx()].incr(player);
-            trace.bishop_pst[sq.array_idx()].incr(player);
+            trace.bishop_pst[sq.relative_for(player).array_idx()].incr(player);
 
             let attacks = tables::bishop_attacks(sq, occupancy);
             attacked_squares |= attacks;
@@ -101,7 +101,7 @@ impl Trace {
 
         for sq in board.rooks(player) {
             trace.material[PieceKind::Rook.array_idx()].incr(player);
-            trace.rook_pst[sq.array_idx()].incr(player);
+            trace.rook_pst[sq.relative_for(player).array_idx()].incr(player);
 
             let attacks = tables::rook_attacks(sq, occupancy);
             attacked_squares |= attacks;
@@ -112,7 +112,7 @@ impl Trace {
 
         for sq in board.queens(player) {
             trace.material[PieceKind::Queen.array_idx()].incr(player);
-            trace.queen_pst[sq.array_idx()].incr(player);
+            trace.queen_pst[sq.relative_for(player).array_idx()].incr(player);
 
             let attacks =
                 tables::rook_attacks(sq, occupancy) | tables::bishop_attacks(sq, occupancy);
@@ -124,7 +124,7 @@ impl Trace {
 
         for sq in board.king(player) {
             trace.material[PieceKind::King.array_idx()].incr(player);
-            trace.king_pst[sq.array_idx()].incr(player);
+            trace.king_pst[sq.relative_for(player).array_idx()].incr(player);
         }
 
         let enemy_king = board.king(player.other()).single();
@@ -156,7 +156,7 @@ impl Trace {
         };
 
         Self::trace_for_player(&mut trace, &game.board, Player::White);
-        Self::trace_for_player(&mut trace, &game.board.flip_vertically(), Player::Black);
+        Self::trace_for_player(&mut trace, &game.board, Player::Black);
 
         trace
     }

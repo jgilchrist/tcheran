@@ -258,6 +258,16 @@ impl Square {
     pub fn south(self) -> Self {
         Self(self.0 - 8)
     }
+
+    #[inline(always)]
+    #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
+    #[allow(unused, reason = "Only used in non-release mode")]
+    pub fn relative_for(self, player: Player) -> Self {
+        match player {
+            Player::White => self,
+            Player::Black => self.bb().flip_vertically().single(),
+        }
+    }
 }
 
 impl std::fmt::Debug for Square {

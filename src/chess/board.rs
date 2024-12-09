@@ -127,37 +127,6 @@ impl Board {
         let enemy_attackers = movegen::generate_attackers_of(self, player, king);
         enemy_attackers.any()
     }
-
-    #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
-    #[allow(unused, reason = "Only used in non-release mode")]
-    pub fn flip_vertically(&self) -> Self {
-        let [white_colors, black_colors] = self.colors.inner();
-        let [pawns, knights, bishops, rooks, queens, king] = self.pieces;
-
-        let squares = self.squares;
-        let mut flipped_squares: [Option<Piece>; Square::N] = [None; Square::N];
-        for rank in 0..8 {
-            for file in 0..8 {
-                flipped_squares[(8 - rank - 1) * 8 + file] = squares[rank * 8 + file];
-            }
-        }
-
-        Self {
-            colors: ByPlayer::new(
-                white_colors.flip_vertically(),
-                black_colors.flip_vertically(),
-            ),
-            pieces: [
-                pawns.flip_vertically(),
-                knights.flip_vertically(),
-                bishops.flip_vertically(),
-                rooks.flip_vertically(),
-                queens.flip_vertically(),
-                king.flip_vertically(),
-            ],
-            squares: flipped_squares,
-        }
-    }
 }
 
 impl std::fmt::Debug for Board {
@@ -265,39 +234,5 @@ impl TryFrom<[Option<Piece>; Square::N]> for Board {
             colors: ByPlayer::new(white_occupancy, black_occupancy),
             squares,
         })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::*;
-    use crate::chess::game::Game;
-
-    #[test]
-    fn test_flip_vertically() {
-        let game =
-            Game::from_fen("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq -")
-                .unwrap();
-
-        let our_flipped_board = game.board.flip_vertically();
-
-        let flipped_kiwipete =
-            Game::from_fen("R3K2R/PPPBBPPP/2N2Q1p/1p2P3/3PN3/bn2pnp1/p1ppqpb1/r3k2r w - - 0 1")
-                .unwrap()
-                .board;
-
-        assert_eq!(
-            our_flipped_board.colors.for_player(Player::White),
-            flipped_kiwipete.colors.for_player(Player::White)
-        );
-        assert_eq!(
-            our_flipped_board.colors.for_player(Player::Black),
-            flipped_kiwipete.colors.for_player(Player::Black)
-        );
-        assert_eq!(our_flipped_board.pieces, flipped_kiwipete.pieces);
-
-        for (i, &p) in our_flipped_board.squares.iter().enumerate() {
-            assert_eq!(p, flipped_kiwipete.squares[i]);
-        }
     }
 }
