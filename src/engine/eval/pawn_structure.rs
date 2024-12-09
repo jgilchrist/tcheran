@@ -6,10 +6,11 @@ use crate::chess::player::{ByPlayer, Player};
 use crate::chess::square::{Rank, Square};
 use crate::engine::eval::params::PieceSquareTableDefinition;
 use crate::engine::eval::piece_square_tables::{flatten, flip, negate, PieceSquareTable};
+use crate::engine::eval::trace::Trace;
 use crate::engine::eval::{params, PhasedEval};
 
-pub fn eval(game: &Game) -> PhasedEval {
-    let eval = eval_passed_pawns(game);
+pub fn eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
+    let eval = eval_passed_pawns::<TRACE>(game, trace);
 
     eval
 }
@@ -82,16 +83,16 @@ fn pst_value(player: Player, square: Square) -> PhasedEval {
     }
 }
 
-pub fn eval_passed_pawns(game: &Game) -> PhasedEval {
-    let white_bonus = calculate_passed_pawn_bonus(&game.board, Player::White);
-    let black_bonus = calculate_passed_pawn_bonus(&game.board, Player::Black);
+pub fn eval_passed_pawns<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
+    let white_bonus = calculate_passed_pawn_bonus::<TRACE>(&game.board, Player::White, trace);
+    let black_bonus = calculate_passed_pawn_bonus::<TRACE>(&game.board, Player::Black, trace);
 
     white_bonus + black_bonus
 }
 
 pub fn eval_passed_pawns_by_player(board: &Board) -> ByPlayer<PhasedEval> {
-    let white_bonus = calculate_passed_pawn_bonus(board, Player::White);
-    let black_bonus = calculate_passed_pawn_bonus(board, Player::Black);
+    let white_bonus = calculate_passed_pawn_bonus::<false>(board, Player::White, &mut Trace::new());
+    let black_bonus = calculate_passed_pawn_bonus::<false>(board, Player::Black, &mut Trace::new());
 
     ByPlayer::new(white_bonus, black_bonus)
 }
@@ -100,7 +101,11 @@ pub fn is_passed(pawn: Square, player: Player, their_pawns: Bitboard) -> bool {
     (enemy_passed_pawn_mask(player, pawn) & their_pawns).is_empty()
 }
 
-fn calculate_passed_pawn_bonus(board: &Board, player: Player) -> PhasedEval {
+fn calculate_passed_pawn_bonus<const TRACE: bool>(
+    board: &Board,
+    player: Player,
+    trace: &mut Trace,
+) -> PhasedEval {
     let mut bonus = PhasedEval::ZERO;
 
     let our_pawns = board.pawns(player);
@@ -109,6 +114,10 @@ fn calculate_passed_pawn_bonus(board: &Board, player: Player) -> PhasedEval {
     for pawn in our_pawns {
         if is_passed(pawn, player, their_pawns) {
             bonus += pst_value(player, pawn);
+
+            if TRACE {
+                trace.passed_pawn_pst[pawn.relative_for(player).array_idx()].incr(player);
+            }
         }
     }
 
