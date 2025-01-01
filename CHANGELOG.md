@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [5.1]
+
 * Evaluate passed pawns (38.30 +- 13.27)
 * Don't consider mobility for squares that are attacked by opponent pawns (14.90 +- 7.93)
 
@@ -230,7 +232,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v5.0...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v5.1...HEAD
+[5.1]: https://github.com/jgilchrist/chess-engine/compare/v5.0..v5.1
 [5.0]: https://github.com/jgilchrist/chess-engine/compare/v4.1..v5.0
 [4.1]: https://github.com/jgilchrist/chess-engine/compare/v4.0..v4.1
 [4.0]: https://github.com/jgilchrist/chess-engine/compare/v3.0..v4.0
