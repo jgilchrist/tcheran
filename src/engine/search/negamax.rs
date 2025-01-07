@@ -52,7 +52,7 @@ pub fn negamax(
     ctx.max_depth_reached = ctx.max_depth_reached.max(plies);
 
     if !is_root
-        && (game.is_repeated_position()
+        && (game.is_repeated_position(plies)
             || game.is_stalemate_by_fifty_move_rule()
             || game.is_stalemate_by_insufficient_material())
     {

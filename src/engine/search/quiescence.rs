@@ -19,7 +19,7 @@ pub fn quiescence(
         return Ok(eval::eval(game));
     }
 
-    if game.is_repeated_position()
+    if game.is_repeated_position(plies)
         || game.is_stalemate_by_fifty_move_rule()
         || game.is_stalemate_by_insufficient_material()
     {

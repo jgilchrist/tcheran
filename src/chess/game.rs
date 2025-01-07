@@ -146,7 +146,36 @@ impl Game {
         false
     }
 
-    pub fn is_repeated_position(&self) -> bool {
+    pub fn is_repeated_position(&self, height: u8) -> bool {
+        let mut repeats = 0;
+
+        for (i, state) in self
+            .history
+            .iter()
+            .rev()
+            .take(self.halfmove_clock as usize)
+            .enumerate()
+        {
+            // We saw a repeat
+            if state.zobrist == self.zobrist {
+                repeats += 1;
+            }
+
+            // If the first repeat happened before we started searching, we need to look for the third
+            // repetition
+            let is_before_root = (height - i as u8) < 0;
+
+            if !is_before_root && repeats == 1 {
+                return true;
+            }
+
+            if is_before_root && repeats >= 2 {
+                return true;
+            }
+
+            return false;
+        }
+
         self.history
             .iter()
             .rev()
