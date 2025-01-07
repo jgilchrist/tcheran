@@ -155,32 +155,26 @@ impl Game {
             .rev()
             .take(self.halfmove_clock as usize)
             .enumerate()
+            .skip(1)
+            .step_by(2)
         {
             // We saw a repeat
             if state.zobrist == self.zobrist {
+                // If we've got any repetitions solely during search, consider it a draw
+                if i < height as usize {
+                    return true;
+                }
+
                 repeats += 1;
+
+                // If the first repetition took place before we started searching
+                if repeats == 2 {
+                    return true;
+                }
             }
-
-            // If the first repeat happened before we started searching, we need to look for the third
-            // repetition
-            let is_before_root = (height - i as u8) < 0;
-
-            if !is_before_root && repeats == 1 {
-                return true;
-            }
-
-            if is_before_root && repeats >= 2 {
-                return true;
-            }
-
-            return false;
         }
 
-        self.history
-            .iter()
-            .rev()
-            .take(self.halfmove_clock as usize)
-            .any(|h| h.zobrist == self.zobrist)
+        false
     }
 
     pub fn is_stalemate_by_insufficient_material(&self) -> bool {
