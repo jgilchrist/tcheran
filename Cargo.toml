@@ -3,6 +3,7 @@ name = "engine"
 version = "5.1.0"
 edition = "2021"
 rust-version = "1.84"
+resolver = "3"
 
 [features]
 default = ["dep:clap", "dep:rayon", "dep:indicatif"]
