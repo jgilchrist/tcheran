@@ -51,6 +51,7 @@ type_complexity = "allow"
 let_and_return = "allow"
 significant_drop_tightening = "allow"
 enum_glob_use = "allow"
+large_stack_arrays = "allow"
 
 allow_attributes = "warn"
 allow_attributes_without_reason = "warn"
