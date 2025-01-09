@@ -1,4 +1,4 @@
-use super::PhasedEval;
+use super::{PhasedEval, Trace, TraceComponentIncr};
 use crate::chess::bitboard::Bitboard;
 use crate::chess::game::Game;
 use crate::chess::movegen::tables;
@@ -6,7 +6,6 @@ use crate::chess::player::Player;
 use crate::engine::eval::params::{
     ATTACKED_KING_SQUARES, BISHOP_MOBILITY, KNIGHT_MOBILITY, QUEEN_MOBILITY, ROOK_MOBILITY,
 };
-use crate::engine::eval::trace::Trace;
 
 fn mobility_and_opp_king_safety_for<const TRACE: bool>(
     game: &Game,

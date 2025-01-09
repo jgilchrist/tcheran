@@ -1,109 +1,76 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::piece::PieceKind;
 use crate::chess::square::Square;
-use crate::engine::eval::trace::Trace;
-use crate::engine::eval::PhasedEval;
-use crate::utils::tuner::tuner_eval::TunerEval;
-use std::fmt::Formatter;
+use crate::engine::eval::{Parameters, PhasedEval};
 
-pub struct ParametersBuilder {
-    parameters: [PhasedEval; Trace::SIZE],
-    idx: usize,
+pub fn print_param(f: &mut std::fmt::Formatter<'_>, p: PhasedEval) -> std::fmt::Result {
+    let (mg, eg) = (p.midgame().0, p.endgame().0);
+    write!(f, "s({mg: >5}, {eg: >5})")
 }
 
-impl ParametersBuilder {
-    pub fn new(parameters: &[PhasedEval; Trace::SIZE]) -> Self {
-        Self {
-            parameters: *parameters,
-            idx: 0,
+pub fn print_array(
+    f: &mut std::fmt::Formatter<'_>,
+    ps: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    let size = ps.len();
+    writeln!(f, "pub const {name}: [PhasedEval; {size}] = [")?;
+
+    for param in ps {
+        write!(f, "    ")?;
+        print_param(f, *param)?;
+        writeln!(f, ",")?;
+    }
+
+    writeln!(f, "];\n")?;
+
+    Ok(())
+}
+
+pub fn print_pst(
+    f: &mut std::fmt::Formatter<'_>,
+    pst: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    assert_eq!(pst.len(), Square::N);
+
+    writeln!(f, "pub const {name}: PieceSquareTableDefinition = [")?;
+
+    for rank in (0..8).rev() {
+        write!(f, "    [")?;
+
+        for file in 0..8 {
+            let idx = Square::from_idxs(file, rank).array_idx();
+            print_param(f, pst[idx])?;
+
+            if file != 7 {
+                write!(f, ", ")?;
+            }
         }
+
+        writeln!(f, "],")?;
     }
 
-    pub fn copy_to(mut self, ps: &mut [PhasedEval]) -> Self {
-        ps.copy_from_slice(&self.parameters[self.idx..self.idx + ps.len()]);
-        self.idx += ps.len();
-        self
-    }
+    writeln!(f, "];\n")?;
+
+    Ok(())
 }
 
-#[derive(Clone)]
-pub struct Parameters {
-    material: [PhasedEval; PieceKind::N],
+pub fn print_single(
+    f: &mut std::fmt::Formatter<'_>,
+    p: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    assert_eq!(p.len(), 1);
 
-    pawn_pst: [PhasedEval; Square::N],
-    knight_pst: [PhasedEval; Square::N],
-    bishop_pst: [PhasedEval; Square::N],
-    rook_pst: [PhasedEval; Square::N],
-    queen_pst: [PhasedEval; Square::N],
-    king_pst: [PhasedEval; Square::N],
+    write!(f, "pub const {name}: PhasedEval = ")?;
+    print_param(f, p[0])?;
+    writeln!(f, ";\n")?;
 
-    passed_pawn_pst: [PhasedEval; Square::N],
-
-    knight_mobility: [PhasedEval; 9],
-    bishop_mobility: [PhasedEval; 14],
-    rook_mobility: [PhasedEval; 15],
-    queen_mobility: [PhasedEval; 28],
-
-    attacked_king_squares: [PhasedEval; 9],
-
-    bishop_pair: [PhasedEval; 1],
+    Ok(())
 }
 
 impl Parameters {
-    pub fn new() -> Self {
-        Self {
-            material: [PhasedEval::ZERO; PieceKind::N],
-
-            pawn_pst: [PhasedEval::ZERO; Square::N],
-            knight_pst: [PhasedEval::ZERO; Square::N],
-            bishop_pst: [PhasedEval::ZERO; Square::N],
-            rook_pst: [PhasedEval::ZERO; Square::N],
-            queen_pst: [PhasedEval::ZERO; Square::N],
-            king_pst: [PhasedEval::ZERO; Square::N],
-
-            passed_pawn_pst: [PhasedEval::ZERO; Square::N],
-
-            knight_mobility: [PhasedEval::ZERO; 9],
-            bishop_mobility: [PhasedEval::ZERO; 14],
-            rook_mobility: [PhasedEval::ZERO; 15],
-            queen_mobility: [PhasedEval::ZERO; 28],
-
-            attacked_king_squares: [PhasedEval::ZERO; 9],
-
-            bishop_pair: [PhasedEval::ZERO; 1],
-        }
-    }
-
-    pub fn from_array(arr: &[TunerEval; Trace::SIZE]) -> Self {
-        let mut evals = [PhasedEval::ZERO; Trace::SIZE];
-
-        for (i, param) in arr.iter().enumerate() {
-            evals[i] = param.to_phased_eval();
-        }
-
-        let mut parameter_components = Self::new();
-
-        ParametersBuilder::new(&evals)
-            .copy_to(&mut parameter_components.material)
-            .copy_to(&mut parameter_components.pawn_pst)
-            .copy_to(&mut parameter_components.knight_pst)
-            .copy_to(&mut parameter_components.bishop_pst)
-            .copy_to(&mut parameter_components.rook_pst)
-            .copy_to(&mut parameter_components.queen_pst)
-            .copy_to(&mut parameter_components.king_pst)
-            .copy_to(&mut parameter_components.passed_pawn_pst)
-            .copy_to(&mut parameter_components.knight_mobility)
-            .copy_to(&mut parameter_components.bishop_mobility)
-            .copy_to(&mut parameter_components.rook_mobility)
-            .copy_to(&mut parameter_components.queen_mobility)
-            .copy_to(&mut parameter_components.attacked_king_squares)
-            .copy_to(&mut parameter_components.bishop_pair);
-
-        parameter_components.rebalance();
-
-        parameter_components
-    }
-
     fn rebalance_pst(
         pst: &mut [PhasedEval; Square::N],
         material: &mut [PhasedEval; PieceKind::N],
@@ -169,77 +136,5 @@ impl Parameters {
             PieceKind::Queen,
             Bitboard::EMPTY,
         );
-    }
-}
-
-fn print_param(f: &mut Formatter<'_>, p: PhasedEval) -> std::fmt::Result {
-    let (mg, eg) = (p.midgame().0, p.endgame().0);
-    write!(f, "s({mg: >5}, {eg: >5})")
-}
-
-fn print_array(f: &mut Formatter<'_>, ps: &[PhasedEval], name: &str) -> std::fmt::Result {
-    let size = ps.len();
-    writeln!(f, "pub const {name}: [PhasedEval; {size}] = [")?;
-
-    for param in ps {
-        write!(f, "    ")?;
-        print_param(f, *param)?;
-        writeln!(f, ",")?;
-    }
-
-    writeln!(f, "];\n")?;
-
-    Ok(())
-}
-
-fn print_pst(f: &mut Formatter<'_>, pst: &[PhasedEval; Square::N], name: &str) -> std::fmt::Result {
-    writeln!(f, "pub const {name}: PieceSquareTableDefinition = [")?;
-
-    for rank in (0..8).rev() {
-        write!(f, "    [")?;
-
-        for file in 0..8 {
-            let idx = Square::from_idxs(file, rank).array_idx();
-            print_param(f, pst[idx])?;
-
-            if file != 7 {
-                write!(f, ", ")?;
-            }
-        }
-
-        writeln!(f, "],")?;
-    }
-
-    writeln!(f, "];\n")?;
-
-    Ok(())
-}
-
-fn print_single(f: &mut Formatter<'_>, p: [PhasedEval; 1], name: &str) -> std::fmt::Result {
-    write!(f, "pub const {name}: PhasedEval = ")?;
-    print_param(f, p[0])?;
-    writeln!(f, ";\n")?;
-
-    Ok(())
-}
-
-impl std::fmt::Display for Parameters {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        print_array(f, &self.material, "PIECE_VALUES")?;
-        print_pst(f, &self.pawn_pst, "PAWNS")?;
-        print_pst(f, &self.knight_pst, "KNIGHTS")?;
-        print_pst(f, &self.bishop_pst, "BISHOPS")?;
-        print_pst(f, &self.rook_pst, "ROOKS")?;
-        print_pst(f, &self.queen_pst, "QUEENS")?;
-        print_pst(f, &self.king_pst, "KING")?;
-        print_pst(f, &self.passed_pawn_pst, "PASSED_PAWNS")?;
-        print_array(f, &self.knight_mobility, "KNIGHT_MOBILITY")?;
-        print_array(f, &self.bishop_mobility, "BISHOP_MOBILITY")?;
-        print_array(f, &self.rook_mobility, "ROOK_MOBILITY")?;
-        print_array(f, &self.queen_mobility, "QUEEN_MOBILITY")?;
-        print_array(f, &self.attacked_king_squares, "ATTACKED_KING_SQUARES")?;
-        print_single(f, self.bishop_pair, "BISHOP_PAIR_BONUS")?;
-
-        Ok(())
     }
 }

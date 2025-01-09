@@ -6,8 +6,7 @@ use crate::chess::player::{ByPlayer, Player};
 use crate::chess::square::{Rank, Square};
 use crate::engine::eval::params::PieceSquareTableDefinition;
 use crate::engine::eval::piece_square_tables::{flatten, flip, negate, PieceSquareTable};
-use crate::engine::eval::trace::Trace;
-use crate::engine::eval::{params, PhasedEval};
+use crate::engine::eval::{params, PhasedEval, Trace, TraceComponentIncr};
 
 pub fn eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
     let eval = eval_passed_pawns::<TRACE>(game, trace);

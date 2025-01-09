@@ -1,3 +1,5 @@
+#[macro_use]
+mod macros;
 mod material;
 mod mobility_and_king_safety;
 mod params;
@@ -5,7 +7,6 @@ pub mod pawn_structure;
 mod phased_eval;
 pub mod piece_square_tables;
 mod player_eval;
-pub mod trace;
 mod white_eval;
 
 use crate::chess::board::Board;
@@ -13,11 +14,28 @@ pub use player_eval::Eval;
 pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
-use crate::chess::piece::Piece;
+use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::player::ByPlayer;
+use crate::chess::player::Player;
 use crate::chess::square::Square;
 pub use crate::engine::eval::phased_eval::PhasedEval;
-use crate::engine::eval::trace::Trace;
+
+parameters!(
+    (material, PieceKind::N, array, "PIECE_VALUES"),
+    (pawn_pst, Square::N, pst, "PAWNS"),
+    (knight_pst, Square::N, pst, "KNIGHTS"),
+    (bishop_pst, Square::N, pst, "BISHOPS"),
+    (rook_pst, Square::N, pst, "ROOKS"),
+    (queen_pst, Square::N, pst, "QUEENS"),
+    (king_pst, Square::N, pst, "KING"),
+    (passed_pawn_pst, Square::N, pst, "PASSED_PAWNS"),
+    (knight_mobility, 9, array, "KNIGHT_MOBILITY"),
+    (bishop_mobility, 14, array, "BISHOP_MOBILITY"),
+    (rook_mobility, 15, array, "ROOK_MOBILITY"),
+    (queen_mobility, 28, array, "QUEEN_MOBILITY"),
+    (attacked_king_squares, 9, array, "ATTACKED_KING_SQUARES"),
+    (bishop_pair, 1, single, "BISHOP_PAIR_BONUS"),
+);
 
 pub fn init() {
     piece_square_tables::init();

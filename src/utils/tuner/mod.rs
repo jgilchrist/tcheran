@@ -3,16 +3,15 @@
 // which is in turn based on https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
 
 use crate::chess::game::Game;
-use crate::engine::eval::absolute_eval_with_trace;
-use crate::engine::eval::trace::{NonZeroCoefficient, Trace};
-use crate::utils::tuner::parameters::Parameters;
-use crate::utils::tuner::tuner_eval::TunerEval;
+use crate::engine::eval::{absolute_eval_with_trace, Parameters, Trace};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use std::path::Path;
 
-mod parameters;
+pub mod parameters;
 mod tuner_eval;
+
+pub use tuner_eval::TunerEval;
 
 enum Outcome {
     Win,
@@ -27,6 +26,18 @@ impl Outcome {
             Self::Draw => 0.5,
             Self::Loss => 0.0,
         }
+    }
+}
+
+#[derive(Clone)]
+pub struct NonZeroCoefficient {
+    pub idx: usize,
+    pub value: f32,
+}
+
+impl NonZeroCoefficient {
+    pub fn new(idx: usize, value: f32) -> Self {
+        Self { idx, value }
     }
 }
 
@@ -214,6 +225,7 @@ pub fn tune(path: &Path, epochs: usize) {
         epoch_progress.set_position((epoch + 1) as u64);
     }
 
-    let parameters = Parameters::from_array(&parameters);
+    let mut parameters = Parameters::from_array(&parameters);
+    parameters.rebalance();
     println!("{}", &parameters);
 }
