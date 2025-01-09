@@ -132,7 +132,7 @@ impl MovePicker {
 
             if let Some(killer1) = ctx.killer_moves.get_0(plies) {
                 for i in self.first_quiet..self.moves.len() {
-                    if self.moves.get(i).map_or(false, |m| *m == killer1) {
+                    if self.moves.get(i).is_some_and(|m| *m == killer1) {
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
@@ -149,7 +149,7 @@ impl MovePicker {
 
             if let Some(killer2) = ctx.killer_moves.get_1(plies) {
                 for i in self.first_quiet..self.moves.len() {
-                    if self.moves.get(i).map_or(false, |m| *m == killer2) {
+                    if self.moves.get(i).is_some_and(|m| *m == killer2) {
                         self.moves.swap(self.first_quiet, i);
                         self.first_quiet += 1;
 
@@ -176,7 +176,7 @@ impl MovePicker {
             if let Some(previous_move) = game.history.last().and_then(|h| h.mv) {
                 if let Some(counter_move) = ctx.countermove_table.get(game.player, previous_move) {
                     for i in self.first_quiet..self.moves.len() {
-                        if self.moves.get(i).map_or(false, |m| *m == counter_move) {
+                        if self.moves.get(i).is_some_and(|m| *m == counter_move) {
                             self.moves.swap(self.first_quiet, i);
                             self.first_quiet += 1;
 
