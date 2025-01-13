@@ -1,6 +1,6 @@
 use crate::chess::bitboard::{bitboards, Bitboard};
 use crate::chess::piece::PieceKind;
-use crate::chess::square::Square;
+use crate::chess::square::{File, Rank, Square};
 use crate::engine::eval::{Parameters, PhasedEval};
 
 pub fn print_param(f: &mut std::fmt::Formatter<'_>, p: PhasedEval) -> std::fmt::Result {
@@ -36,14 +36,14 @@ pub fn print_pst(
 
     writeln!(f, "pub const {name}: PieceSquareTableDefinition = [")?;
 
-    for rank in (0..8).rev() {
+    for rank in Rank::ALL.iter().rev() {
         write!(f, "    [")?;
 
-        for file in 0..8 {
-            let idx = Square::from_idxs(file, rank).array_idx();
+        for file in File::ALL {
+            let idx = Square::from_file_and_rank(file, *rank).array_idx();
             print_param(f, pst[idx])?;
 
-            if file != 7 {
+            if file != File::H {
                 write!(f, ", ")?;
             }
         }

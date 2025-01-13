@@ -25,7 +25,18 @@ pub enum File {
 }
 
 impl File {
-    pub const N: usize = 8;
+    pub const ALL: [Self; 8] = [
+        Self::A,
+        Self::B,
+        Self::C,
+        Self::D,
+        Self::E,
+        Self::F,
+        Self::G,
+        Self::H,
+    ];
+
+    pub const N: usize = Self::ALL.len();
 
     pub fn from_idx(idx: u8) -> Self {
         debug_assert!(idx < 8);
@@ -111,7 +122,18 @@ pub enum Rank {
 }
 
 impl Rank {
-    pub const N: usize = 8;
+    pub const ALL: [Self; 8] = [
+        Self::R1,
+        Self::R2,
+        Self::R3,
+        Self::R4,
+        Self::R5,
+        Self::R6,
+        Self::R7,
+        Self::R8,
+    ];
+
+    pub const N: usize = Self::ALL.len();
 
     #[inline(always)]
     pub fn from_idx(idx: u8) -> Self {
