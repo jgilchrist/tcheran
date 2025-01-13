@@ -17,6 +17,9 @@ generate-fathom-bindings:
 run:
 	@cargo run --release
 
+tune datafile:
+	@cargo run --release -- tune {{datafile}}
+
 release:
 	@cargo build --release --features release
 	@RUSTFLAGS='-C target-feature=+avx2' cargo build --release --features release --target x86_64-pc-windows-gnu
