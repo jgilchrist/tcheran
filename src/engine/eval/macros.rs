@@ -4,7 +4,7 @@ macro_rules! parameters {
             ($param:ident, $size:expr, $type:ident, $name:expr)
         ),* $(,)?
     ) => {
-        #[cfg(not(feature = "release"))]
+        #[cfg(feature = "tuner")]
         #[derive(Clone)]
         pub struct Parameters {
             $(
@@ -12,7 +12,7 @@ macro_rules! parameters {
             )*
         }
 
-        #[cfg(not(feature = "release"))]
+        #[cfg(feature = "tuner")]
         impl Parameters {
             pub fn new() -> Self {
                 Self {
@@ -43,7 +43,7 @@ macro_rules! parameters {
             }
         }
 
-        #[cfg(not(feature = "release"))]
+        #[cfg(feature = "tuner")]
         impl std::fmt::Display for Parameters {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 $(
@@ -97,7 +97,7 @@ macro_rules! parameters {
         }
 
         impl Trace {
-            #[cfg(not(feature = "release"))]
+            #[cfg(feature = "tuner")]
             pub const SIZE: usize = size_of::<Self>() / size_of::<TraceComponent>();
 
             pub fn new() -> Self {
@@ -108,7 +108,7 @@ macro_rules! parameters {
                 }
             }
 
-            #[cfg(not(feature = "release"))]
+            #[cfg(feature = "tuner")]
             #[expect(unused_assignments, reason = "The final idx value will never be used")]
             #[expect(clippy::cast_precision_loss, reason = "known cast from i32 to f32")]
             pub fn non_zero_coefficients(&self) -> Vec<crate::utils::tuner::NonZeroCoefficient> {

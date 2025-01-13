@@ -1,6 +1,5 @@
 use crate::engine::uci;
 use crate::engine::uci::UciInputMode;
-use crate::utils;
 use clap::{Parser, Subcommand};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
@@ -35,9 +34,16 @@ pub fn uci_command() -> ExitCode {
     }
 }
 
+#[cfg(feature = "tuner")]
 pub fn tune_command(file: &Path, epochs: usize) -> ExitCode {
-    utils::tuner::tune(file, epochs);
+    crate::utils::tuner::tune(file, epochs);
     ExitCode::SUCCESS
+}
+
+#[cfg(not(feature = "tuner"))]
+pub fn tune_command(_file: &Path, _epochs: usize) -> ExitCode {
+    eprintln!("Tuning requires the 'tuner' feature to be enabled");
+    ExitCode::FAILURE
 }
 
 pub fn run() -> ExitCode {

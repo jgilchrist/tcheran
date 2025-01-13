@@ -6,7 +6,8 @@ rust-version = "1.84"
 resolver = "3"
 
 [features]
-default = ["dep:clap", "dep:rayon", "dep:indicatif"]
+default = ["dep:clap"]
+tuner = ["dep:rayon", "dep:indicatif"]
 release = []
 
 [build-dependencies]
