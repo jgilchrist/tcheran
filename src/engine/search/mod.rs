@@ -186,7 +186,6 @@ impl Reporter for NullReporter {
 pub struct CapturingReporter {
     pub score: Option<SearchScore>,
     pub nodes: u64,
-    pub nps: u64,
 }
 
 impl CapturingReporter {
@@ -194,7 +193,6 @@ impl CapturingReporter {
         Self {
             score: None,
             nodes: 0,
-            nps: 0,
         }
     }
 }
@@ -205,7 +203,6 @@ impl Reporter for CapturingReporter {
     fn report_search_progress(&mut self, _: &Game, stats: SearchInfo) {
         self.score = Some(stats.score);
         self.nodes = stats.stats.nodes;
-        self.nps = stats.stats.nodes_per_second;
     }
 
     fn best_move(&self, _: &Game, _: Move) {}

@@ -19,6 +19,7 @@ use self::{
     responses::{IdParam, UciResponse},
 };
 
+mod bench;
 pub mod commands;
 mod r#move;
 mod options;
@@ -29,9 +30,9 @@ use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::engine::search::time_control::{Control, TimeStrategy};
 use crate::engine::search::{
-    CapturingReporter, Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore,
-    TimeControl,
+    Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore, TimeControl,
 };
+use crate::engine::uci::bench::bench;
 use crate::engine::util::sync::LockLatch;
 pub use r#move::UciMove;
 
@@ -438,28 +439,11 @@ impl Uci {
             UciCommand::PonderHit => {}
             // For OpenBench to understand NPS values for different workers
             UciCommand::Bench => {
-                let mut bench_reporter = CapturingReporter::new();
+                let started_at = Instant::now();
+                let nodes = bench(10);
+                let time_taken = started_at.elapsed();
 
-                let persistent_state = self.persistent_state.clone();
-                let mut persistent_state_handle = persistent_state.lock().unwrap();
-                persistent_state_handle.tt.resize(16);
-
-                let game = Game::new();
-                let (mut time_strategy, _) =
-                    TimeStrategy::new(&game, &TimeControl::Infinite, &self.options);
-                let search_restrictions = SearchRestrictions { depth: Some(11) };
-
-                let _ = search::search(
-                    &game,
-                    &mut persistent_state_handle,
-                    &mut time_strategy,
-                    &search_restrictions,
-                    &self.options,
-                    &mut bench_reporter,
-                );
-
-                let nodes = bench_reporter.nodes;
-                let nps = bench_reporter.nps;
+                let nps = util::metrics::nodes_per_second(nodes, time_taken);
 
                 println!("{nodes} nodes {nps} nps");
             }

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Add a full set of bench positions for 'bench' command
+
 ## [5.1]
 
 * Evaluate passed pawns (38.30 +- 13.27)
