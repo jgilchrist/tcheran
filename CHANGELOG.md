@@ -6,6 +6,7 @@
 
 * Add a full set of bench positions for 'bench' command
 * When in a tablebase position, report the tablebase PV line
+* Don't panic when SyzygyPath is set but is empty
 
 ## [5.1]
 

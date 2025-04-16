@@ -247,7 +247,13 @@ impl Uci {
                         options::MoveOverheadOption::set(&mut self.options, value)
                     }
                     options::SyzygyPath::NAME => {
-                        let syzygy_path = options::SyzygyPath::set(&mut self.options, value);
+                        let syzygy_path_result = options::SyzygyPath::set(&mut self.options, value);
+
+                        let Ok(syzygy_path) = syzygy_path_result else {
+                            let error = syzygy_path_result.unwrap_err();
+                            self.reporter.generic_report(&format!("warning: {error}"));
+                            return Ok(ExecuteResult::KeepGoing);
+                        };
 
                         if let Ok(mut state_handle) = self.persistent_state.try_lock() {
                             state_handle.tablebase.set_paths(&syzygy_path);
