@@ -198,11 +198,11 @@ mod tests {
         ];
 
         for (fen, ucimv, threshold, result) in SEE_SUITE {
-            println!("{}", fen);
+            println!("{fen}");
             let game = Game::from_fen(fen).unwrap();
             let moves = game.moves().to_vec();
 
-            let mv = moves.iter().find(|m| format!("{:?}", m) == ucimv).unwrap();
+            let mv = moves.iter().find(|m| format!("{m:?}") == ucimv).unwrap();
 
             assert_eq!(see(&game, *mv, Eval(threshold)), result);
         }
@@ -289,11 +289,11 @@ mod tests {
         ];
 
         for (fen, ucimv, threshold, result) in suite {
-            println!("{}", fen);
+            println!("{fen}");
             let game = Game::from_fen(fen).unwrap();
             let moves = game.moves().to_vec();
 
-            let mv = moves.iter().find(|m| format!("{:?}", m) == ucimv).unwrap();
+            let mv = moves.iter().find(|m| format!("{m:?}") == ucimv).unwrap();
 
             assert_eq!(see(&game, *mv, Eval(threshold)), result);
         }

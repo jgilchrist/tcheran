@@ -79,7 +79,7 @@ impl TimeStrategy {
                     max_time_per_move,
                 );
             }
-        };
+        }
 
         let force_stop = Arc::new(AtomicBool::new(false));
 

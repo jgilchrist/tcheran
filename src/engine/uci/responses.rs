@@ -158,7 +158,7 @@ impl std::fmt::Display for UciResponse {
                         write!(f, " default {default}")?;
                     }
                     UciOptionType::Button => {}
-                };
+                }
 
                 match def {
                     UciOptionType::Spin { min, max, .. } => write!(f, " min {min} max {max}")?,

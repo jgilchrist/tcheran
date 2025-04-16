@@ -118,7 +118,7 @@ impl MovePicker {
                 }
             } else {
                 self.stage = GenQuiets;
-            };
+            }
         }
 
         if self.stage == GenQuiets {

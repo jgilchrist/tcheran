@@ -117,16 +117,16 @@ fn generate_sliding_occupancies(square: Square, directions: &[Direction]) -> Bit
     let mut end_mask = Bitboard::EMPTY;
     if !bitboards::A_FILE.contains(square) {
         end_mask |= bitboards::A_FILE;
-    };
+    }
     if !bitboards::H_FILE.contains(square) {
         end_mask |= bitboards::H_FILE;
-    };
+    }
     if !bitboards::RANK_1.contains(square) {
         end_mask |= bitboards::RANK_1;
-    };
+    }
     if !bitboards::RANK_8.contains(square) {
         end_mask |= bitboards::RANK_8;
-    };
+    }
 
     for direction in directions {
         let mut sq = square.bb();
