@@ -1,3 +1,4 @@
+use nom::Parser;
 use std::collections::HashSet;
 
 use crate::chess::{
@@ -18,7 +19,7 @@ use nom::{
     character::complete::{char, one_of, space1},
     combinator::{eof, map, value},
     multi::many1,
-    sequence::{pair, preceded, tuple},
+    sequence::{pair, preceded},
     IResult,
 };
 
@@ -26,7 +27,7 @@ use nom::{
 pub struct FenRank(Vec<Option<Piece>>);
 
 fn fen_piece(input: &str) -> IResult<&str, Piece> {
-    let (input, piece) = one_of("RNBQKPrnbqkp")(input)?;
+    let (input, piece) = one_of("RNBQKPrnbqkp").parse(input)?;
 
     Ok((
         input,
@@ -52,21 +53,23 @@ fn fen_empty_squares(input: &str) -> IResult<&str, Vec<Option<Piece>>> {
     map(one_of("12345678"), |digit| {
         let sq: Option<Piece> = None;
         vec![sq; digit.to_string().parse::<usize>().unwrap()]
-    })(input)
+    })
+    .parse(input)
 }
 
 fn fen_line(input: &str) -> IResult<&str, FenRank> {
     let (input, squares) = many1(alt((
         map(fen_piece, |p| vec![Some(p); 1]),
         fen_empty_squares,
-    )))(input)?;
+    )))
+    .parse(input)?;
 
     Ok((input, FenRank(squares.concat())))
 }
 
 fn fen_position(input: &str) -> IResult<&str, Board> {
     let (input, board) = map(
-        tuple((
+        (
             fen_line,
             preceded(char('/'), fen_line),
             preceded(char('/'), fen_line),
@@ -75,7 +78,7 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
             preceded(char('/'), fen_line),
             preceded(char('/'), fen_line),
             preceded(char('/'), fen_line),
-        )),
+        ),
         |(line8, line7, line6, line5, line4, line3, line2, line1)| {
             let mut all_pieces: Vec<Option<Piece>> = Vec::new();
             all_pieces.extend(line1.0);
@@ -93,7 +96,8 @@ fn fen_position(input: &str) -> IResult<&str, Board> {
 
             pieces_array.try_into().unwrap()
         },
-    )(input)?;
+    )
+    .parse(input)?;
 
     Ok((input, board))
 }
@@ -102,7 +106,8 @@ fn fen_color(input: &str) -> IResult<&str, Player> {
     alt((
         value(Player::White, tag("w")),
         value(Player::Black, tag("b")),
-    ))(input)
+    ))
+    .parse(input)
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -114,7 +119,7 @@ enum FenCastleRight {
 }
 
 fn fen_castle_right(input: &str) -> IResult<&str, FenCastleRight> {
-    let (input, piece) = one_of("KQkq")(input)?;
+    let (input, piece) = one_of("KQkq").parse(input)?;
 
     Ok((
         input,
@@ -148,11 +153,12 @@ fn fen_castling(input: &str) -> IResult<&str, ByPlayer<CastleRights>> {
                 },
             )
         }),
-    ))(input)
+    ))
+    .parse(input)
 }
 
 fn fen_file(input: &str) -> IResult<&str, File> {
-    let (input, file) = one_of("abcdefgh")(input)?;
+    let (input, file) = one_of("abcdefgh").parse(input)?;
 
     Ok((
         input,
@@ -171,7 +177,7 @@ fn fen_file(input: &str) -> IResult<&str, File> {
 }
 
 fn fen_rank(input: &str) -> IResult<&str, Rank> {
-    let (input, rank) = one_of("12345678")(input)?;
+    let (input, rank) = one_of("12345678").parse(input)?;
 
     Ok((
         input,
@@ -192,11 +198,12 @@ fn fen_rank(input: &str) -> IResult<&str, Rank> {
 fn fen_square(input: &str) -> IResult<&str, Square> {
     map(pair(fen_file, fen_rank), |(file, rank)| {
         Square::from_file_and_rank(file, rank)
-    })(input)
+    })
+    .parse(input)
 }
 
 fn fen_en_passant_target(input: &str) -> IResult<&str, Option<Square>> {
-    alt((value(None, tag("-")), map(fen_square, Some)))(input)
+    alt((value(None, tag("-")), map(fen_square, Some))).parse(input)
 }
 
 fn fen_halfmove_clock(input: &str) -> IResult<&str, u32> {
@@ -210,16 +217,17 @@ fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
 fn fen_parser(input: &str) -> IResult<&str, Game> {
     let (input, (board, player, castle_rights, en_passant_target, halfmove_clock, fullmove_number)) =
         terminated(
-            tuple((
+            (
                 fen_position,
                 preceded(space1, fen_color),
                 preceded(space1, fen_castling),
                 preceded(space1, fen_en_passant_target),
                 opt(preceded(space1, fen_halfmove_clock)),
                 opt(preceded(space1, fen_fullmove_number)),
-            )),
-            tuple((space0, eof)),
-        )(input)?;
+            ),
+            (space0, eof),
+        )
+        .parse(input)?;
 
     let halfmove_clock = halfmove_clock.unwrap_or(0);
     let fullmove_number = fullmove_number.unwrap_or(1);
