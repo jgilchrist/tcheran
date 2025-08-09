@@ -196,13 +196,10 @@ version = "5.1.0"
 dependencies = [
  "arrayvec",
  "cc",
- "clap",
  "colored",
- "indicatif",
  "nom",
  "paste",
  "rand",
- "rayon",
 ]
 
 [[package]]
@@ -406,6 +403,16 @@ dependencies = [
  "proc-macro2",
  "quote",
  "unicode-ident",
+]
+
+[[package]]
+name = "tuner"
+version = "5.1.0"
+dependencies = [
+ "clap",
+ "engine",
+ "indicatif",
+ "rayon",
 ]
 
 [[package]]

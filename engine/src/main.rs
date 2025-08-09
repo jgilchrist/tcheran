@@ -12,12 +12,6 @@ fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
     }
 }
 
-#[cfg(not(feature = "release"))]
-fn run() -> ExitCode {
-    engine::utils::cli::run()
-}
-
-#[cfg(feature = "release")]
 fn run() -> ExitCode {
     use engine::engine::uci::UciInputMode;
 

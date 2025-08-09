@@ -1,7 +1,7 @@
-use crate::chess::bitboard::{bitboards, Bitboard};
-use crate::chess::piece::PieceKind;
-use crate::chess::square::Square;
-use crate::engine::eval::{Parameters, PhasedEval};
+use engine::chess::bitboard::{bitboards, Bitboard};
+use engine::chess::piece::PieceKind;
+use engine::chess::square::Square;
+use engine::engine::eval::{Parameters, PhasedEval};
 
 pub trait RebalanceParameters {
     fn rebalance(&mut self);

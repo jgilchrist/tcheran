@@ -1,38 +1,13 @@
-[package]
-name = "engine"
+[workspace]
+resolver = "3"
+members = ["engine", "tools/tuner"]
+
+[workspace.package]
 version = "5.1.0"
 edition = "2021"
 rust-version = "1.85"
-resolver = "3"
 
-[features]
-default = ["dep:clap"]
-tuner = ["dep:rayon", "dep:indicatif"]
-release = []
-
-[lib]
-path = "src/lib.rs"
-
-[[bin]]
-name = "engine"
-path = "src/main.rs"
-
-[build-dependencies]
-cc = "1.2.2"
-
-[dependencies]
-arrayvec = "0.7.6"
-clap = { version = "4.5.21", features = ["derive"], optional = true }
-colored = "3.0.0"
-indicatif = { version = "0.18.0", optional = true }
-nom = "8.0.0"
-rand = "0.9.2"
-rayon = { version = "1.8.1", optional = true }
-
-[dev-dependencies]
-paste = "1.0.15"
-
-[lints.rust]
+[workspace.lints.rust]
 static_mut_refs = "allow"
 
 future_incompatible = { level = "warn", priority = -1 }
@@ -40,7 +15,7 @@ let_underscore = { level = "warn", priority = -1 }
 nonstandard_style = { level = "warn", priority = -1 }
 rust_2018_idioms = { level = "warn", priority = -1 }
 
-[lints.clippy]
+[workspace.lints.clippy]
 pedantic = { level = "warn", priority = -1 }
 nursery = { level = "warn", priority = -1 }
 

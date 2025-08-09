@@ -2,15 +2,13 @@
 // This code borrows heavily from https://github.com/GediminasMasaitis/texel-tuner
 // which is in turn based on https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
 
-use crate::chess::game::Game;
-use crate::engine::eval::tuning::{NonZeroCoefficient, TunerEval, PHASE_COUNT_MAX};
-use crate::engine::eval::{absolute_eval_with_trace, Parameters, Trace};
-use crate::utils::tuner::parameters::RebalanceParameters;
+use crate::parameters::RebalanceParameters;
+use engine::chess::game::Game;
+use engine::engine::eval::tuning::{NonZeroCoefficient, TunerEval, PHASE_COUNT_MAX};
+use engine::engine::eval::{absolute_eval_with_trace, Parameters, Trace};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use std::path::Path;
-
-pub mod parameters;
 
 enum Outcome {
     Win,

@@ -10,8 +10,8 @@ build:
 	@cargo build --release
 
 generate-fathom-bindings:
-	bindgen src/engine/tablebases/fathom/src/tbprobe.h \
-		-o src/engine/tablebases/bindings.rs \
+	bindgen engine/src/engine/tablebases/fathom/src/tbprobe.h \
+		-o engine/src/engine/tablebases/bindings.rs \
 		--no-layout-tests
 
 run:
