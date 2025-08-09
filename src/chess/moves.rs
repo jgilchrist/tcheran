@@ -192,7 +192,6 @@ impl Move {
         (self.data() & CAPTURE_BIT_MASK) == CAPTURE_BIT_MASK
     }
 
-    #[expect(unused, reason = "Not yet used")]
     #[inline]
     pub fn is_promotion(self) -> bool {
         (self.data() & PROMOTION_BIT_MASK) == PROMOTION_BIT_MASK

@@ -8,7 +8,5 @@ const PROMOTION: char = '=';
 const CHECK: char = '+';
 const CHECKMATE: char = '#';
 
-#[expect(unused, reason = "Unused")]
 pub use san_parser::parse_move;
-
 pub use san_writer::format_move;

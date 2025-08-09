@@ -2,8 +2,8 @@ use crate::chess::{
     piece::PromotionPieceKind,
     square::{File, Rank, Square},
 };
+use crate::engine::uci::commands::{DebugCommand, Position};
 use crate::engine::uci::UciMove;
-use crate::uci::commands::{DebugCommand, Position};
 use nom::bytes::complete::take_until;
 use nom::character::complete::alpha1;
 use nom::combinator::rest;

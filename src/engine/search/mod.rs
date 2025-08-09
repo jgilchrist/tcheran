@@ -84,7 +84,6 @@ pub struct SearchContext<'s> {
 
     pub time_control: &'s mut TimeStrategy,
 
-    #[expect(unused, reason = "No options currently used in search")]
     pub options: &'s EngineOptions,
     pub search_restrictions: &'s SearchRestrictions,
 
@@ -175,7 +174,6 @@ pub trait Reporter {
     fn best_move(&self, game: &Game, mv: Move);
 }
 
-#[expect(unused, reason = "Useful for debugging")]
 pub struct NullReporter;
 
 impl Reporter for NullReporter {

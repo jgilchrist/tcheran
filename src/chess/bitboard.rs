@@ -454,11 +454,9 @@ pub mod bitboards {
 
     pub const RANK_1: Bitboard = Bitboard::new(A1_BB.0 | B1_BB.0 | C1_BB.0 | D1_BB.0 | E1_BB.0 | F1_BB.0 | G1_BB.0 | H1_BB.0);
     pub const RANK_2: Bitboard = Bitboard::new(A2_BB.0 | B2_BB.0 | C2_BB.0 | D2_BB.0 | E2_BB.0 | F2_BB.0 | G2_BB.0 | H2_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const RANK_3: Bitboard = Bitboard::new(A3_BB.0 | B3_BB.0 | C3_BB.0 | D3_BB.0 | E3_BB.0 | F3_BB.0 | G3_BB.0 | H3_BB.0);
     pub const RANK_4: Bitboard = Bitboard::new(A4_BB.0 | B4_BB.0 | C4_BB.0 | D4_BB.0 | E4_BB.0 | F4_BB.0 | G4_BB.0 | H4_BB.0);
     pub const RANK_5: Bitboard = Bitboard::new(A5_BB.0 | B5_BB.0 | C5_BB.0 | D5_BB.0 | E5_BB.0 | F5_BB.0 | G5_BB.0 | H5_BB.0);
-    #[expect(unused, reason = "Unused")]
     pub const RANK_6: Bitboard = Bitboard::new(A6_BB.0 | B6_BB.0 | C6_BB.0 | D6_BB.0 | E6_BB.0 | F6_BB.0 | G6_BB.0 | H6_BB.0);
     pub const RANK_7: Bitboard = Bitboard::new(A7_BB.0 | B7_BB.0 | C7_BB.0 | D7_BB.0 | E7_BB.0 | F7_BB.0 | G7_BB.0 | H7_BB.0);
     pub const RANK_8: Bitboard = Bitboard::new(A8_BB.0 | B8_BB.0 | C8_BB.0 | D8_BB.0 | E8_BB.0 | F8_BB.0 | G8_BB.0 | H8_BB.0);
@@ -476,7 +474,6 @@ pub mod bitboards {
         A2_BB.0 | C2_BB.0 | E2_BB.0 | G2_BB.0 |
         B1_BB.0 | D1_BB.0 | F1_BB.0 | H1_BB.0 );
 
-    #[expect(unused, reason = "Unused")]
     pub const DARK_SQUARES: Bitboard = Bitboard::new(
         B8_BB.0 | D8_BB.0 | F8_BB.0 | H8_BB.0 |
         A7_BB.0 | C7_BB.0 | E7_BB.0 | G7_BB.0 |

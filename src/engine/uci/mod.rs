@@ -9,8 +9,6 @@ use crate::chess::{perft, san};
 
 use crate::engine::options::EngineOptions;
 use crate::engine::{eval, search, uci, util};
-use crate::uci::commands::DebugCommand;
-use crate::uci::options::UciOption;
 use crate::ENGINE_NAME;
 
 use self::responses::{InfoFields, InfoScore};
@@ -33,6 +31,8 @@ use crate::engine::search::{
     Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore, TimeControl,
 };
 use crate::engine::uci::bench::bench;
+use crate::engine::uci::commands::DebugCommand;
+use crate::engine::uci::options::UciOption;
 use crate::engine::util::sync::LockLatch;
 pub use r#move::UciMove;
 

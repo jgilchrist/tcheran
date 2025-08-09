@@ -10,6 +10,13 @@ default = ["dep:clap"]
 tuner = ["dep:rayon", "dep:indicatif"]
 release = []
 
+[lib]
+path = "src/lib.rs"
+
+[[bin]]
+name = "engine"
+path = "src/main.rs"
+
 [build-dependencies]
 cc = "1.2.2"
 
@@ -54,6 +61,7 @@ let_and_return = "allow"
 significant_drop_tightening = "allow"
 enum_glob_use = "allow"
 large_stack_arrays = "allow"
+new_without_default = "allow"
 
 allow_attributes = "warn"
 allow_attributes_without_reason = "warn"

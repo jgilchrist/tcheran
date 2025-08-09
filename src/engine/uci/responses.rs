@@ -1,8 +1,8 @@
 use std::fmt::Formatter;
 use std::time::Duration;
 
-use crate::uci::options::{UciOption, UciOptionType};
-use crate::uci::UciMove;
+use crate::engine::uci::options::{UciOption, UciOptionType};
+use crate::engine::uci::UciMove;
 
 #[derive(Debug)]
 pub(super) enum InfoScore {

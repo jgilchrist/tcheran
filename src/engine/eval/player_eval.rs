@@ -84,7 +84,6 @@ impl Eval {
         Self(adjusted_value)
     }
 
-    #[expect(unused, reason = "Unused")]
     pub fn to_white_eval(self, player: Player) -> WhiteEval {
         match player {
             Player::White => WhiteEval(self.0),

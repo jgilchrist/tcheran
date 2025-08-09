@@ -1,38 +1,6 @@
-mod chess;
-mod engine;
-
-#[cfg(not(feature = "release"))]
-mod utils;
-
-#[cfg(test)]
-mod tests;
-
-use engine::uci;
-use engine::util::log;
+use engine::engine::util::log;
 use std::panic::PanicHookInfo;
 use std::process::ExitCode;
-
-pub const ENGINE_NAME: &str = "Tcheran";
-
-#[cfg(all(feature = "default", feature = "release"))]
-compile_error!("features \"default\" and \"release\" cannot be enabled simultaneously");
-
-pub fn engine_version() -> String {
-    let cargo_version = env!("CARGO_PKG_VERSION");
-    let version = cargo_version.strip_suffix(".0").unwrap();
-    let dev_suffix = if cfg!(feature = "release") {
-        ""
-    } else {
-        "-dev"
-    };
-
-    format!("v{version}{dev_suffix}")
-}
-
-pub fn init() {
-    chess::init();
-    engine::init();
-}
 
 fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
     if let Some(s) = info.payload().downcast_ref::<&str>() {
@@ -46,14 +14,12 @@ fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
 
 #[cfg(not(feature = "release"))]
 fn run() -> ExitCode {
-    use utils::cli;
-
-    cli::run()
+    engine::utils::cli::run()
 }
 
 #[cfg(feature = "release")]
 fn run() -> ExitCode {
-    use crate::engine::uci::UciInputMode;
+    use engine::engine::uci::UciInputMode;
 
     let args = std::env::args().collect::<Vec<_>>();
     let uci_input_mode = match args.len() {
@@ -79,7 +45,7 @@ fn run() -> ExitCode {
         }
     };
 
-    let result = uci::uci(uci_input_mode);
+    let result = engine::engine::uci::uci(uci_input_mode);
 
     match result {
         Ok(()) => ExitCode::SUCCESS,
@@ -98,6 +64,6 @@ fn main() -> ExitCode {
         log::crashlog(panic_message);
     }));
 
-    init();
+    engine::init();
     run()
 }
