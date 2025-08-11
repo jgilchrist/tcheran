@@ -472,8 +472,8 @@ impl Uci {
                     return Ok(false);
                 }
             }
-            Err(e) => {
-                eprintln!("{e}");
+            Err(()) => {
+                eprintln!("Invalid command");
             }
         }
 

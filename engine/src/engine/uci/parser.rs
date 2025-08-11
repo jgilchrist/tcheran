@@ -4,399 +4,317 @@ use crate::chess::{
 };
 use crate::engine::uci::UciMove;
 use crate::engine::uci::commands::{DebugCommand, Position};
-use nom::bytes::complete::take_until;
-use nom::character::complete::alpha1;
-use nom::combinator::rest;
-use nom::{
-    IResult, Parser,
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{one_of, space0, space1},
-    combinator::{eof, map, opt, value},
-    error::ParseError,
-    multi::{fold_many0, separated_list1},
-    sequence::{pair, preceded},
-};
 use std::time::Duration;
 
 use super::commands::{GoCmdArguments, UciCommand};
 
-// FIXME: Don't accept `isreadymorechars` as `IsReady`
-
-fn boolean(input: &str) -> IResult<&str, bool> {
-    alt((value(true, tag("on")), value(false, tag("off")))).parse(input)
-}
-
-fn uci_file(input: &str) -> IResult<&str, File> {
-    let (input, file) = one_of("abcdefgh").parse(input)?;
-
-    Ok((
-        input,
-        match file {
-            'a' => File::A,
-            'b' => File::B,
-            'c' => File::C,
-            'd' => File::D,
-            'e' => File::E,
-            'f' => File::F,
-            'g' => File::G,
-            'h' => File::H,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn uci_rank(input: &str) -> IResult<&str, Rank> {
-    let (input, rank) = one_of("12345678").parse(input)?;
-
-    Ok((
-        input,
-        match rank {
-            '1' => Rank::R1,
-            '2' => Rank::R2,
-            '3' => Rank::R3,
-            '4' => Rank::R4,
-            '5' => Rank::R5,
-            '6' => Rank::R6,
-            '7' => Rank::R7,
-            '8' => Rank::R8,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn uci_square(input: &str) -> IResult<&str, Square> {
-    map(pair(uci_file, uci_rank), |(file, rank)| {
-        Square::from_file_and_rank(file, rank)
+fn boolean(input: &str) -> Result<bool, ()> {
+    Ok(match input {
+        "on" => true,
+        "off" => false,
+        _ => return Err(()),
     })
-    .parse(input)
 }
 
-fn uci_promotion(input: &str) -> IResult<&str, PromotionPieceKind> {
-    let (input, rank) = one_of("nbrq").parse(input)?;
-
-    Ok((
-        input,
-        match rank {
-            'n' => PromotionPieceKind::Knight,
-            'b' => PromotionPieceKind::Bishop,
-            'r' => PromotionPieceKind::Rook,
-            'q' => PromotionPieceKind::Queen,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn uci_move(input: &str) -> IResult<&str, UciMove> {
-    map(
-        (uci_square, uci_square, opt(uci_promotion)),
-        |(src, dst, promotion)| UciMove {
-            src,
-            dst,
-            promotion,
-        },
-    )
-    .parse(input)
-}
-
-pub fn uci_moves(input: &str) -> IResult<&str, Vec<UciMove>> {
-    separated_list1(space1, uci_move).parse(input)
-}
-
-fn command_without_arguments<'a, O, E: ParseError<&'a str>>(
-    cmd: &'a str,
-    map_argument_fn: impl FnMut(&'a str) -> O,
-) -> impl Parser<&'a str, Output = O, Error = E> {
-    map(tag(cmd), map_argument_fn)
-}
-
-fn command_with_argument<'a, OInner, O, E: ParseError<&'a str>>(
-    cmd: &'static str,
-    argument_combinator: impl Parser<&'a str, Output = OInner, Error = E>,
-    map_argument_fn: impl FnMut(OInner) -> O,
-) -> impl Parser<&'a str, Output = O, Error = E> {
-    map(
-        preceded(pair(tag(cmd), space1), argument_combinator),
-        map_argument_fn,
-    )
-}
-
-fn cmd_uci(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::Uci, pair(tag("uci"), eof)).parse(input)
-}
-
-fn cmd_debug(input: &str) -> IResult<&str, UciCommand> {
-    command_with_argument("debug", boolean, UciCommand::Debug).parse(input)
-}
-
-fn cmd_isready(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::IsReady, tag("isready")).parse(input)
-}
-
-fn cmd_setoption(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("setoption").parse(input)?;
-
-    let (input, _) = space1(input)?;
-
-    let (input, name) =
-        command_with_argument("name", take_until(" value"), |name| name).parse(input)?;
-
-    let (input, _) = space1(input)?;
-    let (input, _) = tag("value").parse(input)?;
-    let (input, _) = space1(input)?;
-
-    let (input, value) = rest(input)?;
-
-    Ok((
-        input,
-        UciCommand::SetOption {
-            name: name.to_string(),
-            value: value.to_string(),
-        },
-    ))
-}
-
-fn cmd_ucinewgame(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::UciNewGame, tag("ucinewgame")).parse(input)
-}
-
-fn cmd_position(input: &str) -> IResult<&str, UciCommand> {
-    fn position_arg(input: &str) -> IResult<&str, Position> {
-        alt((
-            value(Position::StartPos, tag("startpos")),
-            command_with_argument("fen", alt((take_until(" moves"), rest)), |fen| {
-                Position::Fen(fen.to_string())
-            }),
-        ))
-        .parse(input)
+fn uci_square(input: &str) -> Result<Square, ()> {
+    if input.len() != 2 {
+        return Err(());
     }
 
-    fn moves_arg(input: &str) -> IResult<&str, Vec<UciMove>> {
-        command_with_argument("moves", uci_moves, |moves| moves).parse(input)
+    let mut chars = input.chars();
+    let file = chars.next().unwrap();
+    let rank = chars.next().unwrap();
+
+    let file = match file {
+        'a' => File::A,
+        'b' => File::B,
+        'c' => File::C,
+        'd' => File::D,
+        'e' => File::E,
+        'f' => File::F,
+        'g' => File::G,
+        'h' => File::H,
+        _ => return Err(()),
+    };
+
+    let rank = match rank {
+        '1' => Rank::R1,
+        '2' => Rank::R2,
+        '3' => Rank::R3,
+        '4' => Rank::R4,
+        '5' => Rank::R5,
+        '6' => Rank::R6,
+        '7' => Rank::R7,
+        '8' => Rank::R8,
+        _ => return Err(()),
+    };
+
+    Ok(Square::from_file_and_rank(file, rank))
+}
+
+fn uci_promotion(input: &str) -> Result<PromotionPieceKind, ()> {
+    Ok(match input {
+        "n" => PromotionPieceKind::Knight,
+        "b" => PromotionPieceKind::Bishop,
+        "r" => PromotionPieceKind::Rook,
+        "q" => PromotionPieceKind::Queen,
+        _ => return Err(()),
+    })
+}
+
+fn uci_move(input: &str) -> Result<UciMove, ()> {
+    Ok(match input.len() {
+        len @ 4..=5 => {
+            let src = input.get(0..=1).map_or(Err(()), uci_square)?;
+            let dst = input.get(2..=3).map_or(Err(()), uci_square)?;
+
+            let promotion = if len == 5 {
+                let p = input.get(4..=4).unwrap();
+                Some(uci_promotion(p)?)
+            } else {
+                None
+            };
+
+            UciMove {
+                src,
+                dst,
+                promotion,
+            }
+        }
+        _ => return Err(()),
+    })
+}
+
+fn no_args_command(command: UciCommand, args: &[&str]) -> Result<UciCommand, ()> {
+    if !args.is_empty() {
+        return Err(());
     }
 
-    let (input, _) = tag("position").parse(input)?;
-
-    let (input, _) = space1(input)?;
-    let (input, pos) = position_arg(input)?;
-
-    let (input, _) = opt(space1).parse(input)?;
-    let (input, moves) = opt(moves_arg).parse(input)?;
-
-    Ok((
-        input,
-        UciCommand::Position {
-            position: pos,
-            moves: moves.unwrap_or_default(),
-        },
-    ))
+    Ok(command)
 }
 
-// Wraps a closure which modifies `GoCmdArguments`.
-struct GoCmdArgumentsModifyFn(Box<dyn FnOnce(&mut GoCmdArguments)>);
-impl GoCmdArgumentsModifyFn {
-    fn new(f: impl FnOnce(&mut GoCmdArguments) + 'static) -> Self {
-        Self(Box::new(f))
+fn cmd_debug(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.len() != 1 {
+        return Err(());
     }
+
+    let onoff = args[0];
+    let onoff = boolean(onoff)?;
+
+    Ok(UciCommand::Debug(onoff))
 }
 
-fn parse_duration(n: i64) -> Duration {
-    Duration::from_millis(n.max(0).try_into().unwrap())
+// Note that we intentionally don't
+fn cmd_setoption(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.is_empty() {
+        return Err(());
+    }
+
+    // The first argument must be 'name'
+    let name_arg = args[0];
+    if name_arg != "name" {
+        return Err(());
+    }
+
+    // All the tokens between 'name' and 'value' are the name
+    let value_idx = args.iter().position(|&t| t == "value");
+    let Some(value_idx) = value_idx else {
+        return Err(());
+    };
+
+    let name_tokens = &args[1..value_idx];
+    let value_tokens = &args[value_idx + 1..];
+
+    if name_tokens.is_empty() || value_tokens.is_empty() {
+        return Err(());
+    }
+
+    // Note that args containing multiple spaces between tokens will be reconstructed incorrectly here,
+    // but we shouldn't ever have examples of that in practice so it's fine.
+    Ok(UciCommand::SetOption {
+        name: name_tokens.join(" "),
+        value: value_tokens.join(" "),
+    })
 }
 
-fn cmd_go(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("go").parse(input)?;
+fn cmd_position(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.is_empty() {
+        return Err(());
+    }
 
-    // Parse each potential argument. For each argument, return a function which sets
-    // the relevant field in GoCmdArguments.
-    let (input, args) = fold_many0(
-        preceded(
-            space1,
-            alt((
-                command_without_arguments("ponder", |_| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.ponder = true;
-                    })
-                }),
-                command_with_argument("wtime", nom::character::complete::i64, |wtime| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.wtime = Some(parse_duration(wtime));
-                    })
-                }),
-                command_with_argument("btime", nom::character::complete::i64, |btime| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.btime = Some(parse_duration(btime));
-                    })
-                }),
-                command_with_argument("winc", nom::character::complete::i64, |winc| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.winc = Some(parse_duration(winc));
-                    })
-                }),
-                command_with_argument("binc", nom::character::complete::i64, |binc| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.binc = Some(parse_duration(binc));
-                    })
-                }),
-                command_with_argument("movestogo", nom::character::complete::u32, |movestogo| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.movestogo = Some(movestogo);
-                    })
-                }),
-                command_with_argument("depth", nom::character::complete::u8, |depth| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.depth = Some(depth);
-                    })
-                }),
-                command_with_argument("nodes", nom::character::complete::u32, |nodes| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.nodes = Some(nodes);
-                    })
-                }),
-                command_with_argument("movetime", nom::character::complete::i64, |movetime| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.movetime = Some(parse_duration(movetime));
-                    })
-                }),
-                command_without_arguments("infinite", |_| {
-                    GoCmdArgumentsModifyFn::new(move |acc: &mut GoCmdArguments| {
-                        acc.infinite = true;
-                    })
-                }),
-            )),
+    let mode = args[0];
+    let rest = &args[1..];
+
+    match mode {
+        "startpos" => no_args_command(
+            UciCommand::Position {
+                position: Position::StartPos,
+                moves: vec![],
+            },
+            rest,
         ),
-        || GoCmdArguments {
-            ponder: false,
-            wtime: None,
-            btime: None,
-            winc: None,
-            binc: None,
-            movestogo: None,
-            depth: None,
-            nodes: None,
-            movetime: None,
-            infinite: false,
-        },
-        |mut acc, GoCmdArgumentsModifyFn(f)| {
-            f(&mut acc);
-            acc
-        },
-    )
-    .parse(input)?;
+        "fen" => {
+            let moves_token_idx = rest.iter().position(|&t| t == "moves");
 
-    Ok((input, UciCommand::Go(args)))
+            let fen = &rest[0..moves_token_idx.unwrap_or(rest.len())];
+            let fen = fen.join(" ");
+
+            let moves = match moves_token_idx {
+                Some(moves_token_idx) => {
+                    let moves = &rest[moves_token_idx + 1..];
+
+                    let moves = moves
+                        .iter()
+                        .map(|m| uci_move(m))
+                        .collect::<Result<Vec<UciMove>, ()>>()?;
+
+                    moves
+                }
+                None => Vec::new(),
+            };
+
+            Ok(UciCommand::Position {
+                // TODO: Make this return Game, so FEN parsing happens in the parser
+                position: Position::Fen(fen),
+                moves,
+            })
+        }
+        _ => Err(()),
+    }
 }
 
-fn cmd_stop(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::Stop, tag("stop")).parse(input)
+fn parse_duration(n: &str) -> Result<Duration, ()> {
+    let millis = n
+        .parse::<i64>()
+        .map_err(|_| ())?
+        .max(0)
+        .try_into()
+        .map_err(|_| ())?;
+    Ok(Duration::from_millis(millis))
 }
 
-fn cmd_d_fen(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("fen").parse(input)?;
-    Ok((input, UciCommand::D(DebugCommand::PrintPosition)))
+fn cmd_go(args: &[&str]) -> Result<UciCommand, ()> {
+    let mut go_args = GoCmdArguments {
+        ponder: false,
+        wtime: None,
+        btime: None,
+        winc: None,
+        binc: None,
+        movestogo: None,
+        depth: None,
+        nodes: None,
+        movetime: None,
+        infinite: false,
+    };
+
+    let mut args = args.iter();
+    while let Some(&arg) = args.next() {
+        match arg {
+            "ponder" => go_args.ponder = true,
+            "infinite" => go_args.infinite = true,
+            "wtime" => go_args.wtime = Some(parse_duration(args.next().ok_or(())?)?),
+            "btime" => go_args.btime = Some(parse_duration(args.next().ok_or(())?)?),
+            "winc" => go_args.winc = Some(parse_duration(args.next().ok_or(())?)?),
+            "binc" => go_args.binc = Some(parse_duration(args.next().ok_or(())?)?),
+            "movetime" => go_args.movetime = Some(parse_duration(args.next().ok_or(())?)?),
+            "movestogo" => {
+                go_args.movestogo = Some(args.next().ok_or(())?.parse().map_err(|_| ())?);
+            }
+            "depth" => go_args.depth = Some(args.next().ok_or(())?.parse().map_err(|_| ())?),
+            "nodes" => go_args.nodes = Some(args.next().ok_or(())?.parse().map_err(|_| ())?),
+            _ => return Err(()),
+        }
+    }
+
+    Ok(UciCommand::Go(go_args))
 }
 
-fn cmd_d_position(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("position").parse(input)?;
-    let (input, _) = space1(input)?;
-    let (input, pos) = alpha1(input)?;
-    Ok((
-        input,
-        UciCommand::D(DebugCommand::SetPosition {
-            position: pos.to_owned(),
-        }),
-    ))
+fn cmd_d_position(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.is_empty() {
+        return Err(());
+    }
+
+    let position = args.join(" ");
+    Ok(UciCommand::D(DebugCommand::SetPosition { position }))
 }
 
-fn cmd_d_move(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("move").parse(input)?;
-    let (input, _) = space1(input)?;
-    let (input, moves) = uci_moves(input)?;
+fn cmd_d_move(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.is_empty() {
+        return Err(());
+    }
 
-    Ok((input, UciCommand::D(DebugCommand::Move { moves })))
+    let moves = args
+        .iter()
+        .map(|m| uci_move(m))
+        .collect::<Result<Vec<UciMove>, ()>>()?;
+
+    Ok(UciCommand::D(DebugCommand::Move { moves }))
 }
 
-fn cmd_d_perft(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("perft").parse(input)?;
+fn cmd_d_perft(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.len() != 1 {
+        return Err(());
+    }
 
-    let (input, _) = space1(input)?;
-    let (input, depth) = nom::character::complete::u8(input)?;
-
-    Ok((input, UciCommand::D(DebugCommand::Perft { depth })))
+    let depth = args[0].parse::<u8>().map_err(|_| ())?;
+    Ok(UciCommand::D(DebugCommand::Perft { depth }))
 }
 
-fn cmd_d_perft_div(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("perftdiv").parse(input)?;
+fn cmd_d_perft_div(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.len() != 1 {
+        return Err(());
+    }
 
-    let (input, _) = space1(input)?;
-    let (input, depth) = nom::character::complete::u8(input)?;
-
-    Ok((input, UciCommand::D(DebugCommand::PerftDiv { depth })))
+    let depth = args[0].parse::<u8>().map_err(|_| ())?;
+    Ok(UciCommand::D(DebugCommand::PerftDiv { depth }))
 }
 
-fn cmd_d_eval(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("eval").parse(input)?;
-    Ok((input, UciCommand::D(DebugCommand::Eval)))
+fn cmd_d(args: &[&str]) -> Result<UciCommand, ()> {
+    if args.is_empty() {
+        return Err(());
+    }
+
+    let subcommand = args[0];
+    let subcommand_args = &args[1..];
+
+    match subcommand {
+        "fen" => no_args_command(UciCommand::D(DebugCommand::PrintPosition), subcommand_args),
+        "position" => cmd_d_position(subcommand_args),
+        "move" => cmd_d_move(subcommand_args),
+        "perft" => cmd_d_perft(subcommand_args),
+        "perftdiv" => cmd_d_perft_div(subcommand_args),
+        "eval" => no_args_command(UciCommand::D(DebugCommand::Eval), subcommand_args),
+        _ => Err(()),
+    }
 }
 
-fn cmd_d(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = tag("d").parse(input)?;
-    let (input, _) = space0(input)?;
+#[expect(
+    clippy::result_unit_err,
+    reason = "Improved error reporting is planned"
+)]
+pub fn parse(input: &str) -> Result<UciCommand, ()> {
+    let tokens = input.split_whitespace().collect::<Vec<&str>>();
+    if tokens.is_empty() {
+        return Err(());
+    }
 
-    alt((
-        cmd_d_fen,
-        cmd_d_position,
-        cmd_d_move,
-        cmd_d_perft,
-        cmd_d_perft_div,
-        cmd_d_eval,
-    ))
-    .parse(input)
-}
+    let command = tokens[0];
+    let args = &tokens[1..];
 
-fn cmd_ponderhit(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::PonderHit, tag("ponderhit")).parse(input)
-}
-
-fn cmd_bench(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::Bench, tag("bench")).parse(input)
-}
-
-fn cmd_quit(input: &str) -> IResult<&str, UciCommand> {
-    value(UciCommand::Quit, tag("quit")).parse(input)
-}
-
-pub(super) fn any_uci_command(input: &str) -> IResult<&str, UciCommand> {
-    let (input, _) = space0(input)?;
-
-    let (input, cmd) = alt((
-        cmd_uci,
-        cmd_debug,
-        cmd_isready,
-        cmd_setoption,
-        cmd_ucinewgame,
-        cmd_position,
-        cmd_go,
-        cmd_stop,
-        cmd_ponderhit,
-        cmd_bench,
-        cmd_d,
-        cmd_quit,
-    ))
-    .parse(input)?;
-
-    let (input, _) = space0(input)?;
-    let (input, _) = eof(input)?;
-
-    Ok((input, cmd))
-}
-
-pub fn parse(input: &str) -> Result<UciCommand, String> {
-    let result = any_uci_command(input);
-
-    match result {
-        Ok((_, cmd)) => Ok(cmd),
-        Err(e) => Err(format!("Unknown command: {input} ({e})")),
+    match command {
+        "uci" => no_args_command(UciCommand::Uci, args),
+        "debug" => cmd_debug(args),
+        "isready" => no_args_command(UciCommand::IsReady, args),
+        "setoption" => cmd_setoption(args),
+        "ucinewgame" => no_args_command(UciCommand::UciNewGame, args),
+        "position" => cmd_position(args),
+        "go" => cmd_go(args),
+        "stop" => no_args_command(UciCommand::Stop, args),
+        "ponderhit" => no_args_command(UciCommand::PonderHit, args),
+        "bench" => no_args_command(UciCommand::Bench, args),
+        "d" => cmd_d(args),
+        "quit" => no_args_command(UciCommand::Quit, args),
+        _ => Err(()),
     }
 }
 
@@ -457,8 +375,37 @@ mod tests {
 
     #[test]
     fn test_position_fen_then_moves() {
-        let ml =
+        let result =
             parse("position fen 6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45 moves a7a6 c1d1");
-        assert!(ml.is_ok());
+        assert!(result.is_ok());
+
+        let components = result.unwrap();
+        let UciCommand::Position { position, moves } = components else {
+            panic!("Expected position command");
+        };
+
+        let Position::Fen(fen) = position else {
+            panic!("Expected FEN position");
+        };
+
+        assert_eq!(fen, "6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45");
+
+        assert_eq!(moves.len(), 2);
+        assert_eq!(moves[0].notation(), "a7a6");
+        assert_eq!(moves[1].notation(), "c1d1");
+    }
+
+    #[test]
+    fn test_moves_with_promotion() {
+        let result = parse("position fen 7k/P7/8/8/8/8/8/7K w - - 0 1 moves a7a8q");
+        assert!(result.is_ok());
+
+        let components = result.unwrap();
+        let UciCommand::Position { moves, .. } = components else {
+            panic!("Expected position command");
+        };
+
+        assert_eq!(moves.len(), 1);
+        assert_eq!(moves[0].notation(), "a7a8q");
     }
 }
