@@ -438,18 +438,24 @@ mod tests {
         crate::init();
 
         // Knight vs Bishop mate
-        assert!(!Game::from_fen("5b1K/5k1N/8/8/8/8/8/8 b - - 1 1")
-            .unwrap()
-            .is_stalemate_by_insufficient_material());
+        assert!(
+            !Game::from_fen("5b1K/5k1N/8/8/8/8/8/8 b - - 1 1")
+                .unwrap()
+                .is_stalemate_by_insufficient_material()
+        );
 
         // Bishop vs Knight - draw
-        assert!(Game::from_fen("8/8/3k4/4n3/8/2KB4/8/8 w - - 0 1")
-            .unwrap()
-            .is_stalemate_by_insufficient_material());
+        assert!(
+            Game::from_fen("8/8/3k4/4n3/8/2KB4/8/8 w - - 0 1")
+                .unwrap()
+                .is_stalemate_by_insufficient_material()
+        );
 
         // Rook vs Knight mate
-        assert!(!Game::from_fen("8/8/4k3/4n3/8/2KR4/8/8 w - - 0 1")
-            .unwrap()
-            .is_stalemate_by_insufficient_material());
+        assert!(
+            !Game::from_fen("8/8/4k3/4n3/8/2KR4/8/8 w - - 0 1")
+                .unwrap()
+                .is_stalemate_by_insufficient_material()
+        );
     }
 }

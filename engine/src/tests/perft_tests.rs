@@ -139,7 +139,18 @@ fn movepicker_perft(depth: u8, game: &mut Game, ctx: &mut SearchContext<'_>) -> 
                 .filter(|m| !moves_at_this_node.contains(m))
                 .collect::<Vec<_>>();
 
-            panic!("At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}\nMissing moves: {:?}", game.to_fen(), legal_moves.len(), moves_at_this_node.len(), legal_moves, moves_at_this_node, best_move, ctx.killer_moves.get_0(depth), ctx.killer_moves.get_1(depth), missing_moves);
+            panic!(
+                "At fen {}\n{} legal moves, but only picked {}\nLegal moves: {:?}\nPicked moves: {:?}\nTT move: {:?}\nKiller moves: {:?} {:?}\nMissing moves: {:?}",
+                game.to_fen(),
+                legal_moves.len(),
+                moves_at_this_node.len(),
+                legal_moves,
+                moves_at_this_node,
+                best_move,
+                ctx.killer_moves.get_0(depth),
+                ctx.killer_moves.get_1(depth),
+                missing_moves
+            );
         }
 
         assert_eq!(moves_at_this_node.len(), legal_moves.len(),);

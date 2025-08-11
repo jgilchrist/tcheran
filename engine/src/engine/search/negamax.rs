@@ -1,4 +1,4 @@
-use super::{params, SearchContext, MAX_SEARCH_DEPTH};
+use super::{MAX_SEARCH_DEPTH, SearchContext, params};
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::engine::eval;

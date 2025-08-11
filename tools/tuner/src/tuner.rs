@@ -4,8 +4,8 @@
 
 use crate::parameters::RebalanceParameters;
 use engine::chess::game::Game;
-use engine::engine::eval::tuning::{NonZeroCoefficient, TunerEval, PHASE_COUNT_MAX};
-use engine::engine::eval::{absolute_eval_with_trace, Parameters, Trace};
+use engine::engine::eval::tuning::{NonZeroCoefficient, PHASE_COUNT_MAX, TunerEval};
+use engine::engine::eval::{Parameters, Trace, absolute_eval_with_trace};
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use std::path::Path;

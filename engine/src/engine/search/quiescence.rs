@@ -3,7 +3,7 @@ use crate::engine::eval;
 use crate::engine::eval::Eval;
 use crate::engine::search::move_picker::MovePicker;
 
-use super::{SearchContext, MAX_SEARCH_DEPTH};
+use super::{MAX_SEARCH_DEPTH, SearchContext};
 
 pub fn quiescence(
     game: &mut Game,

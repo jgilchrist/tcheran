@@ -2,12 +2,13 @@ use crate::chess::{
     piece::PromotionPieceKind,
     square::{File, Rank, Square},
 };
-use crate::engine::uci::commands::{DebugCommand, Position};
 use crate::engine::uci::UciMove;
+use crate::engine::uci::commands::{DebugCommand, Position};
 use nom::bytes::complete::take_until;
 use nom::character::complete::alpha1;
 use nom::combinator::rest;
 use nom::{
+    IResult, Parser,
     branch::alt,
     bytes::complete::tag,
     character::complete::{one_of, space0, space1},
@@ -15,7 +16,6 @@ use nom::{
     error::ParseError,
     multi::{fold_many0, separated_list1},
     sequence::{pair, preceded},
-    IResult, Parser,
 };
 use std::time::Duration;
 

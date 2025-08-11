@@ -14,13 +14,13 @@ use nom::character::complete::space0;
 use nom::combinator::opt;
 use nom::sequence::terminated;
 use nom::{
+    IResult,
     branch::alt,
     bytes::complete::tag,
     character::complete::{char, one_of, space1},
     combinator::{eof, map, value},
     multi::many1,
     sequence::{pair, preceded},
-    IResult,
 };
 
 #[derive(Debug)]

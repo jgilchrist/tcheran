@@ -1,4 +1,4 @@
-use crate::chess::bitboard::{bitboards, Bitboard};
+use crate::chess::bitboard::{Bitboard, bitboards};
 use crate::chess::player::Player;
 
 pub const FILES: [File; File::N] = [

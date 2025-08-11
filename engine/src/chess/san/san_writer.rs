@@ -87,7 +87,9 @@ pub fn format_move(game: &Game, mv: Move) -> String {
         String::new()
     };
 
-    format!("{piece_identifier}{ambiguity_resolution}{capture_x}{destination_notation}{promotion_specifier}{opponent_in_check_specifier}")
+    format!(
+        "{piece_identifier}{ambiguity_resolution}{capture_x}{destination_notation}{promotion_specifier}{opponent_in_check_specifier}"
+    )
 }
 
 fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
@@ -139,8 +141,8 @@ mod tests {
     use crate::chess::fen;
     use crate::chess::game::Game;
     use crate::chess::moves::MoveListExt;
-    use crate::chess::square::squares::all::*;
     use crate::chess::square::Square;
+    use crate::chess::square::squares::all::*;
 
     fn test_san_string(fen: &'static str, mv: (Square, Square), expected_san: &'static str) {
         crate::init();

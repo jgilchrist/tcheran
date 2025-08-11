@@ -8,7 +8,7 @@ use crate::chess::{
     square::{File, Rank},
 };
 use crate::engine::eval::params::{
-    PieceSquareTableDefinition, BISHOPS, KING, KNIGHTS, PAWNS, PIECE_VALUES, QUEENS, ROOKS,
+    BISHOPS, KING, KNIGHTS, PAWNS, PIECE_VALUES, PieceSquareTableDefinition, QUEENS, ROOKS,
 };
 
 pub type PieceSquareTable = [PhasedEval; Square::N];

@@ -1,7 +1,7 @@
-use crate::chess::bitboard::{bitboards, Bitboard};
+use crate::chess::bitboard::{Bitboard, bitboards};
 use crate::chess::movegen::{attackers, pins, tables};
 use crate::chess::moves::MoveList;
-use crate::chess::square::{squares, Square};
+use crate::chess::square::{Square, squares};
 use crate::chess::{game::Game, moves::Move, piece::PromotionPieceKind};
 
 pub struct MovegenCache {

@@ -7,9 +7,9 @@ use std::time::{Duration, Instant};
 use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::{perft, san};
 
+use crate::ENGINE_NAME;
 use crate::engine::options::EngineOptions;
 use crate::engine::{eval, search, uci, util};
-use crate::ENGINE_NAME;
 
 use self::responses::{InfoFields, InfoScore};
 use self::{

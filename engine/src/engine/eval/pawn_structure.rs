@@ -1,12 +1,12 @@
 use crate::chess::game::Game;
 
-use crate::chess::bitboard::{bitboards, Bitboard};
+use crate::chess::bitboard::{Bitboard, bitboards};
 use crate::chess::board::Board;
 use crate::chess::player::{ByPlayer, Player};
 use crate::chess::square::{Rank, Square};
 use crate::engine::eval::params::PieceSquareTableDefinition;
-use crate::engine::eval::piece_square_tables::{flatten, flip, negate, PieceSquareTable};
-use crate::engine::eval::{params, PhasedEval, Trace, TraceComponentIncr, TRACE};
+use crate::engine::eval::piece_square_tables::{PieceSquareTable, flatten, flip, negate};
+use crate::engine::eval::{PhasedEval, TRACE, Trace, TraceComponentIncr, params};
 
 pub fn eval(game: &Game, trace: &mut Trace) -> PhasedEval {
     let eval = eval_passed_pawns(game, trace);

@@ -3,7 +3,7 @@ use crate::chess::movegen;
 use crate::chess::movegen::MovegenCache;
 use crate::chess::moves::{Move, MoveList};
 use crate::engine::search::move_ordering::{score_quiet, score_tactical};
-use crate::engine::search::{move_ordering, SearchContext};
+use crate::engine::search::{SearchContext, move_ordering};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 

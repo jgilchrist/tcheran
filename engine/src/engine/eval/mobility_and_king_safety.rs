@@ -1,4 +1,4 @@
-use super::{PhasedEval, Trace, TraceComponentIncr, TRACE};
+use super::{PhasedEval, TRACE, Trace, TraceComponentIncr};
 use crate::chess::bitboard::Bitboard;
 use crate::chess::game::Game;
 use crate::chess::movegen::tables;

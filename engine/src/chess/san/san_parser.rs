@@ -2,7 +2,7 @@ use crate::chess::game::Game;
 use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::piece::{PieceKind, PromotionPieceKind};
 use crate::chess::san;
-use crate::chess::square::{squares, File, Rank, Square};
+use crate::chess::square::{File, Rank, Square, squares};
 use std::collections::HashSet;
 
 enum AmbiguityResolution {

@@ -4,7 +4,7 @@ use crate::engine::eval::Eval;
 use crate::engine::search::aspiration::aspiration_search;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::{
-    Reporter, SearchContext, SearchInfo, SearchScore, SearchStats, MAX_SEARCH_DEPTH,
+    MAX_SEARCH_DEPTH, Reporter, SearchContext, SearchInfo, SearchScore, SearchStats,
 };
 use crate::engine::util;
 

@@ -4,7 +4,7 @@ members = ["engine", "tools/tuner"]
 
 [workspace.package]
 version = "5.1.0"
-edition = "2021"
+edition = "2024"
 rust-version = "1.85"
 
 [workspace.lints.rust]

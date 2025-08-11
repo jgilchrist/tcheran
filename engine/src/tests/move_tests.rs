@@ -1,11 +1,11 @@
 use crate::chess::game::Game;
 use crate::chess::moves::Move;
-use crate::chess::square::squares::all::*;
 use crate::chess::square::Square;
+use crate::chess::square::squares::all::*;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::{
-    search, CapturingReporter, PersistentState, SearchRestrictions, SearchScore, TimeControl,
+    CapturingReporter, PersistentState, SearchRestrictions, SearchScore, TimeControl, search,
 };
 
 fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, SearchScore) {

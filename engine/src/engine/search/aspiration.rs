@@ -1,7 +1,7 @@
 use crate::chess::game::Game;
 use crate::engine::eval::Eval;
 use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::{negamax, params, SearchContext};
+use crate::engine::search::{SearchContext, negamax, params};
 
 struct Window {
     alpha: Eval,

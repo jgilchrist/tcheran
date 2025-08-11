@@ -511,7 +511,8 @@ mod tests {
         let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(
-            formatted_bitboard, ". . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . ."
+            formatted_bitboard,
+            ". . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . .\n. . . . . . . ."
         );
     }
 
@@ -521,7 +522,8 @@ mod tests {
         let formatted_bitboard = format!("{bitboard}");
 
         assert_eq!(
-            formatted_bitboard, "* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *"
+            formatted_bitboard,
+            "* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *\n* * * * * * * *"
         );
     }
 

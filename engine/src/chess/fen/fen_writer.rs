@@ -2,7 +2,7 @@ use crate::chess::{
     board::Board,
     game::Game,
     piece::Piece,
-    square::{Square, FILES, RANKS},
+    square::{FILES, RANKS, Square},
 };
 
 const fn format_piece(piece: Piece) -> char {

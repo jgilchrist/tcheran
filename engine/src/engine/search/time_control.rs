@@ -1,11 +1,11 @@
-use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::Arc;
+use std::sync::atomic::{AtomicBool, Ordering};
 use std::time::{Duration, Instant};
 
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::engine::options::EngineOptions;
-use crate::engine::search::{params, TimeControl};
+use crate::engine::search::{TimeControl, params};
 
 pub struct TimeStrategy {
     time_control: TimeControl,
@@ -47,7 +47,7 @@ impl TimeStrategy {
                 soft_stop = *move_time;
                 hard_stop = *move_time;
             }
-            TimeControl::Clocks(ref clocks) => {
+            TimeControl::Clocks(clocks) => {
                 let (time_remaining, increment) = match game.player {
                     Player::White => (clocks.white_clock, clocks.white_increment),
                     Player::Black => (clocks.black_clock, clocks.black_increment),

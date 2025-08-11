@@ -3,7 +3,7 @@ use crate::chess::moves::{Move, MoveListExt};
 use crate::chess::piece::PromotionPieceKind;
 use crate::chess::player::Player;
 use crate::chess::square::Square;
-use std::ffi::{c_uint, CString};
+use std::ffi::{CString, c_uint};
 use std::ptr;
 
 #[allow(

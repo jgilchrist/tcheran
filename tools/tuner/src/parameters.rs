@@ -1,4 +1,4 @@
-use engine::chess::bitboard::{bitboards, Bitboard};
+use engine::chess::bitboard::{Bitboard, bitboards};
 use engine::chess::piece::PieceKind;
 use engine::chess::square::Square;
 use engine::engine::eval::{Parameters, PhasedEval};

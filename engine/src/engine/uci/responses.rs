@@ -1,8 +1,7 @@
+use crate::engine::uci::UciMove;
+use crate::engine::uci::options::{UciOption, UciOptionType};
 use std::fmt::Formatter;
 use std::time::Duration;
-
-use crate::engine::uci::options::{UciOption, UciOptionType};
-use crate::engine::uci::UciMove;
 
 #[derive(Debug)]
 pub(super) enum InfoScore {
@@ -162,7 +161,7 @@ impl std::fmt::Display for UciResponse {
 
                 match def {
                     UciOptionType::Spin { min, max, .. } => write!(f, " min {min} max {max}")?,
-                    UciOptionType::Combo { ref values, .. } => {
+                    UciOptionType::Combo { values, .. } => {
                         for v in values {
                             write!(f, " var {v}")?;
                         }
