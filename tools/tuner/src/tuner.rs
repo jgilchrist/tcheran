@@ -84,7 +84,7 @@ fn load_entries_from_file(path: &Path) -> Vec<Entry> {
 
     for (i, (game, outcome)) in parse_results.into_iter().enumerate() {
         let mut trace = Trace::new();
-        absolute_eval_with_trace::<true>(&game, &mut trace);
+        absolute_eval_with_trace(&game, &mut trace);
         let coefficients = trace.non_zero_coefficients();
 
         let midgame_percentage =

@@ -1,4 +1,4 @@
-use super::{PhasedEval, Trace, TraceComponentIncr};
+use super::{PhasedEval, Trace, TraceComponentIncr, TRACE};
 use crate::chess::bitboard::Bitboard;
 use crate::chess::game::Game;
 use crate::chess::movegen::tables;
@@ -7,11 +7,7 @@ use crate::engine::eval::params::{
     ATTACKED_KING_SQUARES, BISHOP_MOBILITY, KNIGHT_MOBILITY, QUEEN_MOBILITY, ROOK_MOBILITY,
 };
 
-fn mobility_and_opp_king_safety_for<const TRACE: bool>(
-    game: &Game,
-    player: Player,
-    trace: &mut Trace,
-) -> PhasedEval {
+fn mobility_and_opp_king_safety_for(game: &Game, player: Player, trace: &mut Trace) -> PhasedEval {
     let mut eval = PhasedEval::ZERO;
     let blockers = game.board.occupancy();
 
@@ -82,7 +78,7 @@ fn mobility_and_opp_king_safety_for<const TRACE: bool>(
     eval
 }
 
-pub fn eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
-    mobility_and_opp_king_safety_for::<TRACE>(game, Player::White, trace)
-        - mobility_and_opp_king_safety_for::<TRACE>(game, Player::Black, trace)
+pub fn eval(game: &Game, trace: &mut Trace) -> PhasedEval {
+    mobility_and_opp_king_safety_for(game, Player::White, trace)
+        - mobility_and_opp_king_safety_for(game, Player::Black, trace)
 }

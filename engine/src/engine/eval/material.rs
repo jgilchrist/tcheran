@@ -3,7 +3,7 @@ use crate::chess::game::Game;
 use crate::chess::piece::PieceKind;
 use crate::chess::player::Player;
 use crate::engine::eval::params::BISHOP_PAIR_BONUS;
-use crate::engine::eval::{PhasedEval, Trace, TraceComponentIncr};
+use crate::engine::eval::{PhasedEval, Trace, TraceComponentIncr, TRACE};
 
 pub fn trace_psts_and_material(game: &Game, trace: &mut Trace) {
     trace_psts_and_material_for_player(&game.board, Player::White, trace);
@@ -42,7 +42,7 @@ fn trace_psts_and_material_for_player(board: &Board, player: Player, trace: &mut
     }
 }
 
-pub fn bishop_pair_eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
+pub fn bishop_pair_eval(game: &Game, trace: &mut Trace) -> PhasedEval {
     let mut bishop_pair_bonuses = PhasedEval::ZERO;
 
     if game.board.bishops(Player::White).count() > 1 {
@@ -64,6 +64,6 @@ pub fn bishop_pair_eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> Ph
     bishop_pair_bonuses
 }
 
-pub fn eval<const TRACE: bool>(game: &Game, trace: &mut Trace) -> PhasedEval {
-    bishop_pair_eval::<TRACE>(game, trace)
+pub fn eval(game: &Game, trace: &mut Trace) -> PhasedEval {
+    bishop_pair_eval(game, trace)
 }
