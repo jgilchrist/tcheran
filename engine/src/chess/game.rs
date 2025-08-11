@@ -120,7 +120,7 @@ impl Game {
         game
     }
 
-    pub fn from_fen(fen: &str) -> Result<Self, String> {
+    pub fn from_fen(fen: &str) -> Result<Self, fen::ParseError> {
         fen::parse(fen)
     }
 

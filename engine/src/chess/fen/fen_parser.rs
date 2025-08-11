@@ -1,6 +1,4 @@
-use nom::Parser;
-use std::collections::HashSet;
-
+use crate::chess::player::ByPlayer;
 use crate::chess::{
     board::Board,
     game::{CastleRights, Game},
@@ -9,105 +7,97 @@ use crate::chess::{
     square::{File, Rank, Square},
 };
 
-use crate::chess::player::ByPlayer;
-use nom::character::complete::space0;
-use nom::combinator::opt;
-use nom::sequence::terminated;
-use nom::{
-    IResult,
-    branch::alt,
-    bytes::complete::tag,
-    character::complete::{char, one_of, space1},
-    combinator::{eof, map, value},
-    multi::many1,
-    sequence::{pair, preceded},
-};
+#[derive(Debug)]
+pub struct FenRank([Option<Piece>; File::N]);
 
 #[derive(Debug)]
-pub struct FenRank(Vec<Option<Piece>>);
-
-fn fen_piece(input: &str) -> IResult<&str, Piece> {
-    let (input, piece) = one_of("RNBQKPrnbqkp").parse(input)?;
-
-    Ok((
-        input,
-        match piece {
-            'R' => Piece::WHITE_ROOK,
-            'N' => Piece::WHITE_KNIGHT,
-            'B' => Piece::WHITE_BISHOP,
-            'Q' => Piece::WHITE_QUEEN,
-            'K' => Piece::WHITE_KING,
-            'P' => Piece::WHITE_PAWN,
-            'r' => Piece::BLACK_ROOK,
-            'n' => Piece::BLACK_KNIGHT,
-            'b' => Piece::BLACK_BISHOP,
-            'q' => Piece::BLACK_QUEEN,
-            'k' => Piece::BLACK_KING,
-            'p' => Piece::BLACK_PAWN,
-            _ => unreachable!(),
-        },
-    ))
+pub enum ParseError {
+    InvalidPosition,
+    InvalidPlayer,
+    InvalidCastling,
+    InvalidEnPassantTarget,
+    InvalidHalfmoveClock,
+    InvalidFullmoveNumber,
 }
 
-fn fen_empty_squares(input: &str) -> IResult<&str, Vec<Option<Piece>>> {
-    map(one_of("12345678"), |digit| {
-        let sq: Option<Piece> = None;
-        vec![sq; digit.to_string().parse::<usize>().unwrap()]
+impl std::fmt::Display for ParseError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::InvalidPosition => write!(f, "Invalid position"),
+            Self::InvalidPlayer => write!(f, "Invalid player"),
+            Self::InvalidCastling => write!(f, "Invalid castling"),
+            Self::InvalidEnPassantTarget => write!(f, "Invalid en passant target"),
+            Self::InvalidHalfmoveClock => write!(f, "Invalid halfmove clock"),
+            Self::InvalidFullmoveNumber => write!(f, "Invalid fullmove number"),
+        }
+    }
+}
+
+fn fen_piece(input: char) -> Result<Piece, ()> {
+    Ok(match input {
+        'R' => Piece::WHITE_ROOK,
+        'N' => Piece::WHITE_KNIGHT,
+        'B' => Piece::WHITE_BISHOP,
+        'Q' => Piece::WHITE_QUEEN,
+        'K' => Piece::WHITE_KING,
+        'P' => Piece::WHITE_PAWN,
+        'r' => Piece::BLACK_ROOK,
+        'n' => Piece::BLACK_KNIGHT,
+        'b' => Piece::BLACK_BISHOP,
+        'q' => Piece::BLACK_QUEEN,
+        'k' => Piece::BLACK_KING,
+        'p' => Piece::BLACK_PAWN,
+        _ => return Err(()),
     })
-    .parse(input)
 }
 
-fn fen_line(input: &str) -> IResult<&str, FenRank> {
-    let (input, squares) = many1(alt((
-        map(fen_piece, |p| vec![Some(p); 1]),
-        fen_empty_squares,
-    )))
-    .parse(input)?;
+fn fen_line(input: &str) -> Result<FenRank, ()> {
+    let mut result: [Option<Piece>; File::N] = [None; File::N];
 
-    Ok((input, FenRank(squares.concat())))
+    let mut file = 0;
+
+    for c in input.chars() {
+        if file >= File::N {
+            return Err(());
+        }
+
+        // If we see a number, skip that many squares, leaving them empty
+        if c.is_numeric() {
+            let number_of_empty_squares = c.to_string().parse::<usize>().unwrap();
+            file += number_of_empty_squares;
+        } else {
+            let piece = fen_piece(c)?;
+            result[file] = Some(piece);
+            file += 1;
+        }
+    }
+
+    Ok(FenRank(result))
 }
 
-fn fen_position(input: &str) -> IResult<&str, Board> {
-    let (input, board) = map(
-        (
-            fen_line,
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-            preceded(char('/'), fen_line),
-        ),
-        |(line8, line7, line6, line5, line4, line3, line2, line1)| {
-            let mut all_pieces: Vec<Option<Piece>> = Vec::new();
-            all_pieces.extend(line1.0);
-            all_pieces.extend(line2.0);
-            all_pieces.extend(line3.0);
-            all_pieces.extend(line4.0);
-            all_pieces.extend(line5.0);
-            all_pieces.extend(line6.0);
-            all_pieces.extend(line7.0);
-            all_pieces.extend(line8.0);
+fn fen_position(input: &str) -> Result<Board, ()> {
+    let ranks = input.split('/');
 
-            assert_eq!(all_pieces.len(), Square::N);
+    let mut all_pieces: [Option<Piece>; Square::N] = [None; Square::N];
 
-            let pieces_array: [Option<Piece>; Square::N] = all_pieces.try_into().unwrap();
+    for (i, r) in ranks.into_iter().rev().enumerate() {
+        if i > Rank::N {
+            return Err(());
+        }
 
-            pieces_array.try_into().unwrap()
-        },
-    )
-    .parse(input)?;
+        let rank = fen_line(r)?;
+        all_pieces[i * File::N..(i + 1) * File::N].copy_from_slice(&rank.0);
+    }
 
-    Ok((input, board))
+    all_pieces.try_into()
 }
 
-fn fen_color(input: &str) -> IResult<&str, Player> {
-    alt((
-        value(Player::White, tag("w")),
-        value(Player::Black, tag("b")),
-    ))
-    .parse(input)
+fn fen_color(input: &str) -> Result<Player, ()> {
+    Ok(match input {
+        "w" => Player::White,
+        "b" => Player::Black,
+        _ => return Err(()),
+    })
 }
 
 #[derive(PartialEq, Eq, Hash, Clone, Copy)]
@@ -118,133 +108,86 @@ enum FenCastleRight {
     BlackQueenside,
 }
 
-fn fen_castle_right(input: &str) -> IResult<&str, FenCastleRight> {
-    let (input, piece) = one_of("KQkq").parse(input)?;
-
-    Ok((
-        input,
-        match piece {
-            'K' => FenCastleRight::WhiteKingside,
-            'Q' => FenCastleRight::WhiteQueenside,
-            'k' => FenCastleRight::BlackKingside,
-            'q' => FenCastleRight::BlackQueenside,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn fen_castling(input: &str) -> IResult<&str, ByPlayer<CastleRights>> {
-    alt((
-        value(
-            ByPlayer::new(CastleRights::none(), CastleRights::none()),
-            tag("-"),
-        ),
-        map(many1(fen_castle_right), |rs| {
-            let rights: HashSet<FenCastleRight> = rs.iter().copied().collect();
-
-            ByPlayer::new(
-                CastleRights {
-                    king_side: rights.contains(&FenCastleRight::WhiteKingside),
-                    queen_side: rights.contains(&FenCastleRight::WhiteQueenside),
-                },
-                CastleRights {
-                    king_side: rights.contains(&FenCastleRight::BlackKingside),
-                    queen_side: rights.contains(&FenCastleRight::BlackQueenside),
-                },
-            )
-        }),
-    ))
-    .parse(input)
-}
-
-fn fen_file(input: &str) -> IResult<&str, File> {
-    let (input, file) = one_of("abcdefgh").parse(input)?;
-
-    Ok((
-        input,
-        match file {
-            'a' => File::A,
-            'b' => File::B,
-            'c' => File::C,
-            'd' => File::D,
-            'e' => File::E,
-            'f' => File::F,
-            'g' => File::G,
-            'h' => File::H,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn fen_rank(input: &str) -> IResult<&str, Rank> {
-    let (input, rank) = one_of("12345678").parse(input)?;
-
-    Ok((
-        input,
-        match rank {
-            '1' => Rank::R1,
-            '2' => Rank::R2,
-            '3' => Rank::R3,
-            '4' => Rank::R4,
-            '5' => Rank::R5,
-            '6' => Rank::R6,
-            '7' => Rank::R7,
-            '8' => Rank::R8,
-            _ => unreachable!(),
-        },
-    ))
-}
-
-fn fen_square(input: &str) -> IResult<&str, Square> {
-    map(pair(fen_file, fen_rank), |(file, rank)| {
-        Square::from_file_and_rank(file, rank)
+fn fen_castle_right(input: char) -> Result<FenCastleRight, ()> {
+    Ok(match input {
+        'K' => FenCastleRight::WhiteKingside,
+        'Q' => FenCastleRight::WhiteQueenside,
+        'k' => FenCastleRight::BlackKingside,
+        'q' => FenCastleRight::BlackQueenside,
+        _ => return Err(()),
     })
-    .parse(input)
 }
 
-fn fen_en_passant_target(input: &str) -> IResult<&str, Option<Square>> {
-    alt((value(None, tag("-")), map(fen_square, Some))).parse(input)
+fn fen_castling(input: &str) -> Result<ByPlayer<CastleRights>, ()> {
+    if input == "-" {
+        return Ok(ByPlayer::new(CastleRights::none(), CastleRights::none()));
+    }
+
+    let mut white_castle_rights = CastleRights::none();
+    let mut black_castle_rights = CastleRights::none();
+
+    for c in input.chars() {
+        match fen_castle_right(c)? {
+            FenCastleRight::WhiteKingside => white_castle_rights.king_side = true,
+            FenCastleRight::WhiteQueenside => white_castle_rights.queen_side = true,
+            FenCastleRight::BlackKingside => black_castle_rights.king_side = true,
+            FenCastleRight::BlackQueenside => black_castle_rights.queen_side = true,
+        }
+    }
+
+    Ok(ByPlayer::new(white_castle_rights, black_castle_rights))
 }
 
-fn fen_halfmove_clock(input: &str) -> IResult<&str, u32> {
-    nom::character::complete::u32(input)
+fn fen_square(input: &str) -> Result<Square, ()> {
+    if input.len() != 2 {
+        return Err(());
+    }
+
+    let mut chars = input.chars();
+    let file = chars.next().unwrap();
+    let rank = chars.next().unwrap();
+
+    let file = match file {
+        'a' => File::A,
+        'b' => File::B,
+        'c' => File::C,
+        'd' => File::D,
+        'e' => File::E,
+        'f' => File::F,
+        'g' => File::G,
+        'h' => File::H,
+        _ => return Err(()),
+    };
+
+    let rank = match rank {
+        '1' => Rank::R1,
+        '2' => Rank::R2,
+        '3' => Rank::R3,
+        '4' => Rank::R4,
+        '5' => Rank::R5,
+        '6' => Rank::R6,
+        '7' => Rank::R7,
+        '8' => Rank::R8,
+        _ => return Err(()),
+    };
+
+    Ok(Square::from_file_and_rank(file, rank))
 }
 
-fn fen_fullmove_number(input: &str) -> IResult<&str, u32> {
-    nom::character::complete::u32(input)
+fn fen_en_passant_target(input: &str) -> Result<Option<Square>, ()> {
+    if input == "-" {
+        return Ok(None);
+    }
+
+    fen_square(input).map(Some)
 }
 
-fn fen_parser(input: &str) -> IResult<&str, Game> {
-    let (input, (board, player, castle_rights, en_passant_target, halfmove_clock, fullmove_number)) =
-        terminated(
-            (
-                fen_position,
-                preceded(space1, fen_color),
-                preceded(space1, fen_castling),
-                preceded(space1, fen_en_passant_target),
-                opt(preceded(space1, fen_halfmove_clock)),
-                opt(preceded(space1, fen_fullmove_number)),
-            ),
-            (space0, eof),
-        )
-        .parse(input)?;
+fn fen_halfmove_clock(input: &str) -> Result<u32, ()> {
+    input.parse::<u32>().map_err(|_| ())
+}
 
-    let halfmove_clock = halfmove_clock.unwrap_or(0);
-    let fullmove_number = fullmove_number.unwrap_or(1);
-
-    let plies = plies_from_fullmove_number(fullmove_number, player);
-
-    Ok((
-        input,
-        Game::from_state(
-            board,
-            player,
-            castle_rights,
-            en_passant_target,
-            halfmove_clock,
-            plies,
-        ),
-    ))
+fn fen_fullmove_number(input: &str) -> Result<u32, ()> {
+    input.parse::<u32>().map_err(|_| ())
 }
 
 #[inline(always)]
@@ -252,13 +195,52 @@ fn plies_from_fullmove_number(fullmove_number: u32, player: Player) -> u32 {
     (fullmove_number - 1) * 2 + u32::from(player == Player::Black)
 }
 
-pub fn parse(input: &str) -> Result<Game, String> {
-    let result = fen_parser(input);
+#[rustfmt::skip]
+pub fn parse(input: &str) -> Result<Game, ParseError> {
+    let mut tokens = input.split_whitespace();
 
-    match result {
-        Ok((_, game)) => Ok(game),
-        Err(e) => Err(format!("Invalid FEN: {input} ({e})")),
-    }
+    let Some(position) = tokens.next() else { return Err(ParseError::InvalidPosition); };
+    let board = fen_position(position).map_err(|()| ParseError::InvalidPosition)?;
+
+    let Some(player) = tokens.next() else { return Err(ParseError::InvalidPlayer); };
+    let player = fen_color(player).map_err(|()| ParseError::InvalidPlayer)?;
+
+    let Some(castle_rights) = tokens.next() else { return Err(ParseError::InvalidCastling); };
+    let castle_rights = fen_castling(castle_rights).map_err(|()| ParseError::InvalidCastling)?;
+
+    let Some(en_passant_target) = tokens.next() else { return Err(ParseError::InvalidEnPassantTarget); };
+    let en_passant_target = fen_en_passant_target(en_passant_target).map_err(|()| ParseError::InvalidEnPassantTarget)?;
+
+    let halfmove_clock = match tokens.next() {
+        Some(c) => {
+            match fen_halfmove_clock(c) {
+                Ok(c) => c,
+                Err(()) => return Err(ParseError::InvalidHalfmoveClock),
+            }
+        },
+        None => 0,
+    };
+
+    let fullmove_number = match tokens.next() {
+        Some(c) => {
+            match fen_fullmove_number(c) {
+                Ok(c) => c,
+                Err(()) => return Err(ParseError::InvalidFullmoveNumber),
+            }
+        },
+        None => 1,
+    };
+
+    let plies = plies_from_fullmove_number(fullmove_number, player);
+
+    Ok(Game::from_state(
+        board,
+        player,
+        castle_rights,
+        en_passant_target,
+        halfmove_clock,
+        plies,
+    ))
 }
 
 #[cfg(test)]

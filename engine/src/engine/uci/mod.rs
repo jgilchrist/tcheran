@@ -278,7 +278,9 @@ impl Uci {
             UciCommand::Position { position, moves } => {
                 let mut game = match position {
                     commands::Position::StartPos => Game::new(),
-                    commands::Position::Fen(fen) => Game::from_fen(fen)?,
+                    commands::Position::Fen(fen) => {
+                        Game::from_fen(fen).map_err(|e| e.to_string())?
+                    }
                 };
 
                 for mv in moves {
