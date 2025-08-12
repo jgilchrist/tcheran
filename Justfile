@@ -18,7 +18,7 @@ run:
 	@cargo run --release
 
 tune datafile:
-	@cargo run --release --features tuner -- tune {{datafile}}
+	@cargo run --release --package tuner -- {{datafile}}
 
 release:
 	@cargo build --release --features release
