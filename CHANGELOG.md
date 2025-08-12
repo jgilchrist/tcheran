@@ -4,9 +4,12 @@
 
 ### Misc
 
+* Make the engine both a library and binary to allow splitting functionality out
+* Split the texel tuner out of the main engine into its own tools/tuner project
 * Add a full set of bench positions for 'bench' command
 * When in a tablebase position, report the tablebase PV line
 * Don't panic when SyzygyPath is set but is empty
+* Use Rust 1.85 and Edition 2024
 
 ## [5.1]
 
