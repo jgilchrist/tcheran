@@ -59,7 +59,7 @@ jobs:
         run: |
           rustup override set ${{ needs.metadata.outputs.rust-version }}
           rustup target add x86_64-unknown-linux-musl
-          cargo build --release --no-default-features --features release --target x86_64-unknown-linux-musl
+          cargo build --release --features release --target x86_64-unknown-linux-musl
           mv target/x86_64-unknown-linux-musl/release/engine tcheran-${{ needs.metadata.outputs.engine-version }}-linux-${{ matrix.exec_postfix }}
 
       - name: Upload artifacts
