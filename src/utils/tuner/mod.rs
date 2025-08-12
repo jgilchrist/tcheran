@@ -3,15 +3,14 @@
 // which is in turn based on https://github.com/AndyGrant/Ethereal/blob/master/Tuning.pdf
 
 use crate::chess::game::Game;
+use crate::engine::eval::tuning::{NonZeroCoefficient, TunerEval, PHASE_COUNT_MAX};
 use crate::engine::eval::{absolute_eval_with_trace, Parameters, Trace};
+use crate::utils::tuner::parameters::RebalanceParameters;
 use indicatif::{ProgressBar, ProgressStyle};
 use rayon::prelude::*;
 use std::path::Path;
 
 pub mod parameters;
-mod tuner_eval;
-
-pub use tuner_eval::TunerEval;
 
 enum Outcome {
     Win,
@@ -26,18 +25,6 @@ impl Outcome {
             Self::Draw => 0.5,
             Self::Loss => 0.0,
         }
-    }
-}
-
-#[derive(Clone)]
-pub struct NonZeroCoefficient {
-    pub idx: usize,
-    pub value: f32,
-}
-
-impl NonZeroCoefficient {
-    pub fn new(idx: usize, value: f32) -> Self {
-        Self { idx, value }
     }
 }
 
@@ -103,7 +90,7 @@ fn load_entries_from_file(path: &Path) -> Vec<Entry> {
         let coefficients = trace.non_zero_coefficients();
 
         let midgame_percentage =
-            f32::from(game.incremental_eval.phase_value) / f32::from(tuner_eval::PHASE_COUNT_MAX);
+            f32::from(game.incremental_eval.phase_value) / f32::from(PHASE_COUNT_MAX);
         let endgame_percentage = 1.0 - midgame_percentage;
 
         entries.push(Entry {

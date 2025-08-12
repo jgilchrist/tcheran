@@ -1,4 +1,17 @@
+use crate::chess::square::{File, Rank, Square};
 use crate::engine::eval::PhasedEval;
+
+#[derive(Clone)]
+pub struct NonZeroCoefficient {
+    pub idx: usize,
+    pub value: f32,
+}
+
+impl NonZeroCoefficient {
+    pub fn new(idx: usize, value: f32) -> Self {
+        Self { idx, value }
+    }
+}
 
 // A non-packed version of PhasedEval
 #[derive(Debug, PartialEq, PartialOrd, Clone, Copy)]
@@ -102,4 +115,71 @@ impl std::iter::Sum for TunerEval {
 
         result
     }
+}
+
+pub fn print_param(f: &mut std::fmt::Formatter<'_>, p: PhasedEval) -> std::fmt::Result {
+    let (mg, eg) = (p.midgame().0, p.endgame().0);
+    write!(f, "s({mg: >5}, {eg: >5})")
+}
+
+pub fn print_array(
+    f: &mut std::fmt::Formatter<'_>,
+    ps: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    let size = ps.len();
+    writeln!(f, "pub const {name}: [PhasedEval; {size}] = [")?;
+
+    for param in ps {
+        write!(f, "    ")?;
+        print_param(f, *param)?;
+        writeln!(f, ",")?;
+    }
+
+    writeln!(f, "];\n")?;
+
+    Ok(())
+}
+
+pub fn print_pst(
+    f: &mut std::fmt::Formatter<'_>,
+    pst: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    assert_eq!(pst.len(), Square::N);
+
+    writeln!(f, "pub const {name}: PieceSquareTableDefinition = [")?;
+
+    for rank in Rank::ALL.iter().rev() {
+        write!(f, "    [")?;
+
+        for file in File::ALL {
+            let idx = Square::from_file_and_rank(file, *rank).array_idx();
+            print_param(f, pst[idx])?;
+
+            if file != File::H {
+                write!(f, ", ")?;
+            }
+        }
+
+        writeln!(f, "],")?;
+    }
+
+    writeln!(f, "];\n")?;
+
+    Ok(())
+}
+
+pub fn print_single(
+    f: &mut std::fmt::Formatter<'_>,
+    p: &[PhasedEval],
+    name: &str,
+) -> std::fmt::Result {
+    assert_eq!(p.len(), 1);
+
+    write!(f, "pub const {name}: PhasedEval = ")?;
+    print_param(f, p[0])?;
+    writeln!(f, ";\n")?;
+
+    Ok(())
 }

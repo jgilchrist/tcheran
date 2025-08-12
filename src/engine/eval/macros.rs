@@ -23,7 +23,7 @@ macro_rules! parameters {
             }
 
             #[expect(unused_assignments, reason = "The final idx value will never be used")]
-            pub fn from_array(arr: &[crate::utils::tuner::TunerEval; Trace::SIZE]) -> Self {
+            pub fn from_array(arr: &[crate::engine::eval::tuning::TunerEval; Trace::SIZE]) -> Self {
                 let mut evals = [PhasedEval::ZERO; Trace::SIZE];
 
                 for (i, param) in arr.iter().enumerate() {
@@ -48,9 +48,9 @@ macro_rules! parameters {
             fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
                 $(
                     match stringify!($type) {
-                        "array" => crate::utils::tuner::parameters::print_array(f, &self.$param, $name)?,
-                        "pst" => crate::utils::tuner::parameters::print_pst(f, &self.$param, $name)?,
-                        "single" => crate::utils::tuner::parameters::print_single(f, &self.$param, $name)?,
+                        "array" => crate::engine::eval::tuning::print_array(f, &self.$param, $name)?,
+                        "pst" => crate::engine::eval::tuning::print_pst(f, &self.$param, $name)?,
+                        "single" => crate::engine::eval::tuning::print_single(f, &self.$param, $name)?,
                         _ => unimplemented!()
                     }
                 )*
@@ -111,7 +111,7 @@ macro_rules! parameters {
             #[cfg(feature = "tuner")]
             #[expect(unused_assignments, reason = "The final idx value will never be used")]
             #[expect(clippy::cast_precision_loss, reason = "known cast from i32 to f32")]
-            pub fn non_zero_coefficients(&self) -> Vec<crate::utils::tuner::NonZeroCoefficient> {
+            pub fn non_zero_coefficients(&self) -> Vec<crate::engine::eval::tuning::NonZeroCoefficient> {
                 let mut result = Vec::new();
                 let mut idx = 0;
 
@@ -121,7 +121,7 @@ macro_rules! parameters {
 
                         if coefficient != 0 {
                             result
-                                .push(crate::utils::tuner::NonZeroCoefficient::new(idx + i, coefficient as f32));
+                                .push(crate::engine::eval::tuning::NonZeroCoefficient::new(idx + i, coefficient as f32));
                         }
                     }
 
