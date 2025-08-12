@@ -87,7 +87,7 @@ pub fn init() {
 pub fn hash(game: &Game) -> ZobristHash {
     use Player::*;
 
-    debug_assert!(
+    assert!(
         unsafe { components::SIDE_TO_PLAY != 0 },
         "Zobrist components were not initialised"
     );
