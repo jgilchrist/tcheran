@@ -10,6 +10,7 @@
 * When in a tablebase position, report the tablebase PV line
 * Don't panic when SyzygyPath is set but is empty
 * Rewrite the FEN and UCI parsers without using `nom` (and remove `nom` as a dependency)
+* Remove the dependency on `colored`
 * Use Rust 1.85 and Edition 2024
 
 ## [5.1]

@@ -41,6 +41,15 @@ pub struct UciReporter {
     pub pretty_output: bool,
 }
 
+mod colors {
+    pub const BRIGHT_BLACK: &str = if cfg!(unix) { "\x1B[90m" } else { "" };
+    pub const BRIGHT_WHITE: &str = if cfg!(unix) { "\x1B[97m" } else { "" };
+    pub const RED: &str = if cfg!(unix) { "\x1B[31m" } else { "" };
+    pub const WHITE: &str = if cfg!(unix) { "\x1B[37m" } else { "" };
+    pub const GREEN: &str = if cfg!(unix) { "\x1B[32m" } else { "" };
+    pub const RESET: &str = if cfg!(unix) { "\x1B[0m" } else { "" };
+}
+
 impl UciReporter {
     fn uci_report_search_progress(progress: &search::SearchInfo) {
         let score = match progress.score {
@@ -75,63 +84,63 @@ impl UciReporter {
         reason = "Various approximate calculations"
     )]
     fn pretty_report_search_progress(game: &Game, progress: &search::SearchInfo) {
-        use colored::Colorize;
+        use colors::*;
 
         let mut game = game.clone();
 
         print!(" {:>3}", progress.depth);
-        print!("{}", format!("/{:<3}", progress.seldepth).bright_black());
+        print!("{BRIGHT_BLACK}/{:<3}{RESET}", progress.seldepth);
 
-        print!(
-            " {:>7}",
-            match progress.score {
-                SearchScore::Centipawns(cp) => {
-                    let friendly_score = format!("{:+.2}", f64::from(cp) / 100.0);
+        let (score, score_color) = match progress.score {
+            SearchScore::Centipawns(cp) => {
+                let friendly_score = format!("{:+.2}", f64::from(cp) / 100.0);
 
-                    match cp {
-                        i16::MIN..=-11 => friendly_score.red(),
-                        -10..=10 => friendly_score.white(),
-                        11..=i16::MAX => friendly_score.green(),
-                    }
-                }
-                SearchScore::Mate(plies) => {
-                    let friendly_mate = format!("M{}", plies.abs());
+                let color = match cp {
+                    i16::MIN..=-11 => RED,
+                    -10..=10 => WHITE,
+                    11..=i16::MAX => GREEN,
+                };
 
-                    match plies {
-                        i16::MIN..=-1 => friendly_mate.red(),
-                        1..=i16::MAX => friendly_mate.green(),
-                        0 => unreachable!(),
-                    }
-                }
+                (friendly_score, color)
             }
-        );
+            SearchScore::Mate(plies) => {
+                let friendly_mate = format!("M{}", plies.abs());
+                let color = match plies {
+                    i16::MIN..=-1 => RED,
+                    1..=i16::MAX => GREEN,
+                    0 => unreachable!(),
+                };
 
-        print!(
-            "  {:>6}",
-            if progress.stats.time >= Duration::from_secs(1) {
-                format!("{:.2}s", progress.stats.time.as_secs_f32()).bright_black()
-            } else {
-                format!("{}ms", progress.stats.time.as_millis()).bright_black()
+                (friendly_mate, color)
             }
+        };
+
+        print!(" {score_color}{score:>7}{RESET}");
+
+        let time = if progress.stats.time >= Duration::from_secs(1) {
+            format!("{:.2}s", progress.stats.time.as_secs_f32())
+        } else {
+            format!("{}ms", progress.stats.time.as_millis())
+        };
+
+        print!("  {BRIGHT_BLACK}{time:>6}{RESET}",);
+
+        let nodes = if progress.stats.nodes < 1000 {
+            format!("{}n", progress.stats.nodes)
+        } else {
+            format!("{:.0}kn", progress.stats.nodes as f64 / 1000.0)
+        };
+
+        print!(" {BRIGHT_BLACK}{nodes:>10}{RESET}",);
+
+        print!(
+            "  {BRIGHT_BLACK}{:>10}{RESET}",
+            format!("{:.0}knps", progress.stats.nodes_per_second as f64 / 1000.0)
         );
 
         print!(
-            " {:>10}",
-            if progress.stats.nodes < 1000 {
-                format!("{}n", progress.stats.nodes).bright_black()
-            } else {
-                format!("{:.0}kn", progress.stats.nodes as f64 / 1000.0).bright_black()
-            }
-        );
-
-        print!(
-            "  {:>10}",
-            format!("{:.0}knps", progress.stats.nodes_per_second as f64 / 1000.0).bright_black()
-        );
-
-        print!(
-            "  {:>4}",
-            format!("{:.0}%", progress.hashfull as f64 / 10.0).bright_black()
+            "  {BRIGHT_BLACK}{:>4}{RESET}",
+            format!("{:.0}%", progress.hashfull as f64 / 10.0)
         );
 
         print!("  ");
@@ -141,8 +150,8 @@ impl UciReporter {
             print!(
                 " {}",
                 match game.player {
-                    Player::White => san_mv.bright_white(),
-                    Player::Black => san_mv.bright_black(),
+                    Player::White => format!("{BRIGHT_WHITE}{san_mv}{RESET}"),
+                    Player::Black => format!("{BRIGHT_BLACK}{san_mv}{RESET}"),
                 }
             );
 
