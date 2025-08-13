@@ -17,7 +17,6 @@ pub use white_eval::WhiteEval;
 use crate::chess::game::Game;
 use crate::chess::piece::{Piece, PieceKind};
 use crate::chess::player::ByPlayer;
-use crate::chess::player::Player;
 use crate::chess::square::Square;
 pub use crate::engine::eval::phased_eval::PhasedEval;
 

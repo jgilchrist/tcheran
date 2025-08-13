@@ -1,3 +1,4 @@
+use crate::chess::player::Player;
 use crate::chess::square::{File, Rank, Square};
 use crate::engine::eval::PhasedEval;
 
@@ -10,6 +11,36 @@ pub struct NonZeroCoefficient {
 impl NonZeroCoefficient {
     pub fn new(idx: usize, value: f32) -> Self {
         Self { idx, value }
+    }
+}
+
+#[derive(Default, Copy, Clone)]
+pub struct TraceComponent(i32);
+
+pub trait TraceComponentIncr {
+    fn incr(&mut self, player: Player);
+    fn add(&mut self, player: Player, n: i32);
+}
+
+impl TraceComponentIncr for TraceComponent {
+    fn incr(&mut self, player: Player) {
+        self.add(player, 1);
+    }
+
+    fn add(&mut self, player: Player, n: i32) {
+        let multiplier = if player == Player::White { 1 } else { -1 };
+
+        self.0 += n * multiplier;
+    }
+}
+
+impl TraceComponentIncr for [TraceComponent; 1] {
+    fn incr(&mut self, player: Player) {
+        self[0].incr(player)
+    }
+
+    fn add(&mut self, player: Player, n: i32) {
+        self[0].add(player, n);
     }
 }
 

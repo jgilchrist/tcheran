@@ -1,4 +1,4 @@
-use super::{PhasedEval, TRACE, Trace, TraceComponentIncr};
+use super::{PhasedEval, TRACE, Trace};
 use crate::chess::bitboard::Bitboard;
 use crate::chess::game::Game;
 use crate::chess::movegen::tables;
@@ -6,6 +6,7 @@ use crate::chess::player::Player;
 use crate::engine::eval::params::{
     ATTACKED_KING_SQUARES, BISHOP_MOBILITY, KNIGHT_MOBILITY, QUEEN_MOBILITY, ROOK_MOBILITY,
 };
+use crate::engine::eval::tuning::TraceComponentIncr;
 
 fn mobility_and_opp_king_safety_for(game: &Game, player: Player, trace: &mut Trace) -> PhasedEval {
     let mut eval = PhasedEval::ZERO;

@@ -3,7 +3,8 @@ use crate::chess::game::Game;
 use crate::chess::piece::PieceKind;
 use crate::chess::player::Player;
 use crate::engine::eval::params::BISHOP_PAIR_BONUS;
-use crate::engine::eval::{PhasedEval, TRACE, Trace, TraceComponentIncr};
+use crate::engine::eval::tuning::TraceComponentIncr;
+use crate::engine::eval::{PhasedEval, TRACE, Trace};
 
 pub fn trace_psts_and_material(game: &Game, trace: &mut Trace) {
     trace_psts_and_material_for_player(&game.board, Player::White, trace);
