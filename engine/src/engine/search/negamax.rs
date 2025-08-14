@@ -78,12 +78,13 @@ pub fn negamax(
 
     if let Some(tt_entry) = ctx.tt.get(&game.zobrist) {
         if !is_root && !is_pv && tt_entry.depth >= depth {
-            let tt_score = tt_entry.eval.with_mate_distance_from_root(plies);
+            let tt_eval = Eval(i32::from(tt_entry.eval));
+            let tt_score = tt_eval.with_mate_distance_from_root(plies);
 
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_score),
-                NodeBound::Upper if tt_entry.eval <= alpha => return Ok(tt_score),
-                NodeBound::Lower if tt_entry.eval >= beta => return Ok(tt_score),
+                NodeBound::Upper if tt_eval <= alpha => return Ok(tt_score),
+                NodeBound::Lower if tt_eval >= beta => return Ok(tt_score),
                 _ => {}
             }
         }
@@ -115,9 +116,13 @@ pub fn negamax(
                     || (tb_bound == NodeBound::Lower && score >= beta)
                     || (tb_bound == NodeBound::Upper && score <= alpha)
                 {
+                    #[expect(
+                        clippy::cast_possible_truncation,
+                        reason = "Temporary casting before improving TT ergonomics, but guaranteed to succeed"
+                    )]
                     let tt_data = SearchTranspositionTableData {
                         bound: tb_bound,
-                        eval: score,
+                        eval: score.0 as i16,
                         best_move: None,
                         age: ctx.tt.generation,
                         depth,
@@ -140,7 +145,7 @@ pub fn negamax(
     if !is_root && !is_pv && !in_check {
         // Reverse futility pruning
         if depth <= params::REVERSE_FUTILITY_PRUNE_DEPTH
-            && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i16::from(depth) > beta
+            && eval - params::REVERSE_FUTILITY_PRUNE_MARGIN_PER_PLY * i32::from(depth) > beta
         {
             return Ok(beta);
         }
@@ -278,9 +283,13 @@ pub fn negamax(
         }
     }
 
+    #[expect(
+        clippy::cast_possible_truncation,
+        reason = "Temporary casting before improving TT ergonomics, but guaranteed to succeed"
+    )]
     let tt_data = SearchTranspositionTableData {
         bound: tt_node_bound,
-        eval: best_eval.with_mate_distance_from_position(plies),
+        eval: best_eval.with_mate_distance_from_position(plies).0 as i16,
         best_move,
         age: ctx.tt.generation,
         depth,

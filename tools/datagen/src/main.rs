@@ -20,8 +20,8 @@ const DATA_DIR: &str = "datagen";
 
 const DEFAULT_DEPTH: u8 = 8;
 const DEFAULT_STARTING_MOVES: usize = 8;
-const ADJUDICATION_THRESHOLD: i16 = 2000;
-const DRAW_THRESHOLD: i16 = 10;
+const ADJUDICATION_THRESHOLD: i32 = 2000;
+const DRAW_THRESHOLD: i32 = 10;
 const ADJUDICATE_WINS_AFTER: usize = 4;
 const ADJUDICATE_DRAWS_AFTER: usize = 10;
 
@@ -329,7 +329,7 @@ fn random_starting_position(rand: &mut impl Rng) -> Result<Game, ()> {
 }
 
 fn acceptable_starting_position(rand: &mut impl Rng, states: &mut PlayerStates) -> Game {
-    const UNBALANCED_STARTING_EVAL: i16 = 1000;
+    const UNBALANCED_STARTING_EVAL: i32 = 1000;
 
     loop {
         // Skip any games that ended before we got to our starting position

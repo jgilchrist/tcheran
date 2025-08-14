@@ -13,28 +13,28 @@ use crate::engine::eval::WhiteEval;
 /// This can be easily turned back into a 'classical' evaluation (i.e.
 /// from white's perspective).
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct Eval(pub i16);
+pub struct Eval(pub i32);
 
 impl Eval {
-    pub(crate) const MAX: Self = Self(i16::MAX);
-    pub(crate) const MIN: Self = Self(i16::MIN);
+    pub(crate) const MAX: Self = Self(i16::MAX as i32);
+    pub(crate) const MIN: Self = Self(i16::MIN as i32);
     pub(crate) const DRAW: Self = Self(0);
 
-    const MATE: i16 = 32000;
-    const MATED: i16 = -Self::MATE;
-    const MATE_THRESHOLD: i16 = Self::MATE - 100;
-    const MATED_THRESHOLD: i16 = -Self::MATE_THRESHOLD;
+    const MATE: i32 = 32000;
+    const MATED: i32 = -Self::MATE;
+    const MATE_THRESHOLD: i32 = Self::MATE - 100;
+    const MATED_THRESHOLD: i32 = -Self::MATE_THRESHOLD;
 
-    pub const fn new(eval: i16) -> Self {
+    pub const fn new(eval: i32) -> Self {
         Self(eval)
     }
 
     pub fn mate_in(ply: u8) -> Self {
-        Self(Self::MATE - i16::from(ply))
+        Self(Self::MATE - i32::from(ply))
     }
 
     pub fn mated_in(ply: u8) -> Self {
-        Self(-Self::MATE + i16::from(ply))
+        Self(-Self::MATE + i32::from(ply))
     }
 
     #[inline]
@@ -47,7 +47,7 @@ impl Eval {
         self.0 < Self::MATED_THRESHOLD
     }
 
-    pub fn is_mate_in_moves(self) -> Option<i16> {
+    pub fn is_mate_in_moves(self) -> Option<i32> {
         if self.mating() {
             return Some((Self::MATE - self.0 + 1) / 2);
         }
@@ -70,11 +70,11 @@ impl Eval {
         let mut adjusted_value = self.0;
 
         if adjusted_value > Self::MATE_THRESHOLD {
-            adjusted_value += i16::from(plies);
+            adjusted_value += i32::from(plies);
         }
 
         if adjusted_value < Self::MATED_THRESHOLD {
-            adjusted_value -= i16::from(plies);
+            adjusted_value -= i32::from(plies);
         }
 
         Self(adjusted_value)
@@ -84,11 +84,11 @@ impl Eval {
         let mut adjusted_value = self.0;
 
         if adjusted_value > Self::MATE_THRESHOLD {
-            adjusted_value -= i16::from(plies);
+            adjusted_value -= i32::from(plies);
         }
 
         if adjusted_value < Self::MATED_THRESHOLD {
-            adjusted_value += i16::from(plies);
+            adjusted_value += i32::from(plies);
         }
 
         Self(adjusted_value)
@@ -137,10 +137,10 @@ impl std::ops::SubAssign for Eval {
     }
 }
 
-impl std::ops::Mul<i16> for Eval {
+impl std::ops::Mul<i32> for Eval {
     type Output = Self;
 
-    fn mul(self, rhs: i16) -> Self::Output {
+    fn mul(self, rhs: i32) -> Self::Output {
         Self(self.0 * rhs)
     }
 }
@@ -153,10 +153,10 @@ impl std::ops::Neg for Eval {
     }
 }
 
-impl Div<i16> for Eval {
+impl Div<i32> for Eval {
     type Output = Self;
 
-    fn div(self, rhs: i16) -> Self::Output {
+    fn div(self, rhs: i32) -> Self::Output {
         Self(self.0 / rhs)
     }
 }
