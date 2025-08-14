@@ -2,6 +2,7 @@
 mod macros;
 mod material;
 mod mobility_and_king_safety;
+pub mod nnue;
 mod params;
 pub mod pawn_structure;
 mod phased_eval;
@@ -78,29 +79,30 @@ impl IncrementalEvalFields {
 }
 
 pub fn eval(game: &Game) -> Eval {
-    let absolute_eval = absolute_eval(game);
-    Eval::from_white_eval(absolute_eval, game.player)
+    game.nnue.evaluate(game.player)
+    // let absolute_eval = absolute_eval(game);
+    // Eval::from_white_eval(absolute_eval, game.player)
 }
 
-pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let mut trace = Trace::new();
-    absolute_eval_with_trace(game, &mut trace)
-}
+// pub fn absolute_eval(game: &Game) -> WhiteEval {
+//     let mut trace = Trace::new();
+//     absolute_eval_with_trace(game, &mut trace)
+// }
 
-pub fn absolute_eval_with_trace(game: &Game, trace: &mut Trace) -> WhiteEval {
-    if TRACE {
-        // Material counts and PSTs are updated incrementally so if we're tuning we need
-        // to account for those manually here in the trace.
-        material::trace_psts_and_material(game, trace);
-    }
-
-    let eval = game.incremental_eval.piece_square_tables
-        + material::eval(game, trace)
-        + mobility_and_king_safety::eval(game, trace)
-        + pawn_structure::eval(game, trace);
-
-    eval.for_phase(game.incremental_eval.phase_value)
-}
+// pub fn absolute_eval_with_trace(game: &Game, trace: &mut Trace) -> WhiteEval {
+//     if TRACE {
+//         // Material counts and PSTs are updated incrementally so if we're tuning we need
+//         // to account for those manually here in the trace.
+//         material::trace_psts_and_material(game, trace);
+//     }
+//
+//     let eval = game.incremental_eval.piece_square_tables
+//         + material::eval(game, trace)
+//         + mobility_and_king_safety::eval(game, trace)
+//         + pawn_structure::eval(game, trace);
+//
+//     eval.for_phase(game.incremental_eval.phase_value)
+// }
 
 #[derive(Debug)]
 pub struct EvalComponent {
@@ -136,18 +138,18 @@ pub struct EvalComponents {
     pub passed_pawns: EvalComponent,
 }
 
-pub fn eval_components(game: &Game) -> EvalComponents {
-    let eval = absolute_eval(game);
-    let phase_value = game.incremental_eval.phase_value;
-
-    let piece_square_eval = piece_square_tables::eval_by_player(&game.board);
-    let passed_pawns_eval = pawn_structure::eval_passed_pawns_by_player(&game.board);
-
-    EvalComponents {
-        eval,
-        phase_value,
-
-        piece_square: EvalComponent::from_phased_eval(piece_square_eval, phase_value),
-        passed_pawns: EvalComponent::from_phased_eval(passed_pawns_eval, phase_value),
-    }
-}
+// pub fn eval_components(game: &Game) -> EvalComponents {
+//     let eval = absolute_eval(game);
+//     let phase_value = game.incremental_eval.phase_value;
+//
+//     let piece_square_eval = piece_square_tables::eval_by_player(&game.board);
+//     let passed_pawns_eval = pawn_structure::eval_passed_pawns_by_player(&game.board);
+//
+//     EvalComponents {
+//         eval,
+//         phase_value,
+//
+//         piece_square: EvalComponent::from_phased_eval(piece_square_eval, phase_value),
+//         passed_pawns: EvalComponent::from_phased_eval(passed_pawns_eval, phase_value),
+//     }
+// }

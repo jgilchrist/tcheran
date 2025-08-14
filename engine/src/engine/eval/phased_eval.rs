@@ -21,11 +21,11 @@ impl PhasedEval {
         reason = "Intentional truncation to get the bottom 16 bits"
     )]
     pub fn midgame(self) -> WhiteEval {
-        WhiteEval(self.0 as i16)
+        WhiteEval(self.0)
     }
 
     pub fn endgame(self) -> WhiteEval {
-        WhiteEval(((self.0 + 0x8000) >> 16) as i16)
+        WhiteEval((self.0 + 0x8000) >> 16)
     }
 
     pub fn for_phase(self, phase_value: i16) -> WhiteEval {
@@ -39,7 +39,7 @@ impl PhasedEval {
         let endgame_eval = i64::from(self.endgame().0);
 
         let eval = (midgame_eval * midgame_phase_value + endgame_eval * endgame_phase_value) / 24;
-        WhiteEval(i16::try_from(eval).unwrap())
+        WhiteEval(i32::try_from(eval).unwrap())
     }
 }
 

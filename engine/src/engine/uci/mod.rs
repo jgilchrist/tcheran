@@ -96,9 +96,9 @@ impl UciReporter {
                 let friendly_score = format!("{:+.2}", f64::from(cp) / 100.0);
 
                 let color = match cp {
-                    i16::MIN..=-11 => RED,
+                    i32::MIN..=-11 => RED,
                     -10..=10 => WHITE,
-                    11..=i16::MAX => GREEN,
+                    11..=i32::MAX => GREEN,
                 };
 
                 (friendly_score, color)
@@ -106,8 +106,8 @@ impl UciReporter {
             SearchScore::Mate(plies) => {
                 let friendly_mate = format!("M{}", plies.abs());
                 let color = match plies {
-                    i16::MIN..=-1 => RED,
-                    1..=i16::MAX => GREEN,
+                    i32::MIN..=-1 => RED,
+                    1..=i32::MAX => GREEN,
                     0 => unreachable!(),
                 };
 
@@ -429,28 +429,29 @@ impl Uci {
                 }
                 #[rustfmt::skip]
                 DebugCommand::Eval => {
-                    let eval_components = eval::eval_components(&self.game);
-
-                    println!("Phase value: {}", eval_components.phase_value);
-                    println!();
-
-                    println!("                         Midgame     Endgame    Actual");
-
-                    let pst = eval_components.piece_square;
-                    println!("Piece square tables:");
-                    println!("  White:                 {}       {}         {}", pst.phased_player_eval.white().midgame(), pst.phased_player_eval.white().endgame(), pst.player_eval.white());
-                    println!("  Black:                 {}       {}         {}", pst.phased_player_eval.black().midgame(), pst.phased_player_eval.black().endgame(), pst.player_eval.black());
-                    println!("  Total:                                        {}", pst.eval);
-                    println!();
-
-                    let passed_pawns = eval_components.passed_pawns;
-                    println!("Passed pawns:");
-                    println!("  White:                 {}       {}         {}", passed_pawns.phased_player_eval.white().midgame(), passed_pawns.phased_player_eval.white().endgame(), passed_pawns.player_eval.white());
-                    println!("  Black:                 {}       {}         {}", passed_pawns.phased_player_eval.black().midgame(), passed_pawns.phased_player_eval.black().endgame(), passed_pawns.player_eval.black());
-                    println!("  Total:                                        {}", passed_pawns.eval);
-                    println!();
-
-                    println!("Eval: {}", eval_components.eval);
+                    println!("{:?}", self.game.evaluate());
+                    // let eval_components = eval::eval_components(&self.game);
+                    //
+                    // println!("Phase value: {}", eval_components.phase_value);
+                    // println!();
+                    //
+                    // println!("                         Midgame     Endgame    Actual");
+                    //
+                    // let pst = eval_components.piece_square;
+                    // println!("Piece square tables:");
+                    // println!("  White:                 {}       {}         {}", pst.phased_player_eval.white().midgame(), pst.phased_player_eval.white().endgame(), pst.player_eval.white());
+                    // println!("  Black:                 {}       {}         {}", pst.phased_player_eval.black().midgame(), pst.phased_player_eval.black().endgame(), pst.player_eval.black());
+                    // println!("  Total:                                        {}", pst.eval);
+                    // println!();
+                    //
+                    // let passed_pawns = eval_components.passed_pawns;
+                    // println!("Passed pawns:");
+                    // println!("  White:                 {}       {}         {}", passed_pawns.phased_player_eval.white().midgame(), passed_pawns.phased_player_eval.white().endgame(), passed_pawns.player_eval.white());
+                    // println!("  Black:                 {}       {}         {}", passed_pawns.phased_player_eval.black().midgame(), passed_pawns.phased_player_eval.black().endgame(), passed_pawns.player_eval.black());
+                    // println!("  Total:                                        {}", passed_pawns.eval);
+                    // println!();
+                    //
+                    // println!("Eval: {}", eval_components.eval);
                 }
             },
             UciCommand::PonderHit => {}
