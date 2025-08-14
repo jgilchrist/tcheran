@@ -60,8 +60,4 @@ It can also be found on Lichess as [`jpg-bot`](https://lichess.org/@/jpg-bot). I
     * History heuristic
     * Incremental sorting
 
-* Evaluation
-    * Material difference
-    * Midgame and endgame piece square tables
-    * Tapered midgame vs. endgame evaluation
-    * Incremental updates
+* NNUE Evaluation (trained using Bullet)

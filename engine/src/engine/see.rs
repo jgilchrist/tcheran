@@ -181,7 +181,7 @@ mod tests {
         crate::init();
 
         #[rustfmt::skip]
-        const SEE_SUITE: [(&str, &str, i16, bool); 11] = [
+        const SEE_SUITE: [(&str, &str, i32, bool); 11] = [
             ("1k1r4/1pp4p/p7/4p3/8/P5P1/1PP4P/2K1R3 w - - 0 1", "e1e5", 0, true),
             ("1k1r3q/1ppn3p/p4b2/4p3/8/P2N2P1/1PP1R1BP/2K1Q3 w - - 0 1", "d3e5", 0, false),
             ("r3k2r/p1ppqpb1/bn2pnp1/3PN3/1p2P3/2N2Q1p/PPPBBPPP/R3K2R w KQkq - 0 1", "g2h3", 0, true),
@@ -214,7 +214,7 @@ mod tests {
         crate::init();
 
         #[rustfmt::skip]
-        let suite: Vec<(&str, &str, i16, bool)> = vec![
+        let suite: Vec<(&str, &str, i32, bool)> = vec![
             ("6k1/1pp4p/p1pb4/6q1/3P1pRr/2P4P/PP1Br1P1/5RKN w - - 0 1", "f1f4", -100, true),
             ("5rk1/1pp2q1p/p1pb4/8/3P1NP1/2P5/1P1BQ1P1/5RK1 b - - 0 1", "d6f4", 0, true),
             ("4R3/2r3p1/5bk1/1p1r3p/p2PR1P1/P1BK1P2/1P6/8 b - - 0 1", "h5g4", 0, true),

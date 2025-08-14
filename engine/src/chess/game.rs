@@ -8,7 +8,8 @@ use crate::chess::{
     board::Board, fen, movegen::generate_legal_moves, moves::Move, piece::PieceKind,
     player::Player, square::Square, zobrist,
 };
-use crate::engine::eval::IncrementalEvalFields;
+use crate::engine::eval::Eval;
+use crate::engine::eval::nnue::NNUE;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {
@@ -71,7 +72,7 @@ pub struct History {
     pub en_passant_target: Option<Square>,
     pub halfmove_clock: u32,
     pub zobrist: ZobristHash,
-    pub incremental_eval: IncrementalEvalFields,
+    pub nnue: NNUE,
 }
 
 #[derive(Debug, Clone)]
@@ -84,7 +85,7 @@ pub struct Game {
     pub plies: u32,
 
     pub zobrist: ZobristHash,
-    pub incremental_eval: IncrementalEvalFields,
+    pub nnue: NNUE,
     pub history: Vec<History>,
 }
 
@@ -101,7 +102,7 @@ impl Game {
         halfmove_clock: u32,
         plies: u32,
     ) -> Self {
-        let incremental_eval_fields = IncrementalEvalFields::init(&board);
+        let nnue = NNUE::from_board(&board);
 
         let mut game = Self {
             board,
@@ -112,7 +113,7 @@ impl Game {
             plies,
 
             zobrist: ZobristHash::uninit(),
-            incremental_eval: incremental_eval_fields,
+            nnue,
             history: Vec::new(),
         };
 
@@ -193,14 +194,14 @@ impl Game {
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
-        self.incremental_eval.set_at(sq, piece);
+        self.nnue.add_feature(piece, sq);
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_guaranteed_at(sq);
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
-        self.incremental_eval.remove_at(sq, removed_piece);
+        self.nnue.remove_feature(removed_piece, sq);
         removed_piece
     }
 
@@ -243,7 +244,7 @@ impl Game {
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
-            incremental_eval: self.incremental_eval.clone(),
+            nnue: self.nnue.clone(),
         };
 
         self.history.push(history);
@@ -349,7 +350,7 @@ impl Game {
             en_passant_target: self.en_passant_target,
             halfmove_clock: self.halfmove_clock,
             zobrist: self.zobrist.clone(),
-            incremental_eval: self.incremental_eval.clone(),
+            nnue: self.nnue.clone(),
         };
 
         self.history.push(history);
@@ -383,7 +384,7 @@ impl Game {
         self.halfmove_clock = history.halfmove_clock;
         self.castle_rights = history.castle_rights;
         self.en_passant_target = history.en_passant_target;
-        self.incremental_eval = history.incremental_eval;
+        self.nnue = history.nnue;
 
         // Undo castling, if we castled
         if mv.is_castling() {
@@ -425,7 +426,10 @@ impl Game {
         self.zobrist = history.zobrist;
         self.en_passant_target = history.en_passant_target;
         self.halfmove_clock = history.halfmove_clock;
-        self.incremental_eval = history.incremental_eval;
+    }
+
+    pub fn evaluate(&self) -> Eval {
+        self.nnue.evaluate(self.player)
     }
 }
 

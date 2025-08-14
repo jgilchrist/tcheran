@@ -5,8 +5,8 @@ use std::time::Duration;
 
 #[derive(Debug)]
 pub(super) enum InfoScore {
-    Centipawns(i16),
-    Mate(i16),
+    Centipawns(i32),
+    Mate(i32),
 }
 
 #[derive(Debug)]

@@ -1,6 +1,6 @@
 /// A classical evaluation value from the white player's perspective
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
-pub struct WhiteEval(pub i16);
+pub struct WhiteEval(pub i32);
 
 impl std::ops::Add for WhiteEval {
     type Output = Self;
@@ -30,10 +30,10 @@ impl std::ops::SubAssign for WhiteEval {
     }
 }
 
-impl std::ops::Mul<i16> for WhiteEval {
+impl std::ops::Mul<i32> for WhiteEval {
     type Output = Self;
 
-    fn mul(self, rhs: i16) -> Self::Output {
+    fn mul(self, rhs: i32) -> Self::Output {
         Self(self.0 * rhs)
     }
 }
@@ -48,7 +48,7 @@ impl std::ops::Neg for WhiteEval {
 
 impl std::fmt::Display for WhiteEval {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let formatted_value = f32::from(self.0) / 100.0;
+        let formatted_value = f64::from(self.0) / 100.0;
         write!(f, "{formatted_value}")
     }
 }

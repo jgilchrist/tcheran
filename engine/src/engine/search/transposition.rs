@@ -1,5 +1,4 @@
 use crate::chess::moves::Move;
-use crate::engine::eval::Eval;
 use crate::engine::transposition_table;
 use crate::engine::transposition_table::{
     TTOverwriteable, TranspositionTable, TranspositionTableEntry,
@@ -15,7 +14,7 @@ pub enum NodeBound {
 #[derive(Debug, Clone)]
 pub struct SearchTranspositionTableData {
     pub bound: NodeBound,
-    pub eval: Eval,
+    pub eval: i16,
     pub depth: u8,
     pub age: u8,
     pub best_move: Option<Move>,
