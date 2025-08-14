@@ -202,7 +202,7 @@ impl Square {
         clippy::cast_possible_truncation,
         reason = "At most 63 from .trailing_zeros() of a u64"
     )]
-    pub fn from_bitboard(bitboard: Bitboard) -> Self {
+    pub const fn from_bitboard(bitboard: Bitboard) -> Self {
         debug_assert!(bitboard.count() == 1);
         Self(bitboard.trailing_zeros() as u8)
     }
@@ -284,7 +284,7 @@ impl Square {
     #[inline(always)]
     #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
     #[allow(unused, reason = "Only used in non-release mode")]
-    pub fn relative_for(self, player: Player) -> Self {
+    pub const fn relative_for(self, player: Player) -> Self {
         match player {
             Player::White => self,
             Player::Black => self.bb().flip_vertically().single(),

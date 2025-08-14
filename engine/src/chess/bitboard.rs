@@ -41,8 +41,8 @@ impl Bitboard {
     }
 
     #[inline(always)]
-    pub fn single(self) -> Square {
-        debug_assert_eq!(self.count(), 1);
+    pub const fn single(self) -> Square {
+        debug_assert!(self.count() == 1);
         Square::from_bitboard(self)
     }
 
@@ -166,7 +166,7 @@ impl Bitboard {
     #[inline(always)]
     #[allow(clippy::allow_attributes, reason = "Only used in non-release mode")]
     #[allow(unused, reason = "Only used in non-release mode")]
-    pub fn flip_vertically(self) -> Self {
+    pub const fn flip_vertically(self) -> Self {
         Self(u64::swap_bytes(self.0))
     }
 }
