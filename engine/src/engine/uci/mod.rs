@@ -27,9 +27,7 @@ pub mod responses;
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::engine::search::time_control::{Control, TimeStrategy};
-use crate::engine::search::{
-    Clocks, PersistentState, Reporter, SearchRestrictions, SearchScore, TimeControl,
-};
+use crate::engine::search::{Clocks, PersistentState, Reporter, SearchScore, TimeControl};
 use crate::engine::uci::bench::bench;
 use crate::engine::uci::commands::DebugCommand;
 use crate::engine::uci::options::UciOption;
@@ -333,12 +331,14 @@ impl Uci {
                     time_control = TimeControl::Clocks(clocks);
                 }
 
+                if let Some(d) = depth {
+                    time_control = TimeControl::Depth(*d);
+                }
+
                 let (mut time_strategy, control) =
                     TimeStrategy::new(&self.game, &time_control, &options);
 
                 self.control = Some(control);
-
-                let search_restrictions = SearchRestrictions { depth: *depth };
 
                 let persistent_state = self.persistent_state.clone();
                 let is_stopped = self.is_stopped.clone();
@@ -350,7 +350,6 @@ impl Uci {
                         &game,
                         &mut persistent_state_handle,
                         &mut time_strategy,
-                        &search_restrictions,
                         &options,
                         &mut reporter,
                     );

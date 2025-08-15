@@ -17,10 +17,9 @@ pub fn search(
     let mut best_move: Option<Move> = None;
     let mut overall_eval: Option<Eval> = None;
 
-    let max_search_depth = ctx.search_restrictions.depth.unwrap_or(MAX_SEARCH_DEPTH);
     ctx.max_depth_reached = 0;
 
-    for depth in 1..=max_search_depth {
+    for depth in 1..=MAX_SEARCH_DEPTH {
         if !ctx.time_control.should_start_new_search(depth) {
             break;
         }
