@@ -1,7 +1,7 @@
 [workspace]
 resolver = "3"
-members = ["engine", "tools/tuner", "tools/zobrist"]
-default-members = ["engine"]
+members = ["engine", "tools/tuner", "tools/datagen", "tools/zobrist"]
+# default-members = ["engine"]
 
 [workspace.package]
 version = "5.1.0"
@@ -38,6 +38,7 @@ significant_drop_tightening = "allow"
 enum_glob_use = "allow"
 large_stack_arrays = "allow"
 new_without_default = "allow"
+upper_case_acronyms = "allow"
 
 # Generally desired, but not ideal in a couple of places where we probably
 # want to add more code later which would invalidate the refactoring.

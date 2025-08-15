@@ -32,10 +32,14 @@ test:
 ############################### Profiling #####################################
 
 instruments +CMD:
-	cargo instruments -t "time" --release -- {{CMD}}
+	cargo instruments -t "time" --package engine --release -- {{CMD}}
 
 instruments-debug +CMD:
-	cargo instruments -t "time" -- {{CMD}}
+	cargo instruments -t "time" --package engine -- {{CMD}}
+
+instruments-datagen +CMD:
+	cargo instruments -t "time" --package datagen --release -- {{CMD}}
+
 
 ################################# Misc #######################################
 
