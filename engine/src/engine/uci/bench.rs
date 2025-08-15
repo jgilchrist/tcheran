@@ -5,7 +5,6 @@
 use crate::chess::game::Game;
 use crate::engine::options::EngineOptions;
 use crate::engine::search;
-use crate::engine::search::time_control::TimeStrategy;
 use crate::engine::search::{CapturingReporter, PersistentState, TimeControl};
 
 const POSITIONS: [&str; 87] = [
@@ -108,12 +107,11 @@ pub fn bench(depth: u8) -> u64 {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
 
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Depth(depth), &options);
-
         let _ = search::search(
             &game,
             &mut persistent_state,
-            &mut time_strategy,
+            &TimeControl::Depth(depth),
+            None,
             &options,
             &mut bench_reporter,
         );

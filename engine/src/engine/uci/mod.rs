@@ -26,7 +26,7 @@ pub mod responses;
 
 use crate::chess::game::Game;
 use crate::chess::player::Player;
-use crate::engine::search::time_control::{Control, TimeStrategy};
+use crate::engine::search::time_control::StopControl;
 use crate::engine::search::{Clocks, PersistentState, Reporter, SearchScore, TimeControl};
 use crate::engine::uci::bench::bench;
 use crate::engine::uci::commands::DebugCommand;
@@ -194,7 +194,7 @@ impl Reporter for UciReporter {
 }
 
 pub struct Uci {
-    control: Option<Control>,
+    control: Option<StopControl>,
     is_stopped: Arc<LockLatch>,
     reporter: UciReporter,
     debug: bool,
@@ -335,12 +335,10 @@ impl Uci {
                     time_control = TimeControl::Depth(*d);
                 }
 
-                let (mut time_strategy, control) =
-                    TimeStrategy::new(&self.game, &time_control, &options);
-
-                self.control = Some(control);
+                self.control = Some(StopControl::new());
 
                 let persistent_state = self.persistent_state.clone();
+                let control = self.control.clone();
                 let is_stopped = self.is_stopped.clone();
 
                 let join_handle = std::thread::spawn(move || {
@@ -349,7 +347,8 @@ impl Uci {
                     let best_move = search::search(
                         &game,
                         &mut persistent_state_handle,
-                        &mut time_strategy,
+                        &time_control,
+                        control,
                         &options,
                         &mut reporter,
                     );
