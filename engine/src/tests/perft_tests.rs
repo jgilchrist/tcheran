@@ -7,7 +7,7 @@ use crate::chess::perft::perft;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::{PersistentState, SearchContext, SearchRestrictions, TimeControl};
+use crate::engine::search::{PersistentState, SearchContext, TimeControl};
 use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 use paste::paste;
 
@@ -167,13 +167,7 @@ fn test_perft_with_movepicker(fen: &str, depth: u8, expected_positions: usize) {
     let mut persistent_state = PersistentState::new(16);
     let options = EngineOptions::default();
     let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-    let search_restrictions = SearchRestrictions::default();
-    let mut ctx = SearchContext::new(
-        &mut persistent_state,
-        &mut time_strategy,
-        &options,
-        &search_restrictions,
-    );
+    let mut ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
     let actual_positions = movepicker_perft(depth, &mut game, &mut ctx);
 

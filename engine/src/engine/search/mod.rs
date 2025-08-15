@@ -85,7 +85,6 @@ pub struct SearchContext<'s> {
     pub time_control: &'s mut TimeStrategy,
 
     pub options: &'s EngineOptions,
-    pub search_restrictions: &'s SearchRestrictions,
 
     pub killer_moves: KillersTable,
     pub countermove_table: CountermoveTable,
@@ -100,7 +99,6 @@ impl<'s> SearchContext<'s> {
         persistent_state: &'s mut PersistentState,
         time_strategy: &'s mut TimeStrategy,
         options: &'s EngineOptions,
-        search_restrictions: &'s SearchRestrictions,
     ) -> Self {
         Self {
             tt: &mut persistent_state.tt,
@@ -111,7 +109,6 @@ impl<'s> SearchContext<'s> {
             time_control: time_strategy,
 
             options,
-            search_restrictions,
 
             killer_moves: KillersTable::new(),
             countermove_table: CountermoveTable::new(),
@@ -129,15 +126,11 @@ pub enum SearchScore {
     Mate(i16),
 }
 
-#[derive(Default)]
-pub struct SearchRestrictions {
-    pub depth: Option<u8>,
-}
-
 #[derive(Debug, Clone)]
 pub enum TimeControl {
     Clocks(Clocks),
     ExactTime(Duration),
+    Depth(u8),
     Infinite,
 }
 
@@ -213,16 +206,10 @@ pub fn search(
     game: &Game,
     persistent_state: &mut PersistentState,
     time_strategy: &mut TimeStrategy,
-    search_restrictions: &SearchRestrictions,
     options: &EngineOptions,
     reporter: &mut impl Reporter,
 ) -> Move {
-    let mut ctx = SearchContext::new(
-        persistent_state,
-        time_strategy,
-        options,
-        search_restrictions,
-    );
+    let mut ctx = SearchContext::new(persistent_state, time_strategy, options);
 
     ctx.tt.new_generation();
     ctx.history_table.decay(params::HISTORY_DECAY_FACTOR);

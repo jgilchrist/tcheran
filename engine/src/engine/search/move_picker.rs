@@ -271,7 +271,7 @@ mod tests {
     use crate::chess::square::squares::all::*;
     use crate::engine::options::EngineOptions;
     use crate::engine::search::time_control::TimeStrategy;
-    use crate::engine::search::{PersistentState, SearchRestrictions, TimeControl};
+    use crate::engine::search::{PersistentState, TimeControl};
 
     #[test]
     fn test_movepicker_does_not_double_yield_best_move() {
@@ -285,13 +285,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_picker.next(&game, &ctx, 0) {
             moves.push(m);
@@ -313,13 +307,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
@@ -342,13 +330,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
@@ -371,13 +353,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
@@ -399,13 +375,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
             moves.push(m);
@@ -426,13 +396,7 @@ mod tests {
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
         let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
-        let search_restrictions = SearchRestrictions::default();
-        let mut ctx = SearchContext::new(
-            &mut persistent_state,
-            &mut time_strategy,
-            &options,
-            &search_restrictions,
-        );
+        let mut ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         ctx.killer_moves.try_push(0, Move::quiet(B7, D5));
         ctx.killer_moves.try_push(0, Move::quiet(D8, E8));
