@@ -27,7 +27,7 @@ pub mod responses;
 use crate::chess::game::Game;
 use crate::chess::player::Player;
 use crate::engine::search::time_control::StopControl;
-use crate::engine::search::{Clocks, PersistentState, Reporter, SearchScore, TimeControl};
+use crate::engine::search::{Clocks, PersistentState, Reporter, TimeControl};
 use crate::engine::uci::bench::bench;
 use crate::engine::uci::commands::DebugCommand;
 use crate::engine::uci::options::UciOption;
@@ -50,9 +50,10 @@ mod colors {
 
 impl UciReporter {
     fn uci_report_search_progress(progress: &search::SearchInfo) {
-        let score = match progress.score {
-            SearchScore::Centipawns(cp) => InfoScore::Centipawns(cp),
-            SearchScore::Mate(moves) => InfoScore::Mate(moves),
+        let score = if let Some(nmoves) = progress.eval.is_mate_in_moves() {
+            InfoScore::Mate(nmoves)
+        } else {
+            InfoScore::Centipawns(progress.eval.0)
         };
 
         send_response(&UciResponse::Info(InfoFields {
@@ -84,13 +85,19 @@ impl UciReporter {
     fn pretty_report_search_progress(game: &Game, progress: &search::SearchInfo) {
         use colors::*;
 
+        let score = if let Some(nmoves) = progress.eval.is_mate_in_moves() {
+            InfoScore::Mate(nmoves)
+        } else {
+            InfoScore::Centipawns(progress.eval.0)
+        };
+
         let mut game = game.clone();
 
         print!(" {:>3}", progress.depth);
         print!("{BRIGHT_BLACK}/{:<3}{RESET}", progress.seldepth);
 
-        let (score, score_color) = match progress.score {
-            SearchScore::Centipawns(cp) => {
+        let (score, score_color) = match score {
+            InfoScore::Centipawns(cp) => {
                 let friendly_score = format!("{:+.2}", f64::from(cp) / 100.0);
 
                 let color = match cp {
@@ -101,7 +108,7 @@ impl UciReporter {
 
                 (friendly_score, color)
             }
-            SearchScore::Mate(plies) => {
+            InfoScore::Mate(plies) => {
                 let friendly_mate = format!("M{}", plies.abs());
                 let color = match plies {
                     i16::MIN..=-1 => RED,

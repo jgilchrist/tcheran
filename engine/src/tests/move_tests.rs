@@ -2,10 +2,11 @@ use crate::chess::game::Game;
 use crate::chess::moves::Move;
 use crate::chess::square::Square;
 use crate::chess::square::squares::all::*;
+use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
-use crate::engine::search::{CapturingReporter, PersistentState, SearchScore, TimeControl, search};
+use crate::engine::search::{CapturingReporter, PersistentState, TimeControl, search};
 
-fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, SearchScore) {
+fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Eval) {
     crate::init();
     let game = Game::from_fen(fen).unwrap();
     let mut persistent_state = PersistentState::new(16);
@@ -22,7 +23,7 @@ fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Sear
     );
 
     assert_eq!((best_move.src(), best_move.dst()), mv);
-    (best_move, capturing_reporter.score.unwrap())
+    (best_move, capturing_reporter.eval.unwrap())
 }
 
 #[test]
@@ -33,5 +34,5 @@ fn test_mate_on_100th_halfmove_detected() {
         (E8, H8),
     );
 
-    assert_eq!(eval, SearchScore::Mate(1));
+    assert_eq!(eval, Eval::mate_in(1));
 }
