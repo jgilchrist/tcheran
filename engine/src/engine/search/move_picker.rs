@@ -69,7 +69,7 @@ impl MovePicker {
         }
     }
 
-    pub fn next(&mut self, game: &Game, ctx: &SearchContext<'_>, plies: u8) -> Option<Move> {
+    pub(crate) fn next(&mut self, game: &Game, ctx: &SearchContext<'_>, plies: u8) -> Option<Move> {
         use GenStage::*;
 
         if self.stage == BestMove {
@@ -284,7 +284,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_picker.next(&game, &ctx, 0) {
@@ -306,7 +306,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
@@ -329,7 +329,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
@@ -352,7 +352,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
@@ -374,7 +374,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         while let Some(m) = move_provider.next(&game, &ctx, 0) {
@@ -395,7 +395,7 @@ mod tests {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
-        let (mut time_strategy, _) = TimeStrategy::new(&game, &TimeControl::Infinite, &options);
+        let mut time_strategy = TimeStrategy::new(&game, &TimeControl::Infinite, None, &options);
         let mut ctx = SearchContext::new(&mut persistent_state, &mut time_strategy, &options);
 
         ctx.killer_moves.try_push(0, Move::quiet(B7, D5));

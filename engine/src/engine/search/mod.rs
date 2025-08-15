@@ -5,7 +5,7 @@ use crate::engine::options::EngineOptions;
 use crate::engine::search::move_picker::MovePicker;
 use crate::engine::search::principal_variation::PrincipalVariation;
 use crate::engine::search::tables::{CountermoveTable, HistoryTable, KillersTable};
-use crate::engine::search::time_control::TimeStrategy;
+use crate::engine::search::time_control::{StopControl, TimeStrategy};
 use crate::engine::search::transposition::SearchTranspositionTable;
 use crate::engine::tablebases::{Tablebase, Wdl};
 use crate::engine::util;
@@ -76,7 +76,7 @@ impl PersistentState {
     }
 }
 
-pub struct SearchContext<'s> {
+pub(crate) struct SearchContext<'s> {
     pub tt: &'s mut SearchTranspositionTable,
     pub tablebase: &'s mut Tablebase,
 
@@ -84,6 +84,7 @@ pub struct SearchContext<'s> {
 
     pub time_control: &'s mut TimeStrategy,
 
+    #[expect(unused, reason = "Not used yet")]
     pub options: &'s EngineOptions,
 
     pub killer_moves: KillersTable,
@@ -95,7 +96,7 @@ pub struct SearchContext<'s> {
 }
 
 impl<'s> SearchContext<'s> {
-    pub const fn new(
+    pub(crate) const fn new(
         persistent_state: &'s mut PersistentState,
         time_strategy: &'s mut TimeStrategy,
         options: &'s EngineOptions,
@@ -205,11 +206,13 @@ impl Reporter for CapturingReporter {
 pub fn search(
     game: &Game,
     persistent_state: &mut PersistentState,
-    time_strategy: &mut TimeStrategy,
+    time_control: &TimeControl,
+    stop_control: Option<StopControl>,
     options: &EngineOptions,
     reporter: &mut impl Reporter,
 ) -> Move {
-    let mut ctx = SearchContext::new(persistent_state, time_strategy, options);
+    let mut time_strategy = TimeStrategy::new(game, time_control, stop_control, options);
+    let mut ctx = SearchContext::new(persistent_state, &mut time_strategy, options);
 
     ctx.tt.new_generation();
     ctx.history_table.decay(params::HISTORY_DECAY_FACTOR);

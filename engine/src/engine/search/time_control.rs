@@ -7,7 +7,7 @@ use crate::chess::player::Player;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::{TimeControl, params};
 
-pub struct TimeStrategy {
+pub(crate) struct TimeStrategy {
     time_control: TimeControl,
     started_at: Instant,
 
@@ -16,16 +16,27 @@ pub struct TimeStrategy {
 
     next_check_at: u64,
 
+    control: Option<StopControl>,
+}
+
+#[derive(Clone)]
+pub struct StopControl {
     force_stop: Arc<AtomicBool>,
 }
 
-pub struct Control {
-    force_stop: Arc<AtomicBool>,
-}
+impl StopControl {
+    pub fn new() -> Self {
+        Self {
+            force_stop: Arc::new(AtomicBool::new(false)),
+        }
+    }
 
-impl Control {
     pub fn stop(&self) {
         self.force_stop.store(true, Ordering::Relaxed);
+    }
+
+    pub fn should_stop(&self) -> bool {
+        self.force_stop.load(Ordering::Relaxed)
     }
 }
 
@@ -33,8 +44,9 @@ impl TimeStrategy {
     pub fn new(
         game: &Game,
         time_control: &TimeControl,
+        control: Option<StopControl>,
         options: &EngineOptions,
-    ) -> (Self, Control) {
+    ) -> Self {
         let now = Instant::now();
         let move_overhead = Duration::from_millis(options.move_overhead as u64);
 
@@ -81,13 +93,7 @@ impl TimeStrategy {
             }
         }
 
-        let force_stop = Arc::new(AtomicBool::new(false));
-
-        let control = Control {
-            force_stop: force_stop.clone(),
-        };
-
-        let time_strategy = Self {
+        Self {
             time_control: time_control.clone(),
             started_at: now,
 
@@ -96,10 +102,8 @@ impl TimeStrategy {
 
             next_check_at: params::CHECK_TERMINATION_NODE_FREQUENCY,
 
-            force_stop,
-        };
-
-        (time_strategy, control)
+            control,
+        }
     }
 
     pub fn elapsed(&self) -> Duration {
@@ -142,6 +146,10 @@ impl TimeStrategy {
     }
 
     fn is_force_stopped(&self) -> bool {
-        self.force_stop.load(Ordering::Relaxed)
+        let Some(control) = &self.control else {
+            return false;
+        };
+
+        control.should_stop()
     }
 }
