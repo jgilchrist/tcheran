@@ -3,9 +3,7 @@ use crate::chess::moves::Move;
 use crate::engine::eval::Eval;
 use crate::engine::search::aspiration::aspiration_search;
 use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::{
-    MAX_SEARCH_DEPTH, Reporter, SearchContext, SearchInfo, SearchScore, SearchStats,
-};
+use crate::engine::search::{MAX_SEARCH_DEPTH, Reporter, SearchContext, SearchInfo, SearchStats};
 use crate::engine::util;
 
 pub fn search(
@@ -28,12 +26,6 @@ pub fn search(
             break;
         };
 
-        let score = if let Some(nmoves) = eval.is_mate_in_moves() {
-            SearchScore::Mate(nmoves)
-        } else {
-            SearchScore::Centipawns(eval.0)
-        };
-
         best_move = Some(*pv.first().unwrap());
         overall_eval = Some(eval);
 
@@ -42,7 +34,7 @@ pub fn search(
             SearchInfo {
                 depth,
                 seldepth: ctx.max_depth_reached,
-                score,
+                eval,
                 pv: pv.clone(),
                 hashfull: ctx.tt.occupancy(),
                 stats: SearchStats {

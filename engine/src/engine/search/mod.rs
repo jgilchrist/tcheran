@@ -121,12 +121,6 @@ impl<'s> SearchContext<'s> {
     }
 }
 
-#[derive(Debug, Eq, PartialEq)]
-pub enum SearchScore {
-    Centipawns(i16),
-    Mate(i16),
-}
-
 #[derive(Debug, Clone)]
 pub enum TimeControl {
     Clocks(Clocks),
@@ -147,7 +141,7 @@ pub struct Clocks {
 pub struct SearchInfo {
     pub depth: u8,
     pub seldepth: u8,
-    pub score: SearchScore,
+    pub eval: Eval,
     pub stats: SearchStats,
     pub pv: PrincipalVariation,
     pub hashfull: usize,
@@ -179,14 +173,14 @@ impl Reporter for NullReporter {
 }
 
 pub struct CapturingReporter {
-    pub score: Option<SearchScore>,
+    pub eval: Option<Eval>,
     pub nodes: u64,
 }
 
 impl CapturingReporter {
     pub fn new() -> Self {
         Self {
-            score: None,
+            eval: None,
             nodes: 0,
         }
     }
@@ -196,7 +190,7 @@ impl Reporter for CapturingReporter {
     fn generic_report(&self, _: &str) {}
 
     fn report_search_progress(&mut self, _: &Game, stats: SearchInfo) {
-        self.score = Some(stats.score);
+        self.eval = Some(stats.eval);
         self.nodes = stats.stats.nodes;
     }
 
@@ -221,7 +215,7 @@ pub fn search(
 
     let tablebase_result = ctx.tablebase.best_move(game);
     if let Some(mv) = tablebase_result {
-        let (pv, score) = get_tablebase_pv(game, &ctx);
+        let (pv, eval) = get_tablebase_pv(game, &ctx);
 
         let depth = pv.len();
 
@@ -230,7 +224,7 @@ pub fn search(
             SearchInfo {
                 depth,
                 seldepth: depth,
-                score,
+                eval,
                 pv,
                 hashfull: persistent_state.tt.occupancy(),
                 stats: SearchStats {
@@ -275,7 +269,7 @@ fn panic_move(game: &Game, ctx: &SearchContext<'_>) -> Move {
     move_picker.next(game, ctx, 0).unwrap()
 }
 
-fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation, SearchScore) {
+fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation, Eval) {
     let mut game = game.clone();
     let player = game.player;
 
@@ -286,7 +280,7 @@ fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation
         .wdl(&game)
         .expect("In tablebase position, but unable to get tablebase score");
 
-    let mut search_score = None;
+    let mut eval = None;
 
     for _ in 0..MAX_SEARCH_DEPTH {
         let tablebase_move = ctx
@@ -303,20 +297,16 @@ fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation
         let king_in_check = game.is_king_in_check();
 
         if legal_moves.is_empty() {
-            search_score = Some(if king_in_check {
+            eval = Some(if king_in_check {
                 let plies = pv.len();
 
-                let mate_score = if game.player == player {
+                if game.player == player {
                     Eval::mated_in(plies)
                 } else {
                     Eval::mate_in(plies)
-                };
-
-                let mate_in_moves = mate_score.is_mate_in_moves().unwrap();
-
-                SearchScore::Mate(mate_in_moves)
+                }
             } else {
-                SearchScore::Centipawns(0)
+                Eval::DRAW
             });
 
             break;
@@ -325,10 +315,10 @@ fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation
 
     (
         pv,
-        search_score.unwrap_or(match tb_score {
-            Wdl::Win => SearchScore::Mate(1),
-            Wdl::Draw => SearchScore::Centipawns(0),
-            Wdl::Loss => SearchScore::Mate(-1),
+        eval.unwrap_or_else(|| match tb_score {
+            Wdl::Win => Eval::mate_in(1),
+            Wdl::Draw => Eval::DRAW,
+            Wdl::Loss => Eval::mated_in(1),
         }),
     )
 }
