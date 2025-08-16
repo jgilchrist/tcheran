@@ -21,7 +21,7 @@ const MVV_ORDER: [i32; PieceKind::N] = [0, PIECES, PIECES * 2, PIECES * 3, PIECE
 const LVA_ORDER: [i32; PieceKind::N] = [5, 4, 3, 2, 1, 0];
 
 pub fn score_tactical(game: &Game, mv: Move) -> i32 {
-    let moved_piece = game.board.piece_at(mv.src()).unwrap();
+    let moved_piece = game.board.piece_guaranteed_at(mv.src());
 
     if mv.is_capture() {
         if mv.is_en_passant() {
@@ -30,7 +30,7 @@ pub fn score_tactical(game: &Game, mv: Move) -> i32 {
                 + LVA_ORDER[PieceKind::Pawn.array_idx()];
         }
 
-        let captured_piece = game.board.piece_at(mv.dst()).unwrap();
+        let captured_piece = game.board.piece_guaranteed_at(mv.dst());
 
         let victim_score = MVV_ORDER[captured_piece.kind.array_idx()];
         let attacker_score = LVA_ORDER[moved_piece.kind.array_idx()];

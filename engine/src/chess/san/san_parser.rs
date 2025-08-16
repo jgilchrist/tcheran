@@ -120,7 +120,7 @@ fn parse_source_square(game: &Game, src: &str, dst: Square) -> Result<Square, Pa
     let piece_moves: Vec<(PieceKind, Move)> = game
         .moves()
         .iter()
-        .map(|mv| (game.board.piece_at(mv.src()).unwrap().kind, *mv))
+        .map(|mv| (game.board.piece_guaranteed_at(mv.src()).kind, *mv))
         .collect();
 
     // Pawn move

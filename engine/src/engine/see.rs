@@ -21,7 +21,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
     let from = mv.src();
     let to = mv.dst();
     let board = &game.board;
-    let moved_piece = board.piece_at(from).unwrap();
+    let moved_piece = board.piece_guaranteed_at(from);
 
     // We have to beat the threshold in order to pass, which is the same as saying that
     //      score - threshold = 0
@@ -97,7 +97,7 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
         }
 
         let attacker_sq = attacker_sq.unwrap();
-        let attacker = board.piece_at(attacker_sq).unwrap().kind;
+        let attacker = board.piece_guaranteed_at(attacker_sq).kind;
 
         // If we capture with a king and the opponent is attacking the square, we just captured into
         // check

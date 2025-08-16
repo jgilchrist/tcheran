@@ -16,7 +16,7 @@ pub fn format_move(game: &Game, mv: Move) -> String {
     let from = mv.src();
     let to = mv.dst();
 
-    let piece = game.board.piece_at(from).unwrap();
+    let piece = game.board.piece_guaranteed_at(from);
 
     let king_start = squares::king_start(game.player);
     if piece.kind == PieceKind::King && from == king_start {
@@ -96,7 +96,7 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
     let from = mv.src();
     let to = mv.dst();
 
-    let piece = game.board.piece_at(from).unwrap();
+    let piece = game.board.piece_guaranteed_at(from);
     if piece.kind == PieceKind::Pawn || piece.kind == PieceKind::King {
         return AmbiguityResolution::None;
     }
@@ -112,7 +112,7 @@ fn required_ambiguity_resolution(game: &Game, mv: Move) -> AmbiguityResolution {
             m.dst() == to &&
 
                 // The kind of piece being moved is the same
-                game.board.piece_at(m.src()).unwrap().kind == piece.kind &&
+                game.board.piece_guaranteed_at(m.src()).kind == piece.kind &&
 
                 // It's not the exact same move
                 *m != mv

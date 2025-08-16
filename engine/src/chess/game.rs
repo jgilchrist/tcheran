@@ -197,7 +197,7 @@ impl Game {
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
-        let removed_piece = self.board.piece_at(sq).unwrap();
+        let removed_piece = self.board.piece_guaranteed_at(sq);
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
         self.incremental_eval.remove_at(sq, removed_piece);
@@ -396,7 +396,7 @@ impl Game {
                 .set_at(capture_square, Piece::new(other_player, PieceKind::Pawn));
         }
 
-        let moved_piece = self.board.piece_at(to).unwrap();
+        let moved_piece = self.board.piece_guaranteed_at(to);
         self.board.remove_at(to);
 
         if let Some(captured_piece) = history.captured {
