@@ -26,7 +26,14 @@ pub fn search(
             break;
         };
 
-        best_move = Some(*pv.first().unwrap());
+        best_move = Some(*pv.first().unwrap_or_else(|| {
+            panic!(
+                "No PV move at depth {} for position {}",
+                depth,
+                game.to_fen()
+            )
+        }));
+
         overall_eval = Some(eval);
 
         reporter.report_search_progress(

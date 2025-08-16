@@ -266,7 +266,9 @@ pub fn init() {
 fn panic_move(game: &Game, ctx: &SearchContext<'_>) -> Move {
     let mut move_picker = MovePicker::new(None);
 
-    move_picker.next(game, ctx, 0).unwrap()
+    move_picker
+        .next(game, ctx, 0)
+        .unwrap_or_else(|| panic!("No valid moves in position {}", game.to_fen()))
 }
 
 fn get_tablebase_pv(game: &Game, ctx: &SearchContext<'_>) -> (PrincipalVariation, Eval) {

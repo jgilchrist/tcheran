@@ -62,7 +62,10 @@ pub fn aspiration_search(
     let mut window = if depth < params::ASPIRATION_MIN_DEPTH {
         Window::no_window()
     } else {
-        Window::around(eval.unwrap(), params::ASPIRATION_WINDOW_SIZE)
+        Window::around(
+            eval.expect("Aspiration search should have an evaluation after it reaches min depth"),
+            params::ASPIRATION_WINDOW_SIZE,
+        )
     };
 
     loop {
