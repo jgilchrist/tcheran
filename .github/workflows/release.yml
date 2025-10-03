@@ -104,7 +104,7 @@ jobs:
           path: tcheran-${{ needs.metadata.outputs.engine-version }}-windows-${{ matrix.exec_postfix }}.exe
 
   build-macos:
-    runs-on: macos-14
+    runs-on: macos-latest
     needs: [metadata]
 
     steps:
