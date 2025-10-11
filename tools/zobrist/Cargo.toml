@@ -1,0 +1,16 @@
+[package]
+name = "zobrist"
+version.workspace = true
+edition.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "zobrist"
+path = "src/main.rs"
+
+[dependencies]
+# engine = { path = "../../engine", version = "*", features = ["tuner"] }
+rand = "0.9.2"
+
+[lints]
+workspace = true

@@ -188,7 +188,6 @@ dependencies = [
  "arrayvec",
  "cc",
  "paste",
- "rand",
 ]
 
 [[package]]
@@ -596,4 +595,11 @@ dependencies = [
  "proc-macro2",
  "quote",
  "syn",
+]
+
+[[package]]
+name = "zobrist"
+version = "5.1.0"
+dependencies = [
+ "rand",
 ]

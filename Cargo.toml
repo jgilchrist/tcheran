@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["engine", "tools/tuner"]
+members = ["engine", "tools/tuner", "tools/zobrist"]
 default-members = ["engine"]
 
 [workspace.package]

@@ -14,5 +14,4 @@ pub mod zobrist;
 
 pub fn init() {
     movegen::init();
-    zobrist::init();
 }
