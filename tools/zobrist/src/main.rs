@@ -26,7 +26,6 @@ fn main() -> ExitCode {
         [[0; CASTLE_RIGHTS_SIDE_N]; PLAYER_N];
 
     let mut en_passant_square: [ZobristComponent; SQUARE_N] = [0; SQUARE_N];
-    let mut no_en_passant_square: ZobristComponent = 0;
     let mut side_to_play: ZobristComponent = 0;
 
     //
@@ -49,7 +48,6 @@ fn main() -> ExitCode {
         en_passant_square[square] = random.next_u64();
     }
 
-    no_en_passant_square = random.next_u64();
     side_to_play = random.next_u64();
 
     //
@@ -115,13 +113,6 @@ fn main() -> ExitCode {
         println!("        {:#018x},", en_passant_square[square],);
     }
     println!("    ];");
-
-    println!();
-
-    println!(
-        "    pub const NO_EN_PASSANT_SQUARE: ZobristComponent = {:#018x};",
-        no_en_passant_square
-    );
 
     println!();
 

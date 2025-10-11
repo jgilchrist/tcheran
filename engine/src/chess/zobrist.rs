@@ -20,8 +20,7 @@ impl ZobristHash {
         self.0 ^= castle_rights(player, side);
     }
 
-    pub fn set_en_passant(&mut self, previous_square: Option<Square>, square: Option<Square>) {
-        self.0 ^= en_passant(previous_square);
+    pub fn toggle_en_passant(&mut self, square: Square) {
         self.0 ^= en_passant(square);
     }
 
@@ -108,7 +107,9 @@ pub fn hash(game: &Game) -> ZobristHash {
     }
 
     // En passant
-    hash ^= en_passant(game.en_passant_target);
+    if let Some(en_passant_target) = game.en_passant_target {
+        hash ^= en_passant(en_passant_target);
+    }
 
     // Side to play
     if game.player == Player::Black {
@@ -135,11 +136,8 @@ fn castle_rights(player: Player, side: CastleRightsSide) -> ZobristComponent {
     }
 }
 
-fn en_passant(square: Option<Square>) -> ZobristComponent {
-    match square {
-        Some(s) => *unsafe { components::EN_PASSANT_SQUARE.get_unchecked(s.array_idx()) },
-        None => components::NO_EN_PASSANT_SQUARE,
-    }
+fn en_passant(square: Square) -> ZobristComponent {
+    *unsafe { components::EN_PASSANT_SQUARE.get_unchecked(square.array_idx()) }
 }
 
 fn side_to_play() -> ZobristComponent {
@@ -360,7 +358,5 @@ mod components {
         0x1df12a2a544aed57,
     ];
 
-    pub const NO_EN_PASSANT_SQUARE: ZobristComponent = 0x7c7784b34beee83b;
-
-    pub const SIDE_TO_PLAY: ZobristComponent = 0xa3b64183b799e523;
+    pub const SIDE_TO_PLAY: ZobristComponent = 0x7c7784b34beee83b;
 }

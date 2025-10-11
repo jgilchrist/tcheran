@@ -284,8 +284,14 @@ impl Game {
             None
         };
 
-        self.zobrist
-            .set_en_passant(self.en_passant_target, new_en_passant_target);
+        if let Some(previous_en_passant_target) = self.en_passant_target {
+            self.zobrist.toggle_en_passant(previous_en_passant_target);
+        }
+
+        if let Some(new_en_passant_target) = new_en_passant_target {
+            self.zobrist.toggle_en_passant(new_en_passant_target);
+        }
+
         self.en_passant_target = new_en_passant_target;
 
         if mv.is_castling() {
@@ -348,7 +354,10 @@ impl Game {
 
         self.history.push(history);
 
-        self.zobrist.set_en_passant(self.en_passant_target, None);
+        if let Some(previous_en_passant_target) = self.en_passant_target {
+            self.zobrist.toggle_en_passant(previous_en_passant_target);
+        }
+
         self.en_passant_target = None;
 
         self.plies += 1;
