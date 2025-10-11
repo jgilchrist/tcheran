@@ -269,10 +269,7 @@ impl Game {
             self.remove_at(capture_square);
         }
 
-        let new_en_passant_target = if moved_piece.kind == PieceKind::Pawn
-            && bitboards::pawn_back_rank(player).contains(from)
-            && bitboards::pawn_double_push_rank(player).contains(to)
-        {
+        let new_en_passant_target = if mv.is_double_push() {
             let to_bb = to.bb();
             let en_passant_attacker_squares = to_bb.west() | to_bb.east();
             let enemy_pawns = self.board.pawns(other_player);

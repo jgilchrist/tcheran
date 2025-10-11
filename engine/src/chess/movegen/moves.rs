@@ -352,7 +352,7 @@ fn generate_pawn_quiets(
 
         // Pawns cannot push forward if they are pinned orthogonally, unless they are moving along the pin ray
         if !orthogonal_pins.contains(pawn) || orthogonal_pins.contains(forward_two) {
-            moves.push(Move::quiet(pawn, forward_two));
+            moves.push(Move::double_push(pawn, forward_two));
         }
     }
 }

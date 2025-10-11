@@ -41,7 +41,7 @@ impl MoveListExt for MoveList {
 //    ├──────┤  │                                   ┌──────┐
 //    ~~~~~~~~  ├── Source square                   │      │ ─── Castle bit
 //    ├──────┤  │                                   ├──────┤
-//  5 │      │ ─┘                                   xxxxxxxx ─── Unused
+//  5 │      │ ─┘                                   │      │ ─── Double push bit
 //    ├──────┤                                      └──────┘
 //  6 │      │ ─┐
 //    ├──────┤  │                                 Capture move (Capture bit = 1, Promotion bit = 0)
@@ -69,6 +69,7 @@ const DST_MASK: u16 = 0b0000_1111_1100_0000;
 enum Flags {
     Quiet = 0b0000,
     Castle = flag_bits(true, false),
+    DoublePush = flag_bits(false, true),
     Capture = CAPTURE_FLAG_BIT,
     EnPassant = CAPTURE_FLAG_BIT | flag_bits(true, false),
     PromoteToBishop = PROMOTION_FLAG_BIT | flag_bits(false, false),
@@ -118,6 +119,11 @@ impl Move {
     #[inline]
     pub const fn quiet(src: Square, dst: Square) -> Self {
         Self::new(src, dst, Flags::Quiet)
+    }
+
+    #[inline]
+    pub const fn double_push(src: Square, dst: Square) -> Self {
+        Self::new(src, dst, Flags::DoublePush)
     }
 
     #[inline]
@@ -213,6 +219,11 @@ impl Move {
     #[inline]
     pub fn is_en_passant(self) -> bool {
         self.flags() == Flags::EnPassant
+    }
+
+    #[inline]
+    pub fn is_double_push(self) -> bool {
+        self.flags() == Flags::DoublePush
     }
 
     #[inline]

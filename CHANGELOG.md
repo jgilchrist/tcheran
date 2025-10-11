@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Encode double pushes in `Move` instead of checking in `make_move` (7.46 +- 6.47 in regression)
+
 ### Misc
 
 * Make the engine both a library and binary to allow splitting functionality out

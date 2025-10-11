@@ -364,13 +364,6 @@ pub mod bitboards {
         }
     }
 
-    pub const fn pawn_double_push_rank(player: Player) -> Bitboard {
-        match player {
-            Player::White => RANK_4,
-            Player::Black => RANK_5,
-        }
-    }
-
     pub const A1_BB: Bitboard = A1.bb();
     pub const A2_BB: Bitboard = A2.bb();
     pub const A3_BB: Bitboard = A3.bb();
