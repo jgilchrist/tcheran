@@ -44,8 +44,8 @@ fn main() -> ExitCode {
         }
     }
 
-    for square in 0..SQUARE_N {
-        en_passant_square[square] = random.next_u64();
+    for square in &mut en_passant_square {
+        *square = random.next_u64();
     }
 
     side_to_play = random.next_u64();
@@ -67,18 +67,14 @@ fn main() -> ExitCode {
     println!(
         "    pub const PIECE_SQUARE: [[[ZobristComponent; PieceKind::N]; Square::N]; Player::N] = ["
     );
-    for player in 0..PLAYER_N {
+    for player in &piece_square {
         println!("        [");
 
-        for square in 0..SQUARE_N {
+        for square in player {
             print!("            [");
 
-            for piece in 0..PIECE_N {
-                print!(
-                    "{:#018x}{}",
-                    piece_square[player][square][piece],
-                    suffix(piece, PIECE_N)
-                );
+            for (i, piece) in square.iter().enumerate() {
+                print!("{:#018x}{}", piece, suffix(i, PIECE_N));
             }
 
             println!("],");
@@ -91,15 +87,11 @@ fn main() -> ExitCode {
     println!();
 
     println!("    pub const CASTLING: [[ZobristComponent; CastleRightsSide::N]; Player::N] = [");
-    for player in 0..PLAYER_N {
+    for player in &castling {
         print!("        [");
 
-        for castle_rights in 0..CASTLE_RIGHTS_SIDE_N {
-            print!(
-                "{:#018x}{}",
-                castling[player][castle_rights],
-                suffix(castle_rights, CASTLE_RIGHTS_SIDE_N)
-            );
+        for (i, castle_rights) in player.iter().enumerate() {
+            print!("{:#018x}{}", castle_rights, suffix(i, CASTLE_RIGHTS_SIDE_N));
         }
 
         println!("],");
@@ -109,17 +101,14 @@ fn main() -> ExitCode {
     println!();
 
     println!("    pub const EN_PASSANT_SQUARE: [ZobristComponent; Square::N] = [");
-    for square in 0..SQUARE_N {
-        println!("        {:#018x},", en_passant_square[square],);
+    for square in &en_passant_square {
+        println!("        {square:#018x},");
     }
     println!("    ];");
 
     println!();
 
-    println!(
-        "    pub const SIDE_TO_PLAY: ZobristComponent = {:#018x};",
-        side_to_play
-    );
+    println!("    pub const SIDE_TO_PLAY: ZobristComponent = {side_to_play:#018x};",);
 
     println!("}}");
 
