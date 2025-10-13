@@ -128,7 +128,7 @@ pub fn negamax(
                     )]
                     let tt_data = SearchTranspositionTableData {
                         bound: tb_bound,
-                        eval: score.0 as i16,
+                        eval: score.with_mate_distance_from_position(plies).0 as i16,
                         best_move: None,
                         age: ctx.tt.generation,
                         depth,

@@ -2,6 +2,10 @@
 
 ## [Unreleased]
 
+### Misc
+
+* Fix TT mate scores being stored without root/position correction
+
 ## [6.0]
 
 * Switched to NNUE-based evaluation with a (768->256)x2->1 net (223.69 +- 33.98)

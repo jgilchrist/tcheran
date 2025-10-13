@@ -68,11 +68,11 @@ impl Eval {
     pub fn with_mate_distance_from_position(self, plies: u8) -> Self {
         let mut adjusted_value = self.0;
 
-        if adjusted_value > Self::MATE_THRESHOLD {
+        if adjusted_value >= Self::MATE_THRESHOLD {
             adjusted_value += i32::from(plies);
         }
 
-        if adjusted_value < Self::MATED_THRESHOLD {
+        if adjusted_value <= Self::MATED_THRESHOLD {
             adjusted_value -= i32::from(plies);
         }
 
@@ -82,11 +82,11 @@ impl Eval {
     pub fn with_mate_distance_from_root(self, plies: u8) -> Self {
         let mut adjusted_value = self.0;
 
-        if adjusted_value > Self::MATE_THRESHOLD {
+        if adjusted_value >= Self::MATE_THRESHOLD {
             adjusted_value -= i32::from(plies);
         }
 
-        if adjusted_value < Self::MATED_THRESHOLD {
+        if adjusted_value <= Self::MATED_THRESHOLD {
             adjusted_value += i32::from(plies);
         }
 
