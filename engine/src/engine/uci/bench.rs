@@ -6,6 +6,7 @@ use crate::chess::game::Game;
 use crate::engine::options::EngineOptions;
 use crate::engine::search;
 use crate::engine::search::{CapturingReporter, PersistentState, TimeControl};
+use std::time::{Duration, Instant};
 
 const POSITIONS: [&str; 87] = [
     "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",
@@ -97,8 +98,9 @@ const POSITIONS: [&str; 87] = [
     "r3k2r/ppp2ppp/n7/1N1p4/Bb6/8/PPPP1PPP/RNBQ1RK1 w - - 2 1", // Double check B and N, no castling rights
 ];
 
-pub fn bench(depth: u8) -> u64 {
+pub fn bench(depth: u8) -> (u64, Duration) {
     let mut nodes = 0;
+    let mut search_time = Duration::new(0, 0);
 
     for position in POSITIONS {
         let mut bench_reporter = CapturingReporter::new();
@@ -106,6 +108,8 @@ pub fn bench(depth: u8) -> u64 {
 
         let mut persistent_state = PersistentState::new(16);
         let options = EngineOptions::default();
+
+        let now = Instant::now();
 
         let _ = search::search(
             &game,
@@ -117,7 +121,8 @@ pub fn bench(depth: u8) -> u64 {
         );
 
         nodes += bench_reporter.nodes;
+        search_time += now.elapsed();
     }
 
-    nodes
+    (nodes, search_time)
 }

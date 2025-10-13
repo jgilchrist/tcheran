@@ -461,10 +461,7 @@ impl Uci {
             UciCommand::PonderHit => {}
             // For OpenBench to understand NPS values for different workers
             UciCommand::Bench => {
-                let started_at = Instant::now();
-                let nodes = bench(10);
-                let time_taken = started_at.elapsed();
-
+                let (nodes, time_taken) = bench(10);
                 let nps = util::metrics::nodes_per_second(nodes, time_taken);
 
                 println!("{nodes} nodes {nps} nps");
