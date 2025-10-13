@@ -17,8 +17,8 @@ pub struct TranspositionTableEntry<T: Clone + TTOverwriteable> {
     pub data: T,
 }
 
-pub fn calculate_number_of_entries<T: Clone + TTOverwriteable>(size_mb: usize) -> usize {
-    let size_of_entry = std::mem::size_of::<TranspositionTableEntry<T>>();
+pub const fn calculate_number_of_entries<T: Clone + TTOverwriteable>(size_mb: usize) -> usize {
+    let size_of_entry = size_of::<TranspositionTableEntry<T>>();
     let total_size_in_bytes = size_mb * 1024 * 1024;
     total_size_in_bytes / size_of_entry
 }
