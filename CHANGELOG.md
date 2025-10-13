@@ -8,12 +8,15 @@
 
 * Make the engine both a library and binary to allow splitting functionality out
 * Split the texel tuner out of the main engine into its own tools/tuner project
+* Add `tools/datagen` for data generation
 * Add a full set of bench positions for 'bench' command
 * When in a tablebase position, report the tablebase PV line
 * Don't panic when SyzygyPath is set but is empty
 * Rewrite the FEN and UCI parsers without using `nom` (and remove `nom` as a dependency)
 * Remove the dependency on `colored`
 * Remove the runtime dependency on `rand` by pre-computing Zobrist components
+* Remove the Zobrist component for 'no en-passant target'
+* Give better error messages if we encounter panics in search code
 * Use Rust 1.85 and Edition 2024
 
 ## [5.1]
