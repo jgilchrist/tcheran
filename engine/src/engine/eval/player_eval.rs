@@ -66,28 +66,28 @@ impl Eval {
     // as relative to the position at that point in the tree, rather than
     // relative to the root (by accounting for the difference between the
     // root and the current depth).
-    pub fn with_mate_distance_from_position(self, plies: u8) -> Self {
+    pub fn to_tt(self, plies: u8) -> Self {
         let mut adjusted_value = self.0;
 
-        if adjusted_value > Self::MATE_THRESHOLD {
+        if adjusted_value >= Self::MATE_THRESHOLD {
             adjusted_value += i16::from(plies);
         }
 
-        if adjusted_value < Self::MATED_THRESHOLD {
+        if adjusted_value <= Self::MATED_THRESHOLD {
             adjusted_value -= i16::from(plies);
         }
 
         Self(adjusted_value)
     }
 
-    pub fn with_mate_distance_from_root(self, plies: u8) -> Self {
+    pub fn to_search(self, plies: u8) -> Self {
         let mut adjusted_value = self.0;
 
-        if adjusted_value > Self::MATE_THRESHOLD {
+        if adjusted_value >= Self::MATE_THRESHOLD {
             adjusted_value -= i16::from(plies);
         }
 
-        if adjusted_value < Self::MATED_THRESHOLD {
+        if adjusted_value <= Self::MATED_THRESHOLD {
             adjusted_value += i16::from(plies);
         }
 
