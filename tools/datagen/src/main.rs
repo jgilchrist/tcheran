@@ -15,7 +15,7 @@ use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
 
-const DATA_DIR: &str = "data";
+const DATA_DIR: &str = "datagen";
 
 const DEFAULT_DEPTH: u8 = 8;
 const DEFAULT_STARTING_MOVES: usize = 8;
