@@ -143,14 +143,6 @@ fn progress_thread(ngames: usize) {
             .round(SpanRound::new().largest(Unit::Day).days_are_24_hours())
             .unwrap();
 
-        println!(
-            "{fens_generated} FENs generated [{fens_per_second:.2}/s] in {elapsed_time:#} from {games_played} games (out of {ngames}) | {approx_time_remaining:#} remaining"
-        );
-
-        println!(
-            "Avg time per game: {approx_time_per_game:.2}s, Avg positions per game: {fens_per_game:.2}"
-        );
-
         let white_wins = stats::WHITE_WINS.load(Ordering::SeqCst);
         let black_wins = stats::BLACK_WINS.load(Ordering::SeqCst);
         let draws = stats::DRAWS.load(Ordering::SeqCst);
@@ -165,18 +157,17 @@ fn progress_thread(ngames: usize) {
         let total_black_wins = black_wins + adjudicated_black_wins + tb_black_wins;
         let total_draws = draws + adjudicated_draws + tb_draws;
 
-        println!("    W: {total_white_wins}    B: {total_black_wins}    D: {total_draws}");
-        println!();
-        println!("    White:");
         println!(
-            "      Actual: {white_wins}    Adjudicated: {adjudicated_white_wins}    TB: {tb_white_wins}:"
+            "{fens_generated} FENs generated [{fens_per_second:.2}/s] in {elapsed_time:#} from {games_played} games (out of {ngames}) | {approx_time_remaining:#} remaining"
         );
-        println!("    Black:");
+
         println!(
-            "      Actual: {black_wins}    Adjudicated: {adjudicated_black_wins}    TB: {tb_black_wins}:"
+            "Avg time per game: {approx_time_per_game:.2}s | Avg positions per game: {fens_per_game:.2} | W: {total_white_wins} B: {total_black_wins} D: {total_draws}"
         );
-        println!("    Draws:");
-        println!("      Actual: {draws}    Adjudicated: {adjudicated_draws}    TB: {tb_draws}:");
+
+        println!(
+            "White: ({white_wins}/{adjudicated_white_wins}/{tb_white_wins}) | Black: ({black_wins}/{adjudicated_black_wins}/{tb_black_wins}) | Draws: ({draws}/{adjudicated_draws}/{tb_draws})"
+        );
         println!();
 
         std::thread::sleep(std::time::Duration::from_secs(10));
