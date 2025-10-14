@@ -19,6 +19,7 @@
 * Give better error messages if we encounter panics in search code
 * Use Rust 1.85 and Edition 2024
 * Add initial bench
+* Removed accidental eval tracing from datagen, resulting in a 1.5x speedup
 
 ## [5.1]
 
