@@ -18,6 +18,7 @@
 * Remove the Zobrist component for 'no en-passant target'
 * Give better error messages if we encounter panics in search code
 * Use Rust 1.85 and Edition 2024
+* Add initial bench
 
 ## [5.1]
 
