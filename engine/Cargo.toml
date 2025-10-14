@@ -6,7 +6,6 @@ rust-version.workspace = true
 default-run = "engine"
 
 [features]
-tuner = []
 release = []
 
 [lib]

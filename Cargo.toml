@@ -1,6 +1,6 @@
 [workspace]
 resolver = "3"
-members = ["engine", "tools/tuner", "tools/datagen", "tools/zobrist"]
+members = ["engine", "tools/datagen", "tools/zobrist"]
 
 [workspace.package]
 version = "5.1.0"

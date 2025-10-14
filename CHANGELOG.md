@@ -20,6 +20,11 @@
 * Use Rust 1.85 and Edition 2024
 * Add initial bench
 * Removed accidental eval tracing from datagen, resulting in a 1.5x speedup
+* Remove the texel tuning code entirely in preparation for NNUE
+  This also resolves a bug where the engine was always tracing its evaluation
+  when running with `cargo run` due to the `tuner` feature being automatically
+  enabled, as the 'engine' bin is a sibling of the 'engine' lib and cannot
+  control its enabled features.
 
 ## [5.1]
 

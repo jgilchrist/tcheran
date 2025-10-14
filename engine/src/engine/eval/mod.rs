@@ -1,5 +1,3 @@
-#[macro_use]
-mod macros;
 mod material;
 mod mobility_and_king_safety;
 mod params;
@@ -15,30 +13,10 @@ pub use player_eval::Eval;
 pub use white_eval::WhiteEval;
 
 use crate::chess::game::Game;
-use crate::chess::piece::{Piece, PieceKind};
+use crate::chess::piece::Piece;
 use crate::chess::player::ByPlayer;
-use crate::chess::player::Player;
 use crate::chess::square::Square;
 pub use crate::engine::eval::phased_eval::PhasedEval;
-
-const TRACE: bool = cfg!(feature = "tuner");
-
-parameters!(
-    (material, PieceKind::N, array, "PIECE_VALUES"),
-    (pawn_pst, Square::N, pst, "PAWNS"),
-    (knight_pst, Square::N, pst, "KNIGHTS"),
-    (bishop_pst, Square::N, pst, "BISHOPS"),
-    (rook_pst, Square::N, pst, "ROOKS"),
-    (queen_pst, Square::N, pst, "QUEENS"),
-    (king_pst, Square::N, pst, "KING"),
-    (passed_pawn_pst, Square::N, pst, "PASSED_PAWNS"),
-    (knight_mobility, 9, array, "KNIGHT_MOBILITY"),
-    (bishop_mobility, 14, array, "BISHOP_MOBILITY"),
-    (rook_mobility, 15, array, "ROOK_MOBILITY"),
-    (queen_mobility, 28, array, "QUEEN_MOBILITY"),
-    (attacked_king_squares, 9, array, "ATTACKED_KING_SQUARES"),
-    (bishop_pair, 1, single, "BISHOP_PAIR_BONUS"),
-);
 
 pub fn init() {
     piece_square_tables::init();
@@ -83,21 +61,10 @@ pub fn eval(game: &Game) -> Eval {
 }
 
 pub fn absolute_eval(game: &Game) -> WhiteEval {
-    let mut trace = Trace::new();
-    absolute_eval_with_trace(game, &mut trace)
-}
-
-pub fn absolute_eval_with_trace(game: &Game, trace: &mut Trace) -> WhiteEval {
-    if TRACE {
-        // Material counts and PSTs are updated incrementally so if we're tuning we need
-        // to account for those manually here in the trace.
-        material::trace_psts_and_material(game, trace);
-    }
-
     let eval = game.incremental_eval.piece_square_tables
-        + material::eval(game, trace)
-        + mobility_and_king_safety::eval(game, trace)
-        + pawn_structure::eval(game, trace);
+        + material::eval(game)
+        + mobility_and_king_safety::eval(game)
+        + pawn_structure::eval(game);
 
     eval.for_phase(game.incremental_eval.phase_value)
 }

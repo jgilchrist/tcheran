@@ -519,16 +519,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "tuner"
-version = "5.1.0"
-dependencies = [
- "clap",
- "engine",
- "indicatif",
- "rayon",
-]
-
-[[package]]
 name = "unicode-ident"
 version = "1.0.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
