@@ -5,6 +5,7 @@ use crate::chess::square::squares::all::*;
 use crate::engine::eval::Eval;
 use crate::engine::options::EngineOptions;
 use crate::engine::search::{CapturingReporter, PersistentState, TimeControl, search};
+use std::time::Duration;
 
 fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Eval) {
     crate::init();
@@ -16,7 +17,7 @@ fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Eval
     let best_move = search(
         &game,
         &mut persistent_state,
-        &TimeControl::Depth(depth),
+        &TimeControl::Depth(depth, Duration::from_secs(60)),
         None,
         &EngineOptions::default(),
         &mut capturing_reporter,
