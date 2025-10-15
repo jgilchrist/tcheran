@@ -14,6 +14,7 @@ use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
+use std::time::Duration;
 
 const DATA_DIR: &str = "datagen";
 
@@ -338,7 +339,11 @@ fn acceptable_starting_position(rand: &mut impl Rng, states: &mut PlayerStates) 
 
         let state = states.for_player(game.player);
 
-        let (_, eval) = search_position(&game, &TimeControl::Depth(DEFAULT_DEPTH), state);
+        let (_, eval) = search_position(
+            &game,
+            &TimeControl::Depth(DEFAULT_DEPTH, Duration::from_secs(10)),
+            state,
+        );
         if eval.0.abs() >= UNBALANCED_STARTING_EVAL {
             continue;
         }
@@ -474,11 +479,7 @@ fn should_include_position(game: &Game, mv: Move, eval: Eval) -> bool {
     true
 }
 
-fn play_game(
-    rand: &mut impl Rng,
-    config: &DatagenConfig,
-    states: &mut PlayerStates,
-) -> GameResult {
+fn play_game(rand: &mut impl Rng, config: &DatagenConfig, states: &mut PlayerStates) -> GameResult {
     states.reset();
     let mut game = acceptable_starting_position(rand, states);
 
@@ -488,7 +489,7 @@ fn play_game(
     let source: Option<ResultSource>;
 
     let time_control = match config.mode {
-        DatagenMode::Depth(d) => TimeControl::Depth(d),
+        DatagenMode::Depth(d) => TimeControl::Depth(d, Duration::from_secs(10)),
     };
 
     states.reset();
