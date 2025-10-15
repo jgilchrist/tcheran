@@ -133,7 +133,7 @@ impl<'s> SearchContext<'s> {
 pub enum TimeControl {
     Clocks(Clocks),
     ExactTime(Duration),
-    Depth(u8),
+    Depth(u8, Duration),
     Infinite,
 }
 

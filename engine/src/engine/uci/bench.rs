@@ -110,11 +110,12 @@ pub fn bench(depth: u8) -> (u64, Duration) {
         let options = EngineOptions::default();
 
         let now = Instant::now();
+        let hard_stop = Duration::from_secs(3600);
 
         let _ = search::search(
             &game,
             &mut persistent_state,
-            &TimeControl::Depth(depth),
+            &TimeControl::Depth(depth, hard_stop),
             None,
             &options,
             &mut bench_reporter,
