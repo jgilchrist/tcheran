@@ -63,6 +63,25 @@ struct DatagenConfig {
     tb: Option<Tablebase>,
 }
 
+struct PlayerStates {
+    white_persistent_state: PersistentState,
+    black_persistent_state: PersistentState,
+}
+
+impl PlayerStates {
+    pub fn for_player(&mut self, player: Player) -> &mut PersistentState {
+        match player {
+            Player::White => &mut self.white_persistent_state,
+            Player::Black => &mut self.black_persistent_state,
+        }
+    }
+
+    pub fn reset(&mut self) {
+        self.white_persistent_state.reset();
+        self.black_persistent_state.reset();
+    }
+}
+
 fn datagen(config: &DatagenConfig) {
     let run_id = jiff::Zoned::now().strftime("%Y%m%d-%H%M%S").to_string();
     let dir = format!("{DATA_DIR}/{run_id}");
@@ -207,6 +226,11 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
     let mut data_file = std::fs::File::create(&data_file_name).unwrap();
     let mut data_file_writer = BufWriter::new(&mut data_file);
 
+    let mut player_states = PlayerStates {
+        white_persistent_state: PersistentState::new(16),
+        black_persistent_state: PersistentState::new(16),
+    };
+
     for _ in 0..games {
         if STOP.load(Ordering::SeqCst) {
             data_file_writer
@@ -216,7 +240,7 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
             break;
         }
 
-        let r = play_game(&mut rand, config);
+        let r = play_game(&mut rand, config, &mut player_states);
         update_stats(&r);
 
         for position in r.positions {
@@ -293,7 +317,7 @@ fn random_starting_position(rand: &mut impl Rng) -> Result<Game, ()> {
     Ok(game)
 }
 
-fn acceptable_starting_position(rand: &mut impl Rng) -> Game {
+fn acceptable_starting_position(rand: &mut impl Rng, states: &mut PlayerStates) -> Game {
     const UNBALANCED_STARTING_EVAL: i16 = 1000;
 
     loop {
@@ -302,7 +326,9 @@ fn acceptable_starting_position(rand: &mut impl Rng) -> Game {
             continue;
         };
 
-        let (_, eval) = search_position(&game, &TimeControl::Depth(DEFAULT_DEPTH));
+        let state = states.for_player(game.player);
+
+        let (_, eval) = search_position(&game, &TimeControl::Depth(DEFAULT_DEPTH), state);
         if eval.0.abs() >= UNBALANCED_STARTING_EVAL {
             continue;
         }
@@ -311,15 +337,17 @@ fn acceptable_starting_position(rand: &mut impl Rng) -> Game {
     }
 }
 
-fn search_position(game: &Game, time_control: &TimeControl) -> (Move, Eval) {
-    // TODO: Is it a problem to re-allocate the TT for every game?
-    let mut persistent_state = PersistentState::new(16);
+fn search_position(
+    game: &Game,
+    time_control: &TimeControl,
+    persistent_state: &mut PersistentState,
+) -> (Move, Eval) {
     let options = EngineOptions::default();
     let mut reporter = CapturingReporter::new();
 
     let best_move = search(
         game,
-        &mut persistent_state,
+        persistent_state,
         time_control,
         None,
         &options,
@@ -436,8 +464,13 @@ fn should_include_position(game: &Game, mv: Move, eval: Eval) -> bool {
     true
 }
 
-fn play_game(rand: &mut impl Rng, config: &DatagenConfig) -> GameResult {
-    let mut game = acceptable_starting_position(rand);
+fn play_game(
+    rand: &mut impl Rng,
+    config: &DatagenConfig,
+    states: &mut PlayerStates,
+) -> GameResult {
+    states.reset();
+    let mut game = acceptable_starting_position(rand, states);
 
     let mut positions: Vec<GamePosition> = Vec::new();
     let mut adjudication_stats = AdjudicationStats::new();
@@ -448,6 +481,8 @@ fn play_game(rand: &mut impl Rng, config: &DatagenConfig) -> GameResult {
         DatagenMode::Depth(d) => TimeControl::Depth(d),
     };
 
+    states.reset();
+
     loop {
         if let Some((r, s)) = game_result(&game, config) {
             result = Some(r);
@@ -455,7 +490,8 @@ fn play_game(rand: &mut impl Rng, config: &DatagenConfig) -> GameResult {
             break;
         }
 
-        let (next_move, eval) = search_position(&game, &time_control);
+        let state = states.for_player(game.player);
+        let (next_move, eval) = search_position(&game, &time_control, state);
         let white_eval = eval.to_white_eval(game.player);
 
         if should_include_position(&game, next_move, eval) {
