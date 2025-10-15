@@ -23,6 +23,7 @@ pub enum Wdl {
     Loss,
 }
 
+#[derive(Clone)]
 pub struct Tablebase {
     is_enabled: bool,
 }

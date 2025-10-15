@@ -70,6 +70,14 @@ impl PersistentState {
         }
     }
 
+    pub fn with_tablebase(tt_size_mb: usize, tb: &Tablebase) -> Self {
+        Self {
+            tt: SearchTranspositionTable::new(tt_size_mb),
+            history_table: HistoryTable::new(),
+            tablebase: tb.clone(),
+        }
+    }
+
     pub fn reset(&mut self) {
         self.tt.reset();
         self.history_table.reset();

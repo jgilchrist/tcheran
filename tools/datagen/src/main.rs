@@ -69,6 +69,19 @@ struct PlayerStates {
 }
 
 impl PlayerStates {
+    pub fn new(tt_size: usize, datagen_config: &DatagenConfig) -> Self {
+        match &datagen_config.tb {
+            Some(tb) => Self {
+                white_persistent_state: PersistentState::with_tablebase(tt_size, tb),
+                black_persistent_state: PersistentState::with_tablebase(tt_size, tb),
+            },
+            None => Self {
+                white_persistent_state: PersistentState::new(tt_size),
+                black_persistent_state: PersistentState::new(tt_size),
+            },
+        }
+    }
+
     pub fn for_player(&mut self, player: Player) -> &mut PersistentState {
         match player {
             Player::White => &mut self.white_persistent_state,
@@ -226,10 +239,7 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
     let mut data_file = std::fs::File::create(&data_file_name).unwrap();
     let mut data_file_writer = BufWriter::new(&mut data_file);
 
-    let mut player_states = PlayerStates {
-        white_persistent_state: PersistentState::new(16),
-        black_persistent_state: PersistentState::new(16),
-    };
+    let mut player_states = PlayerStates::new(16, config);
 
     for _ in 0..games {
         if STOP.load(Ordering::SeqCst) {
