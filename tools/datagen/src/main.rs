@@ -6,9 +6,11 @@ use engine::engine::eval::{Eval, WhiteEval};
 use engine::engine::options::EngineOptions;
 use engine::engine::search::{CapturingReporter, PersistentState, TimeControl, search};
 use engine::engine::tablebases::{Tablebase, Wdl};
+use engine::engine::util::log::crashlog;
 use jiff::{SpanRound, ToSpan, Unit};
 use rand::Rng;
 use rand::prelude::IndexedRandom;
+use std::fs::File;
 use std::io;
 use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
@@ -235,13 +237,17 @@ fn update_stats(result: &GameResult) {
 
 fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
     let mut rand = rand::rng();
+
     let data_file_name = format!("{dir}/data-{id}.txt");
     let mut data_file = std::fs::File::create(&data_file_name).unwrap();
     let mut data_file_writer = BufWriter::new(&mut data_file);
 
+    let log_file_name = format!("{dir}/log-{id}.txt");
+    let mut log_file = std::fs::File::create(&log_file_name).unwrap();
+
     let mut player_states = PlayerStates::new(16, config);
 
-    for _ in 0..games {
+    for game_n in 0..games {
         if STOP.load(Ordering::SeqCst) {
             data_file_writer
                 .flush()
@@ -250,7 +256,19 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
             break;
         }
 
-        let r = play_game(&mut rand, config, &mut player_states);
+        writeln!(log_file, "Starting game {}", game_n + 1).unwrap();
+        let r = play_game(&mut rand, config, &mut player_states, &mut log_file);
+        let Ok(r) = r else {
+            let bad_positions = r.unwrap_err();
+
+            crashlog("Datagen game went more than 10000 plies");
+            for i in bad_positions {
+                crashlog(format!("{}", i.0));
+            }
+
+            continue;
+        };
+
         update_stats(&r);
 
         for position in r.positions {
@@ -277,20 +295,24 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
         .expect("Should be able to flush data file buffer");
 }
 
+#[derive(Debug)]
 struct GamePosition(pub String, pub WhiteEval);
 
+#[derive(Debug)]
 enum WDL {
     Win,
     Draw,
     Loss,
 }
 
+#[derive(Debug)]
 enum ResultSource {
     Actual,
     Adjudicated,
     Tablebase,
 }
 
+#[derive(Debug)]
 struct GameResult {
     positions: Vec<GamePosition>,
     result: WDL,
@@ -478,7 +500,8 @@ fn play_game(
     rand: &mut impl Rng,
     config: &DatagenConfig,
     states: &mut PlayerStates,
-) -> GameResult {
+    log_file: &mut File,
+) -> Result<GameResult, Vec<GamePosition>> {
     states.reset();
     let mut game = acceptable_starting_position(rand, states);
 
@@ -493,7 +516,21 @@ fn play_game(
 
     states.reset();
 
+    let mut loops = 0;
+
     loop {
+        loops += 1;
+
+        if loops >= 10000 && loops <= 10100 {
+            writeln!(
+                log_file,
+                "Game got to {} loops with FEN {}",
+                loops,
+                game.to_fen()
+            )
+            .unwrap();
+        }
+
         if let Some((r, s)) = game_result(&game, config) {
             result = Some(r);
             source = Some(s);
@@ -529,11 +566,11 @@ fn play_game(
         (Player::White, WDL::Loss) | (Player::Black, WDL::Win) => WDL::Loss,
     };
 
-    GameResult {
+    Ok(GameResult {
         positions,
         result,
         source,
-    }
+    })
 }
 
 pub fn main() -> ExitCode {
