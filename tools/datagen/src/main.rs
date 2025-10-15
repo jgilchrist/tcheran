@@ -10,7 +10,7 @@ use jiff::{SpanRound, ToSpan, Unit};
 use rand::Rng;
 use rand::prelude::IndexedRandom;
 use std::io;
-use std::io::Write;
+use std::io::{BufWriter, Write};
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, Ordering};
@@ -205,9 +205,14 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
     let mut rand = rand::rng();
     let data_file_name = format!("{dir}/data-{id}.txt");
     let mut data_file = std::fs::File::create(&data_file_name).unwrap();
+    let mut data_file_writer = BufWriter::new(&mut data_file);
 
     for _ in 0..games {
         if STOP.load(Ordering::SeqCst) {
+            data_file_writer
+                .flush()
+                .expect("Should be able to flush data file buffer");
+
             break;
         }
 
@@ -219,7 +224,7 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
             let eval = position.1;
 
             writeln!(
-                data_file,
+                data_file_writer,
                 "{} | {} | {}",
                 fen,
                 eval.0,
@@ -232,6 +237,10 @@ fn datagen_thread(id: usize, games: usize, dir: &str, config: &DatagenConfig) {
             .expect("Failed to write to file");
         }
     }
+
+    data_file_writer
+        .flush()
+        .expect("Should be able to flush data file buffer");
 }
 
 struct GamePosition(pub String, pub WhiteEval);
