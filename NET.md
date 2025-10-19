@@ -15,6 +15,7 @@ Parameters in the following table are noted only where they differ from Bullet's
 
 | Dataset    | Architecture       | Parameters          | Tested against | SPRT            | Notes                |
 | ---------- | ------------------ | ------------------  | -------------- | --------------- | -------------------- |
+| Dataset #0 | (768->128)x2->1    | WDL 0.1, LR 0.01    | net0           | -17.77 +- 9.74  | Hello world!         |
 | Dataset #0 | (768->256)x2->1    | WDL 0.3, LR 0.001   | net0           | -83.64 +- 20.98 |                      |
 
 ## Training datasets
