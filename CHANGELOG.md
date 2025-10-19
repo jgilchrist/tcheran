@@ -2,7 +2,7 @@
 
 ## [Unreleased]
 
-* Switched to NNUE-based evaluation with a (768->16)x2->1 net (38.11 +- 13.69)
+* Switched to NNUE-based evaluation with a (768->256)x2->1 net (223.69 +- 33.98)
 * Encode double pushes in `Move` instead of checking in `make_move` (7.46 +- 6.47 in regression)
 
 ### Misc

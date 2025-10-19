@@ -6,7 +6,7 @@ use crate::engine::eval::Eval;
 
 // Network parameters
 const FEATURES: usize = 768;
-const HIDDEN_SIZE: usize = 16;
+const HIDDEN_SIZE: usize = 256;
 
 // Quantization factors
 const QA: i32 = 255;
