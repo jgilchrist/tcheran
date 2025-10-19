@@ -17,11 +17,11 @@ const SCALE: i32 = 400;
 
 /// A column of the feature-weights matrix.
 #[derive(Clone, Copy, Debug)]
-#[repr(C)]
+#[repr(C, align(64))]
 pub struct Accumulator([i16; HIDDEN_SIZE]);
 
 /// Container for all network parameters
-#[repr(C)]
+#[repr(C, align(64))]
 struct Network {
     feature_weights: [Accumulator; FEATURES],
     feature_bias: Accumulator,

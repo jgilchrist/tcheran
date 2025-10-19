@@ -3,6 +3,13 @@
 version = 4
 
 [[package]]
+name = "alignnet"
+version = "5.1.0"
+dependencies = [
+ "rand",
+]
+
+[[package]]
 name = "anstream"
 version = "0.6.21"
 source = "registry+https://github.com/rust-lang/crates.io-index"
