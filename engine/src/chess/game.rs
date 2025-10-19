@@ -194,14 +194,12 @@ impl Game {
     fn set_at(&mut self, sq: Square, piece: Piece) {
         self.board.set_at(sq, piece);
         self.zobrist.toggle_piece_on_square(sq, piece);
-        self.nnue.add_feature(piece, sq);
     }
 
     fn remove_at(&mut self, sq: Square) -> Piece {
         let removed_piece = self.board.piece_guaranteed_at(sq);
         self.board.remove_at(sq);
         self.zobrist.toggle_piece_on_square(sq, removed_piece);
-        self.nnue.remove_feature(removed_piece, sq);
         removed_piece
     }
 
@@ -251,14 +249,18 @@ impl Game {
 
         let moved_piece = self.remove_at(from);
 
-        if maybe_captured_piece.is_some() {
+        if let Some(captured_piece) = maybe_captured_piece {
             self.remove_at(to);
+            self.nnue.remove_feature(captured_piece, to);
         }
 
         if let Some(promoted_to) = mv.promotion() {
             let promoted_piece = Piece::new(player, promoted_to.piece());
             self.set_at(to, promoted_piece);
+            self.nnue.remove_feature(moved_piece, from);
+            self.nnue.add_feature(promoted_piece, to);
         } else {
+            self.nnue.move_piece_feature(moved_piece, from, to);
             self.set_at(to, moved_piece);
         }
 
@@ -267,7 +269,8 @@ impl Game {
         if mv.is_en_passant() {
             // Remove the piece behind the square the pawn just moved to
             let capture_square = to.backward(player);
-            self.remove_at(capture_square);
+            let captured_pawn = self.remove_at(capture_square);
+            self.nnue.remove_feature(captured_pawn, capture_square);
         }
 
         let new_en_passant_target = if mv.is_double_push() {
@@ -299,6 +302,7 @@ impl Game {
             if let Some((rook_from, rook_to)) = squares::castle_squares(player, to) {
                 let rook = self.remove_at(rook_from);
                 self.set_at(rook_to, rook);
+                self.nnue.move_piece_feature(rook, rook_from, rook_to);
             }
         }
 

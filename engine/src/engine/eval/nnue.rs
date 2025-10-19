@@ -73,6 +73,19 @@ impl NNUE {
         }
     }
 
+    fn move_feature(acc: &mut Accumulator, from_feature_idx: usize, to_feature_idx: usize) {
+        let zip = acc.0.iter_mut().zip(
+            NETWORK.feature_weights[from_feature_idx]
+                .0
+                .iter()
+                .zip(NETWORK.feature_weights[to_feature_idx].0.iter()),
+        );
+
+        for (acc_val, (&from, &to)) in zip {
+            *acc_val += to - from;
+        }
+    }
+
     pub fn add_feature(&mut self, piece: Piece, sq: Square) {
         let (white_idx, black_idx) = nnue_index(piece, sq);
 
@@ -85,6 +98,14 @@ impl NNUE {
 
         Self::update_feature::<false>(&mut self.white, white_idx);
         Self::update_feature::<false>(&mut self.black, black_idx);
+    }
+
+    pub fn move_piece_feature(&mut self, piece: Piece, from_sq: Square, to_sq: Square) {
+        let (from_white_idx, from_black_idx) = nnue_index(piece, from_sq);
+        let (to_white_idx, to_black_idx) = nnue_index(piece, to_sq);
+
+        Self::move_feature(&mut self.white, from_white_idx, to_white_idx);
+        Self::move_feature(&mut self.black, from_black_idx, to_black_idx);
     }
 
     pub fn evaluate(&self, side: Player) -> Eval {
