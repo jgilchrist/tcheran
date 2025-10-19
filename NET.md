@@ -11,6 +11,12 @@ Parameters in the following table are noted only where they differ from Bullet's
 | 0       | Dataset #0 | (768->16)x2->1     | WDL 0.1, LR 0.01   | 38.11 +- 13.69  | Hello world!         |
 | 1       | Dataset #1 | (768->256)x2->1    | WDL 0.1, LR 0.01   | 223.69 +- 33.98 | First proper dataset |
 
+## Experiments
+
+| Dataset    | Architecture       | Parameters          | Tested against | SPRT            | Notes                |
+| ---------- | ------------------ | ------------------  | -------------- | --------------- | -------------------- |
+| Dataset #0 | (768->256)x2->1    | WDL 0.3, LR 0.001   | net0           | -83.64 +- 20.98 |                      |
+
 ## Training datasets
 
 | Dataset | # Fens      | Datagen runs                                                                                                          |
