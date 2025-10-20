@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [6.0]
+
 * Switched to NNUE-based evaluation with a (768->256)x2->1 net (223.69 +- 33.98)
 * Update NNUE features in a single loop when moving a single piece (10.65 +- 6.23)
 * Use `align(64)` for network weights (5.51 +- 4.06)
@@ -259,7 +261,8 @@ Initial release with the following major features:
     * Tapered midgame vs. endgame evaluation
     * Incremental updates
 
-[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v5.1...HEAD
+[unreleased]: https://github.com/jgilchrist/chess-engine/compare/v6.0...HEAD
+[6.0]: https://github.com/jgilchrist/chess-engine/compare/v5.1..v6.0
 [5.1]: https://github.com/jgilchrist/chess-engine/compare/v5.0..v5.1
 [5.0]: https://github.com/jgilchrist/chess-engine/compare/v4.1..v5.0
 [4.1]: https://github.com/jgilchrist/chess-engine/compare/v4.0..v4.1

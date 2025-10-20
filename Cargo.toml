@@ -4,7 +4,7 @@ members = ["engine", "tools/datagen", "tools/zobrist", "tools/alignnet"]
 default-members = ["engine", "tools/datagen", "tools/zobrist"]
 
 [workspace.package]
-version = "5.1.0"
+version = "6.0.0"
 edition = "2024"
 rust-version = "1.85"
 
