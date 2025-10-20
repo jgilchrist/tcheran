@@ -4,7 +4,7 @@ version = 4
 
 [[package]]
 name = "alignnet"
-version = "5.1.0"
+version = "0.0.0"
 dependencies = [
  "rand",
 ]
@@ -196,7 +196,7 @@ dependencies = [
 
 [[package]]
 name = "datagen"
-version = "5.1.0"
+version = "0.0.0"
 dependencies = [
  "clap",
  "ctrlc",
@@ -826,7 +826,7 @@ dependencies = [
 
 [[package]]
 name = "zobrist"
-version = "5.1.0"
+version = "0.0.0"
 dependencies = [
  "rand",
 ]
