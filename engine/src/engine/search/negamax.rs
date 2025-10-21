@@ -68,11 +68,11 @@ pub fn negamax(
     // Check extension: If we're about to finish searching, but we are in check, we
     // should keep going.
     let in_check = game.is_king_in_check();
-    if in_check && depth < MAX_SEARCH_DEPTH {
+    if in_check {
         depth += 1;
     }
 
-    if depth == 0 {
+    if depth == 0 || plies >= MAX_SEARCH_DEPTH {
         return quiescence(game, alpha, beta, plies, ctx);
     }
 
