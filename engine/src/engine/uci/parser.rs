@@ -150,13 +150,28 @@ fn cmd_position(args: &[&str]) -> Result<UciCommand, ()> {
     let rest = &args[1..];
 
     match mode {
-        "startpos" => no_args_command(
-            UciCommand::Position {
+        "startpos" => {
+            let moves_token_idx = rest.iter().position(|&t| t == "moves");
+
+            let moves = match moves_token_idx {
+                Some(moves_token_idx) => {
+                    let moves = &rest[moves_token_idx + 1..];
+
+                    let moves = moves
+                        .iter()
+                        .map(|m| uci_move(m))
+                        .collect::<Result<Vec<UciMove>, ()>>()?;
+
+                    moves
+                }
+                None => Vec::new(),
+            };
+
+            Ok(UciCommand::Position {
                 position: Position::StartPos,
-                moves: vec![],
-            },
-            rest,
-        ),
+                moves,
+            })
+        }
         "fen" => {
             let moves_token_idx = rest.iter().position(|&t| t == "moves");
 
@@ -374,6 +389,12 @@ mod tests {
     #[test]
     fn test_position_fen() {
         let ml = parse("position fen 6r1/p2p4/3Ppk2/p1R2p2/8/3b4/1r6/4K3 b - - 5 45");
+        assert!(ml.is_ok());
+    }
+
+    #[test]
+    fn test_position_startpos_then_moves() {
+        let ml = parse("position startpos moves e2e4 c7c5 g1f3 d7d6 f1b5 c8d7 b1c3");
         assert!(ml.is_ok());
     }
 
