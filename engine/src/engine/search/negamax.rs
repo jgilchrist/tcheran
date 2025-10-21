@@ -89,8 +89,8 @@ pub fn negamax(
 
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_score),
-                NodeBound::Upper if tt_eval <= alpha => return Ok(tt_score),
-                NodeBound::Lower if tt_eval >= beta => return Ok(tt_score),
+                NodeBound::Upper if tt_score <= alpha => return Ok(tt_score),
+                NodeBound::Lower if tt_score >= beta => return Ok(tt_score),
                 _ => {}
             }
         }

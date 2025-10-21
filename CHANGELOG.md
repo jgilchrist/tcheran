@@ -3,6 +3,7 @@
 ## [Unreleased]
 
 * Skip bad captures in quiescence search (43.07 +- 13.42)
+* Do tranposition table cutoff comparison on the mate-adjusted score (1.72 +- 3.81)
 
 ### Misc
 
