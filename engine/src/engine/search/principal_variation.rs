@@ -1,6 +1,6 @@
-use crate::chess::moves::Move;
-use crate::engine::search::MAX_SEARCH_DEPTH_SIZE;
 use arrayvec::ArrayVec;
+
+use crate::{chess::moves::Move, engine::search::MAX_SEARCH_DEPTH_SIZE};
 
 #[derive(Clone)]
 pub struct PrincipalVariation(ArrayVec<Move, MAX_SEARCH_DEPTH_SIZE>);

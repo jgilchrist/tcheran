@@ -1,5 +1,6 @@
-use crate::engine::uci::UciMove;
 use std::time::Duration;
+
+use crate::engine::uci::UciMove;
 
 #[derive(Debug, PartialEq, Eq, Clone)]
 pub enum Position {

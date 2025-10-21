@@ -1,20 +1,24 @@
+use std::{
+    io,
+    io::{BufWriter, Write},
+    path::{Path, PathBuf},
+    process::ExitCode,
+    sync::atomic::{AtomicBool, Ordering},
+    time::Duration,
+};
+
 use clap::Parser;
-use engine::chess::game::Game;
-use engine::chess::moves::Move;
-use engine::chess::player::Player;
-use engine::engine::eval::{Eval, WhiteEval};
-use engine::engine::options::EngineOptions;
-use engine::engine::search::{CapturingReporter, PersistentState, TimeControl, search};
-use engine::engine::tablebases::{Tablebase, Wdl};
+use engine::{
+    chess::{game::Game, moves::Move, player::Player},
+    engine::{
+        eval::{Eval, WhiteEval},
+        options::EngineOptions,
+        search::{CapturingReporter, PersistentState, TimeControl, search},
+        tablebases::{Tablebase, Wdl},
+    },
+};
 use jiff::{SpanRound, ToSpan, Unit};
-use rand::Rng;
-use rand::prelude::IndexedRandom;
-use std::io;
-use std::io::{BufWriter, Write};
-use std::path::{Path, PathBuf};
-use std::process::ExitCode;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::Duration;
+use rand::{Rng, prelude::IndexedRandom};
 
 const DATA_DIR: &str = "datagen";
 

@@ -4,10 +4,10 @@ pub fn init() {
     lmr_table::init();
 }
 
-use crate::chess::moves::Move;
-use crate::chess::player::Player;
-use crate::chess::square::Square;
-use crate::engine::search::{MAX_SEARCH_DEPTH_SIZE, move_ordering};
+use crate::{
+    chess::{moves::Move, player::Player, square::Square},
+    engine::search::{MAX_SEARCH_DEPTH_SIZE, move_ordering},
+};
 
 pub struct KillersTable([[Option<Move>; 2]; MAX_SEARCH_DEPTH_SIZE]);
 

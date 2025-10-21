@@ -1,8 +1,7 @@
-use crate::chess::player::Player;
-use crate::chess::square::Square;
 use crate::chess::{
     direction::Direction,
-    square::{File, Rank},
+    player::Player,
+    square::{File, Rank, Square},
 };
 
 #[derive(Clone, Copy, PartialEq, Eq)]

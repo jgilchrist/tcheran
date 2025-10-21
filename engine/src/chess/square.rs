@@ -1,5 +1,7 @@
-use crate::chess::bitboard::{Bitboard, bitboards};
-use crate::chess::player::Player;
+use crate::chess::{
+    bitboard::{Bitboard, bitboards},
+    player::Player,
+};
 
 pub const FILES: [File; File::N] = [
     File::A,
@@ -315,8 +317,7 @@ impl std::ops::BitOr for Square {
 
 pub mod squares {
     use self::all::*;
-    use crate::chess::player::Player;
-    use crate::chess::square::Square;
+    use crate::chess::{player::Player, square::Square};
 
     pub const fn king_start(player: Player) -> Square {
         match player {

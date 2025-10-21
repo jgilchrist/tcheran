@@ -1,6 +1,4 @@
-use crate::chess::moves::Move;
-use crate::chess::piece::PromotionPieceKind;
-use crate::chess::square::Square;
+use crate::chess::{moves::Move, piece::PromotionPieceKind, square::Square};
 
 #[derive(PartialEq, Eq, Clone, Copy)]
 pub struct UciMove {

@@ -1,8 +1,9 @@
-use crate::chess::bitboard::bitboards;
-use crate::chess::direction::Direction;
-use crate::chess::{bitboard::Bitboard, square::Square};
-
 use super::attacks;
+use crate::chess::{
+    bitboard::{Bitboard, bitboards},
+    direction::Direction,
+    square::Square,
+};
 
 static mut BISHOP_NOT_MASKS: [Bitboard; Square::N] = [Bitboard::EMPTY; Square::N];
 const BISHOP_SHIFT: usize = 9;

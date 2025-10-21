@@ -1,7 +1,9 @@
-use crate::chess::moves::Move;
-use crate::engine::transposition_table;
-use crate::engine::transposition_table::{
-    TTOverwriteable, TranspositionTable, TranspositionTableEntry,
+use crate::{
+    chess::moves::Move,
+    engine::{
+        transposition_table,
+        transposition_table::{TTOverwriteable, TranspositionTable, TranspositionTableEntry},
+    },
 };
 
 #[derive(Debug, Clone, Eq, PartialEq)]

@@ -9,6 +9,9 @@ list:
 build:
 	@cargo build --release
 
+fmt:
+    @cargo +nightly fmt
+
 generate-fathom-bindings:
 	bindgen engine/src/engine/tablebases/fathom/src/tbprobe.h \
 		-o engine/src/engine/tablebases/bindings.rs \

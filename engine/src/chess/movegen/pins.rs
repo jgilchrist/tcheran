@@ -1,9 +1,13 @@
-use crate::chess::bitboard::Bitboard;
-use crate::chess::board::Board;
-use crate::chess::movegen::tables;
-use crate::chess::movegen::tables::{bishop_attacks, rook_attacks};
-use crate::chess::player::Player;
-use crate::chess::square::Square;
+use crate::chess::{
+    bitboard::Bitboard,
+    board::Board,
+    movegen::{
+        tables,
+        tables::{bishop_attacks, rook_attacks},
+    },
+    player::Player,
+    square::Square,
+};
 
 pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard, Bitboard) {
     let all_pieces = board.occupancy();
@@ -38,8 +42,7 @@ pub fn get_pins(board: &Board, player: Player, king_square: Square) -> (Bitboard
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chess::bitboard::bitboards::*;
-    use crate::chess::game::Game;
+    use crate::chess::{bitboard::bitboards::*, game::Game};
 
     fn pin_test(
         fen: &'static str,

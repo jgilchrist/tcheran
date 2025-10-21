@@ -1,6 +1,6 @@
+use std::{panic::PanicHookInfo, process::ExitCode};
+
 use engine::engine::util::log;
-use std::panic::PanicHookInfo;
-use std::process::ExitCode;
 
 fn get_panic_message(info: &PanicHookInfo<'_>) -> String {
     if let Some(s) = info.payload().downcast_ref::<&str>() {

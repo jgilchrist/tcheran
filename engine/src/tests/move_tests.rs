@@ -1,11 +1,17 @@
-use crate::chess::game::Game;
-use crate::chess::moves::Move;
-use crate::chess::square::Square;
-use crate::chess::square::squares::all::*;
-use crate::engine::eval::Eval;
-use crate::engine::options::EngineOptions;
-use crate::engine::search::{CapturingReporter, PersistentState, TimeControl, search};
 use std::time::Duration;
+
+use crate::{
+    chess::{
+        game::Game,
+        moves::Move,
+        square::{Square, squares::all::*},
+    },
+    engine::{
+        eval::Eval,
+        options::EngineOptions,
+        search::{CapturingReporter, PersistentState, TimeControl, search},
+    },
+};
 
 fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Eval) {
     crate::init();

@@ -1,15 +1,18 @@
-use crate::chess::bitboard::bitboards;
-use crate::chess::moves::MoveList;
-use crate::chess::piece::Piece;
-use crate::chess::player::ByPlayer;
-use crate::chess::square::squares;
-use crate::chess::zobrist::ZobristHash;
-use crate::chess::{
-    board::Board, fen, movegen::generate_legal_moves, moves::Move, piece::PieceKind,
-    player::Player, square::Square, zobrist,
+use crate::{
+    chess::{
+        bitboard::bitboards,
+        board::Board,
+        fen,
+        movegen::generate_legal_moves,
+        moves::{Move, MoveList},
+        piece::{Piece, PieceKind},
+        player::{ByPlayer, Player},
+        square::{Square, squares},
+        zobrist,
+        zobrist::ZobristHash,
+    },
+    engine::eval::{Eval, nnue::NNUE},
 };
-use crate::engine::eval::Eval;
-use crate::engine::eval::nnue::NNUE;
 
 #[derive(Debug, Copy, Clone)]
 pub enum CastleRightsSide {

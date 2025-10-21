@@ -1,9 +1,15 @@
-use crate::chess::game::Game;
-use crate::chess::movegen;
-use crate::chess::movegen::MovegenCache;
-use crate::chess::moves::{Move, MoveList};
-use crate::engine::search::move_ordering::{score_quiet, score_tactical};
-use crate::engine::search::{SearchContext, move_ordering};
+use crate::{
+    chess::{
+        game::Game,
+        movegen,
+        movegen::MovegenCache,
+        moves::{Move, MoveList},
+    },
+    engine::search::{
+        SearchContext, move_ordering,
+        move_ordering::{score_quiet, score_tactical},
+    },
+};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
@@ -267,11 +273,13 @@ impl MovePicker {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chess::game::Game;
-    use crate::chess::square::squares::all::*;
-    use crate::engine::options::EngineOptions;
-    use crate::engine::search::time_control::TimeStrategy;
-    use crate::engine::search::{PersistentState, TimeControl};
+    use crate::{
+        chess::{game::Game, square::squares::all::*},
+        engine::{
+            options::EngineOptions,
+            search::{PersistentState, TimeControl, time_control::TimeStrategy},
+        },
+    };
 
     #[test]
     fn test_movepicker_does_not_double_yield_best_move() {

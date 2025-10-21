@@ -1,15 +1,18 @@
-use crate::chess::fen::START_POS;
-use crate::chess::game::Game;
-use crate::chess::movegen;
-use crate::chess::movegen::MovegenCache;
-use crate::chess::moves::MoveList;
-use crate::chess::perft::perft;
-use crate::engine::options::EngineOptions;
-use crate::engine::search::move_picker::MovePicker;
-use crate::engine::search::time_control::TimeStrategy;
-use crate::engine::search::{PersistentState, SearchContext, TimeControl};
-use crate::engine::transposition_table::{TTOverwriteable, TranspositionTable};
 use paste::paste;
+
+use crate::{
+    chess::{
+        fen::START_POS, game::Game, movegen, movegen::MovegenCache, moves::MoveList, perft::perft,
+    },
+    engine::{
+        options::EngineOptions,
+        search::{
+            PersistentState, SearchContext, TimeControl, move_picker::MovePicker,
+            time_control::TimeStrategy,
+        },
+        transposition_table::{TTOverwriteable, TranspositionTable},
+    },
+};
 
 fn test_perft(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();

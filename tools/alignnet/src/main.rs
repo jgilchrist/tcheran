@@ -1,5 +1,4 @@
-use std::process::ExitCode;
-use std::{fs, slice};
+use std::{fs, process::ExitCode, slice};
 
 const FEATURES: usize = 768;
 const HIDDEN_SIZE: usize = 256;

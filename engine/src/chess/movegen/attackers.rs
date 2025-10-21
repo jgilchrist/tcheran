@@ -1,8 +1,6 @@
-use crate::chess::bitboard::Bitboard;
-use crate::chess::board::Board;
-use crate::chess::movegen::tables;
-use crate::chess::player::Player;
-use crate::chess::square::Square;
+use crate::chess::{
+    bitboard::Bitboard, board::Board, movegen::tables, player::Player, square::Square,
+};
 
 pub fn generate_attackers_of(board: &Board, player: Player, square: Square) -> Bitboard {
     let mut attackers = Bitboard::EMPTY;

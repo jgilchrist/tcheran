@@ -1,12 +1,16 @@
-use crate::chess::{
-    piece::PromotionPieceKind,
-    square::{File, Rank, Square},
-};
-use crate::engine::uci::UciMove;
-use crate::engine::uci::commands::{DebugCommand, Position};
 use std::time::Duration;
 
 use super::commands::{GoCmdArguments, UciCommand};
+use crate::{
+    chess::{
+        piece::PromotionPieceKind,
+        square::{File, Rank, Square},
+    },
+    engine::uci::{
+        UciMove,
+        commands::{DebugCommand, Position},
+    },
+};
 
 fn boolean(input: &str) -> Result<bool, ()> {
     Ok(match input {

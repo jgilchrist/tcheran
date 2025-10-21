@@ -1,5 +1,4 @@
-use crate::chess::bitboard::Bitboard;
-use crate::chess::{direction::Direction, player::Player, square::Square};
+use crate::chess::{bitboard::Bitboard, direction::Direction, player::Player, square::Square};
 
 pub fn generate_pawn_attacks(square: Square, player: Player) -> Bitboard {
     let mut attacks = Bitboard::EMPTY;

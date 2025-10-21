@@ -1,9 +1,8 @@
-use crate::chess::game::Game;
-use crate::engine::eval;
-use crate::engine::eval::Eval;
-use crate::engine::search::move_picker::MovePicker;
-
 use super::{MAX_SEARCH_DEPTH, SearchContext};
+use crate::{
+    chess::game::Game,
+    engine::{eval, eval::Eval, search::move_picker::MovePicker},
+};
 
 pub fn quiescence(
     game: &mut Game,

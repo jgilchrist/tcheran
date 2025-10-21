@@ -1,8 +1,10 @@
-use crate::chess::game::{CastleRightsSide, Game};
-use crate::chess::piece::{Piece, PieceKind};
-use crate::chess::player::Player;
-use crate::chess::square::Square;
-use crate::chess::zobrist::components::ZobristComponent;
+use crate::chess::{
+    game::{CastleRightsSide, Game},
+    piece::{Piece, PieceKind},
+    player::Player,
+    square::Square,
+    zobrist::components::ZobristComponent,
+};
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct ZobristHash(pub u64);

@@ -1,15 +1,21 @@
-use super::{MAX_SEARCH_DEPTH, SearchContext, params};
-use crate::chess::game::Game;
-use crate::chess::moves::Move;
-use crate::engine::eval;
-use crate::engine::eval::Eval;
-use crate::engine::search::move_picker::MovePicker;
-use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::quiescence::quiescence;
-use crate::engine::search::tables::lmr_table::lmr_reduction;
-use crate::engine::search::transposition::{NodeBound, SearchTranspositionTableData};
-use crate::engine::tablebases::Wdl;
 use std::cmp::max;
+
+use super::{MAX_SEARCH_DEPTH, SearchContext, params};
+use crate::{
+    chess::{game::Game, moves::Move},
+    engine::{
+        eval,
+        eval::Eval,
+        search::{
+            move_picker::MovePicker,
+            principal_variation::PrincipalVariation,
+            quiescence::quiescence,
+            tables::lmr_table::lmr_reduction,
+            transposition::{NodeBound, SearchTranspositionTableData},
+        },
+        tablebases::Wdl,
+    },
+};
 
 pub struct DepthReduction(u8);
 

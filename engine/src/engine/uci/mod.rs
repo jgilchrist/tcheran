@@ -1,20 +1,22 @@
 //! Implementation of the Universal Chess Interface (UCI) protocol
 
-use std::io::{BufRead, IsTerminal};
-use std::sync::{Arc, Mutex};
-use std::time::{Duration, Instant};
+use std::{
+    io::{BufRead, IsTerminal},
+    sync::{Arc, Mutex},
+    time::{Duration, Instant},
+};
 
-use crate::chess::moves::{Move, MoveListExt};
-use crate::chess::{perft, san};
-
-use crate::ENGINE_NAME;
-use crate::engine::options::EngineOptions;
-use crate::engine::{search, uci, util};
-
-use self::responses::{InfoFields, InfoScore};
 use self::{
     commands::{GoCmdArguments, UciCommand},
-    responses::{IdParam, UciResponse},
+    responses::{IdParam, InfoFields, InfoScore, UciResponse},
+};
+use crate::{
+    ENGINE_NAME,
+    chess::{
+        moves::{Move, MoveListExt},
+        perft, san,
+    },
+    engine::{options::EngineOptions, search, uci, util},
 };
 
 mod bench;
@@ -24,15 +26,16 @@ mod options;
 pub mod parser;
 pub mod responses;
 
-use crate::chess::game::Game;
-use crate::chess::player::Player;
-use crate::engine::search::time_control::StopControl;
-use crate::engine::search::{Clocks, PersistentState, Reporter, TimeControl};
-use crate::engine::uci::bench::bench;
-use crate::engine::uci::commands::DebugCommand;
-use crate::engine::uci::options::UciOption;
-use crate::engine::util::sync::LockLatch;
 pub use r#move::UciMove;
+
+use crate::{
+    chess::{game::Game, player::Player},
+    engine::{
+        search::{Clocks, PersistentState, Reporter, TimeControl, time_control::StopControl},
+        uci::{bench::bench, commands::DebugCommand, options::UciOption},
+        util::sync::LockLatch,
+    },
+};
 
 #[derive(Clone)]
 pub struct UciReporter {

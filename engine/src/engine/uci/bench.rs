@@ -2,11 +2,16 @@
 // https://github.com/lynx-chess/Lynx/blob/main/src/Lynx/Bench.cs
 // https://github.com/JacquesRW/akimbo/blob/main/resources/fens.txt
 
-use crate::chess::game::Game;
-use crate::engine::options::EngineOptions;
-use crate::engine::search;
-use crate::engine::search::{CapturingReporter, PersistentState, TimeControl};
 use std::time::{Duration, Instant};
+
+use crate::{
+    chess::game::Game,
+    engine::{
+        options::EngineOptions,
+        search,
+        search::{CapturingReporter, PersistentState, TimeControl},
+    },
+};
 
 const POSITIONS: [&str; 87] = [
     "r3k2r/2pb1ppp/2pp1q2/p7/1nP1B3/1P2P3/P2N1PPP/R2QK2R w KQkq a6 0 14",

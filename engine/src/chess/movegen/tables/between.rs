@@ -1,6 +1,4 @@
-use crate::chess::bitboard::Bitboard;
-use crate::chess::direction::Direction;
-use crate::chess::square::Square;
+use crate::chess::{bitboard::Bitboard, direction::Direction, square::Square};
 
 static mut BETWEEN_TABLE: [[Bitboard; Square::N]; Square::N] =
     [[Bitboard::EMPTY; Square::N]; Square::N];

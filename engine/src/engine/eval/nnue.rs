@@ -1,8 +1,12 @@
-use crate::chess::board::Board;
-use crate::chess::piece::{Piece, PieceKind};
-use crate::chess::player::Player;
-use crate::chess::square::Square;
-use crate::engine::eval::Eval;
+use crate::{
+    chess::{
+        board::Board,
+        piece::{Piece, PieceKind},
+        player::Player,
+        square::Square,
+    },
+    engine::eval::Eval,
+};
 
 // Network parameters
 const FEATURES: usize = 768;

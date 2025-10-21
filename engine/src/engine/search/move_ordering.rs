@@ -1,8 +1,7 @@
-use crate::chess::piece::PieceKind;
-use crate::chess::{game::Game, moves::Move};
-use crate::engine::eval::Eval;
-use crate::engine::search::tables::HistoryTable;
-use crate::engine::see::see;
+use crate::{
+    chess::{game::Game, moves::Move, piece::PieceKind},
+    engine::{eval::Eval, search::tables::HistoryTable, see::see},
+};
 
 // Sentinel values
 pub const GOOD_CAPTURE_SCORE: i32 = 1_000_000_000;
@@ -55,8 +54,7 @@ pub fn score_quiet(game: &Game, mv: Move, history: &HistoryTable) -> i32 {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chess::game::Game;
-    use crate::chess::square::squares::all::*;
+    use crate::chess::{game::Game, square::squares::all::*};
 
     struct ScoredMove {
         pub mv: Move,

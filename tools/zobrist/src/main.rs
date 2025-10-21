@@ -1,5 +1,6 @@
-use rand::prelude::*;
 use std::process::ExitCode;
+
+use rand::prelude::*;
 
 type ZobristComponent = u64;
 

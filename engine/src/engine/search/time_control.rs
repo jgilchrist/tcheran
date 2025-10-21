@@ -1,12 +1,19 @@
-use std::sync::Arc;
-use std::sync::atomic::{AtomicBool, Ordering};
-use std::time::{Duration, Instant};
+use std::{
+    sync::{
+        Arc,
+        atomic::{AtomicBool, Ordering},
+    },
+    time::{Duration, Instant},
+};
 
-use crate::chess::game::Game;
-use crate::chess::player::Player;
-use crate::engine::options::EngineOptions;
-use crate::engine::search::{TimeControl, params};
-use crate::engine::util::log::crashlog;
+use crate::{
+    chess::{game::Game, player::Player},
+    engine::{
+        options::EngineOptions,
+        search::{TimeControl, params},
+        util::log::crashlog,
+    },
+};
 
 pub(crate) struct TimeStrategy {
     time_control: TimeControl,

@@ -1,10 +1,14 @@
-use crate::chess::game::Game;
-use crate::chess::moves::Move;
-use crate::engine::eval::Eval;
-use crate::engine::search::aspiration::aspiration_search;
-use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::{MAX_SEARCH_DEPTH, Reporter, SearchContext, SearchInfo, SearchStats};
-use crate::engine::util;
+use crate::{
+    chess::{game::Game, moves::Move},
+    engine::{
+        eval::Eval,
+        search::{
+            MAX_SEARCH_DEPTH, Reporter, SearchContext, SearchInfo, SearchStats,
+            aspiration::aspiration_search, principal_variation::PrincipalVariation,
+        },
+        util,
+    },
+};
 
 pub fn search(
     game: &mut Game,

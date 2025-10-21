@@ -1,9 +1,8 @@
-use crate::chess::player::ByPlayer;
 use crate::chess::{
     board::Board,
     game::{CastleRights, Game},
     piece::Piece,
-    player::Player,
+    player::{ByPlayer, Player},
     square::{File, Rank, Square},
 };
 
@@ -245,8 +244,9 @@ pub fn parse(input: &str) -> Result<Game, ParseError> {
 
 #[cfg(test)]
 mod tests {
-    use super::*;
     use Player::*;
+
+    use super::*;
 
     #[test]
     fn parse_startpos() {

@@ -1,15 +1,21 @@
-use crate::chess::game::Game;
-use crate::chess::moves::Move;
-use crate::engine::eval::Eval;
-use crate::engine::options::EngineOptions;
-use crate::engine::search::move_picker::MovePicker;
-use crate::engine::search::principal_variation::PrincipalVariation;
-use crate::engine::search::tables::{CountermoveTable, HistoryTable, KillersTable};
-use crate::engine::search::time_control::{StopControl, TimeStrategy};
-use crate::engine::search::transposition::SearchTranspositionTable;
-use crate::engine::tablebases::{Tablebase, Wdl};
-use crate::engine::util;
 use std::time::Duration;
+
+use crate::{
+    chess::{game::Game, moves::Move},
+    engine::{
+        eval::Eval,
+        options::EngineOptions,
+        search::{
+            move_picker::MovePicker,
+            principal_variation::PrincipalVariation,
+            tables::{CountermoveTable, HistoryTable, KillersTable},
+            time_control::{StopControl, TimeStrategy},
+            transposition::SearchTranspositionTable,
+        },
+        tablebases::{Tablebase, Wdl},
+        util,
+    },
+};
 
 mod aspiration;
 mod iterative_deepening;

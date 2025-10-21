@@ -1,9 +1,12 @@
-use crate::chess::game::Game;
-use crate::chess::moves::{Move, MoveListExt};
-use crate::chess::piece::{PieceKind, PromotionPieceKind};
-use crate::chess::san;
-use crate::chess::square::{File, Rank, Square, squares};
 use std::collections::HashSet;
+
+use crate::chess::{
+    game::Game,
+    moves::{Move, MoveListExt},
+    piece::{PieceKind, PromotionPieceKind},
+    san,
+    square::{File, Rank, Square, squares},
+};
 
 enum AmbiguityResolution {
     None,
@@ -243,10 +246,7 @@ pub fn parse_move(game: &Game, mv: &str) -> Result<Move, ParseError> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chess::fen;
-    use crate::chess::game::Game;
-    use crate::chess::piece::PromotionPieceKind;
-    use crate::chess::square::squares::all::*;
+    use crate::chess::{fen, game::Game, piece::PromotionPieceKind, square::squares::all::*};
 
     fn test_parse_san(fen: &'static str, expected_mv: (Square, Square), san: &'static str) {
         crate::init();

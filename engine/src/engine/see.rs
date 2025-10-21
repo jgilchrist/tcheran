@@ -1,9 +1,7 @@
-use crate::chess::game::Game;
-use crate::chess::movegen;
-use crate::chess::movegen::tables;
-use crate::chess::moves::Move;
-use crate::chess::piece::PieceKind;
-use crate::engine::eval::Eval;
+use crate::{
+    chess::{game::Game, movegen, movegen::tables, moves::Move, piece::PieceKind},
+    engine::eval::Eval,
+};
 
 fn piece_value(kind: PieceKind) -> Eval {
     use PieceKind::*;
@@ -138,10 +136,11 @@ pub fn see(game: &Game, mv: Move, threshold: Eval) -> bool {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::chess::game::Game;
-    use crate::chess::moves::MoveListExt;
-    use crate::chess::square::Square;
-    use crate::chess::square::squares::all::*;
+    use crate::chess::{
+        game::Game,
+        moves::MoveListExt,
+        square::{Square, squares::all::*},
+    };
 
     fn should_be_good_capture(fen: &str, mv: (Square, Square)) {
         crate::init();

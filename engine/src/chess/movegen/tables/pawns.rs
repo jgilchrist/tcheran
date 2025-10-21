@@ -1,6 +1,5 @@
-use crate::chess::{bitboard::Bitboard, player::Player, square::Square};
-
 use super::attacks;
+use crate::chess::{bitboard::Bitboard, player::Player, square::Square};
 
 static mut ATTACKS_TABLE: [[Bitboard; Square::N]; Player::N] =
     [[Bitboard::EMPTY; Square::N]; Player::N];
