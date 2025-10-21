@@ -18,6 +18,7 @@ use crate::{
 pub(crate) struct TimeStrategy {
     time_control: TimeControl,
     started_at: Instant,
+    stopped: bool,
 
     soft_stop: Duration,
     hard_stop: Duration,
@@ -108,6 +109,7 @@ impl TimeStrategy {
         Self {
             time_control: time_control.clone(),
             started_at: now,
+            stopped: false,
 
             soft_stop,
             hard_stop,
@@ -140,7 +142,15 @@ impl TimeStrategy {
         }
     }
 
-    pub fn should_stop(&mut self, nodes_visited: u64) -> bool {
+    pub fn stopped(&self) -> bool {
+        self.stopped
+    }
+
+    pub fn update(&mut self, nodes_visited: u64) {
+        self.stopped = self.should_stop(nodes_visited);
+    }
+
+    fn should_stop(&mut self, nodes_visited: u64) -> bool {
         if nodes_visited < self.next_check_at {
             return false;
         }
