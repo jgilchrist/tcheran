@@ -112,16 +112,7 @@ impl MovePicker {
             }
 
             if self.only_captures {
-                match self.first_bad_capture {
-                    // If we didn't see any bad captures before, we can skip straight to the end
-                    None => self.stage = Done,
-
-                    // If we saw any bad captures, go back and try those too
-                    Some(first_bad_capture_idx) => {
-                        self.idx = first_bad_capture_idx;
-                        self.stage = BadCaptures;
-                    }
-                }
+                self.stage = Done;
             } else {
                 self.stage = GenQuiets;
             }

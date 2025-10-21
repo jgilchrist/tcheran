@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+* Skip bad captures in quiescence search (43.07 +- 13.42)
+
 ### Misc
 
 * Fix TT mate scores being stored without root/position correction
