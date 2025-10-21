@@ -11,6 +11,12 @@ pub fn quiescence(
     plies: u8,
     ctx: &mut SearchContext<'_>,
 ) -> Result<Eval, ()> {
+    // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
+    // so we return Err to signal to the caller that the search did not complete.
+    if ctx.time_control.should_stop(ctx.nodes_visited) {
+        return Err(());
+    }
+
     ctx.max_depth_reached = ctx.max_depth_reached.max(plies);
     ctx.nodes_visited += 1;
 
@@ -23,12 +29,6 @@ pub fn quiescence(
         || game.is_stalemate_by_insufficient_material()
     {
         return Ok(Eval::DRAW);
-    }
-
-    // Check periodically to see if we're out of time. If we are, we shouldn't continue the search
-    // so we return Err to signal to the caller that the search did not complete.
-    if ctx.time_control.should_stop(ctx.nodes_visited) {
-        return Err(());
     }
 
     let eval = eval::eval(game);
