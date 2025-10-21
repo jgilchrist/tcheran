@@ -141,6 +141,15 @@ fn cmd_setoption(args: &[&str]) -> Result<UciCommand, ()> {
     })
 }
 
+fn parse_moves(moves: &[&str]) -> Result<Vec<UciMove>, ()> {
+    let moves = moves
+        .iter()
+        .map(|m| uci_move(m))
+        .collect::<Result<Vec<UciMove>, ()>>()?;
+
+    Ok(moves)
+}
+
 fn cmd_position(args: &[&str]) -> Result<UciCommand, ()> {
     if args.is_empty() {
         return Err(());
@@ -154,16 +163,7 @@ fn cmd_position(args: &[&str]) -> Result<UciCommand, ()> {
             let moves_token_idx = rest.iter().position(|&t| t == "moves");
 
             let moves = match moves_token_idx {
-                Some(moves_token_idx) => {
-                    let moves = &rest[moves_token_idx + 1..];
-
-                    let moves = moves
-                        .iter()
-                        .map(|m| uci_move(m))
-                        .collect::<Result<Vec<UciMove>, ()>>()?;
-
-                    moves
-                }
+                Some(moves_token_idx) => parse_moves(&rest[moves_token_idx + 1..])?,
                 None => Vec::new(),
             };
 
@@ -179,21 +179,11 @@ fn cmd_position(args: &[&str]) -> Result<UciCommand, ()> {
             let fen = fen.join(" ");
 
             let moves = match moves_token_idx {
-                Some(moves_token_idx) => {
-                    let moves = &rest[moves_token_idx + 1..];
-
-                    let moves = moves
-                        .iter()
-                        .map(|m| uci_move(m))
-                        .collect::<Result<Vec<UciMove>, ()>>()?;
-
-                    moves
-                }
+                Some(moves_token_idx) => parse_moves(&rest[moves_token_idx + 1..])?,
                 None => Vec::new(),
             };
 
             Ok(UciCommand::Position {
-                // TODO: Make this return Game, so FEN parsing happens in the parser
                 position: Position::Fen(fen),
                 moves,
             })
