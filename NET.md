@@ -11,6 +11,7 @@ Parameters in the following table are noted only where they differ from Bullet's
 | 0       | Dataset #0 | (768->16)x2->1     | WDL 0.1, LR 0.01, 20 batches   | 38.11 +- 13.69  | Hello world! Trained with 'legacy' bullet         |
 | 1       | Dataset #1 | (768->256)x2->1    | WDL 0.1, LR 0.01, 20 batches   | 223.69 +- 33.98 | First proper dataset, also trained with 'legacy' bullet |
 | 2       | Dataset #1 | (768->256)x2->1    | WDL 0.1, LR 0.01, 40 batches   | 48.88 +- 14.81  | Trained with bullet@main |
+| 3       | Dataset #1 | (768->256)x2->1    | WDL 0.1, LR 0.01, 40 batches   | 17.29 +- 8.50   | Re-shuffled data before training |
 
 ## Experiments
 
