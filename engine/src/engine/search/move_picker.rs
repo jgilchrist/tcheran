@@ -10,10 +10,11 @@ use crate::{
         move_ordering::{score_quiet, score_tactical},
     },
 };
+use crate::engine::search::move_picker::GenStage::{BadCaptures, ScoreQuiets};
 
 const MAX_MOVES: usize = u8::MAX as usize;
 
-#[derive(Eq, PartialEq)]
+#[derive(Clone, Copy, Eq, PartialEq)]
 enum GenStage {
     BestMove,
     GenCaptures,
@@ -257,6 +258,33 @@ impl MovePicker {
             }
 
             return Some((best_move, best_move_score));
+        }
+    }
+
+    pub fn yield_only_captures(&mut self) {
+        use GenStage::*;
+
+        self.only_captures = true;
+
+        // If we were in the middle of a non-capture stage, we need to force ourselves onto
+        // a captures-only track
+        self.stage = match self.stage {
+            // If we were going through quiet generation or tables, skip on to the rest of the captures
+            GenQuiets | Killer1 | Killer2 | CounterMove => {
+                match self.first_bad_capture {
+                    // If we didn't see any bad captures before, we can skip straight to the end
+                    None => Done,
+
+                    // If we saw any bad captures, go back and try those too
+                    Some(first_bad_capture_idx) => {
+                        self.idx = first_bad_capture_idx;
+                        BadCaptures
+                    }
+                }
+            },
+            // If we were past all the captures, skip the remainder of the quiets
+            ScoreQuiets | Quiets => Done,
+            _ => self.stage,
         }
     }
 }

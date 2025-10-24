@@ -204,6 +204,18 @@ pub fn negamax(
             continue;
         }
 
+        let lmp_moves = params::LMR_MOVE_THRESHOLD + 2 + (depth as usize * depth as usize);
+
+        if depth <= params::LMP_DEPTH
+            && !is_root
+            && !is_pv
+            && !in_check
+            && number_of_legal_moves >= lmp_moves
+            && mv.is_quiet()
+        {
+            moves.yield_only_captures();
+        }
+
         game.make_move(mv);
         number_of_legal_moves += 1;
 

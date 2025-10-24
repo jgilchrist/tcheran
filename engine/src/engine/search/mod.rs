@@ -51,6 +51,9 @@ mod params {
     pub const LMR_DEPTH: u8 = 3;
     pub const LMR_MOVE_THRESHOLD: usize = 3;
 
+    pub const LMP_DEPTH: u8 = 5;
+    pub const LMP_MOVE_THRESHOLD: u8 = 5;
+
     pub const HISTORY_DECAY_FACTOR: i32 = 8;
 
     pub const MAX_TIME_PER_MOVE: f32 = 0.5;
