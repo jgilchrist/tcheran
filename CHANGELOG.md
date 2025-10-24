@@ -2,6 +2,7 @@
 
 ## [Unreleased]
 
+* Network #2, trained with bullet's `main` branch with the same parameters as before (48.88 +- 14.81)
 * Skip bad captures in quiescence search (43.07 +- 13.42)
 * Do tranposition table cutoff comparison on the mate-adjusted score (1.72 +- 3.81)
 
