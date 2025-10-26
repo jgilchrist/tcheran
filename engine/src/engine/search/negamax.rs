@@ -82,6 +82,7 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
+    let mut tt_hit = false;
     if let Some(tt_entry) = ctx.tt.get(&game.zobrist) {
         if !is_root && !is_pv && tt_entry.depth >= depth {
             let tt_eval = Eval(i32::from(tt_entry.eval));
@@ -95,6 +96,7 @@ pub fn negamax(
             }
         }
 
+        tt_hit = true;
         previous_best_move = tt_entry.best_move;
     }
 
@@ -180,6 +182,10 @@ pub fn negamax(
                 return Ok(null_score);
             }
         }
+    }
+
+    if !is_root && !tt_hit && depth >= params::IIR_DEPTH {
+        depth -= 1;
     }
 
     let mut tt_node_bound = NodeBound::Upper;
