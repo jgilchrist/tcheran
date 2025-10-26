@@ -1,5 +1,3 @@
-use std::time::Duration;
-
 use crate::{
     chess::{
         game::Game,
@@ -23,7 +21,7 @@ fn test_expected_move(fen: &str, depth: u8, mv: (Square, Square)) -> (Move, Eval
     let best_move = search(
         &game,
         &mut persistent_state,
-        &TimeControl::Depth(depth, Duration::from_secs(60)),
+        &TimeControl::Depth(depth),
         None,
         &EngineOptions::default(),
         &mut capturing_reporter,

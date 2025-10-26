@@ -4,7 +4,6 @@ use std::{
     path::{Path, PathBuf},
     process::ExitCode,
     sync::atomic::{AtomicBool, Ordering},
-    time::Duration,
 };
 
 use clap::Parser;
@@ -345,7 +344,7 @@ fn acceptable_starting_position(rand: &mut impl Rng, states: &mut PlayerStates) 
 
         let (_, eval) = search_position(
             &game,
-            &TimeControl::Depth(DEFAULT_DEPTH, Duration::from_secs(10)),
+            &TimeControl::Depth(DEFAULT_DEPTH),
             state,
         );
         if eval.0.abs() >= UNBALANCED_STARTING_EVAL {
@@ -493,7 +492,7 @@ fn play_game(rand: &mut impl Rng, config: &DatagenConfig, states: &mut PlayerSta
     let source: Option<ResultSource>;
 
     let time_control = match config.mode {
-        DatagenMode::Depth(d) => TimeControl::Depth(d, Duration::from_secs(10)),
+        DatagenMode::Depth(d) => TimeControl::Depth(d),
     };
 
     states.reset();

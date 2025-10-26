@@ -11,7 +11,6 @@ use crate::{
     engine::{
         options::EngineOptions,
         search::{TimeControl, params},
-        util::log::crashlog,
     },
 };
 
@@ -24,7 +23,6 @@ pub(crate) struct TimeStrategy {
 
     next_check_at: u64,
 
-    game: Game,
     control: Option<StopControl>,
 }
 
@@ -63,10 +61,7 @@ impl TimeStrategy {
         let mut hard_stop = Duration::default();
 
         match time_control {
-            TimeControl::Infinite => {}
-            TimeControl::Depth(_, stop) => {
-                hard_stop = *stop;
-            }
+            TimeControl::Infinite | TimeControl::Depth(_) => {}
             TimeControl::ExactTime(move_time) => {
                 soft_stop = *move_time;
                 hard_stop = *move_time;
@@ -114,7 +109,6 @@ impl TimeStrategy {
 
             next_check_at: params::CHECK_TERMINATION_NODE_FREQUENCY,
 
-            game: game.clone(),
             control,
         }
     }
@@ -136,7 +130,7 @@ impl TimeStrategy {
             TimeControl::Clocks(_) => self.elapsed() < self.soft_stop,
             TimeControl::ExactTime(time) => self.elapsed() < time,
             TimeControl::Infinite => true,
-            TimeControl::Depth(d, _) => d >= depth,
+            TimeControl::Depth(d) => d >= depth,
         }
     }
 
@@ -154,19 +148,7 @@ impl TimeStrategy {
         match self.time_control {
             TimeControl::Clocks(_) => self.elapsed() > self.hard_stop,
             TimeControl::ExactTime(time) => self.elapsed() > time,
-            TimeControl::Infinite => false,
-            TimeControl::Depth(depth, hard_stop) => {
-                if self.elapsed() > hard_stop {
-                    crashlog(format!(
-                        "Took longer than {:?} secs to search at depth {} for game {:?}",
-                        hard_stop, depth, self.game
-                    ));
-
-                    return true;
-                }
-
-                false
-            }
+            TimeControl::Infinite | TimeControl::Depth(_) => false,
         }
     }
 

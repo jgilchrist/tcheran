@@ -342,8 +342,7 @@ impl Uci {
                 }
 
                 if let Some(d) = depth {
-                    let hard_stop = Duration::from_secs(3600);
-                    time_control = TimeControl::Depth(*d, hard_stop);
+                    time_control = TimeControl::Depth(*d);
                 }
 
                 self.control = Some(StopControl::new());
