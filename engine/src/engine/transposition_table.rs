@@ -1,29 +1,51 @@
-use crate::chess::zobrist::ZobristHash;
+use crate::{
+    chess::{moves::Move, zobrist::ZobristHash},
+    engine::eval::Eval,
+};
 
-pub trait TTOverwriteable {
-    fn should_overwrite_with(&self, new: &Self) -> bool;
-}
-
-pub struct TranspositionTable<T: Clone + TTOverwriteable> {
-    data: Vec<Option<TranspositionTableEntry<T>>>,
+pub struct TranspositionTable {
+    data: Vec<Option<TranspositionTableEntry>>,
     pub generation: u8,
     pub occupied: usize,
     size: usize,
 }
 
 #[derive(Clone)]
-pub struct TranspositionTableEntry<T: Clone + TTOverwriteable> {
+struct TranspositionTableEntry {
     pub key: ZobristHash,
-    pub data: T,
+    pub bound: NodeBound,
+    pub eval: i16,
+    pub depth: u8,
+    pub age: u8,
+    pub best_move: Option<Move>,
 }
 
-pub const fn calculate_number_of_entries<T: Clone + TTOverwriteable>(size_mb: usize) -> usize {
-    let size_of_entry = size_of::<TranspositionTableEntry<T>>();
+pub struct TranspositionTableHit {
+    pub bound: NodeBound,
+    pub eval: Eval,
+    pub depth: u8,
+    pub best_move: Option<Move>,
+}
+
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum NodeBound {
+    Exact,
+    Upper,
+    Lower,
+}
+
+const _ASSERT_TT_DATA_SIZE: () = assert!(
+    size_of::<TranspositionTableEntry>() == 16,
+    "Transposition table entry size changed"
+);
+
+pub const fn calculate_number_of_entries(size_mb: usize) -> usize {
+    let size_of_entry = size_of::<TranspositionTableEntry>();
     let total_size_in_bytes = size_mb * 1024 * 1024;
     total_size_in_bytes / size_of_entry
 }
 
-impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
+impl TranspositionTable {
     pub fn new(size_mb: usize) -> Self {
         let mut tt = Self {
             data: Vec::new(),
@@ -50,7 +72,7 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
             return;
         }
 
-        let number_of_entries = calculate_number_of_entries::<T>(size_mb);
+        let number_of_entries = calculate_number_of_entries(size_mb);
 
         self.data.clear();
         self.data.resize(number_of_entries, None);
@@ -85,37 +107,108 @@ impl<T: Clone + TTOverwriteable> TranspositionTable<T> {
         permille as usize
     }
 
-    pub fn insert(&mut self, key: &ZobristHash, data: T) {
+    fn should_overwrite(old: &TranspositionTableEntry, new: &TranspositionTableEntry) -> bool {
+        // Always prioritise results from new searches
+        if new.age != old.age {
+            return true;
+        }
+
+        // Always prefer results that have been searched to a higher depth,
+        // since they're more accurate
+        if new.depth > old.depth {
+            return true;
+        }
+
+        // If the new node is exact, always store it
+        if new.bound == NodeBound::Exact {
+            return true;
+        }
+
+        // Don't overwrite exact nodes
+        old.bound != NodeBound::Exact
+    }
+
+    // When searching, mate scores are relative to the root position.
+    // However, we may see the same position at different depths of the
+    // tree due to transpositions.
+    // As a result, when caching mate evaluations, we need to store them
+    // as relative to the position at that point in the tree, rather than
+    // relative to the root (by accounting for the difference between the
+    // root and the current depth).
+    pub fn with_mate_distance_from_position(eval: Eval, plies: u8) -> Eval {
+        if eval.mating() {
+            return Eval(eval.0 + i32::from(plies));
+        }
+
+        if eval.being_mated() {
+            return Eval(eval.0 - i32::from(plies));
+        }
+
+        eval
+    }
+
+    pub fn with_mate_distance_from_root(eval: Eval, plies: u8) -> Eval {
+        if eval.mating() {
+            return Eval(eval.0 - i32::from(plies));
+        }
+
+        if eval.being_mated() {
+            return Eval(eval.0 + i32::from(plies));
+        }
+
+        eval
+    }
+
+    pub fn insert(
+        &mut self,
+        key: &ZobristHash,
+        bound: NodeBound,
+        eval: Eval,
+        depth: u8,
+        age: u8,
+        best_move: Option<Move>,
+        plies: u8,
+    ) {
         let idx = self.get_entry_idx(key);
+
+        let new_entry = TranspositionTableEntry {
+            key: key.clone(),
+            bound,
+            eval: Self::with_mate_distance_from_position(eval, plies).0 as i16,
+            depth,
+            age,
+            best_move,
+        };
 
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
-            if let Some(existing_data) = self.data.get_unchecked(idx) {
-                if existing_data.data.should_overwrite_with(&data) {
-                    self.data[idx] = Some(TranspositionTableEntry {
-                        key: key.clone(),
-                        data,
-                    });
+            if let Some(existing_entry) = self.data.get_unchecked(idx) {
+                if Self::should_overwrite(existing_entry, &new_entry) {
+                    self.data[idx] = Some(new_entry);
                 }
             } else {
                 self.occupied += 1;
-
-                self.data[idx] = Some(TranspositionTableEntry {
-                    key: key.clone(),
-                    data,
-                });
+                self.data[idx] = Some(new_entry);
             }
         }
     }
 
-    pub fn get(&self, key: &ZobristHash) -> Option<&T> {
+    pub fn get(&self, key: &ZobristHash, plies: u8) -> Option<TranspositionTableHit> {
         let idx = self.get_entry_idx(key);
 
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
             if let Some(entry) = self.data.get_unchecked(idx) {
                 if entry.key == *key {
-                    return Some(&entry.data);
+                    return Some(TranspositionTableHit {
+                        bound: entry.bound,
+                        eval: Self::with_mate_distance_from_root(
+                            Eval(i32::from(entry.eval)),
+                            plies,
+                        ),
+                        depth: entry.depth,
+                        best_move: entry.best_move,
+                    });
                 }
             }
         }

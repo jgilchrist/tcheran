@@ -38,12 +38,12 @@ impl Eval {
 
     #[inline]
     pub fn mating(self) -> bool {
-        self.0 > Self::MATE_THRESHOLD
+        self.0 >= Self::MATE_THRESHOLD
     }
 
     #[inline]
     pub fn being_mated(self) -> bool {
-        self.0 < Self::MATED_THRESHOLD
+        self.0 <= Self::MATED_THRESHOLD
     }
 
     pub fn is_mate_in_moves(self) -> Option<i32> {
@@ -56,41 +56,6 @@ impl Eval {
         }
 
         None
-    }
-
-    // When searching, mate scores are relative to the root position.
-    // However, we may see the same position at different depths of the
-    // tree due to transpositions.
-    // As a result, when caching mate evaluations, we need to store them
-    // as relative to the position at that point in the tree, rather than
-    // relative to the root (by accounting for the difference between the
-    // root and the current depth).
-    pub fn with_mate_distance_from_position(self, plies: u8) -> Self {
-        let mut adjusted_value = self.0;
-
-        if adjusted_value >= Self::MATE_THRESHOLD {
-            adjusted_value += i32::from(plies);
-        }
-
-        if adjusted_value <= Self::MATED_THRESHOLD {
-            adjusted_value -= i32::from(plies);
-        }
-
-        Self(adjusted_value)
-    }
-
-    pub fn with_mate_distance_from_root(self, plies: u8) -> Self {
-        let mut adjusted_value = self.0;
-
-        if adjusted_value >= Self::MATE_THRESHOLD {
-            adjusted_value -= i32::from(plies);
-        }
-
-        if adjusted_value <= Self::MATED_THRESHOLD {
-            adjusted_value += i32::from(plies);
-        }
-
-        Self(adjusted_value)
     }
 
     pub fn to_white_eval(self, player: Player) -> WhiteEval {
