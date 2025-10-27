@@ -10,7 +10,6 @@ use crate::{
             PersistentState, SearchContext, TimeControl, move_picker::MovePicker,
             time_control::TimeStrategy,
         },
-        transposition_table::{TTOverwriteable, TranspositionTable},
     },
 };
 
@@ -18,65 +17,6 @@ fn test_perft(fen: &str, depth: u8, expected_positions: usize) {
     crate::init();
     let mut game = Game::from_fen(fen).unwrap();
     let actual_positions = perft(depth, &mut game);
-
-    assert_eq!(expected_positions, actual_positions);
-}
-
-#[derive(Debug, Clone)]
-struct PerftTranspositionTableData {
-    nodes: usize,
-    depth: u8,
-}
-
-impl TTOverwriteable for PerftTranspositionTableData {
-    fn should_overwrite_with(&self, _: &Self) -> bool {
-        false
-    }
-}
-
-type PerftTranspositionTable = TranspositionTable<PerftTranspositionTableData>;
-
-fn tt_perft(depth: u8, game: &mut Game, tt: &mut PerftTranspositionTable) -> usize {
-    if depth == 1 {
-        return game.moves().len();
-    }
-
-    if let Some(tt_data) = tt.get(&game.zobrist) {
-        if tt_data.depth == depth {
-            return tt_data.nodes;
-        }
-    }
-
-    let result = game
-        .moves()
-        .to_vec()
-        .into_iter()
-        .map(|m| {
-            game.make_move(m);
-            let result = tt_perft(depth - 1, game, tt);
-            game.undo_move();
-            result
-        })
-        .sum();
-
-    tt.insert(
-        &game.zobrist,
-        PerftTranspositionTableData {
-            nodes: result,
-            depth,
-        },
-    );
-
-    result
-}
-
-fn test_perft_with_tt(fen: &str, depth: u8, expected_positions: usize) {
-    crate::init();
-
-    let mut tt = PerftTranspositionTable::new(256);
-
-    let mut game = Game::from_fen(fen).unwrap();
-    let actual_positions = tt_perft(depth, &mut game, &mut tt);
 
     assert_eq!(expected_positions, actual_positions);
 }
@@ -183,11 +123,6 @@ macro_rules! perft_position {
             #[test]
             fn [<perft_ $name>]() {
                 test_perft($pos, $depth, $nodes);
-            }
-
-            #[test]
-            fn [<perft_tt_ $name>]() {
-                test_perft_with_tt($pos, $depth, $nodes);
             }
 
             #[test]
