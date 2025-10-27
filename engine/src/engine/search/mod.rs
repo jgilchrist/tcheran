@@ -10,9 +10,9 @@ use crate::{
             principal_variation::PrincipalVariation,
             tables::{CountermoveTable, HistoryTable, KillersTable},
             time_control::{StopControl, TimeStrategy},
-            transposition::SearchTranspositionTable,
         },
         tablebases::{Tablebase, Wdl},
+        transposition_table::TranspositionTable,
         util,
     },
 };
@@ -26,7 +26,6 @@ mod principal_variation;
 mod quiescence;
 mod tables;
 pub mod time_control;
-pub mod transposition;
 
 const MAX_SEARCH_DEPTH: u8 = u8::MAX;
 const MAX_SEARCH_DEPTH_SIZE: usize = MAX_SEARCH_DEPTH as usize;
@@ -65,7 +64,7 @@ mod params {
 }
 
 pub struct PersistentState {
-    pub tt: SearchTranspositionTable,
+    pub tt: TranspositionTable,
     pub history_table: HistoryTable,
     pub tablebase: Tablebase,
 }
@@ -73,7 +72,7 @@ pub struct PersistentState {
 impl PersistentState {
     pub fn new(tt_size_mb: usize) -> Self {
         Self {
-            tt: SearchTranspositionTable::new(tt_size_mb),
+            tt: TranspositionTable::new(tt_size_mb),
             history_table: HistoryTable::new(),
             tablebase: Tablebase::new(),
         }
@@ -81,7 +80,7 @@ impl PersistentState {
 
     pub fn with_tablebase(tt_size_mb: usize, tb: &Tablebase) -> Self {
         Self {
-            tt: SearchTranspositionTable::new(tt_size_mb),
+            tt: TranspositionTable::new(tt_size_mb),
             history_table: HistoryTable::new(),
             tablebase: tb.clone(),
         }
@@ -94,7 +93,7 @@ impl PersistentState {
 }
 
 pub(crate) struct SearchContext<'s> {
-    pub tt: &'s mut SearchTranspositionTable,
+    pub tt: &'s mut TranspositionTable,
     pub tablebase: &'s mut Tablebase,
 
     pub history_table: &'s mut HistoryTable,

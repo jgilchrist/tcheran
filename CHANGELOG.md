@@ -11,6 +11,7 @@
 ### Misc
 
 * Fix TT mate scores being stored without root/position correction
+* Hide transposition table implementation details in its module
 
 ## [6.0]
 

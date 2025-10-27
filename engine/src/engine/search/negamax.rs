@@ -7,13 +7,11 @@ use crate::{
         eval,
         eval::Eval,
         search::{
-            move_picker::MovePicker,
-            principal_variation::PrincipalVariation,
-            quiescence::quiescence,
-            tables::lmr_table::lmr_reduction,
-            transposition::{NodeBound, SearchTranspositionTableData},
+            move_picker::MovePicker, principal_variation::PrincipalVariation,
+            quiescence::quiescence, tables::lmr_table::lmr_reduction,
         },
         tablebases::Wdl,
+        transposition_table::NodeBound,
     },
 };
 
@@ -82,10 +80,9 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = ctx.tt.get(&game.zobrist) {
+    if let Some(tt_entry) = ctx.tt.get(&game.zobrist, plies) {
         if !is_root && !is_pv && tt_entry.depth >= depth {
-            let tt_eval = Eval(i32::from(tt_entry.eval));
-            let tt_score = tt_eval.with_mate_distance_from_root(plies);
+            let tt_score = tt_entry.eval;
 
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_score),
@@ -122,19 +119,15 @@ pub fn negamax(
                     || (tb_bound == NodeBound::Lower && score >= beta)
                     || (tb_bound == NodeBound::Upper && score <= alpha)
                 {
-                    #[expect(
-                        clippy::cast_possible_truncation,
-                        reason = "Temporary casting before improving TT ergonomics, but guaranteed to succeed"
-                    )]
-                    let tt_data = SearchTranspositionTableData {
-                        bound: tb_bound,
-                        eval: score.with_mate_distance_from_position(plies).0 as i16,
-                        best_move: None,
-                        age: ctx.tt.generation,
+                    ctx.tt.insert(
+                        &game.zobrist,
+                        tb_bound,
+                        score,
                         depth,
-                    };
-
-                    ctx.tt.insert(&game.zobrist, tt_data);
+                        ctx.tt.generation,
+                        None,
+                        plies,
+                    );
 
                     return Ok(score);
                 }
@@ -289,19 +282,15 @@ pub fn negamax(
         }
     }
 
-    #[expect(
-        clippy::cast_possible_truncation,
-        reason = "Temporary casting before improving TT ergonomics, but guaranteed to succeed"
-    )]
-    let tt_data = SearchTranspositionTableData {
-        bound: tt_node_bound,
-        eval: best_eval.with_mate_distance_from_position(plies).0 as i16,
-        best_move,
-        age: ctx.tt.generation,
+    ctx.tt.insert(
+        &game.zobrist,
+        tt_node_bound,
+        best_eval,
         depth,
-    };
-
-    ctx.tt.insert(&game.zobrist, tt_data);
+        ctx.tt.generation,
+        best_move,
+        plies,
+    );
 
     Ok(best_eval)
 }
