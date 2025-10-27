@@ -254,14 +254,16 @@ fn generate_pawn_captures(
                 can_capture_pawns & tables::pawn_attacks(en_passant_target, game.player.other());
 
             for potential_en_passant_capture_start in potential_capturers {
+
                 // Only consider this pawn if it is not pinned, or if it is pinned but captures along the pin ray
                 if !diagonal_pins.contains(potential_en_passant_capture_start)
                     || diagonal_pins.contains(en_passant_target)
                 {
                     // We need to check that we do not reveal a check by making this en-passant capture
                     let mut board_without_en_passant_participants = game.board.clone();
-                    board_without_en_passant_participants
+                    let capturing_pawn = board_without_en_passant_participants
                         .remove_at(potential_en_passant_capture_start);
+                    board_without_en_passant_participants.set_at(en_passant_target, capturing_pawn);
                     board_without_en_passant_participants.remove_at(captured_pawn);
 
                     let king_in_check = attackers::generate_attackers_of(
@@ -558,6 +560,7 @@ fn generate_castle_move_for_side<const KINGSIDE: bool>(
 
 #[cfg(test)]
 mod tests {
+    use crate::chess::moves::MoveListExt;
     use super::*;
     use crate::chess::square::squares::all::*;
 
@@ -639,5 +642,19 @@ mod tests {
             "rnbqkbnr/2pppppp/p7/Pp6/8/8/1PPPPPPP/RNBQKBNR w KQkq b6 0 3",
             (A5, B6),
         );
+    }
+
+    #[test]
+    fn test_en_passant_bug_20251027() {
+        crate::init();
+
+        let mut game = Game::from_fen("rnbqkbnr/1p1ppppp/p7/2P5/8/8/PPPKPPPP/RNBQ1BNR b kq - 0 3").unwrap();
+        {
+            let mv = game.moves().expect_matching(D7, D5, None);
+            game.make_move(mv);
+        }
+
+        let moves = game.moves();
+        assert!(moves.to_vec().iter().any(|m| m.src() == C5 && m.dst() == D6));
     }
 }

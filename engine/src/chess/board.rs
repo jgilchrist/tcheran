@@ -105,13 +105,15 @@ impl Board {
     }
 
     #[inline(always)]
-    pub fn remove_at(&mut self, square: Square) {
+    pub fn remove_at(&mut self, square: Square) -> Piece {
         let piece = self.piece_guaranteed_at(square);
         self.pieces[piece.kind.array_idx()] ^= square.bb();
         self.colors
             .for_player_mut(piece.player)
             .unset_inplace(square);
         self.squares[square.array_idx()] = None;
+
+        piece
     }
 
     #[inline(always)]
