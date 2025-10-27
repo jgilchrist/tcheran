@@ -11,7 +11,7 @@ pub struct TranspositionTable {
 
 #[derive(Clone, Copy)]
 struct TranspositionTableEntry {
-    pub key: ZobristHash,
+    pub key: u16,
     pub bound: NodeBound,
     pub eval: i16,
     pub depth: u8,
@@ -34,7 +34,7 @@ pub enum NodeBound {
 }
 
 const _ASSERT_TT_DATA_SIZE: () = assert!(
-    size_of::<TranspositionTableEntry>() == 16,
+    size_of::<TranspositionTableEntry>() == 10,
     "Transposition table entry size changed"
 );
 
@@ -127,6 +127,10 @@ impl TranspositionTable {
         old.bound != NodeBound::Exact
     }
 
+    fn truncate_key(key: ZobristHash) -> u16 {
+        (key.0 >> 48) as u16
+    }
+
     // When searching, mate scores are relative to the root position.
     // However, we may see the same position at different depths of the
     // tree due to transpositions.
@@ -170,7 +174,7 @@ impl TranspositionTable {
         let idx = self.get_entry_idx(key);
 
         let new_entry = TranspositionTableEntry {
-            key,
+            key: Self::truncate_key(key),
             bound,
             eval: Self::with_mate_distance_from_position(eval, plies).0 as i16,
             depth,
@@ -197,7 +201,7 @@ impl TranspositionTable {
         // !: We know the exact size of the table and will always access within the bounds.
         unsafe {
             if let Some(entry) = self.data.get_unchecked(idx) {
-                if entry.key == key {
+                if entry.key == Self::truncate_key(key) {
                     return Some(TranspositionTableHit {
                         bound: entry.bound,
                         eval: Self::with_mate_distance_from_root(Eval(i32::from(entry.eval)), plies),
