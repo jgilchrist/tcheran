@@ -80,9 +80,10 @@ pub fn negamax(
 
     let mut previous_best_move: Option<Move> = None;
 
-    if let Some(tt_entry) = ctx.tt.get(&game.zobrist, plies) {
+    let tt_entry = ctx.tt.get(&game.zobrist, plies);
+    if let Some(ref tt_entry) = tt_entry {
         if !is_root && !is_pv && tt_entry.depth >= depth {
-            let tt_score = tt_entry.eval;
+            let tt_score = tt_entry.score;
 
             match tt_entry.bound {
                 NodeBound::Exact => return Ok(tt_score),
@@ -123,6 +124,7 @@ pub fn negamax(
                         &game.zobrist,
                         tb_bound,
                         score,
+                        Eval::NONE,
                         depth,
                         ctx.tt.generation,
                         None,
@@ -139,7 +141,10 @@ pub fn negamax(
         }
     }
 
-    let eval = eval::eval(game);
+    let eval = match tt_entry {
+        Some(ref e) if e.eval != Eval::NONE => e.eval,
+        _ => eval::eval(game),
+    };
 
     if !is_root && !is_pv && !in_check {
         // Reverse futility pruning
@@ -286,6 +291,7 @@ pub fn negamax(
         &game.zobrist,
         tt_node_bound,
         best_eval,
+        eval,
         depth,
         ctx.tt.generation,
         best_move,

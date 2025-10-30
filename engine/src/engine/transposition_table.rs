@@ -11,17 +11,56 @@ pub struct TranspositionTable {
 }
 
 #[derive(Clone)]
+#[repr(transparent)]
+struct BoundAndAge(u8);
+
+impl BoundAndAge {
+    fn new(bound: NodeBound, age: u8) -> BoundAndAge {
+        Self(age << 3 | bound as u8)
+    }
+
+    fn bound(&self) -> NodeBound {
+        match self.0 & 0b11 {
+            0b00 => NodeBound::Exact,
+            0b01 => NodeBound::Upper,
+            0b10 => NodeBound::Lower,
+            _ => unreachable!(),
+        }
+    }
+
+    fn age(&self) -> u8 {
+        self.0 >> 3
+    }
+}
+
+#[derive(Clone)]
 struct TranspositionTableEntry {
-    pub key: ZobristHash,
-    pub bound: NodeBound,
-    pub eval: i16,
-    pub depth: u8,
-    pub age: u8,
-    pub best_move: Option<Move>,
+    pub key: ZobristHash,           // 8 bytes
+    pub score: i16,                 // 2 bytes
+    pub eval: i16,                  // 2 bytes
+    pub depth: u8,                  // 1 byte
+    pub best_move: Option<Move>,    // 2 bytes
+    pub bound_and_age: BoundAndAge, // 1 byte
+}
+
+const _ASSERT_TT_DATA_SIZE: () = assert!(
+    size_of::<TranspositionTableEntry>() == 16,
+    "Transposition table entry size changed"
+);
+
+impl TranspositionTableEntry {
+    fn bound(&self) -> NodeBound {
+        self.bound_and_age.bound()
+    }
+
+    fn age(&self) -> u8 {
+        self.bound_and_age.age()
+    }
 }
 
 pub struct TranspositionTableHit {
     pub bound: NodeBound,
+    pub score: Eval,
     pub eval: Eval,
     pub depth: u8,
     pub best_move: Option<Move>,
@@ -33,11 +72,6 @@ pub enum NodeBound {
     Upper,
     Lower,
 }
-
-const _ASSERT_TT_DATA_SIZE: () = assert!(
-    size_of::<TranspositionTableEntry>() == 16,
-    "Transposition table entry size changed"
-);
 
 pub const fn calculate_number_of_entries(size_mb: usize) -> usize {
     let size_of_entry = size_of::<TranspositionTableEntry>();
@@ -109,7 +143,7 @@ impl TranspositionTable {
 
     fn should_overwrite(old: &TranspositionTableEntry, new: &TranspositionTableEntry) -> bool {
         // Always prioritise results from new searches
-        if new.age != old.age {
+        if new.age() != old.age() {
             return true;
         }
 
@@ -120,12 +154,12 @@ impl TranspositionTable {
         }
 
         // If the new node is exact, always store it
-        if new.bound == NodeBound::Exact {
+        if new.bound() == NodeBound::Exact {
             return true;
         }
 
         // Don't overwrite exact nodes
-        old.bound != NodeBound::Exact
+        old.bound() != NodeBound::Exact
     }
 
     // When searching, mate scores are relative to the root position.
@@ -163,6 +197,7 @@ impl TranspositionTable {
         &mut self,
         key: &ZobristHash,
         bound: NodeBound,
+        score: Eval,
         eval: Eval,
         depth: u8,
         age: u8,
@@ -173,11 +208,11 @@ impl TranspositionTable {
 
         let new_entry = TranspositionTableEntry {
             key: key.clone(),
-            bound,
-            eval: Self::with_mate_distance_from_position(eval, plies).0 as i16,
+            score: Self::with_mate_distance_from_position(score, plies).0 as i16,
+            eval: eval.0 as i16,
             depth,
-            age,
             best_move,
+            bound_and_age: BoundAndAge::new(bound, age),
         };
 
         // !: We know the exact size of the table and will always access within the bounds.
@@ -201,11 +236,12 @@ impl TranspositionTable {
             if let Some(entry) = self.data.get_unchecked(idx) {
                 if entry.key == *key {
                     return Some(TranspositionTableHit {
-                        bound: entry.bound,
-                        eval: Self::with_mate_distance_from_root(
-                            Eval(i32::from(entry.eval)),
+                        bound: entry.bound(),
+                        score: Self::with_mate_distance_from_root(
+                            Eval(i32::from(entry.score)),
                             plies,
                         ),
+                        eval: Eval(i32::from(entry.eval)),
                         depth: entry.depth,
                         best_move: entry.best_move,
                     });
