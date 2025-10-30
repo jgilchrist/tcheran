@@ -72,7 +72,7 @@ pub fn negamax(
         depth += 1;
     }
 
-    if depth == 0 || plies >= MAX_SEARCH_DEPTH {
+    if depth == 0 || plies == MAX_SEARCH_DEPTH {
         return quiescence(game, alpha, beta, plies, ctx);
     }
 

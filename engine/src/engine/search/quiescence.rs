@@ -20,7 +20,7 @@ pub fn quiescence(
     ctx.max_depth_reached = ctx.max_depth_reached.max(plies);
     ctx.nodes_visited += 1;
 
-    if plies >= MAX_SEARCH_DEPTH {
+    if plies == MAX_SEARCH_DEPTH {
         return Ok(eval::eval(game));
     }
 
